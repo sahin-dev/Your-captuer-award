@@ -8,10 +8,10 @@ let server: Server;
 const PORT = config.port || 5000
 
 //Https options
-const options = {
-  key: fs.readFileSync("./server.key"),
-  cert: fs.readFileSync("./server.cert"),
-};
+// const options = {
+//   key: fs.readFileSync("./server.key"),
+//   cert: fs.readFileSync("./server.cert"),
+// };
 
 
 async function startServer() {

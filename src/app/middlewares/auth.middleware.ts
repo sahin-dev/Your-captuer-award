@@ -16,7 +16,7 @@ const auth = (...roles: string[]) => {
     next: NextFunction
   ) => {
     try {
-      const token = req.headers.authorization;
+      const token = req.headers.authorization?.split(' ')[1];
     
 
       if (!token) {
@@ -40,12 +40,12 @@ const auth = (...roles: string[]) => {
         throw new ApiError(httpStatus.NOT_FOUND, "User not found!");
       }
 
-      if (user.status === "BLOCKED") {
-        throw new ApiError(httpStatus.FORBIDDEN, "Your account is blocked!");
-      }
-      if (user.deleted){
-        throw new ApiError(httpStatus.BAD_REQUEST, "account is deleted")
-      }
+      // if (user.status === "BLOCKED") {
+      //   throw new ApiError(httpStatus.FORBIDDEN, "Your account is blocked!");
+      // }
+      // if (user.deleted){
+      //   throw new ApiError(httpStatus.BAD_REQUEST, "account is deleted")
+      // }
       // if (!user.isCompleteProfile){
       //   throw new ApiError(httpStatus.BAD_REQUEST, "Your profile is not completed")
       //  }

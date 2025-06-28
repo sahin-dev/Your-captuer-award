@@ -9,7 +9,7 @@ import passport from 'passport'
 import router from "./app/routes";
 import ErrorHandler from "./app/middlewares/error.middleware";
 import { User } from "@prisma/client";
-import path from 'path'
+
 
 
 

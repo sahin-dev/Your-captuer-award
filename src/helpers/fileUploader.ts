@@ -13,14 +13,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 // Configure DigitalOcean Spaces
-const s3Client = new S3Client({
-  region: "us-east-1",
-  endpoint: process.env.DO_SPACE_ENDPOINT,
-  credentials: {
-    accessKeyId: process.env.DO_SPACE_ACCESS_KEY || "",
-    secretAccessKey: process.env.DO_SPACE_SECRET_KEY || "",
-  },
-});
+
 
 // Configure Cloudinary
 cloudinary.config({
@@ -47,6 +40,8 @@ const cloudinaryUpload = multer({ storage: cloudinaryStorage });
 // Upload single image
 const uploadSingle = upload.single("image");
 const uploadFile = upload.single("file");
+
+const uploadAvatar = upload.single("avatar")
 
 // Upload multiple images
 const uploadMultipleImage = upload.fields([{ name: "images", maxCount: 15 }]);
@@ -92,12 +87,22 @@ const uploadToCloudinary = async (file: Express.Multer.File): Promise<{ Location
 
 // ✅ Unchanged: DigitalOcean Upload
 const uploadToDigitalOcean = async (file: Express.Multer.File) => {
+
   if (!file) {
     throw new Error("File is required for uploading.");
   }
+  const s3Client = new S3Client({
+      region: "us-east-1",
+      endpoint: process.env.DO_SPACE_ENDPOINT,
+      credentials: {
+        accessKeyId: process.env.DO_SPACE_ACCESS_KEY || "",
+        secretAccessKey: process.env.DO_SPACE_SECRET_KEY || "",
+      },
+    });
 
   try {
-    const Key = `roady/${Date.now()}_${uuidv4()}_${file.originalname}`;
+    
+    const Key = `captureaward/${Date.now()}_${uuidv4()}_${file.originalname}`;
     const uploadParams = {
       Bucket: process.env.DO_SPACE_BUCKET || "",
       Key,
@@ -120,7 +125,11 @@ const uploadToDigitalOcean = async (file: Express.Multer.File) => {
   } catch (error) {
     console.error("Error uploading file to DigitalOcean:", error);
     throw error;
+  }finally {
+    s3Client.destroy()
   }
+  
+  
 };
 
 // ✅ No Name Changes, Just Fixes
@@ -133,4 +142,5 @@ export const fileUploader = {
   cloudinaryUpload,
   uploadToDigitalOcean,
   uploadToCloudinary,
+  uploadAvatar
 };
