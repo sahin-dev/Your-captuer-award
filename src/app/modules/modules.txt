@@ -1,0 +1,10 @@
+Here you will define your project in a modular fashion
+For example:
+User Module:
+    controller
+    service
+    route
+    validation
+    interface 
+    types
+    
