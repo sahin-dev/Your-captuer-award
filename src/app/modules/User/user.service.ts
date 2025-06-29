@@ -9,6 +9,7 @@ import { UserDto } from "../../dtos/user.dto"
 import { fileUploader } from "../../../helpers/fileUploader"
 import { generateOtp } from "../../../helpers/generateOtp"
 import mailer from "../../../shared/mailSender"
+import { OtpStatus } from "@prisma/client"
 
 
 
@@ -24,11 +25,11 @@ const register = async (body:IUserRegister)=>{
         throw new ApiError(httpstatus.BAD_REQUEST, "Password not matched")
     }
 
-    const hashedPassword = await bcrypt.hash(body.password, parseInt(config.bcrypt_salt_rounds as string))
+    const hashedPassword = await bcrypt.hash(body.password as string, parseInt(config.bcrypt_salt_rounds as string))
 
 
 
-    const createdUser = await prisma.user.create({data:{firstName:body.firstName, lastName:body.lastName,email:body.email, password:hashedPassword,phone:body.phone}})
+    const createdUser = await prisma.user.create({data:{firstName:body.firstName, lastName:body.lastName,email:body.email as string, password:hashedPassword,phone:body.phone}})
 
     const token = jwtHelpers.generateToken({id:createdUser.id, role:createdUser.role, email:createdUser.email})
     await prisma.user.update({where:{id:createdUser.id}, data:{accessToken:token}})
@@ -46,26 +47,60 @@ const register = async (body:IUserRegister)=>{
     return {user:UserDto(createdUser), token}
 }
 
-const updateUser = async (userId:string,userData:IUserUpdate)=>{
+const getUsers = async ()=>{
+    const users = await prisma.user.findMany()
+
+    const mappedUsers = users.map((user)=>{
+        return UserDto(user)
+    })
+
+    return mappedUsers
+}
+
+const updateUser = async (userId:string,userData:IUserUpdate, file?:Express.Multer.File)=>{
     const user = await prisma.user.findUnique({where:{id:userId}})
     if(!user){
         throw new ApiError(httpstatus.NOT_FOUND, "User not found")
+    }
+    let updatedAvatarUrl = null
+
+    if(file){
+        let fileData = await fileUploader.uploadToDigitalOcean(file)
+        updatedAvatarUrl = fileData.Location
     }
 
     const updatedUser = await prisma.user.update({where:{id:user.id}, data:{
         firstName:userData.firstName,
         lastName:userData.lastName,
-        phone:userData.phone
+        phone:userData.phone,
+        avatar:updatedAvatarUrl || user.avatar
     }})
 
     return UserDto(updatedUser)
 }
 
-const setPassword = async (userId:string,userData:IPasswordUpdate)=>{
+const getUserDetails = async (userId:string)=>{
+
     const user = await prisma.user.findUnique({where:{id:userId}})
+    if(!user){
+        throw new ApiError(httpstatus.NOT_FOUND, "User not found")
+    }
+
+    return UserDto(user)
+}
+
+const resetPassword = async (email:string,userData:IPasswordUpdate, token:string)=>{
+    
+    const user = await prisma.user.findFirst({where:{email}})
     if(!user){
         throw new ApiError(httpstatus.NOT_FOUND, 'user not found')
     }
+    const otp = await prisma.otp.findFirst({where:{id:token, otpStatus:OtpStatus.VALIDATED}})
+    if (!otp){
+        throw new ApiError(httpstatus.BAD_REQUEST, "Sorry, You are not able to reset your password")
+    }
+    await prisma.otp.delete({where:{id:otp.id}})
+    
     if (userData.password !== userData.confirmPassword){
         throw new ApiError(httpstatus.BAD_REQUEST, "Password does not matched")
         
@@ -73,7 +108,7 @@ const setPassword = async (userId:string,userData:IPasswordUpdate)=>{
 
     const hashedPassword = await bcrypt.hash(userData.password, config.bcrypt_salt_rounds as string)
 
-    const updatedUser = await prisma.user.update({where:{id:userId}, data:{password:hashedPassword}})
+    const updatedUser = await prisma.user.update({where:{id:user.id}, data:{password:hashedPassword}})
 
     return UserDto(updatedUser)
 }
@@ -95,6 +130,12 @@ const forgetPassword = async ( email:string)=>{
 
     if(!user){
         throw new ApiError(httpstatus.NOT_FOUND, "User not found with this email")
+    }
+
+    const existingOtp = await prisma.otp.findUnique({where:{userId:user.id}})
+
+    if(existingOtp){
+        await prisma.otp.deleteMany({where:{userId:user.id}})
     }
 
     const otp = generateOtp()
@@ -126,16 +167,33 @@ const verifyOtp = async (email:string, otp:string)=>{
         throw new ApiError(httpstatus.BAD_REQUEST,"Invalid otp")
     }
 
-    if (existingOtp.code !== otp && existingOtp.expires_in <= new Date()){
-        throw new ApiError(httpstatus.BAD_REQUEST, 'Otp expired')
+    if (existingOtp.code !== otp ){
+        throw new ApiError(httpstatus.BAD_REQUEST, 'Otp incorrect')
     }
-    await 
+    if (existingOtp.expires_in <=new Date()){
+        throw new ApiError(httpstatus.BAD_REQUEST, "Otp expired")
+    }
+
+    await prisma.otp.update({where:{id:existingOtp.id}, data:{otpStatus:OtpStatus.VALIDATED}})
+
+   return {reset_password_token: existingOtp.id}
+     
+}
+
+const getUserBySocialId = async (socialProvider:string, socialId:string)=>{
+    const user = await prisma.user.findFirst({where:{socialProvider, socialId}})
+
+    return user
 }
 
 export const userService = {
     register,
+    getUsers,
     updateUser,
-    setPassword,
+    resetPassword,
     uploadAvatar,
-    forgetPassword
+    forgetPassword,
+    getUserBySocialId,
+    verifyOtp,
+    getUserDetails
 }

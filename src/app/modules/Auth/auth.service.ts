@@ -17,7 +17,7 @@ export const handleSignIn = async(body:UserSignIn)=>{
         throw new ApiError(httpstatus.NOT_FOUND,"User not found")
     }
 
-    if (await bcrypt.compare(body.password, user.password)){
+    if (await bcrypt.compare(body.password, user.password!)){
         if (!(config.jwt.jwt_secret && config.jwt.expires_in)){
             throw new Error("Jwt tokens are not valid")
         }

@@ -25,4 +25,5 @@ const prisma = new PrismaClient();
 
 // connectPrisma();
 
+
 export default prisma;

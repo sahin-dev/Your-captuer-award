@@ -11,12 +11,15 @@ datasource db {
 model User {
   id    String      @id @db.ObjectId  @default(auto()) @map("_id") 
   avatar  String?   @default("https://plus.unsplash.com/premium_photo-1689539137236-b68e436248de?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D")
-  firstName   String
-  lastName    String
+  socialId    String?
+  socialProvider  String?
+  firstName   String?
+  lastName    String?
+  fullName    String?
   username    String?
-  phone       String @unique
+  phone       String?
   email       String @unique
-  password    String
+  password    String?
   role        UserRole  @default(USER)
   accessToken String?
 
@@ -36,7 +39,7 @@ model Otp {
   userId  String    @db.ObjectId  @unique
 
   user    User  @relation(fields: [userId], references: [id])
-
+  otpStatus OtpStatus @default(CREATED)
 
 
   createdAt    DateTime   @default(now())
@@ -53,4 +56,5 @@ enum UserRole {
 
 enum OtpStatus {
   CREATED
+  VALIDATED
 }

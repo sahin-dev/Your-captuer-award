@@ -4,6 +4,7 @@ import path from 'path';
 dotenv.config({ path: path.join(process.cwd(), '.env') });
 
 
+
 const config =  {
     env: process.env.NODE_ENV,
     stripe_key:process.env.STRIPE_SECRET_KEY,
@@ -19,7 +20,16 @@ const config =  {
         reset_pass_secret: process.env.RESET_PASS_TOKEN,
         reset_pass_token_expires_in: process.env.RESET_PASS_TOKEN_EXPIRES_IN
     },
-    google:{client_id:process.env.GOOGLE_CLIENT_ID, client_secret:process.env.GOOGLE_CLIENT_SECRET},
+    google:{
+        client_id:process.env.GOOGLE_CLIENT_ID, 
+        client_secret:process.env.GOOGLE_CLIENT_SECRET, 
+        callbackUrl:process.env.GOOGLE_CALLBACK_URL
+    },
+    facebook:{
+        client_id: process.env.FACEBOOK_CLIENT_ID,
+        client_secret: process.env.FACEBOOK_CLIENT_SECRET,
+        callbackUrl: process.env.FACEBOOK_CALLBACK_URL
+    },
     reset_pass_link: process.env.RESET_PASS_LINK,
     emailSender: {
         email: process.env.EMAIL,
