@@ -1,0 +1,20 @@
+{
+    "files.autoSave": "afterDelay",
+    "[prisma]": {
+        "files.autoSave": "off",
+    },
+    
+     "emeraldwalk.runonsave": {
+        "message":"Complete",
+        
+        "commands": [
+            {
+           "match": ".*schema\\.prisma$",
+            "cmd": "npx prisma db push",
+            "runIn": "terminal"
+            },
+
+        ]
+    },
+
+}

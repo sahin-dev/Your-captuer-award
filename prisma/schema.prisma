@@ -7,46 +7,163 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
 model User {
-  id    String      @id @db.ObjectId  @default(auto()) @map("_id") 
-  avatar  String?   @default("https://plus.unsplash.com/premium_photo-1689539137236-b68e436248de?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D")
-  socialId    String?
-  socialProvider  String?
-  firstName   String?
-  lastName    String?
-  fullName    String?
-  username    String?
-  phone       String?
-  email       String @unique
-  password    String?
-  role        UserRole  @default(USER)
-  accessToken String?
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  avatar         String?  @default("https://plus.unsplash.com/premium_photo-1689539137236-b68e436248de?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D")
+  socialId       String?
+  socialProvider String?
+  firstName      String?
+  lastName       String?
+  fullName       String?
+  username       String?
+  phone          String?
+  email          String   @unique
+  password       String?
+  role           UserRole @default(USER)
+  accessToken    String?
 
-  otps    Otp?
+  otps             Otp?
+  createdTeam      Team[]
+  joinedTeam       TeamMember[]
+  createdContests  Contest[]
+  commentProvides  Comment[]    @relation("provider")
+  commentsReceives Comment[]    @relation("receiver")
+  followers        Follow[]   @relation(name: "follower")
+  followings       Follow[]   @relation(name: "following")
+  votes Vote[]
 
-
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("users")
+
+  Love Love[]
 }
 
 model Otp {
-  id      String    @id @db.ObjectId  @default(auto()) @map("_id") 
-  code    String    
-  expires_in  DateTime
-  userId  String    @db.ObjectId  @unique
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  code       String
+  expires_in DateTime
+  userId     String   @unique @db.ObjectId
 
-  user    User  @relation(fields: [userId], references: [id])
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   otpStatus OtpStatus @default(CREATED)
 
-
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-  expiresAt   DateTime    
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  expiresAt DateTime
 
   @@map("otps")
+}
+
+
+model Team {
+  id        String       @id @default(auto()) @map("_id") @db.ObjectId
+  creatorId String       @db.ObjectId
+  creator   User         @relation(fields: [creatorId], references: [id])
+  members   TeamMember[]
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+
+  @@map("teams")
+}
+
+model TeamMember {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  status TeamMemberStatus @default(ACTIVE)
+
+  teamId   String @db.ObjectId
+  memberId String @db.ObjectId
+  team     Team   @relation(fields: [teamId], references: [id])
+  member   User   @relation(fields: [memberId], references: [id])
+
+  @@map("team_members")
+}
+
+model Contest {
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  status        ContestStatus @default(OPEN)
+  recurring     Boolean
+  recurringType RecurringType
+  startDate     DateTime
+  endDate       DateTime
+  creatorId     String        @db.ObjectId
+
+  creator      User                 @relation(fields: [creatorId], references: [id])
+  participants ContestParticipant[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("contests")
+}
+
+model ContestParticipant {
+  id        String @id @default(auto()) @map("_id") @db.ObjectId
+  status ContestParticipantStatus @default(ACTIVE)
+  contestId String @db.ObjectId
+  userId    String @db.ObjectId
+
+
+  contest Contest @relation(fields: [contestId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("contest_participants")
+}
+
+model Comment {
+  id         String @id @default(auto()) @map("_id") @db.ObjectId
+  text       String
+  providerId String @db.ObjectId
+  receiverId String @db.ObjectId
+
+  provider User @relation(name: "provider", fields: [providerId], references: [id])
+  receiver User @relation(name: "receiver", fields: [receiverId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("comments")
+}
+
+model Follow {
+  id          String @id @default(auto()) @map("_id") @db.ObjectId
+  followerId  String @db.ObjectId
+  followingId String @db.ObjectId
+  follower    User   @relation(name: "follower", fields: [followerId], references: [id])
+  following   User   @relation(name: "following", fields: [followingId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("follows")
+}
+
+model Vote {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  providerId  String  @db.ObjectId
+
+  provider  User    @relation(fields: [providerId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("votes")
+}
+
+model Love {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  providerId    String @db.ObjectId
+
+  provider    User  @relation(fields: [providerId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("loves")
 }
 
 enum UserRole {
@@ -57,4 +174,31 @@ enum UserRole {
 enum OtpStatus {
   CREATED
   VALIDATED
+}
+
+enum ContestStatus {
+  UPCOMING
+  OPEN
+  COMPLETED
+}
+
+enum ContestType {
+  ONETIME
+  RECURRING
+}
+
+enum RecurringType {
+  DAILY
+  WEEKLY
+  MONTHLY
+}
+
+enum ContestParticipantStatus {
+  ACTIVE
+  BLOCKED
+}
+
+enum TeamMemberStatus {
+  ACTIVE
+  BLOCKED
 }
