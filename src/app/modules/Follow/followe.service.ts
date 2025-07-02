@@ -14,7 +14,7 @@ export const handleUnfollowUser = async (followerId: string, followingId: string
     const follow = await prisma.follow.findFirst({
         where: { followerId, followingId }
     });
-
+ 
     if (!follow) {
         throw new ApiError(httpstatus.NOT_FOUND, 'Follow relation not found');
     }

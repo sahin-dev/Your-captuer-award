@@ -9,12 +9,15 @@ import passport from 'passport'
 import router from "./app/routes";
 import ErrorHandler from "./app/middlewares/error.middleware";
 import { User } from "@prisma/client";
+import { registerEventLogger } from "./app/event/event.logger";
 
 
 
 
 
 const app: Application = express();
+
+registerEventLogger()
 
 app.use(session({
   secret:"secret123#ABC",

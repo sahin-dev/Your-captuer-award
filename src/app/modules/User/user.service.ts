@@ -10,12 +10,15 @@ import { fileUploader } from "../../../helpers/fileUploader"
 import { generateOtp } from "../../../helpers/generateOtp"
 import mailer from "../../../shared/mailSender"
 import { OtpStatus } from "@prisma/client"
+import globalEventHandler from "../../event/eventEmitter"
+import Events from "../../event/events.contant"
 
 
 
 const register = async (body:IUserRegister)=>{
 
     const existingUser = await prisma.user.findFirst({where:{email:body.email}})
+    globalEventHandler.emit(Events.USER_REGISTERED)
 
     if (existingUser){
         throw new ApiError(httpstatus.CONFLICT, "user already exist with this email")

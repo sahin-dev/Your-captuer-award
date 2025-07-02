@@ -32,3 +32,8 @@ export const handleJoinContest = async (contestId: string, userId: string) => {
 
     return participant;
 };
+
+
+export const getRemainingPhotos = async (userId:string, contestId:string)=>{
+    
+}
