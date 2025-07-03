@@ -119,6 +119,7 @@ model Contest {
   updatedAt DateTime @updatedAt
 
   @@map("contests")
+  ContestWinner ContestWinner[]
 }
 
 model ContestPhoto {
@@ -128,15 +129,30 @@ model ContestPhoto {
   photoId       String @db.ObjectId
 
   // contest   Contest @relation(fields: [contestId],references: [id])
-  participant ContestParticipant @relation(fields: [participantId], references: [id])
+  participant ContestParticipant @relation(fields: [participantId], references: [id], onDelete: Cascade)
   votes       Vote[]
-  photo       ProfilePhoto       @relation(fields: [photoId], references: [id])
+  photo       ProfilePhoto       @relation(fields: [photoId], references: [id], onDelete: Cascade)
   comments    Comment[]
+  ContestWinner ContestWinner[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@map("contest_photos")
+
+}
+
+model ContestWinner {
+  id    String  @id @db.ObjectId  @default(auto())  @map("_id")
+  userId  String @db.ObjectId
+  contestId String  @db.ObjectId
+  contestPhotoId  String @db.ObjectId
+  contest Contest    @relation(fields: [contestId], references: [id])
+  contestPhoto ContestPhoto @relation(fields: [contestPhotoId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@map("contest_winners")
 }
 
 model ContestParticipant {
@@ -145,7 +161,7 @@ model ContestParticipant {
   contestId String                   @db.ObjectId
   userId    String                   @db.ObjectId
 
-  contest Contest        @relation(fields: [contestId], references: [id])
+  contest Contest        @relation(fields: [contestId], references: [id], onDelete: Cascade)
   user    User           @relation(fields: [userId], references: [id])
   photos  ContestPhoto[]
 

@@ -11,14 +11,14 @@ import { generateOtp } from "../../../helpers/generateOtp"
 import mailer from "../../../shared/mailSender"
 import { OtpStatus } from "@prisma/client"
 import globalEventHandler from "../../event/eventEmitter"
-import Events from "../../event/events.contant"
+import Events from "../../event/events.constant"
 
 
 
 const register = async (body:IUserRegister)=>{
 
     const existingUser = await prisma.user.findFirst({where:{email:body.email}})
-    globalEventHandler.emit(Events.USER_REGISTERED)
+   
 
     if (existingUser){
         throw new ApiError(httpstatus.CONFLICT, "user already exist with this email")
@@ -33,7 +33,7 @@ const register = async (body:IUserRegister)=>{
 
 
     const createdUser = await prisma.user.create({data:{firstName:body.firstName, lastName:body.lastName,email:body.email as string, password:hashedPassword,phone:body.phone}})
-
+     globalEventHandler.emit(Events.USER_REGISTERED, createdUser)
     const token = jwtHelpers.generateToken({id:createdUser.id, role:createdUser.role, email:createdUser.email})
     await prisma.user.update({where:{id:createdUser.id}, data:{accessToken:token}})
 

@@ -1,17 +1,16 @@
 import { EventEmitter } from "events";
-import { registerEventLogger } from "./event.logger";
-import Events from "./events.contant";
 
 
 
 class GlobalEventHandler extends EventEmitter {
-    constructor(){
-        super()
-    }
-   onNewUserRegistered (listener:()=>{}){
-    this.on(Events.USER_REGISTERED, listener)
-   }
 
+    emit<K>(eventName: string | symbol, ...args: any[]): boolean {
+       
+        console.log(`${String(eventName)} event emitted`)
+        super.emit(eventName, args)
+        return true
+    }
+ 
 }
 const globalEventHandler = new GlobalEventHandler()
 
