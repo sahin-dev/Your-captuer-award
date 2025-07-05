@@ -199,6 +199,8 @@ model Follow {
   @@map("follows")
 }
 
+
+
 model Vote {
   id         String @id @default(auto()) @map("_id") @db.ObjectId
   providerId String @db.ObjectId
