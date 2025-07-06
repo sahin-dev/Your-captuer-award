@@ -76,6 +76,13 @@ model Otp {
 
 model Team {
   id        String       @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  level     String
+  language  String
+  country   String
+  description  String
+  accessibility   TeamAccessibility
+  badge       String//Image file
   creatorId String       @db.ObjectId
   creator   User         @relation(fields: [creatorId], references: [id])
   members   TeamMember[]
@@ -85,6 +92,7 @@ model Team {
 
   @@map("teams")
 }
+
 
 model TeamMember {
   id     String           @id @default(auto()) @map("_id") @db.ObjectId
@@ -274,4 +282,9 @@ type PhotoState {
   Content     Int @default(0)
   Creativity  Int @default(0)
   Technique   Int @default(0)
+}
+
+enum TeamAccessibility {
+  PUBLIC
+  PRIVATE
 }

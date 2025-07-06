@@ -1,15 +1,30 @@
+import { TeamAccessibility } from '@prisma/client';
 import { z } from 'zod';
 
-export const addMemberSchema = z.object({
-    body: z.object({
-        teamId: z.string().min(1, 'Team ID is required'),
-        memberId: z.string().min(1, 'Member ID is required')
-    })
+export const createTeamValidation = z.object({
+    level: z.string({
+        required_error: 'Level is required',
+    }),
+    language: z.string({
+        required_error: 'Language is required',
+    }),
+    country: z.string({
+        required_error: 'Country is required',
+    }),
+    description: z.string({
+        required_error: 'Description is required',
+    }),
+    accessibility: z.nativeEnum(TeamAccessibility, {
+        required_error: 'Accessibility is required',invalid_type_error: 'Accessibility must be PUBLIC or PRIVATE'
+    }),
 });
 
-export const removeMemberSchema = z.object({
-    body: z.object({
-        teamId: z.string().min(1, 'Team ID is required'),
-        memberId: z.string().min(1, 'Member ID is required')
-    })
+export const updateTeamValidation = z.object({
+    level: z.string().optional(),
+    language: z.string().optional(),
+    country: z.string().optional(),
+    description: z.string().optional(),
+    accessibility: z.nativeEnum(TeamAccessibility, {
+        invalid_type_error: 'Accessibility must be PUBLIC or PRIVATE'
+    }).optional(),
 });
