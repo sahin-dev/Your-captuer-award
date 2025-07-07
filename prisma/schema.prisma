@@ -9,6 +9,7 @@ datasource db {
 
 model User {
   id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  cover         String?   @default("https://images.unsplash.com/photo-1689539137236-b68e436248de?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D")
   avatar         String?  @default("https://plus.unsplash.com/premium_photo-1689539137236-b68e436248de?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D")
   socialId       String?
   socialProvider String?
@@ -121,7 +122,6 @@ model Contest {
   creator      User                 @relation(fields: [creatorId], references: [id])
   participants ContestParticipant[]
   votes        Vote[]
-  ContestWinner ContestWinner
   // photos      ContestPhoto[]
 
   createdAt DateTime @default(now())
@@ -142,7 +142,6 @@ model ContestPhoto {
   votes       Vote[]
   photo       ProfilePhoto       @relation(fields: [photoId], references: [id], onDelete: Cascade)
   comments    Comment[]
-  ContestWinner ContestWinner
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -156,8 +155,6 @@ model ContestWinner {
   userId  String @db.ObjectId
   contestId String  @db.ObjectId
   contestPhotoId  String @db.ObjectId
-  contest Contest    @relation(fields: [contestId], references: [id])
-  contestPhoto ContestPhoto @relation(fields: [contestPhotoId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -207,8 +204,6 @@ model Follow {
 
   @@map("follows")
 }
-
-
 
 model Vote {
   id         String @id @default(auto()) @map("_id") @db.ObjectId

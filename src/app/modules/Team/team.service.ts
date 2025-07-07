@@ -78,6 +78,58 @@ export const updateTeam = async (teamId: string, body: any, file?:Express.Multer
     return updatedTeam;
 };
 
+// Suggest channels to join, showing total members, votes, and badge
+export const getSuggestedTeams = async (userId: string, limit: number = 5) => {
+    // Check if user is already in a team
+    const userTeam = await prisma.teamMember.findFirst({
+        where: { memberId: userId },
+        select: { teamId: true }
+    });
+    if (userTeam) {
+        // User is already in a team, so do not suggest any teams
+        return [];
+    }
+
+    // User is not in any team, suggest teams they did not create
+    const teams = await prisma.team.findMany({
+        where: {
+            creatorId: { not: userId },
+        },
+        include: {
+            members: true,
+            _count: { select: { members: true } },
+        },
+        take: limit,
+        orderBy: { createdAt: 'desc' }
+    });
+
+    // If you have a votes table, count votes per team
+    // Otherwise, set totalVotes to 0 or implement as needed
+    // Here, we assume a 'vote' table with a 'teamId' field
+    const teamIds = teams.map(team => team.id);
+    let votesByTeam: Record<string, number> = {};
+    if (teamIds.length > 0 && prisma.vote) {
+        // Try to count votes per team using findMany and reduce
+        const votes = await prisma.vote.findMany({
+            where: { teamId: { in: teamIds } },
+        });
+        votesByTeam = votes.reduce((acc: Record<string, number>, v: any) => {
+            if (v.teamId) {
+                acc[v.teamId] = (acc[v.teamId] || 0) + 1;
+            }
+            return acc;
+        }, {});
+    }
+
+    return teams.map(team => ({
+        id: team.id,
+        name: team.name,
+        badge: team.badge,
+        totalMembers: team._count?.members || (team.members ? team.members.length : 0),
+        totalVotes: votesByTeam[team.id] || 0,
+    }));
+};
+
 export const deleteTeam = async (teamId: string) => {
     const existingTeam = await prisma.team.findUnique({ where: { id: teamId } });
 
@@ -92,5 +144,5 @@ export const deleteTeam = async (teamId: string) => {
 
 
 export const teamService = {
-    createTeam, getTeams, getTeamDetails, updateTeam, deleteTeam
+    createTeam, getTeams, getTeamDetails, updateTeam, deleteTeam, getSuggestedTeams
 }
