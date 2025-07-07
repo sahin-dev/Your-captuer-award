@@ -121,13 +121,14 @@ model Contest {
   creator      User                 @relation(fields: [creatorId], references: [id])
   participants ContestParticipant[]
   votes        Vote[]
+  ContestWinner ContestWinner
   // photos      ContestPhoto[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@map("contests")
-  ContestWinner ContestWinner[]
+
 }
 
 model ContestPhoto {
@@ -141,7 +142,7 @@ model ContestPhoto {
   votes       Vote[]
   photo       ProfilePhoto       @relation(fields: [photoId], references: [id], onDelete: Cascade)
   comments    Comment[]
-  ContestWinner ContestWinner[]
+  ContestWinner ContestWinner
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
