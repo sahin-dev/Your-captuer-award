@@ -1,6 +1,7 @@
 import prisma from '../../../shared/prisma';
 import ApiError from '../../../errors/ApiError';
 import httpstatus from 'http-status';
+import { fileUploader } from '../../../helpers/fileUploader';
 
 
 // Fetch completed contest details with winner
@@ -45,10 +46,18 @@ export const getCompletedContestsWithWinner = async () => {
     return results;
 };
 
-export const handleCreateContest = async (creatorId: string, body: any) => {
+export const handleCreateContest = async (creatorId: string, body: any, banner:Express.Multer.File) => {
+    let bannerUrl = null;
+
+    if (banner){
+        bannerUrl = (await fileUploader.uploadToCloudinary(banner)).Location;
+    }
     const contest = await prisma.contest.create({
         data: {
             creatorId,
+            title: body.title,
+            description: body.description,
+            banner: bannerUrl,
             status: body.status,
             recurring: body.recurring,
             recurringType: body.recurringType,

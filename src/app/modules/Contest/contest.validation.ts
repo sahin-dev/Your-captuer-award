@@ -1,7 +1,10 @@
-import { z } from 'zod';
+import { string, z } from 'zod';
 
 export const createContestSchema = z.object({
     body: z.object({
+        title: string().min(1, 'Title is required'),
+        description: string().min(1, 'Description is required'),
+        
         status: z.string().min(1, 'Status is required'),
         recurring: z.boolean(),
         recurringType: z.string().optional(),

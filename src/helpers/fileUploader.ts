@@ -43,6 +43,7 @@ const uploadFile = upload.single("file");
 
 const uploadAvatar = upload.single("avatar")
 const uploadBadge = upload.single("badge")
+const contestBanner = upload.single("banner");
 
 // Upload multiple images
 const uploadMultipleImage = upload.fields([{ name: "images", maxCount: 15 }]);
@@ -144,5 +145,6 @@ export const fileUploader = {
   uploadToDigitalOcean,
   uploadToCloudinary,
   uploadAvatar,
-  uploadBadge
+  uploadBadge, 
+  contestBanner
 };
