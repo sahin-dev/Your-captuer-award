@@ -10,6 +10,7 @@ const config =  {
     stripe_key:process.env.STRIPE_SECRET_KEY,
     forontend_url:process.env.FRONTEND_URL,
     port: process.env.PORT,
+    db:process.env.DATABASE_URL,
     bcrypt_salt_rounds:process.env.BCRYPT_SALT_ROUNDS,
     webhook_secret:process.env.STRIPE_WEBHOOK_KEY,
     jwt: {

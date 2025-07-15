@@ -3,6 +3,9 @@ import config from "./config";
 import fs from "fs";
 import app from "./app";
 import { setupWebSocket } from "./helpers/websocketSetUp";
+import "./app/modules/Agenda";
+import agenda from "./app/modules/Agenda";
+
 
 let server: Server;
 const PORT = config.port || 5000
@@ -14,12 +17,14 @@ const PORT = config.port || 5000
 // };
 
 
+
+
 async function startServer() {
   // server = createServer(options, app);
   server = app.listen(PORT, () => {
     console.log("Server is listiening on port ", config.port);
   });
-  await setupWebSocket(server);
+  // await setupWebSocket(server);
 }
 
 async function main() {
@@ -28,6 +33,7 @@ async function main() {
     if (server) {
       server.close(() => {
         console.info("Server closed!");
+        agenda.stop();
         // restartServer();
       });
     } else {

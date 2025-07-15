@@ -2,6 +2,161 @@ import prisma from '../../../shared/prisma';
 import ApiError from '../../../errors/ApiError';
 import httpstatus from 'http-status';
 import { fileUploader } from '../../../helpers/fileUploader';
+import { Contest, ContestStatus, ContestType, RecurringData, RecurringType } from '@prisma/client';
+import agenda from '../Agenda';
+import { ICreateContest } from './contest.interface';
+import { stat } from 'fs';
+
+
+
+
+//Create a new contest
+
+
+export const handleCreateContest = async (creatorId: string, body: ICreateContest, banner:Express.Multer.File) => {
+    let bannerUrl = null;
+
+    if (banner){
+        bannerUrl = (await fileUploader.uploadToDigitalOcean(banner)).Location;
+    }
+    console.log(body)
+    // Validate start and end dates
+    const startDate = new Date(body.startDate);
+    const endDate = new Date(body.endDate);
+    const currentDate = new Date();
+    const remainingTime = startDate.getTime() - currentDate.getTime();
+    
+    //Check contest start date and end date
+         //If start date is before end date and start date is in the future
+    if (startDate >= endDate) {
+        throw new ApiError(httpstatus.BAD_REQUEST, 'Start date must be before end date');
+    }
+    // If start date is in the past, throw an error
+    if (currentDate> startDate){
+        throw new ApiError(httpstatus.BAD_REQUEST, 'Start date must be in the future');
+    }
+
+
+    // create separate contestData Object to pass prisma to ctreate contest
+    const contestData:any = {
+        creatorId,
+        title: body.title,
+        description: body.description,
+        banner: bannerUrl,
+        startDate: body.startDate,
+        endDate: body.endDate,
+    }
+
+    //If contest is recurring, Add recurring data to the contest object
+    // By default every object is recurring false, so if conetest is not recurring, it will not have recurring data
+    
+
+    if (body.recurring) {
+
+        const recurringData:RecurringData = {
+        recurringType: body.recurringType || RecurringType.DAILY, // Default to DAILY if not provided
+        previousOccurrence: null,
+        nextOccurrence: new Date(body.startDate),
+        duration:new Date(body.endDate).getTime() - new Date(body.startDate).getTime()
+    }
+        contestData.recurring = true;
+        contestData.recurringData = recurringData;
+        // If contest is recurring, set status to SCHEDULED
+        // This means that the contest is scheduled to start at the start date
+        //By default contest not recurring, so status is set to UPCOMING
+        contestData.status = ContestStatus.SCHEDULED;
+    }
+
+    // If contest is money contest, add money contest data like max prize and min prize for the paerticipants
+    // If isMoneyContest is not provided, it will default to false
+
+    if (body.isMoneyContest) {
+        contestData.isMoneyContest = body.isMoneyContest;   
+        contestData.maxPrize = body.maxPrize || 0;
+        contestData.minPrize = body.minPrize || 0;
+    }
+
+    const contest = await prisma.contest.create({
+        data:contestData
+    });
+    
+    
+    // agenda.schedule(startDate, 'contest:checkUpcoming', {
+    //     contestId: contest.id
+    // });
+
+    return contest;
+};
+
+
+export const getContestById = async (contestId: string) => {
+    const contest = await prisma.contest.findUnique({
+        where: { id: contestId },
+        include: { creator: true, participants: true }
+    });
+
+    return contest;
+}
+
+// Get all the contests
+// This will be used to display all the contests in the contest page
+
+export const handleGetContests = async () => {
+    const contests = await prisma.contest.findMany({
+        include: { creator: true, participants: true }
+    });
+
+    return contests;
+};
+
+export const getAllContests = async () => {
+    const contests = await prisma.contest.findMany({    
+        include: { creator: true, participants: true }
+    });
+    return contests;
+};
+
+
+export const getContestsByStatus = async (userId:string,status: ContestStatus) => {
+    let contests :Contest[]= []
+
+    if (status === ContestStatus.COMPLETED) {
+        contests = await prisma.contest.findMany({
+            where: { status: ContestStatus.COMPLETED,participants: { some: { userId } } },
+            include: { creator: true, participants: true }
+        });
+    }
+    else if (status === ContestStatus.UPCOMING) {
+        contests = await prisma.contest.findMany({
+            where: { status: ContestStatus.UPCOMING } ,
+            include: { creator: true, participants: true }
+        });
+    }else if (status === ContestStatus.OPEN) {
+        contests = await prisma.contest.findMany({
+            where: { status: ContestStatus.OPEN },
+            include: { creator: true, participants: true }
+        });
+    } else if (status === ContestStatus.ACTIVE) {
+        contests = await prisma.contest.findMany({
+            where: { status: ContestStatus.ACTIVE, participants: { some: { userId } } },
+            include: { creator: true, participants: true }
+        });
+    }else if (status === ContestStatus.CLOSED) {
+        contests = await prisma.contest.findMany({
+            where: { status: ContestStatus.CLOSED },
+            include: { creator: true, participants: true }
+        });
+    }
+    return contests;
+};
+
+export const getUpcomingCOntest = async () => {
+    const contests = await prisma.contest.findMany({
+        where: { status: ContestStatus.UPCOMING },
+        include: { creator: true}
+    });
+    return contests;
+};
 
 
 // Fetch completed contest details with winner
@@ -46,37 +201,6 @@ export const getCompletedContestsWithWinner = async () => {
     return results;
 };
 
-export const handleCreateContest = async (creatorId: string, body: any, banner:Express.Multer.File) => {
-    let bannerUrl = null;
-
-    if (banner){
-        bannerUrl = (await fileUploader.uploadToCloudinary(banner)).Location;
-    }
-    const contest = await prisma.contest.create({
-        data: {
-            creatorId,
-            title: body.title,
-            description: body.description,
-            banner: bannerUrl,
-            status: body.status,
-            recurring: body.recurring,
-            recurringType: body.recurringType,
-            startDate: body.startDate,
-            endDate: body.endDate
-        }
-    });
-
-    return contest;
-};
-
-export const handleGetContests = async () => {
-    const contests = await prisma.contest.findMany({
-        include: { creator: true, participants: true }
-    });
-
-    return contests;
-};
-
 export const handleJoinContest = async (contestId: string, userId: string) => {
     const participant = await prisma.contestParticipant.create({
         data: { contestId, userId }
@@ -89,3 +213,4 @@ export const handleJoinContest = async (contestId: string, userId: string) => {
 export const getRemainingPhotos = async (userId:string, contestId:string)=>{
     
 }
+
