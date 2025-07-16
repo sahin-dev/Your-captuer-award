@@ -36,6 +36,16 @@ const config =  {
         email: process.env.EMAIL,
         app_pass: process.env.APP_PASS
     },
+    cloud:[{
+        provider:"digitalOcean",
+        endpoint: process.env.DO_SPACE_ENDPOINT,
+        origin_endpoint: process.env.DO_SPACE_ORIGIN_ENDPOINT,
+        access_key: process.env.DO_SPACE_ACCESS_KEY,
+        secret_key: process.env.DO_SPACE_SECRET_KEY,
+        bucket: process.env.DO_SPACE_BUCKET
+        },
+    ]
+    
 
 }
 export default config

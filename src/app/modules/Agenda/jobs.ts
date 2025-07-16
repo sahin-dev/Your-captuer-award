@@ -131,10 +131,6 @@ async function scheduleContest(contest:RecurringContest){
         })
                 console.log(`Updated next occurrence for recurring contest ID: ${contest.id}`);
         }
-       
-
-
-    
 
 }
 

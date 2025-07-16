@@ -34,7 +34,7 @@ model User {
   followings         Follow[]             @relation(name: "following")
   votes              Vote[]
   loves              Love[]
-  profilePhotos      ProfilePhoto[]
+  userPhotos      UserPhoto[]
   ContestParticipant ContestParticipant[]
 
   createdAt DateTime @default(now())
@@ -44,11 +44,11 @@ model User {
   Like Like[]
 }
 
-model ProfilePhoto {
+model UserPhoto {
   id     String     @id @default(auto()) @map("_id") @db.ObjectId
   url    String
   userId String     @db.ObjectId
-  states PhotoState
+  states PhotoStats?
   views Int        @default(0)
   labels        String[] @default(["Default"])
 
@@ -60,7 +60,7 @@ model ProfilePhoto {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@map("profile_photos")
+  @@map("user_photos")
 
 }
 
@@ -68,8 +68,10 @@ model Like {
   id         String @id @default(auto()) @map("_id") @db.ObjectId
   providerId String @db.ObjectId
   photoId    String @db.ObjectId
+
   provider   User   @relation(fields: [providerId], references: [id])
-  photo      ProfilePhoto @relation(fields: [photoId], references: [id])
+  photo      UserPhoto @relation(fields: [photoId], references: [id])
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   @@map("likes")
@@ -196,7 +198,7 @@ model ContestPhoto {
   // contest   Contest @relation(fields: [contestId],references: [id])
   participant ContestParticipant @relation(fields: [participantId], references: [id], onDelete: Cascade)
   votes       Vote[]
-  photo       ProfilePhoto       @relation(fields: [photoId], references: [id], onDelete: Cascade)
+  photo       UserPhoto       @relation(fields: [photoId], references: [id], onDelete: Cascade)
   comments    Comment[]
 
   createdAt DateTime @default(now())
@@ -300,7 +302,7 @@ model Love {
   photoId     String   @db.ObjectId
 
   provider User @relation(fields: [providerId], references: [id])
-  photo ProfilePhoto  @relation(fields: [photoId], references: [id])
+  photo UserPhoto  @relation(fields: [photoId], references: [id])
 
 
   createdAt DateTime @default(now())
@@ -371,7 +373,7 @@ enum TeamMemberStatus {
   BLOCKED
 }
 
-type PhotoState {
+type PhotoStats {
   Composition Int @default(0)
   Content     Int @default(0)
   Creativity  Int @default(0)
