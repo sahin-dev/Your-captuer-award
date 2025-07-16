@@ -24,7 +24,6 @@ export const handleCreateContest = async (creatorId: string, body: ICreateContes
     const startDate = new Date(body.startDate);
     const endDate = new Date(body.endDate);
     const currentDate = new Date();
-    const remainingTime = startDate.getTime() - currentDate.getTime();
     
     //Check contest start date and end date
          //If start date is before end date and start date is in the future
@@ -43,8 +42,14 @@ export const handleCreateContest = async (creatorId: string, body: ICreateContes
         title: body.title,
         description: body.description,
         banner: bannerUrl,
-        startDate: body.startDate,
-        endDate: body.endDate,
+    }
+    // If contest is money contest, add money contest data like max prize and min prize for the paerticipants
+    // If isMoneyContest is not provided, it will default to false
+
+     if (body.isMoneyContest) {
+        contestData.isMoneyContest = true;   
+        contestData.maxPrize = body.maxPrize || 0;
+        contestData.minPrize = body.minPrize || 0;
     }
 
     //If contest is recurring, Add recurring data to the contest object
@@ -54,31 +59,25 @@ export const handleCreateContest = async (creatorId: string, body: ICreateContes
     if (body.recurring) {
 
         const recurringData:RecurringData = {
-        recurringType: body.recurringType || RecurringType.DAILY, // Default to DAILY if not provided
-        previousOccurrence: null,
+        recurringType: body.recurringType!,
+        previousOccurrence: new Date(),
         nextOccurrence: new Date(body.startDate),
         duration:new Date(body.endDate).getTime() - new Date(body.startDate).getTime()
     }
-        contestData.recurring = true;
         contestData.recurringData = recurringData;
-        // If contest is recurring, set status to SCHEDULED
-        // This means that the contest is scheduled to start at the start date
-        //By default contest not recurring, so status is set to UPCOMING
-        contestData.status = ContestStatus.SCHEDULED;
+
+        console.log(contestData)
+
+        let recurringContest = await prisma.recurringContest.create({
+            data: contestData
+        });
+        return recurringContest;
+      
     }
-
-    // If contest is money contest, add money contest data like max prize and min prize for the paerticipants
-    // If isMoneyContest is not provided, it will default to false
-
-    if (body.isMoneyContest) {
-        contestData.isMoneyContest = body.isMoneyContest;   
-        contestData.maxPrize = body.maxPrize || 0;
-        contestData.minPrize = body.minPrize || 0;
-    }
-
-    const contest = await prisma.contest.create({
-        data:contestData
-    });
+    // If contest is not recurring, create a normal contest
+       let contest = await prisma.contest.create({
+            data: contestData
+        });
     
     
     // agenda.schedule(startDate, 'contest:checkUpcoming', {

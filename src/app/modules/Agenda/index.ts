@@ -8,8 +8,8 @@ agenda.on('ready', async () => {
     agenda.start();
     agenda.every("one minute", "contest:checkRecurring");   
 });
-agenda.on("stop", () => {
-    console.log("Agenda has stopped");
+agenda.on("error", (e) => {
+    console.log(e);
 });
 
 
