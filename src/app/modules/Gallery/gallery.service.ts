@@ -7,7 +7,7 @@ export const handleGetUserUploads = async (userId:string)=>{
     })
 
     return uploads
-}
+} 
 
 export const handleAddUpload = async (userId:string, photoUrl:string)=>{
 

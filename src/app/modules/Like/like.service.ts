@@ -14,17 +14,17 @@ export const handleToggleLike = async (userId:string,photoId:string)=>{
 
     if (existingLike) {
         // If like exists, remove it
-        return removeLike(userId, photoId);
+        return  await removeLike(userId, photoId);
     } else {
         // If like does not exist, create it
-        return provideLike(userId, photoId);
+        return  await provideLike(userId, photoId);
     }
 }
 
 //user can provide like on a photo
 
-export const provideLike = (userId:string,photoId:string)=>{
-    return prisma.like.create({
+export const provideLike = async (userId:string,photoId:string)=>{
+    return await prisma.like.create({
         data:{
             providerId:userId,
             photoId
@@ -32,10 +32,33 @@ export const provideLike = (userId:string,photoId:string)=>{
     })
 }
 
+// // give like
+// export const like = async (userId:string, photoId:string)=>{
+//     const existingLike = await prisma.like.findUnique({where:{photoId_providerId:{photoId,providerId:userId}}})
+
+//     if(existingLike){
+//         return existingLike
+//     }
+//     const createdLike = await prisma.like.create({data:{providerId:userId, photoId}})
+
+//     return createdLike
+// }
+
+// export const unlike = async (userId:string, photoId:string)=>{
+//     const existingLike = await prisma.like.findUnique({where:{photoId_providerId:{photoId,providerId:userId}}})
+
+//     if (!existingLike){
+//         return;
+//     }
+//     const createdLike = await prisma.like.create({data:{providerId:userId, photoId}})
+
+//     return createdLike
+// }
+
 //user can remove like on a photo
 
-export const removeLike = (userId:string,photoId:string)=>{
-    return prisma.like.deleteMany({
+export const removeLike = async (userId:string,photoId:string)=>{
+    return await prisma.like.deleteMany({
         where:{
             providerId:userId,
             photoId

@@ -1,13 +1,14 @@
 import { Request, Response } from "express"
 import { handleGetLikedPhotos, handleToggleLike } from "./like.service"
 import sendResponse from "../../../shared/ApiResponse"
+import catchAsync from "../../../shared/catchAsync"
 
 //POST  /likes/toggle
 // Toggle like on a photo
 // @access Private
 
 
-export const toggleLike = async (req:Request, res: Response) => {
+export const toggleLike = catchAsync(async (req:Request, res: Response) => {
     
     const {photoId} = req.body
     const userId = req.user.id
@@ -20,9 +21,9 @@ export const toggleLike = async (req:Request, res: Response) => {
         message: "Like toggled successfully",
         data: like
     })
-}
+})
 
-export const getLikedPhotos = async (req: Request, res: Response) => {
+export const getLikedPhotos = catchAsync(async (req: Request, res: Response) => {
      const {userId} = req.body
 
     const likes = await handleGetLikedPhotos(userId)
@@ -33,9 +34,9 @@ export const getLikedPhotos = async (req: Request, res: Response) => {
         message: "Likes fetched successfully",
         data: likes
     })
-}
+})
 
-export const getMyLikedPhotos = async (req: Request, res: Response) => {
+export const getMyLikedPhotos = catchAsync(async (req: Request, res: Response) => {
     const userId = req.user.id
 
     const likes = await handleGetLikedPhotos(userId)
@@ -46,4 +47,4 @@ export const getMyLikedPhotos = async (req: Request, res: Response) => {
         message: "My liked photos fetched successfully",
         data: likes
     })
-}
+})

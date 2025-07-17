@@ -21,8 +21,6 @@ export class CloudUploader {
         }catch(e){
             throw e;
         }
-        
-
     }
 
     private getCloudConfiguration():IProviderConfiguration{
@@ -81,7 +79,7 @@ export class CloudUploader {
     }
 
     private async uploadToDigitalOcean(file: Express.Multer.File){
-        let doConfig = this.configuration?.getConfiguration()
+        let doConfig = this.configuration.getConfiguration()
          
         try {
             if (!this.client  || this.client !== CloudProvider.digitalOcean){
@@ -91,7 +89,7 @@ export class CloudUploader {
             
             const Key = `${this.projectName}/${Date.now()}_${id}_${file.originalname}`;
             const uploadParams = {
-              Bucket: doConfig?.bucket || "",
+              Bucket: doConfig.bucket || "",
               Key,
               Body: file.buffer, // ✅ Use buffer instead of file path
               ACL: "public-read" as ObjectCannedACL,
@@ -103,10 +101,10 @@ export class CloudUploader {
           
         
             // Format the URL
-            const fileURL = `${process.env.DO_SPACE_ENDPOINT}/${process.env.DO_SPACE_BUCKET}/${Key}`;
+            const fileURL = `${doConfig.endpoint}/${doConfig.bucket}/${Key}`;
             return {
               Location: fileURL,
-              Bucket: process.env.DO_SPACE_BUCKET || "",
+              Bucket: doConfig.bucket || "",
               Key,
             };
           } catch (error) {
@@ -123,7 +121,7 @@ export class CloudUploader {
         return uuidv4();
     }
 
-    public uploadToCloud(file:Express.Multer.File){
+    public  uploadToCloud(file:Express.Multer.File){
         let cloudConfig = this.configuration.getConfiguration()
         if (!file){
             throw new Error("File is required!")

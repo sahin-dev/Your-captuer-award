@@ -74,6 +74,8 @@ model Like {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@unique([photoId, providerId])
   @@map("likes")
 }
 
@@ -277,6 +279,7 @@ model Follow {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@unique([followerId, followingId])
   @@map("follows")
 }
 
