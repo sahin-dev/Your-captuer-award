@@ -153,11 +153,12 @@ model Contest {
   votes        Vote[]
   contestRules ContestRules[]
   // photos      ContestPhoto[]
-
+  achievement Achievement[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@map("contests")
+  
 }
 
 
@@ -202,12 +203,13 @@ model ContestPhoto {
   votes       Vote[]
   photo       UserPhoto       @relation(fields: [photoId], references: [id], onDelete: Cascade)
   comments    Comment[]
-
+  achievement Achievement[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@map("contest_photos")
 
+ 
 }
 model ContestRules {
   id          String @id @default(auto()) @map("_id") @db.ObjectId
@@ -252,6 +254,26 @@ model ContestParticipant {
 
   @@map("contest_participants")
   
+}
+
+model Achievement {
+  id  String    @id @default(auto()) @map("_id") @db.ObjectId
+  type  AchievementsType
+  photoId    String @db.ObjectId
+  contestId   String    @db.ObjectId
+
+  photo  ContestPhoto  @relation(fields: [photoId], references: [id])
+  contest Contest       @relation(fields: [contestId], references: [id])
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@map("achievements")
+
+}
+
+enum AchievementsType {
+  TOP_PHOTO
 }
 
 model Comment {
