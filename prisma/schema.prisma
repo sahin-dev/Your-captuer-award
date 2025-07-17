@@ -153,7 +153,7 @@ model Contest {
   votes        Vote[]
   contestRules ContestRules[]
   // photos      ContestPhoto[]
-  achievement Achievement[]
+  achievements ContestAchievement[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -203,13 +203,11 @@ model ContestPhoto {
   votes       Vote[]
   photo       UserPhoto       @relation(fields: [photoId], references: [id], onDelete: Cascade)
   comments    Comment[]
-  achievement Achievement[]
+  achievements ContestAchievement[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@map("contest_photos")
-
- 
 }
 model ContestRules {
   id          String @id @default(auto()) @map("_id") @db.ObjectId
@@ -248,32 +246,37 @@ model ContestParticipant {
   user    User           @relation(fields: [userId], references: [id])
   photos  ContestPhoto[]
   ContestWinner ContestWinner[]
+  contestAchievement ContestAchievement[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@map("contest_participants")
   
+ 
 }
 
-model Achievement {
+model ContestAchievement {
   id  String    @id @default(auto()) @map("_id") @db.ObjectId
   type  AchievementsType
-  photoId    String @db.ObjectId
-  contestId   String    @db.ObjectId
+  photoId    String? @db.ObjectId
+  participantId   String?    @db.ObjectId
+  contestId       String    @db.ObjectId
 
-  photo  ContestPhoto  @relation(fields: [photoId], references: [id])
-  contest Contest       @relation(fields: [contestId], references: [id])
+  photo  ContestPhoto?  @relation(fields: [photoId], references: [id])
+  contest   Contest   @relation(fields: [contestId], references: [id])
+  participant ContestParticipant? @relation(fields: [participantId], references: [id])
 
   createdAt   DateTime  @default(now())
   updatedAt   DateTime   @updatedAt
 
-  @@map("achievements")
+  @@map("contest_achievements")
 
 }
 
 enum AchievementsType {
   TOP_PHOTO
+  TOP_PHOTOGRAPHER
 }
 
 model Comment {
