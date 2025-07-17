@@ -157,6 +157,28 @@ export const getUpcomingCOntest = async () => {
     return contests;
 };
 
+//Get my contests which are completed
+
+export const getMyCompletedContest = async (userId:string) => {
+    if (!userId){
+        throw new ApiError(httpstatus.BAD_REQUEST, "User id is not provided")
+    }
+    const user = await prisma.user.findUnique({where:{id:userId}})
+
+    if (!user){
+        throw new ApiError(httpstatus.NOT_FOUND, "User not found")
+    }
+
+    const myParticipatedContest = await prisma.contestParticipant.findMany(
+        {where:{userId,contest:{status:ContestStatus.COMPLETED}}, 
+        select:{contest:{select:{_count:{select:{votes:true}},title:true,banner:true,description:true,}},contestAchievement:true,level:true,photos:{where:{participantId:userId}}}})
+
+    // const myCompletedContests = await prisma.contest.findMany({where:{status:ContestStatus.COMPLETED, participants:{some:{userId}}},include:{_count:{select:{votes:true}}}})
+    
+
+    return myParticipatedContest
+}
+
 
 // Fetch completed contest details with winner
 export const getCompletedContestsWithWinner = async () => {
@@ -199,6 +221,8 @@ export const getCompletedContestsWithWinner = async () => {
     }
     return results;
 };
+
+// Join a user in the contest
 
 export const handleJoinContest = async (contestId: string, userId: string) => {
     const participant = await prisma.contestParticipant.create({
