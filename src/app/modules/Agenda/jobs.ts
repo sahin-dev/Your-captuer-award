@@ -1,33 +1,36 @@
 import { Contest, ContestStatus, ContestType, RecurringContest, RecurringData, RecurringType } from '@prisma/client';
+import { Job } from "agenda";
 import prisma from '../../../shared/prisma';
 import agenda from "./init";
 
 
-agenda.define('contest:checkUpcoming', async (contestId: any) => {
 
-    const contest = await prisma.contest.findUnique({
-        where: { id: contestId },
-        include: { creator: true, participants: true }
+//Check all upcoming contest
+// If found any upcoming contest which startdate has arrived or passed the scheduler start the contest and change the contest to OPEN
+//Also shcedule a job for every contest which will end the contest at the end time
+
+agenda.define('contest:checkUpcoming', async () => {
+
+    const contests = await prisma.contest.findMany({
+        where: { status:ContestStatus.UPCOMING },
     });
 
-    if (!contest) return;
 
-    const now = new Date();
-    const startDate = new Date(contest.startDate);
-    const endDate = new Date(contest.endDate);
-    const totalDuration = endDate.getTime() - startDate.getTime();
-    const passedDuration = now.getTime() - startDate.getTime();
 
-    // If contest has started and 20% of the duration has passed, set status to 'UPCOMING'
-    if (passedDuration > 0 && passedDuration >= 0.2 * totalDuration && contest.status !== 'UPCOMING') {
-        await prisma.contest.update({
-            where: { id: contestId },
-            data: { status: 'UPCOMING' }
-        });
-        console.log(`Contest ${contestId} status changed to UPCOMING.`);
-    }
+    if (contests.length <= 0){
+        console.log("There is no upcoming contest")
+    } 
+    contests.forEach(async(contest)=>{
+        const startDate = contest.startDate
+        const currentDate = new Date()
 
-    console.log(`Checked contest with ID: ${contestId}`);
+        if (startDate <= currentDate){
+            const updatedContest = await prisma.contest.update({where:{id:contest.id}, data:{status:ContestStatus.OPEN}})
+            console.log(`Contest with id: ${contest.id} has started`)
+            agenda.schedule(contest.endDate, "contest:watcher",{contestId:updatedContest.id})
+        }
+    })
+
 });
 
 // agenda.define("contest:recurring", async ()=> {
@@ -133,6 +136,19 @@ async function scheduleContest(contest:RecurringContest){
         }
 
 }
+
+
+//contest closed if the contest endtime has passed.
+//closed status means contest is ended
+//completed contests are ended contests and the user is participated those contests
+//so, there is not seaparte completed contest in the database
+
+agenda.define("contest:watcher", async (job: Job) => {
+    const { contestId} = job.attrs.data as {  contestId:string };
+    
+    await prisma.contest.update({where:{id:contestId}, data:{status:ContestStatus.CLOSED}})
+    console.log(`Contest with id: ${contestId} has ended.`)
+    });
 
 
 export default agenda;

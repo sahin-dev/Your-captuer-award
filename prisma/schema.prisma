@@ -354,7 +354,6 @@ enum ContestStatus {
   UPCOMING
   OPEN
   ACTIVE
-  COMPLETED
   CLOSED
   SCHEDULED
 }
