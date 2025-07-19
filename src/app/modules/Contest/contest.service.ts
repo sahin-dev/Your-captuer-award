@@ -2,7 +2,7 @@ import prisma from '../../../shared/prisma';
 import ApiError from '../../../errors/ApiError';
 import httpstatus from 'http-status';
 import { fileUploader } from '../../../helpers/fileUploader';
-import { Contest, ContestStatus, ContestType, RecurringData, RecurringType } from '@prisma/client';
+import { Contest, ContestParticipant, ContestStatus, ContestType, RecurringData, RecurringType } from '@prisma/client';
 import agenda from '../Agenda';
 import { ICreateContest } from './contest.interface';
 import { stat } from 'fs';
@@ -87,6 +87,24 @@ export const handleCreateContest = async (creatorId: string, body: ICreateContes
     return contest;
 };
 
+// add a user to the contest participant list
+
+export const joinAContest = async (userId:string,contestId:string)=>{
+    const contest = await prisma.contest.findUnique({where:{id:contestId}})
+
+    if (!contest || contest.status != ContestStatus.OPEN){
+        throw new ApiError(httpstatus.NOT_FOUND, "Contest is not available to participate")
+    }
+
+    const participant = await prisma.contestParticipant.create({data:{contestId,userId}})
+    if (participant){
+        console.log("User has joined the contest")
+    }
+
+    return {contest_id:contestId, participant_id:participant.id}
+
+}
+
 
 export const getContestById = async (contestId: string) => {
     const contest = await prisma.contest.findUnique({
@@ -118,34 +136,39 @@ export const getAllContests = async () => {
 
 export const getContestsByStatus = async (userId:string,status: ContestStatus) => {
     let contests :Contest[]= []
+    
+    let strStatus = status as string
+    switch(strStatus){
+        case "COMPLETED":
+            contests = await prisma.contest.findMany({
+                where: { status: ContestStatus.CLOSED,participants: { some: { userId } } },
+                include: { creator: true, participants: true }
+            });
+            break
+        case 'UPCOMING':
+            contests = await prisma.contest.findMany({
+                where: { status: ContestStatus.UPCOMING } ,
+                include: { creator: true, participants: true }
+            });
+            break
+        case 'ACTIVE':
+            contests = await prisma.contest.findMany({
+                where: { status: ContestStatus.ACTIVE, participants:{some:{userId}} },
+                include: { creator: true, participants: true }
+            });
+            break
+        case 'CLOSED':
+            contests = await prisma.contest.findMany({
+                where: { status: ContestStatus.CLOSED },
+                include: { creator: true, participants: true }
+             });
+            break
+        default:
+            console.log(`No status matched with ${strStatus}`)
+            break
 
-    if (status === ContestStatus.COMPLETED) {
-        contests = await prisma.contest.findMany({
-            where: { status: ContestStatus.COMPLETED,participants: { some: { userId } } },
-            include: { creator: true, participants: true }
-        });
     }
-    else if (status === ContestStatus.UPCOMING) {
-        contests = await prisma.contest.findMany({
-            where: { status: ContestStatus.UPCOMING } ,
-            include: { creator: true, participants: true }
-        });
-    }else if (status === ContestStatus.OPEN) {
-        contests = await prisma.contest.findMany({
-            where: { status: ContestStatus.OPEN },
-            include: { creator: true, participants: true }
-        });
-    } else if (status === ContestStatus.ACTIVE) {
-        contests = await prisma.contest.findMany({
-            where: { status: ContestStatus.ACTIVE, participants: { some: { userId } } },
-            include: { creator: true, participants: true }
-        });
-    }else if (status === ContestStatus.CLOSED) {
-        contests = await prisma.contest.findMany({
-            where: { status: ContestStatus.CLOSED },
-            include: { creator: true, participants: true }
-        });
-    }
+
     return contests;
 };
 
@@ -170,7 +193,7 @@ export const getMyCompletedContest = async (userId:string) => {
     }
 
     const myParticipatedContest = await prisma.contestParticipant.findMany(
-        {where:{userId,contest:{status:ContestStatus.COMPLETED}}, 
+        {where:{userId,contest:{status:ContestStatus.CLOSED, participants:{some:{userId}}}}, 
         select:{contest:{select:{_count:{select:{votes:true}},title:true,banner:true,description:true,}},contestAchievement:true,level:true,photos:{where:{participantId:userId}}}})
 
     // const myCompletedContests = await prisma.contest.findMany({where:{status:ContestStatus.COMPLETED, participants:{some:{userId}}},include:{_count:{select:{votes:true}}}})
@@ -181,10 +204,10 @@ export const getMyCompletedContest = async (userId:string) => {
 
 
 // Fetch completed contest details with winner
-export const getCompletedContestsWithWinner = async () => {
+export const getClosedContestsWithWinner = async () => {
     // Fetch contests with status 'COMPLETED' (enum)
     const contests = await prisma.contest.findMany({
-        where: { status: 'COMPLETED' },
+        where: { status: ContestStatus.CLOSED },
         include: {
             creator: true,
             participants: {
@@ -222,18 +245,40 @@ export const getCompletedContestsWithWinner = async () => {
     return results;
 };
 
-// Join a user in the contest
+// Identify the winner after contest ended
 
-export const handleJoinContest = async (contestId: string, userId: string) => {
-    const participant = await prisma.contestParticipant.create({
-        data: { contestId, userId }
-    });
+export const identifyWinner = async (contestId:string)=>{
+    let winners:ContestParticipant[];
 
-    return participant;
-};
+    return winners!
+
+}
+
+//Award prize to the winners
+
+export const awardWinners = async (winners:ContestParticipant[])=>{
+
+}
 
 
 export const getRemainingPhotos = async (userId:string, contestId:string)=>{
     
 }
 
+
+
+export const rankingParticipant = async (participantId:string, contestId:string)=>{
+    const contest =  await prisma.contest.findUnique({where:{id:contestId}})
+
+    if(!contest){
+        return
+    }
+
+    const lastParticipant = await prisma.contestParticipant.findFirst({where:{contestId},select:{rank:true}, orderBy:{createdAt:"desc"}});
+    
+    if (lastParticipant && lastParticipant.rank){
+        return lastParticipant.rank + 1
+    }
+
+    return 1
+}

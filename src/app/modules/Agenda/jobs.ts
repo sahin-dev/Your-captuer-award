@@ -2,6 +2,7 @@ import { Contest, ContestStatus, ContestType, RecurringContest, RecurringData, R
 import { Job } from "agenda";
 import prisma from '../../../shared/prisma';
 import agenda from "./init";
+import { awardWinners, identifyWinner } from '../Contest/contest.service';
 
 
 
@@ -15,8 +16,6 @@ agenda.define('contest:checkUpcoming', async () => {
         where: { status:ContestStatus.UPCOMING },
     });
 
-
-
     if (contests.length <= 0){
         console.log("There is no upcoming contest")
     } 
@@ -25,7 +24,7 @@ agenda.define('contest:checkUpcoming', async () => {
         const currentDate = new Date()
 
         if (startDate <= currentDate){
-            const updatedContest = await prisma.contest.update({where:{id:contest.id}, data:{status:ContestStatus.OPEN}})
+            const updatedContest = await prisma.contest.update({where:{id:contest.id}, data:{status:ContestStatus.ACTIVE}})
             console.log(`Contest with id: ${contest.id} has started`)
             agenda.schedule(contest.endDate, "contest:watcher",{contestId:updatedContest.id})
         }
@@ -77,7 +76,6 @@ agenda.define("contest:checkRecurring", async ()=>{
 
     const recurringContests = await prisma.recurringContest.findMany();
     console.log(`Found ${recurringContests.length} recurring contests to process.`);
-
 
     recurringContests.forEach(async (contest) => {
         await scheduleContest(contest);
@@ -132,7 +130,7 @@ async function scheduleContest(contest:RecurringContest){
                 }
             }
         })
-                console.log(`Updated next occurrence for recurring contest ID: ${contest.id}`);
+            console.log(`Updated next occurrence for recurring contest ID: ${contest.id}`);
         }
 
 }
@@ -147,7 +145,15 @@ agenda.define("contest:watcher", async (job: Job) => {
     const { contestId} = job.attrs.data as {  contestId:string };
     
     await prisma.contest.update({where:{id:contestId}, data:{status:ContestStatus.CLOSED}})
-    console.log(`Contest with id: ${contestId} has ended.`)
+        console.log(`Contest with id: ${contestId} has ended.`)
+        console.log('Identifying winner=>')
+        const winners = await identifyWinner(contestId)
+        console.log("winners: ", winners)
+        await awardWinners(winners)
+        console.log("Winners awarded automatically")
+
+       
+
     });
 
 

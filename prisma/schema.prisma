@@ -8,23 +8,22 @@ datasource db {
 }
 
 model User {
-  id             String   @id @default(auto()) @map("_id") @db.ObjectId
-  cover         String?   @default("https://images.unsplash.com/photo-1689539137236-b68e436248de?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D")
-  avatar         String?  @default("https://plus.unsplash.com/premium_photo-1689539137236-b68e436248de?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D")
-  socialId       String?
-  socialProvider String?
-  firstName      String?
-  lastName       String?
-  fullName       String?
-  username       String?
-  phone          String?
-  email          String   @unique
-  location       String?
-  level          String?  @default("Beginner")
-  password       String?
-  role           UserRole @default(USER)
-  accessToken    String?
-
+  id                 String               @id @default(auto()) @map("_id") @db.ObjectId
+  cover              String?              @default("https://images.unsplash.com/photo-1689539137236-b68e436248de?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D")
+  avatar             String?              @default("https://plus.unsplash.com/premium_photo-1689539137236-b68e436248de?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D")
+  socialId           String?
+  socialProvider     String?
+  firstName          String?
+  lastName           String?
+  fullName           String?
+  username           String?
+  phone              String?
+  email              String               @unique
+  location           String?
+  level              String?              @default("Beginner")
+  password           String?
+  role               UserRole             @default(USER)
+  accessToken        String?
   otps               Otp?
   createdTeam        Team[]
   joinedTeam         TeamMember?
@@ -34,34 +33,33 @@ model User {
   followings         Follow[]             @relation(name: "following")
   votes              Vote[]
   loves              Love[]
-  userPhotos      UserPhoto[]
+  likes              Like[]
+  userPhotos         UserPhoto[]
   ContestParticipant ContestParticipant[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@map("users")
-  Like Like[]
 }
 
 model UserPhoto {
-  id     String     @id @default(auto()) @map("_id") @db.ObjectId
-  url    String
-  userId String     @db.ObjectId
-  states PhotoStats?
-  views Int        @default(0)
-  labels        String[] @default(["Default"])
+  id            String      @id @default(auto()) @map("_id") @db.ObjectId
+  url           String
+  userId        String      @db.ObjectId
+  states        PhotoStats?
+  views         Int         @default(0)
+  labels        String[]    @default(["Default"])
 
   user          User           @relation(fields: [userId], references: [id])
   contestUpload ContestPhoto[]
-  loves  Love[]
-  likes  Like[]
+  loves         Love[]
+  likes         Like[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   @@map("user_photos")
-
 }
 
 model Like {
@@ -69,8 +67,8 @@ model Like {
   providerId String @db.ObjectId
   photoId    String @db.ObjectId
 
-  provider   User   @relation(fields: [providerId], references: [id])
-  photo      UserPhoto @relation(fields: [photoId], references: [id])
+  provider User      @relation(fields: [providerId], references: [id])
+  photo    UserPhoto @relation(fields: [photoId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -96,31 +94,30 @@ model Otp {
 }
 
 model Team {
-  id        String       @id @default(auto()) @map("_id") @db.ObjectId
-  name      String
-  level     String
-  language  String
-  country   String
-  description  String
-  accessibility   TeamAccessibility
-  badge       String//Image file
-  creatorId String       @db.ObjectId
-  creator   User         @relation(fields: [creatorId], references: [id])
-  members   TeamMember[]
+  id            String            @id @default(auto()) @map("_id") @db.ObjectId
+  name          String
+  level         String
+  language      String
+  country       String
+  description   String
+  accessibility TeamAccessibility
+  badge         String //Image file
+  creatorId     String            @db.ObjectId
+  creator       User              @relation(fields: [creatorId], references: [id])
+  members       TeamMember[]
 
-  createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("teams")
 }
-
 
 model TeamMember {
   id     String           @id @default(auto()) @map("_id") @db.ObjectId
   status TeamMemberStatus @default(ACTIVE)
 
   teamId   String @db.ObjectId
-  memberId String @db.ObjectId @unique
+  memberId String @unique @db.ObjectId
   team     Team   @relation(fields: [teamId], references: [id])
   member   User   @relation(fields: [memberId], references: [id])
 
@@ -133,20 +130,20 @@ model TeamMember {
 //Contest models
 
 model Contest {
-  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  id             String        @id @default(auto()) @map("_id") @db.ObjectId
   title          String
-  description   String
-  banner       String? @default("https://images.unsplash.com/photo-1689539137236-b68e436248de?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D") 
-  status        ContestStatus @default(UPCOMING)
-  maxUploads  Int? @default(1)
-  isMoneyContest Boolean @default(false)
-  maxPrize Int? @default(0)
-  minPrize Int? @default(0)
+  description    String
+  banner         String?       @default("https://images.unsplash.com/photo-1689539137236-b68e436248de?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D")
+  status         ContestStatus @default(UPCOMING)
+  maxUploads     Int?          @default(1)
+  isMoneyContest Boolean       @default(false)
+  maxPrize       Int?          @default(0)
+  minPrize       Int?          @default(0)
 
-  startDate     DateTime
-  endDate       DateTime
+  startDate DateTime
+  endDate   DateTime
 
-  creatorId     String        @db.ObjectId
+  creatorId String @db.ObjectId
 
   creator      User                 @relation(fields: [creatorId], references: [id])
   participants ContestParticipant[]
@@ -154,25 +151,22 @@ model Contest {
   contestRules ContestRules[]
   // photos      ContestPhoto[]
   achievements ContestAchievement[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
 
   @@map("contests")
-  
 }
 
-
 model RecurringContest {
-
-  id          String @id @default(auto()) @map("_id") @db.ObjectId
-  creatorId     String        @db.ObjectId
+  id             String  @id @default(auto()) @map("_id") @db.ObjectId
+  creatorId      String  @db.ObjectId
   title          String
-  description   String
-  banner       String? @default("https://images.unsplash.com/photo-1689539137236-b68e436248de?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D") 
-  maxUploads  Int? @default(1)
+  description    String
+  banner         String? @default("https://images.unsplash.com/photo-1689539137236-b68e436248de?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D")
+  maxUploads     Int?    @default(1)
   isMoneyContest Boolean @default(false)
-  maxPrize Int? @default(0)
-  minPrize Int? @default(0)
+  maxPrize       Int?    @default(0)
+  minPrize       Int?    @default(0)
 
   recurringData RecurringData
 
@@ -183,38 +177,38 @@ model RecurringContest {
 }
 
 type RecurringData {
-  recurringType        RecurringType
+  recurringType      RecurringType
   previousOccurrence DateTime
-  nextOccurrence DateTime
-  duration Int @default(0)
+  nextOccurrence     DateTime
+  duration           Int           @default(0)
 }
 
 model ContestPhoto {
-  id            String @id @default(auto()) @map("_id") @db.ObjectId
+  id            String  @id @default(auto()) @map("_id") @db.ObjectId
   title         String?
-  contestId     String @db.ObjectId
-  participantId String @db.ObjectId
-  photoId       String @db.ObjectId
-  rank          Int? @default(0)
-
+  contestId     String  @db.ObjectId
+  participantId String  @db.ObjectId
+  photoId       String  @db.ObjectId
+  rank          Int?    @default(0)
 
   // contest   Contest @relation(fields: [contestId],references: [id])
-  participant ContestParticipant @relation(fields: [participantId], references: [id], onDelete: Cascade)
-  votes       Vote[]
-  photo       UserPhoto       @relation(fields: [photoId], references: [id], onDelete: Cascade)
-  comments    Comment[]
+  participant  ContestParticipant   @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  votes        Vote[]
+  photo        UserPhoto            @relation(fields: [photoId], references: [id], onDelete: Cascade)
+  comments     Comment[]
   achievements ContestAchievement[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
 
   @@map("contest_photos")
 }
-model ContestRules {
-  id          String @id @default(auto()) @map("_id") @db.ObjectId
-  contestId   String @db.ObjectId
-  rules       String
 
-  contest     Contest @relation(fields: [contestId], references: [id], onDelete: Cascade)
+model ContestRules {
+  id        String @id @default(auto()) @map("_id") @db.ObjectId
+  contestId String @db.ObjectId
+  rules     String
+
+  contest Contest @relation(fields: [contestId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -222,15 +216,16 @@ model ContestRules {
   @@map("contest_rules")
 }
 
-model ContestWinner { 
-  id    String  @id @db.ObjectId  @default(auto())  @map("_id")
-  participantId  String @db.ObjectId
-  contestId String  @db.ObjectId
-  contestPhotoId  String @db.ObjectId
-  participant ContestParticipant @relation(fields: [participantId], references: [id], onDelete: Cascade)
+model ContestWinner {
+  id             String             @id @default(auto()) @map("_id") @db.ObjectId
+  participantId  String             @db.ObjectId
+  contestId      String             @db.ObjectId
+  contestPhotoId String             @db.ObjectId
+  participant    ContestParticipant @relation(fields: [participantId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
   @@map("contest_winners")
 }
 
@@ -239,39 +234,36 @@ model ContestParticipant {
   status    ContestParticipantStatus @default(ACTIVE)
   contestId String                   @db.ObjectId
   userId    String                   @db.ObjectId
-  level     ContestLevel @default(POPULAR)
-  rank      Int? @default(0)
+  level     ContestLevel             @default(POPULAR)
+  rank      Int?                     @default(0)
 
-  contest Contest        @relation(fields: [contestId], references: [id], onDelete: Cascade)
-  user    User           @relation(fields: [userId], references: [id])
-  photos  ContestPhoto[]
-  ContestWinner ContestWinner[]
+  contest            Contest              @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  user               User                 @relation(fields: [userId], references: [id])
+  photos             ContestPhoto[]
+  ContestWinner      ContestWinner[]
   contestAchievement ContestAchievement[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@map("contest_participants")
-  
- 
 }
 
 model ContestAchievement {
-  id  String    @id @default(auto()) @map("_id") @db.ObjectId
-  type  AchievementsType
-  photoId    String? @db.ObjectId
-  participantId   String?    @db.ObjectId
-  contestId       String    @db.ObjectId
+  id            String           @id @default(auto()) @map("_id") @db.ObjectId
+  type          AchievementsType
+  photoId       String?          @db.ObjectId
+  participantId String?          @db.ObjectId
+  contestId     String           @db.ObjectId
 
-  photo  ContestPhoto?  @relation(fields: [photoId], references: [id])
-  contest   Contest   @relation(fields: [contestId], references: [id])
+  photo       ContestPhoto?       @relation(fields: [photoId], references: [id])
+  contest     Contest             @relation(fields: [contestId], references: [id])
   participant ContestParticipant? @relation(fields: [participantId], references: [id])
 
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime   @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("contest_achievements")
-
 }
 
 enum AchievementsType {
@@ -327,11 +319,10 @@ model Vote {
 model Love {
   id         String @id @default(auto()) @map("_id") @db.ObjectId
   providerId String @db.ObjectId
-  photoId     String   @db.ObjectId
+  photoId    String @db.ObjectId
 
-  provider User @relation(fields: [providerId], references: [id])
-  photo UserPhoto  @relation(fields: [photoId], references: [id])
-
+  provider User      @relation(fields: [providerId], references: [id])
+  photo    UserPhoto @relation(fields: [photoId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -352,16 +343,16 @@ enum OtpStatus {
 enum ContestStatus {
   NEW
   UPCOMING
-  OPEN
   ACTIVE
+  OPEN
   CLOSED
-  SCHEDULED
 }
 
 enum ContestType {
   ONETIME
   RECURRING
 }
+
 enum ContestPrizeType {
   TOP_PHOTO
   TOP_PHOTOGRAPHER
@@ -387,7 +378,6 @@ enum ContestLevel2 {
   SUPREME
   SUPERIOR
   TOP_NOTCH
-
 }
 
 enum ContestParticipantStatus {
