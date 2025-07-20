@@ -1,0 +1,43 @@
+
+services:
+  
+  mongo:
+    image: mongo
+    container_name: mongo
+    ports:
+      - 27017:27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: sahin
+      MONGO_INITDB_ROOT_PASSWORD: sahin
+    volumes:
+      - mongo-data:/data/db
+
+  mongo-express:
+    image: mongo-express:1.0.0-alpha.4
+    container_name: mongo-express
+    restart: always
+    ports:
+      - 8081:8081
+    depends_on:
+      - mongo
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: sahin
+      ME_CONFIG_MONGODB_ADMINPASSWORD: sahin
+      ME_CONFIG_MONGODB_SERVER: mongo
+
+
+  backend:
+    build: .
+    container_name: backend
+    depends_on:
+      - mongo
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: mongodb://sahin:sahin@mongo:27017/capture?authSource=admin
+    ports:
+      - 80:5000
+    command: npm run dev
+
+volumes:
+  mongo-data:

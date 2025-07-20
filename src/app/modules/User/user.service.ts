@@ -2,7 +2,7 @@ import ApiError from "../../../errors/ApiError"
 import prisma from "../../../shared/prisma"
 import { IPasswordUpdate, IUserRegister, IUserUpdate } from "./user.interface"
 import httpstatus from 'http-status'
-import bcrypt from 'bcrypt'
+import bcrypt from 'bcryptjs'
 import config from "../../../config"
 import { jwtHelpers } from "../../../helpers/jwt"
 import { UserDto } from "../../dtos/user.dto"

@@ -1,13 +1,13 @@
 import { NextFunction, Request, Response } from "express";
 
-import { JwtPayload, Secret } from "jsonwebtoken";
+import {  Secret } from "jsonwebtoken";
 import config from "../../config"
 
 import httpStatus from "http-status";
 import ApiError from "../../errors/ApiError";
 import { verifyToken } from "../../helpers/jwt";
 import prisma from "../../shared/prisma";
-import { User } from "@prisma/client";
+
 
 const auth = (...roles: string[]) => {
   return async (
