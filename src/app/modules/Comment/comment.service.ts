@@ -17,3 +17,21 @@ export const handleGetUserComments = async (userId: string) => {
 
     return comments;
 };
+
+
+export const getAll = async (receiverId:string)=>{
+    const comments = await prisma.comment.findMany({where:{receiverId}})
+
+    return comments
+}
+
+export const handlDeleteComment = async (commentId:string)=>{
+    const deletedComment = await prisma.comment.delete({where:{id:commentId}})
+
+    return deletedComment
+}
+
+export const handleUpdateComment = async (commentId:string, updatedText:string)=>{
+    const updatedComment = await prisma.comment.update({where:{id:commentId}, data:{text:updatedText}})
+    return updatedComment
+}

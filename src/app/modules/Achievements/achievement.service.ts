@@ -19,6 +19,7 @@ export const addAchievement = async (userId:string,contestId:string, type:Achiev
 
 const getTotalAchievements = async (userId:string)=>{
 
+    
 }
 
 export const getAchievements = async (contestId:string)=>{

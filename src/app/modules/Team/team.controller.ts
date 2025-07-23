@@ -37,6 +37,8 @@ const getTeams = catchAsync(async (req: Request, res: Response) => {
     });
 });
 
+
+
 const getTeamDetails = catchAsync(async (req: Request, res: Response) => {
     const { teamId } = req.params;
 

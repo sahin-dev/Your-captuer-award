@@ -387,6 +387,7 @@ enum ContestParticipantStatus {
 
 enum TeamMemberStatus {
   ACTIVE
+  REMOVED
   BLOCKED
 }
 

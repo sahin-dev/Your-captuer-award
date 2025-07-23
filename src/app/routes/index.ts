@@ -5,6 +5,9 @@ import { authRoutes } from "../modules/Auth/auth.route";
 import { contestRoutes } from "../modules/Contest/contest.route";
 import { likeRoutes } from "../modules/Like/like.route";
 import { followRoutes } from "../modules/Follow/follow..routes";
+import { commentRoutes } from "../modules/Comment/comment.route";
+import { teamRoutes } from "../modules/Team/team.route";
+import { achievementRoutes } from "../modules/Achievements/achievement.route";
 
 
 
@@ -16,7 +19,10 @@ const moduleRoutes = [
     {path:"/auth", route:authRoutes},
     {path:"/contests", route:contestRoutes},
     {path:"/likes", route:likeRoutes},
-    {path:"/follows", route:followRoutes}
+    {path:"/follows", route:followRoutes},
+    {path:"/comments", route:commentRoutes},
+    {path:"/teams", route:teamRoutes},
+    {path:"/achievements", route:achievementRoutes},
 
 ]
 
