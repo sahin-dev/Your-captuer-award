@@ -4,7 +4,7 @@ import httpstatus from 'http-status';
 import { fileUploader } from '../../../helpers/fileUploader';
 import { Contest, ContestParticipant, ContestStatus, ContestType, RecurringData, RecurringType } from '@prisma/client';
 import agenda from '../Agenda';
-import { ICreateContest } from './contest.interface';
+import { IContest } from './contest.interface';
 import { stat } from 'fs';
 
 
@@ -13,7 +13,7 @@ import { stat } from 'fs';
 //Create a new contest
 
 
-export const handleCreateContest = async (creatorId: string, body: ICreateContest, banner:Express.Multer.File) => {
+export const handleCreateContest = async (creatorId: string, body: IContest, banner:Express.Multer.File) => {
     let bannerUrl = null;
 
     if (banner){
@@ -87,9 +87,22 @@ export const handleCreateContest = async (creatorId: string, body: ICreateContes
     return contest;
 };
 
+
+export const handleUpdateContest = async (contestId:string, contestData:Partial<IContest>)=>{
+
+    const updatedContest = await prisma.contest.update({where:{id:contestId}, data:contestData})
+
+    return updatedContest
+
+}   
+
+
+
+
+
 // add a user to the contest participant list
 
-export const joinAContest = async (userId:string,contestId:string)=>{
+export const handleJoinContest = async (userId:string,contestId:string)=>{
     const contest = await prisma.contest.findUnique({where:{id:contestId}})
 
     if (!contest || contest.status != ContestStatus.OPEN){
@@ -106,7 +119,7 @@ export const joinAContest = async (userId:string,contestId:string)=>{
 }
 
 
-export const getContestById = async (contestId: string) => {
+export const handleGetContestById = async (contestId: string) => {
     const contest = await prisma.contest.findUnique({
         where: { id: contestId },
         include: { creator: true, participants: true }
@@ -126,7 +139,7 @@ export const handleGetContests = async () => {
     return contests;
 };
 
-export const getAllContests = async () => {
+export const handleGetAllContests = async () => {
     const contests = await prisma.contest.findMany({    
         include: { creator: true, participants: true }
     });
@@ -134,7 +147,7 @@ export const getAllContests = async () => {
 };
 
 
-export const getContestsByStatus = async (userId:string,status: ContestStatus) => {
+export const handlGetContestsByStatus = async (userId:string,status: ContestStatus) => {
     let contests :Contest[]= []
     
     let strStatus = status as string
@@ -172,7 +185,7 @@ export const getContestsByStatus = async (userId:string,status: ContestStatus) =
     return contests;
 };
 
-export const getUpcomingCOntest = async () => {
+export const handleGetUpcomingContest = async () => {
     const contests = await prisma.contest.findMany({
         where: { status: ContestStatus.UPCOMING },
         include: { creator: true}
@@ -182,7 +195,7 @@ export const getUpcomingCOntest = async () => {
 
 //Get my contests which are completed
 
-export const getMyCompletedContest = async (userId:string) => {
+export const handleGetMyCompletedContest = async (userId:string) => {
     if (!userId){
         throw new ApiError(httpstatus.BAD_REQUEST, "User id is not provided")
     }
@@ -204,7 +217,7 @@ export const getMyCompletedContest = async (userId:string) => {
 
 
 // Fetch completed contest details with winner
-export const getClosedContestsWithWinner = async () => {
+export const handleGetClosedContestsWithWinner = async () => {
     // Fetch contests with status 'COMPLETED' (enum)
     const contests = await prisma.contest.findMany({
         where: { status: ContestStatus.CLOSED },

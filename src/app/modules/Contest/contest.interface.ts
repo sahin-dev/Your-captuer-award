@@ -1,6 +1,6 @@
 import { RecurringType } from "@prisma/client";
 
-export interface ICreateContest {
+export interface IContest {
     title: string;    
     description: string;
     recurring: boolean;

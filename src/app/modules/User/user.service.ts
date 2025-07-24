@@ -33,8 +33,13 @@ const register = async (body:IUserRegister)=>{
 
 
     const createdUser = await prisma.user.create({data:{firstName:body.firstName, lastName:body.lastName,email:body.email as string, password:hashedPassword,phone:body.phone}})
-     globalEventHandler.emit(Events.USER_REGISTERED, createdUser)
+
+    //Publish a event: New user registered
+
+    globalEventHandler.publish(Events.USER_REGISTERED, createdUser)
+    
     const token = jwtHelpers.generateToken({id:createdUser.id, role:createdUser.role, email:createdUser.email})
+
     await prisma.user.update({where:{id:createdUser.id}, data:{accessToken:token}})
 
     // const userData = {

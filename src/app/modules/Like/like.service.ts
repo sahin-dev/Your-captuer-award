@@ -1,4 +1,6 @@
 import prisma from "../../../shared/prisma"
+import globalEventHandler from "../../event/eventEmitter";
+import Events from "../../event/events.constant";
 
 
 //user can toggole like on a photo
@@ -24,12 +26,16 @@ export const handleToggleLike = async (userId:string,photoId:string)=>{
 //user can provide like on a photo
 
 export const provideLike = async (userId:string,photoId:string)=>{
-    return await prisma.like.create({
+    const like =  await prisma.like.create({
         data:{
             providerId:userId,
             photoId
         }
     })
+
+    globalEventHandler.publish(Events.NEW_LIKE, photoId)
+
+    return like
 }
 
 // // give like

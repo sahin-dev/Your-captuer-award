@@ -1,3 +1,5 @@
+// ./index.ts 
 
-import   '../modules/Notification/notification.event'
-import '../modules/Logger/logger.event'
+import { registerListeners } from "./event.init";
+
+registerListeners()

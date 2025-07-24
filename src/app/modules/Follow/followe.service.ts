@@ -1,6 +1,8 @@
 import prisma from '../../../shared/prisma';
 import ApiError from '../../../errors/ApiError';
 import httpstatus from 'http-status';
+import globalEventHandler from '../../event/eventEmitter';
+import Events from '../../event/events.constant';
 
 
 export const handleFollowUnfollow = async (followerId:string, followingId:string) => {
@@ -17,6 +19,9 @@ export const handleFollowUser = async (followerId: string, followingId: string) 
     const follow = await prisma.follow.create({
         data: { followerId, followingId }
     });
+
+    //Publish new follower event
+    globalEventHandler.publish(Events.NEW_FOLLOWER,followingId)
 
     return follow;
 };
