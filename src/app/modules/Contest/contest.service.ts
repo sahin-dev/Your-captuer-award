@@ -72,20 +72,22 @@ export const handleCreateContest = async (creatorId: string, body: IContest, ban
             data: contestData
         });
         return recurringContest;
-      
     }
     // If contest is not recurring, create a normal contest
        let contest = await prisma.contest.create({
             data: contestData
         });
-    
-    
+
     // agenda.schedule(startDate, 'contest:checkUpcoming', {
     //     contestId: contest.id
     // });
 
     return contest;
 };
+
+const handleRecurringConetst = async ()=>{
+
+}
 
 
 export const handleUpdateContest = async (contestId:string, contestData:Partial<IContest>)=>{

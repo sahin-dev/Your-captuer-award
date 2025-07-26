@@ -26,6 +26,8 @@ export const handleFollowUser = async (followerId: string, followingId: string) 
     return follow;
 };
 
+//If user does not follow previously, Add a new follower
+
 export const handleUnfollowUser = async (followerId: string, followingId: string) => {
     const follow = await prisma.follow.findFirst({
         where: { followerId, followingId }
@@ -37,6 +39,8 @@ export const handleUnfollowUser = async (followerId: string, followingId: string
 
     await prisma.follow.delete({ where: { id: follow.id } });
 };
+
+
 
 export const getFollowerCount = async (userId:string) => {
     const count = await prisma.follow.count({where:{followingId:userId}})
