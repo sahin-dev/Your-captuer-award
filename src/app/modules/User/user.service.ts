@@ -188,6 +188,8 @@ const verifyOtp = async (email:string, otp:string)=>{
      
 }
 
+
+
 const getUserBySocialId = async (socialProvider:string, socialId:string)=>{
     const user = await prisma.user.findFirst({where:{socialProvider, socialId}})
 

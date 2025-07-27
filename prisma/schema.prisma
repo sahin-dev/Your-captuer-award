@@ -50,6 +50,9 @@ model UserPhoto {
   states        PhotoStats?
   views         Int         @default(0)
   labels        String[]    @default(["Default"])
+  title         String?
+  description   String?
+  adult         Boolean   @default(false)
 
   user          User           @relation(fields: [userId], references: [id])
   contestUpload ContestPhoto[]

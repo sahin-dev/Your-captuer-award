@@ -8,3 +8,4 @@ globalEventHandler.on(Events.USER_REGISTERED, (data)=>{
 globalEventHandler.on(Events.NEW_VOTE, (photoId)=>{
     console.log(`${photoId} got a new vote`)
 })
+

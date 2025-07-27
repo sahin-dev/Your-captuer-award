@@ -16,3 +16,10 @@ export const handleAddUpload = async (userId:string, photoUrl:string)=>{
     return uploadedPhoto
 }
 
+
+export const getPhotos = async (userId:string)=>{
+
+    const photos = await prisma.userPhoto.findMany({where:{userId}})
+
+    return photos
+}
