@@ -34,6 +34,7 @@ export const handleSignIn = async(body:UserSignIn)=>{
         //     role: user.role,
         //     phone: user.phone
         // }
+        
         return {user:UserDto(user), token}
     }else{
         throw new ApiError(httpstatus.BAD_REQUEST, "Invalid credentials")

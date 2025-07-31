@@ -1,0 +1,47 @@
+
+model Team {
+  id            String            @id @default(auto()) @map("_id") @db.ObjectId
+  name          String
+  level         String
+  language      String
+  country       String
+  description   String
+  accessibility TeamAccessibility
+  badge         String //Image file
+  creatorId     String            @db.ObjectId
+  creator       User              @relation(fields: [creatorId], references: [id])
+  members       TeamMember[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("teams")
+}
+
+
+model TeamMember {
+  id     String           @id @default(auto()) @map("_id") @db.ObjectId
+  status TeamMemberStatus @default(ACTIVE)
+
+  teamId   String @db.ObjectId
+  memberId String @unique @db.ObjectId
+  team     Team   @relation(fields: [teamId], references: [id])
+  member   User   @relation(fields: [memberId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("team_members")
+}
+
+enum TeamAccessibility {
+  PUBLIC
+  PRIVATE
+}
+
+
+enum TeamMemberStatus {
+  ACTIVE
+  REMOVED
+  BLOCKED
+}

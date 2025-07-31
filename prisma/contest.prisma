@@ -1,0 +1,222 @@
+
+//Contest models
+
+model Contest {
+  id             String        @id @default(auto()) @map("_id") @db.ObjectId
+  title          String
+  description    String
+  banner         String?       @default("https://images.unsplash.com/photo-1689539137236-b68e436248de?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D")
+  status         ContestStatus @default(UPCOMING)
+  maxUploads     Int?          @default(1)
+  isMoneyContest Boolean       @default(false)
+  maxPrize       Int?          @default(0)
+  minPrize       Int?          @default(0)
+
+  startDate DateTime
+  endDate   DateTime
+
+  creatorId String @db.ObjectId
+
+  creator      User                 @relation(fields: [creatorId], references: [id])
+  participants ContestParticipant[]
+  votes        Vote[]
+  contestRules ContestRules[]
+  contestAwards ContestAward[]
+  // photos      ContestPhoto[]
+  achievements ContestAchievement[]
+  recurringData   RecurringContestData?
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+
+  @@map("contests")
+
+}
+
+model RecurringContestData {
+  id        String      @id  @default(auto())  @map("_id") @db.ObjectId
+  constestId    String   @db.ObjectId @unique
+  lastRunAt  DateTime?
+  nextRunAt  DateTime
+  contest  Contest  @relation(fields: [constestId], references: [id])
+
+  @@map("recurring_contest_data")
+}
+
+model RecurringContest {
+  id             String  @id @default(auto()) @map("_id") @db.ObjectId
+  creatorId      String  @db.ObjectId
+  title          String
+  description    String
+  banner         String? @default("https://images.unsplash.com/photo-1689539137236-b68e436248de?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D")
+  maxUploads     Int?    @default(1)
+  isMoneyContest Boolean @default(false)
+  maxPrize       Int?    @default(0)
+  minPrize       Int?    @default(0)
+
+  recurringData RecurringData
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("recurring_contests")
+}
+
+
+
+model ContestPhoto {
+  id            String  @id @default(auto()) @map("_id") @db.ObjectId
+  title         String?
+  contestId     String  @db.ObjectId
+  participantId String  @db.ObjectId
+  photoId       String  @db.ObjectId
+  rank          Int?    @default(0)
+
+  // contest   Contest @relation(fields: [contestId],references: [id])
+  participant  ContestParticipant   @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  votes        Vote[]
+  photo        UserPhoto            @relation(fields: [photoId], references: [id], onDelete: Cascade)
+  comments     Comment[]
+  achievements ContestAchievement[]
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+
+  @@map("contest_photos")
+}
+
+model ContestRules {
+  id        String @id @default(auto()) @map("_id") @db.ObjectId
+  contestId String @db.ObjectId
+  rules     String
+
+  submissionRule String
+
+  contest Contest @relation(fields: [contestId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("contest_rules")
+}
+
+
+
+model ContestWinner {
+  id             String             @id @default(auto()) @map("_id") @db.ObjectId
+  participantId  String             @db.ObjectId
+  contestId      String             @db.ObjectId
+  contestPhotoId String             @db.ObjectId
+  achievementType AchievementsType
+  participant    ContestParticipant @relation(fields: [participantId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("contest_winners")
+}
+
+model ContestParticipant {
+  id        String                   @id @default(auto()) @map("_id") @db.ObjectId
+  status    ContestParticipantStatus @default(ACTIVE)
+  contestId String                   @db.ObjectId
+  userId    String                   @db.ObjectId
+  level     ContestLevel             @default(POPULAR)
+  rank      Int?                     @default(0)
+
+  contest            Contest              @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  user               User                 @relation(fields: [userId], references: [id])
+  photos             ContestPhoto[]
+  ContestWinner      ContestWinner[]
+  contestAchievement ContestAchievement[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("contest_participants")
+}
+
+model ContestAward {
+  id      String      @id @default(auto()) @map("_id") @db.ObjectId
+  type    AchievementsType
+  trade   Int  @default(20)
+  charge    Int   @default(15)
+  key     Int   @default(40)
+
+  contestId   String @db.ObjectId 
+  contest   Contest  @relation(fields: [contestId], references: [id])
+
+  @@map("contest_awards")
+}
+
+model ContestAchievement {
+  id            String           @id @default(auto()) @map("_id") @db.ObjectId
+  type          AchievementsType
+  photoId       String?          @db.ObjectId
+  participantId String?          @db.ObjectId
+  contestId     String           @db.ObjectId
+
+  photo       ContestPhoto?       @relation(fields: [photoId], references: [id])
+  contest     Contest             @relation(fields: [contestId], references: [id])
+  participant ContestParticipant? @relation(fields: [participantId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("contest_achievements")
+}
+
+
+
+type RecurringData {
+  recurringType      RecurringType
+  previousOccurrence DateTime
+  nextOccurrence     DateTime
+  duration           Int           @default(0)
+}
+
+enum AchievementsType {
+  TOP_PHOTO
+  TOP_PHOTOGRAPHER
+}
+
+
+
+enum ContestStatus {
+  NEW
+  UPCOMING
+  ACTIVE
+  OPEN
+  CLOSED
+}
+
+enum ContestType {
+  ONETIME
+  RECURRING
+}
+
+
+enum RecurringType {
+  DAILY
+  WEEKLY
+  MONTHLY
+}
+
+enum ContestLevel {
+  POPULAR
+  SKILLED
+  PREMIER
+  ELITE
+  ALL_STAR
+}
+
+enum ContestLevel2 {
+  AMATEUR
+  TALANTED
+  SUPREME
+  SUPERIOR
+  TOP_NOTCH
+}
+
+enum ContestParticipantStatus {
+  ACTIVE
+  BLOCKED
+}

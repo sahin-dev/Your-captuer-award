@@ -10,7 +10,7 @@
         "commands": [
             {
            "match": ".*schema\\.prisma$",
-            "cmd": "npx prisma db push",
+            "cmd": "npx prisma db push --schema=./prisma",
             "runIn": "terminal"
             },
 

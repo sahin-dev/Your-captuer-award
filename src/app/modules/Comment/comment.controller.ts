@@ -51,7 +51,7 @@ export const editComment = catchAsync(async (req:Request, res:Response)=>{
 })
 
 export const getComments = catchAsync(async (req:Request, res:Response)=>{
-    const {photoId} = req.body
+    const {photoId} = req.params
     const allComments = await getAll(photoId)
 
     sendResponse(res, {

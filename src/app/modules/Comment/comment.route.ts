@@ -4,7 +4,8 @@ import { deleteComment, editComment, getComments, postComment } from "./comment.
 
 const router = Router()
 
-router.route("/").get(auth(),getComments).post(auth(),postComment)
+router.route("/photos/:id").post(auth(), postComment).get(auth(), getComments)
+
 router.route("/:id").put(auth(),editComment).delete(auth(), deleteComment)
 
 

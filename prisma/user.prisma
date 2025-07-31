@@ -1,0 +1,171 @@
+
+model User {
+  id                 String               @id @default(auto()) @map("_id") @db.ObjectId
+  cover              String?              @default("https://images.unsplash.com/photo-1689539137236-b68e436248de?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D")
+  avatar             String?              @default("https://plus.unsplash.com/premium_photo-1689539137236-b68e436248de?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D")
+  socialId           String?
+  socialProvider     String?
+  firstName          String?
+  lastName           String?
+  fullName           String?
+  username           String?
+  phone              String?
+  email              String               @unique
+  location           String?
+  level              String?              @default("Beginner")
+  password           String?
+  role               UserRole             @default(USER)
+  accessToken        String?
+  otps               Otp?
+  createdTeam        Team[]
+  joinedTeam         TeamMember?
+  createdContests    Contest[]
+  commentProvides    Comment[]            @relation("provider")
+  followers          Follow[]             @relation(name: "follower")
+  followings         Follow[]             @relation(name: "following")
+  votes              Vote[]
+  likes              Like[]
+  userPhotos         UserPhoto[]
+  ContestParticipant ContestParticipant[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+model UserPhoto {
+  id            String      @id @default(auto()) @map("_id") @db.ObjectId
+  url           String
+  userId        String      @db.ObjectId
+  states        PhotoStats?
+  views         Int         @default(0)
+  labels        String[]    @default([])
+  title         String?
+  description   String?
+  adult         Boolean   @default(false)
+
+  user          User           @relation(fields: [userId], references: [id])
+  contestUpload ContestPhoto[]
+  likes         Like[]
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("user_photos")
+}
+
+model Like {
+  id         String @id @default(auto()) @map("_id") @db.ObjectId
+  providerId String @db.ObjectId
+  photoId    String @db.ObjectId
+
+  provider User      @relation(fields: [providerId], references: [id])
+  photo    UserPhoto @relation(fields: [photoId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([photoId, providerId])
+  @@map("likes")
+}
+
+model Otp {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  code       String
+  expires_in DateTime
+  userId     String   @unique @db.ObjectId
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  otpStatus OtpStatus @default(CREATED)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  expiresAt DateTime
+
+  @@map("otps")
+}
+
+
+
+
+
+model Comment {
+  id         String @id @default(auto()) @map("_id") @db.ObjectId
+  text       String
+  providerId String @db.ObjectId
+  receiverId String @db.ObjectId
+
+  provider User         @relation(name: "provider", fields: [providerId], references: [id])
+  receiver ContestPhoto @relation(fields: [receiverId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("comments")
+}
+
+model Follow {
+  id          String @id @default(auto()) @map("_id") @db.ObjectId
+  followerId  String @db.ObjectId
+  followingId String @db.ObjectId
+  follower    User   @relation(name: "follower", fields: [followerId], references: [id])
+  following   User   @relation(name: "following", fields: [followingId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([followerId, followingId])
+  @@map("follows")
+}
+
+model Vote {
+  id         String @id @default(auto()) @map("_id") @db.ObjectId
+  providerId String @db.ObjectId
+  photoId    String @db.ObjectId
+  contestId  String @db.ObjectId
+
+  provider User         @relation(fields: [providerId], references: [id])
+  photo    ContestPhoto @relation(fields: [photoId], references: [id], onDelete: Cascade)
+  contest  Contest      @relation(fields: [contestId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("votes")
+}
+
+// model Love {
+//   id         String @id @default(auto()) @map("_id") @db.ObjectId
+//   providerId String @db.ObjectId
+//   photoId    String @db.ObjectId
+
+//   provider User      @relation(fields: [providerId], references: [id])
+//   photo    UserPhoto @relation(fields: [photoId], references: [id])
+
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @updatedAt
+
+//   @@map("loves")
+// }
+
+
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum OtpStatus {
+  CREATED
+  VALIDATED
+}
+
+
+type PhotoStats {
+  Composition Int @default(0)
+  Content     Int @default(0)
+  Creativity  Int @default(0)
+  Technique   Int @default(0)
+}
+
