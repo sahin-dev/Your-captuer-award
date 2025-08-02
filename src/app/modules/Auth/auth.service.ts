@@ -7,6 +7,50 @@ import { jwtHelpers } from "../../../helpers/jwt"
 import config from "../../../config"
 import { Secret } from "jsonwebtoken"
 import { UserDto } from "../../dtos/user.dto"
+import { IUser } from "../User/user.interface"
+import globalEventHandler from "../../event/eventEmitter"
+import Events from "../../event/events.constant"
+
+
+export const handleRegister = async (body:IUser)=>{
+
+    const existingUser = await prisma.user.findFirst({where:{email:body.email}})
+   
+
+    if (existingUser){
+        throw new ApiError(httpstatus.CONFLICT, "user already exist with this email")
+    }
+
+    if (body.password !== body.confirmPassword){
+        throw new ApiError(httpstatus.BAD_REQUEST, "Password not matched")
+    }
+
+    const hashedPassword = await bcrypt.hash(body.password as string, parseInt(config.bcrypt_salt_rounds as string))
+
+
+
+    const createdUser = await prisma.user.create({data:{firstName:body.firstName, lastName:body.lastName,email:body.email as string, password:hashedPassword,phone:body.phone}})
+
+    //Publish a event: New user registered
+
+    globalEventHandler.publish(Events.USER_REGISTERED, createdUser)
+    
+    const token = jwtHelpers.generateToken({id:createdUser.id, role:createdUser.role, email:createdUser.email})
+
+    await prisma.user.update({where:{id:createdUser.id}, data:{accessToken:token}})
+
+    // const userData = {
+    //         id:createdUser.id,
+    //         firstName:createdUser.firstName,
+    //         lastName: createdUser.lastName,
+    //         username:createdUser.username,
+    //         email: createdUser.email,
+    //         role: createdUser.role,
+    //         phone: createdUser.phone
+    //     }
+
+    return {user:UserDto(createdUser), token}
+}
 
 
 export const handleSignIn = async(body:UserSignIn)=>{

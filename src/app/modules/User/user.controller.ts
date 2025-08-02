@@ -4,26 +4,8 @@ import { userService } from "./user.service";
 import sendResponse from "../../../shared/ApiResponse";
 import httpstatus from 'http-status'
 import ApiError from "../../../errors/ApiError";
-import parseData from "../../../helpers/parseData";
 
 
-const registerUser = catchAsync(async (req:Request, res:Response)=>{
-    const body = req.body
-
-    const registerData = await userService.register(body)
-    res.cookie("token", registerData.token, {
-      httpOnly: true,
-      secure: true,
-      maxAge: 365 * 24 * 60 * 60 * 1000,
-    });
-
-    sendResponse(res, {
-        success:true,
-        statusCode:httpstatus.CREATED,
-        message:"user registered successfully",
-        data:registerData
-    })
-})
 
 const getUsers = catchAsync(async (req:Request, res:Response)=>{
     const users = await userService.getUsers()
@@ -125,7 +107,7 @@ const verifyOtp = catchAsync(async (req:Request, res:Response)=>{
 })
 
 export const userController = {
-    registerUser,
+
     getUsers,
     uploadAvatar,
     forgetPassword,

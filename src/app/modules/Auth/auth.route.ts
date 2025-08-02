@@ -1,16 +1,20 @@
 import { Router } from "express";
-import { getAuthenticatedUser, SignIn, SignOut } from "./auth.controller";
+import { getAuthenticatedUser, registerUser, SignIn, SignOut } from "./auth.controller";
 import auth from "../../middlewares/auth.middleware";
 import { socialLogin } from "./socialLogin.service";
 import passport from "passport";
 import googleStrategy from "../../passportStrategies/google.strategy";
 import facebookStrategy from "../../passportStrategies/facebook.strategy";
+import validateRequest from "../../middlewares/validation.middleware";
+import { userRegistrationSchema } from "./auth.validation";
+
 
 const router = Router()
 
 router.post("/signin", SignIn)
 router.post('/signout',auth(), SignOut)
 router.get("/me",auth(), getAuthenticatedUser)
+router.post("/register", validateRequest(userRegistrationSchema), registerUser)
 
 
 //Social Logins

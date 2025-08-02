@@ -27,8 +27,8 @@ const auth = (...roles: string[]) => {
         token,
         config.jwt.jwt_secret as Secret
       );
-      console.log(verifiedUser)
-      const { id, phone, iat } = verifiedUser;
+   
+      const { id, role, email, iat } = verifiedUser;
 
       const user = await prisma.user.findUnique({
         where: {
@@ -51,8 +51,7 @@ const auth = (...roles: string[]) => {
       //  }
 
       req.user = user;
-      console.log(user.role)
-      if (roles.length && !roles.includes(user.role)) {
+      if (roles.length && !roles.includes(role)) {
         throw new ApiError(httpStatus.FORBIDDEN, "Forbidden!");
       }
       next();

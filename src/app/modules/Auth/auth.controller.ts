@@ -1,8 +1,27 @@
 import catchAsync from "../../../shared/catchAsync";
 import {Request, Response} from 'express'
-import { getAutheticatedUser, handleSignIn, handleSignout } from "./auth.service";
+import { getAutheticatedUser, handleRegister, handleSignIn, handleSignout } from "./auth.service";
 import sendResponse from "../../../shared/ApiResponse";
 import httpstatus from 'http-status'
+
+
+export const registerUser = catchAsync(async (req:Request, res:Response)=>{
+    const body = req.body
+
+    const registerData = await handleRegister(body)
+    res.cookie("token", registerData.token, {
+      httpOnly: true,
+      secure: true,
+      maxAge: 365 * 24 * 60 * 60 * 1000,
+    });
+
+    sendResponse(res, {
+        success:true,
+        statusCode:httpstatus.CREATED,
+        message:"user registered successfully",
+        data:registerData
+    })
+})
 
 
 export const SignIn = catchAsync(async (req:Request,res:Response)=>{

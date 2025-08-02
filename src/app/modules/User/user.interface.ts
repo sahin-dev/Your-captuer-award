@@ -1,4 +1,4 @@
-export interface IUserRegister {
+export interface IUser {
     socialProvider?:string
     socialId?:string
     fullName?:string

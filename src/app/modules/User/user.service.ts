@@ -1,59 +1,16 @@
 import ApiError from "../../../errors/ApiError"
 import prisma from "../../../shared/prisma"
-import { IPasswordUpdate, IUserRegister, IUserUpdate } from "./user.interface"
+import { IPasswordUpdate, IUser, IUserUpdate } from "./user.interface"
 import httpstatus from 'http-status'
 import bcrypt from 'bcryptjs'
 import config from "../../../config"
-import { jwtHelpers } from "../../../helpers/jwt"
 import { UserDto } from "../../dtos/user.dto"
 import { fileUploader } from "../../../helpers/fileUploader"
 import { generateOtp } from "../../../helpers/generateOtp"
-import mailer from "../../../shared/mailSender"
 import { OtpStatus } from "@prisma/client"
-import globalEventHandler from "../../event/eventEmitter"
-import Events from "../../event/events.constant"
 
 
 
-const register = async (body:IUserRegister)=>{
-
-    const existingUser = await prisma.user.findFirst({where:{email:body.email}})
-   
-
-    if (existingUser){
-        throw new ApiError(httpstatus.CONFLICT, "user already exist with this email")
-    }
-
-    if (body.password !== body.confirmPassword){
-        throw new ApiError(httpstatus.BAD_REQUEST, "Password not matched")
-    }
-
-    const hashedPassword = await bcrypt.hash(body.password as string, parseInt(config.bcrypt_salt_rounds as string))
-
-
-
-    const createdUser = await prisma.user.create({data:{firstName:body.firstName, lastName:body.lastName,email:body.email as string, password:hashedPassword,phone:body.phone}})
-
-    //Publish a event: New user registered
-
-    globalEventHandler.publish(Events.USER_REGISTERED, createdUser)
-    
-    const token = jwtHelpers.generateToken({id:createdUser.id, role:createdUser.role, email:createdUser.email})
-
-    await prisma.user.update({where:{id:createdUser.id}, data:{accessToken:token}})
-
-    // const userData = {
-    //         id:createdUser.id,
-    //         firstName:createdUser.firstName,
-    //         lastName: createdUser.lastName,
-    //         username:createdUser.username,
-    //         email: createdUser.email,
-    //         role: createdUser.role,
-    //         phone: createdUser.phone
-    //     }
-
-    return {user:UserDto(createdUser), token}
-}
 
 const getUsers = async ()=>{
     const users = await prisma.user.findMany()
@@ -65,7 +22,7 @@ const getUsers = async ()=>{
     return mappedUsers
 }
 
-const updateUser = async (userId:string,userData:IUserUpdate, file?:Express.Multer.File)=>{
+const updateUser = async (userId:string,userData:Partial<IUser>, file?:Express.Multer.File)=>{
     const user = await prisma.user.findUnique({where:{id:userId}})
     if(!user){
         throw new ApiError(httpstatus.NOT_FOUND, "User not found")
@@ -197,7 +154,6 @@ const getUserBySocialId = async (socialProvider:string, socialId:string)=>{
 }
 
 export const userService = {
-    register,
     getUsers,
     updateUser,
     resetPassword,
