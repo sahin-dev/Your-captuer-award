@@ -76,3 +76,4 @@ export const joinContest = catchAsync(async (req:any, res:Response)=>{
         data:joinData
     })
 })
+

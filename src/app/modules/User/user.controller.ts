@@ -58,7 +58,7 @@ const resetPassword = catchAsync(async (req:Request, res:Response)=>{
         success:true,
         statusCode:httpstatus.OK,
         message:"User passwoird changed successfully",
-        data:updateUser
+        data:updatedUser
     })
 })
 
@@ -106,6 +106,14 @@ const verifyOtp = catchAsync(async (req:Request, res:Response)=>{
     })
 })
 
+export const changePassword = catchAsync(async (req:any, res:Response)=>{
+    const userId = req.user.id
+    const {newPassword} = req.body
+
+    const result = await userService.changePassword(usersId, newPassword).
+    
+})
+
 export const userController = {
 
     getUsers,
@@ -113,5 +121,6 @@ export const userController = {
     forgetPassword,
     verifyOtp,
     updateUser,
-    getUserDetails
+    getUserDetails,
+    resetPassword
 }

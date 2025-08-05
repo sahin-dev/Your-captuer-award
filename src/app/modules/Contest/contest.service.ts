@@ -112,6 +112,7 @@ export const handleJoinContest = async (userId:string,contestId:string)=>{
     }
 
     const participant = await prisma.contestParticipant.create({data:{contestId,userId}})
+    
     if (participant){
         console.log("User has joined the contest")
     }

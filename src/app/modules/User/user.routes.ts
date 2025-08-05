@@ -3,6 +3,8 @@ import { userController } from "./user.controller";
 import { fileUploader } from "../../../helpers/fileUploader";
 import auth from "../../middlewares/auth.middleware";
 import { UserRole } from "@prisma/client";
+import validateRequest from "../../middlewares/validation.middleware";
+import { userSchema } from "./user.validation";
 
 
 
@@ -17,6 +19,7 @@ router.put("/",auth(), fileUploader.uploadAvatar, userController.updateUser)
 
 router.post("/avatar/:userId",auth(), fileUploader.uploadAvatar, userController.uploadAvatar)
 router.post("/forget-password", userController.forgetPassword)
+router.post("/reset-password",validateRequest(userSchema.resetPasswordSchema), userController.resetPassword)
 router.post("/verify-otp", userController.verifyOtp)
 
 router.get("/:userId", auth(), userController.getUserDetails)

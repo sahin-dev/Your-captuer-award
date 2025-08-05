@@ -1,15 +1,16 @@
 import z from "zod";
 
 
-const userRegistrationSchema = z.object({
-    firstname:z.string({required_error:"first name is required"}),
-    lastname:z.string({required_error:"last name is required"}),
-    email:z.string().email({message:"Email is invalid"}),
-    phone:z.string({required_error:"phone is required"}),
-    password:z.string({required_error:"password is required"})
-})
+const resetPasswordSchema = z.object({
+    email:z.string().email({message:"email is not valid"}),
+    token: z.string(),
+    password: z.string(),
+    confirmPassword: z.string(),
+
+}).refine(data => data.password === data.confirmPassword, {message:"Password do not match", path:['confirmPassword']})
 
 
 export const userSchema = {
-    userRegistrationSchema
+
+    resetPasswordSchema
 }
