@@ -9,7 +9,7 @@
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
     "build": "tsc",
     "generate": "ts-node src/generate-module.js",
-    "postinstall": "prisma generate",
+    "postinstall": "npx prisma db push --schema=./prisma",
     "test": "echo \"Error: no test specified\" && exit 1",
     "seed": "ts-node-dev src/seeder.ts"
   },
