@@ -201,6 +201,21 @@ export const TeamMemberStatus: {
 export type TeamMemberStatus = (typeof TeamMemberStatus)[keyof typeof TeamMemberStatus]
 
 
+export const UserLevel: {
+  APPRENTICE: 'APPRENTICE',
+  STUDENT: 'STUDENT',
+  TRAINED: 'TRAINED',
+  TALENTED: 'TALENTED',
+  CONTENDER: 'CONTENDER',
+  VIRTUOSO: 'VIRTUOSO',
+  LEADER: 'LEADER',
+  AVANTGARDE: 'AVANTGARDE',
+  PRO: 'PRO'
+};
+
+export type UserLevel = (typeof UserLevel)[keyof typeof UserLevel]
+
+
 export const UserRole: {
   USER: 'USER',
   ADMIN: 'ADMIN'
@@ -253,6 +268,10 @@ export const TeamAccessibility: typeof $Enums.TeamAccessibility
 export type TeamMemberStatus = $Enums.TeamMemberStatus
 
 export const TeamMemberStatus: typeof $Enums.TeamMemberStatus
+
+export type UserLevel = $Enums.UserLevel
+
+export const UserLevel: typeof $Enums.UserLevel
 
 export type UserRole = $Enums.UserRole
 
@@ -14779,7 +14798,7 @@ export namespace Prisma {
     phone: string | null
     email: string | null
     location: string | null
-    level: string | null
+    level: $Enums.UserLevel | null
     password: string | null
     role: $Enums.UserRole | null
     accessToken: string | null
@@ -14800,7 +14819,7 @@ export namespace Prisma {
     phone: string | null
     email: string | null
     location: string | null
-    level: string | null
+    level: $Enums.UserLevel | null
     password: string | null
     role: $Enums.UserRole | null
     accessToken: string | null
@@ -14980,7 +14999,7 @@ export namespace Prisma {
     phone: string | null
     email: string
     location: string | null
-    level: string | null
+    level: $Enums.UserLevel | null
     password: string | null
     role: $Enums.UserRole
     accessToken: string | null
@@ -15105,7 +15124,7 @@ export namespace Prisma {
       phone: string | null
       email: string
       location: string | null
-      level: string | null
+      level: $Enums.UserLevel | null
       password: string | null
       role: $Enums.UserRole
       accessToken: string | null
@@ -15526,7 +15545,7 @@ export namespace Prisma {
     readonly phone: FieldRef<"User", 'String'>
     readonly email: FieldRef<"User", 'String'>
     readonly location: FieldRef<"User", 'String'>
-    readonly level: FieldRef<"User", 'String'>
+    readonly level: FieldRef<"User", 'UserLevel'>
     readonly password: FieldRef<"User", 'String'>
     readonly role: FieldRef<"User", 'UserRole'>
     readonly accessToken: FieldRef<"User", 'String'>
@@ -22682,6 +22701,20 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'UserLevel'
+   */
+  export type EnumUserLevelFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'UserLevel'>
+    
+
+
+  /**
+   * Reference to a field of type 'UserLevel[]'
+   */
+  export type ListEnumUserLevelFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'UserLevel[]'>
+    
+
+
+  /**
    * Reference to a field of type 'UserRole'
    */
   export type EnumUserRoleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'UserRole'>
@@ -23590,7 +23623,7 @@ export namespace Prisma {
     phone?: StringNullableFilter<"User"> | string | null
     email?: StringFilter<"User"> | string
     location?: StringNullableFilter<"User"> | string | null
-    level?: StringNullableFilter<"User"> | string | null
+    level?: EnumUserLevelNullableFilter<"User"> | $Enums.UserLevel | null
     password?: StringNullableFilter<"User"> | string | null
     role?: EnumUserRoleFilter<"User"> | $Enums.UserRole
     accessToken?: StringNullableFilter<"User"> | string | null
@@ -23657,7 +23690,7 @@ export namespace Prisma {
     username?: StringNullableFilter<"User"> | string | null
     phone?: StringNullableFilter<"User"> | string | null
     location?: StringNullableFilter<"User"> | string | null
-    level?: StringNullableFilter<"User"> | string | null
+    level?: EnumUserLevelNullableFilter<"User"> | $Enums.UserLevel | null
     password?: StringNullableFilter<"User"> | string | null
     role?: EnumUserRoleFilter<"User"> | $Enums.UserRole
     accessToken?: StringNullableFilter<"User"> | string | null
@@ -23716,7 +23749,7 @@ export namespace Prisma {
     phone?: StringNullableWithAggregatesFilter<"User"> | string | null
     email?: StringWithAggregatesFilter<"User"> | string
     location?: StringNullableWithAggregatesFilter<"User"> | string | null
-    level?: StringNullableWithAggregatesFilter<"User"> | string | null
+    level?: EnumUserLevelNullableWithAggregatesFilter<"User"> | $Enums.UserLevel | null
     password?: StringNullableWithAggregatesFilter<"User"> | string | null
     role?: EnumUserRoleWithAggregatesFilter<"User"> | $Enums.UserRole
     accessToken?: StringNullableWithAggregatesFilter<"User"> | string | null
@@ -24992,7 +25025,7 @@ export namespace Prisma {
     phone?: string | null
     email: string
     location?: string | null
-    level?: string | null
+    level?: $Enums.UserLevel | null
     password?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
@@ -25024,7 +25057,7 @@ export namespace Prisma {
     phone?: string | null
     email: string
     location?: string | null
-    level?: string | null
+    level?: $Enums.UserLevel | null
     password?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
@@ -25055,7 +25088,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
-    level?: NullableStringFieldUpdateOperationsInput | string | null
+    level?: NullableEnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel | null
     password?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -25086,7 +25119,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
-    level?: NullableStringFieldUpdateOperationsInput | string | null
+    level?: NullableEnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel | null
     password?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -25118,7 +25151,7 @@ export namespace Prisma {
     phone?: string | null
     email: string
     location?: string | null
-    level?: string | null
+    level?: $Enums.UserLevel | null
     password?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
@@ -25138,7 +25171,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
-    level?: NullableStringFieldUpdateOperationsInput | string | null
+    level?: NullableEnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel | null
     password?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -25158,7 +25191,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
-    level?: NullableStringFieldUpdateOperationsInput | string | null
+    level?: NullableEnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel | null
     password?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -26408,6 +26441,14 @@ export namespace Prisma {
     _max?: NestedEnumTeamMemberStatusFilter<$PrismaModel>
   }
 
+  export type EnumUserLevelNullableFilter<$PrismaModel = never> = {
+    equals?: $Enums.UserLevel | EnumUserLevelFieldRefInput<$PrismaModel> | null
+    in?: $Enums.UserLevel[] | ListEnumUserLevelFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.UserLevel[] | ListEnumUserLevelFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumUserLevelNullableFilter<$PrismaModel> | $Enums.UserLevel | null
+    isSet?: boolean
+  }
+
   export type EnumUserRoleFilter<$PrismaModel = never> = {
     equals?: $Enums.UserRole | EnumUserRoleFieldRefInput<$PrismaModel>
     in?: $Enums.UserRole[] | ListEnumUserRoleFieldRefInput<$PrismaModel>
@@ -26536,6 +26577,17 @@ export namespace Prisma {
     accessToken?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+  }
+
+  export type EnumUserLevelNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.UserLevel | EnumUserLevelFieldRefInput<$PrismaModel> | null
+    in?: $Enums.UserLevel[] | ListEnumUserLevelFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.UserLevel[] | ListEnumUserLevelFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumUserLevelNullableWithAggregatesFilter<$PrismaModel> | $Enums.UserLevel | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedEnumUserLevelNullableFilter<$PrismaModel>
+    _max?: NestedEnumUserLevelNullableFilter<$PrismaModel>
+    isSet?: boolean
   }
 
   export type EnumUserRoleWithAggregatesFilter<$PrismaModel = never> = {
@@ -27768,6 +27820,11 @@ export namespace Prisma {
     connect?: ContestParticipantWhereUniqueInput | ContestParticipantWhereUniqueInput[]
   }
 
+  export type NullableEnumUserLevelFieldUpdateOperationsInput = {
+    set?: $Enums.UserLevel | null
+    unset?: boolean
+  }
+
   export type EnumUserRoleFieldUpdateOperationsInput = {
     set?: $Enums.UserRole
   }
@@ -28652,11 +28709,30 @@ export namespace Prisma {
     _max?: NestedEnumTeamMemberStatusFilter<$PrismaModel>
   }
 
+  export type NestedEnumUserLevelNullableFilter<$PrismaModel = never> = {
+    equals?: $Enums.UserLevel | EnumUserLevelFieldRefInput<$PrismaModel> | null
+    in?: $Enums.UserLevel[] | ListEnumUserLevelFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.UserLevel[] | ListEnumUserLevelFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumUserLevelNullableFilter<$PrismaModel> | $Enums.UserLevel | null
+    isSet?: boolean
+  }
+
   export type NestedEnumUserRoleFilter<$PrismaModel = never> = {
     equals?: $Enums.UserRole | EnumUserRoleFieldRefInput<$PrismaModel>
     in?: $Enums.UserRole[] | ListEnumUserRoleFieldRefInput<$PrismaModel>
     notIn?: $Enums.UserRole[] | ListEnumUserRoleFieldRefInput<$PrismaModel>
     not?: NestedEnumUserRoleFilter<$PrismaModel> | $Enums.UserRole
+  }
+
+  export type NestedEnumUserLevelNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.UserLevel | EnumUserLevelFieldRefInput<$PrismaModel> | null
+    in?: $Enums.UserLevel[] | ListEnumUserLevelFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.UserLevel[] | ListEnumUserLevelFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumUserLevelNullableWithAggregatesFilter<$PrismaModel> | $Enums.UserLevel | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedEnumUserLevelNullableFilter<$PrismaModel>
+    _max?: NestedEnumUserLevelNullableFilter<$PrismaModel>
+    isSet?: boolean
   }
 
   export type NestedEnumUserRoleWithAggregatesFilter<$PrismaModel = never> = {
@@ -28709,7 +28785,7 @@ export namespace Prisma {
     phone?: string | null
     email: string
     location?: string | null
-    level?: string | null
+    level?: $Enums.UserLevel | null
     password?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
@@ -28740,7 +28816,7 @@ export namespace Prisma {
     phone?: string | null
     email: string
     location?: string | null
-    level?: string | null
+    level?: $Enums.UserLevel | null
     password?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
@@ -28940,7 +29016,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
-    level?: NullableStringFieldUpdateOperationsInput | string | null
+    level?: NullableEnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel | null
     password?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -28970,7 +29046,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
-    level?: NullableStringFieldUpdateOperationsInput | string | null
+    level?: NullableEnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel | null
     password?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -29768,7 +29844,7 @@ export namespace Prisma {
     phone?: string | null
     email: string
     location?: string | null
-    level?: string | null
+    level?: $Enums.UserLevel | null
     password?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
@@ -29799,7 +29875,7 @@ export namespace Prisma {
     phone?: string | null
     email: string
     location?: string | null
-    level?: string | null
+    level?: $Enums.UserLevel | null
     password?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
@@ -29987,7 +30063,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
-    level?: NullableStringFieldUpdateOperationsInput | string | null
+    level?: NullableEnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel | null
     password?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -30017,7 +30093,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
-    level?: NullableStringFieldUpdateOperationsInput | string | null
+    level?: NullableEnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel | null
     password?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -30459,7 +30535,7 @@ export namespace Prisma {
     phone?: string | null
     email: string
     location?: string | null
-    level?: string | null
+    level?: $Enums.UserLevel | null
     password?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
@@ -30490,7 +30566,7 @@ export namespace Prisma {
     phone?: string | null
     email: string
     location?: string | null
-    level?: string | null
+    level?: $Enums.UserLevel | null
     password?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
@@ -30561,7 +30637,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
-    level?: NullableStringFieldUpdateOperationsInput | string | null
+    level?: NullableEnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel | null
     password?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -30591,7 +30667,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
-    level?: NullableStringFieldUpdateOperationsInput | string | null
+    level?: NullableEnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel | null
     password?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -30683,7 +30759,7 @@ export namespace Prisma {
     phone?: string | null
     email: string
     location?: string | null
-    level?: string | null
+    level?: $Enums.UserLevel | null
     password?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
@@ -30714,7 +30790,7 @@ export namespace Prisma {
     phone?: string | null
     email: string
     location?: string | null
-    level?: string | null
+    level?: $Enums.UserLevel | null
     password?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
@@ -30797,7 +30873,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
-    level?: NullableStringFieldUpdateOperationsInput | string | null
+    level?: NullableEnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel | null
     password?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -30827,7 +30903,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
-    level?: NullableStringFieldUpdateOperationsInput | string | null
+    level?: NullableEnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel | null
     password?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -31460,7 +31536,7 @@ export namespace Prisma {
     phone?: string | null
     email: string
     location?: string | null
-    level?: string | null
+    level?: $Enums.UserLevel | null
     password?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
@@ -31491,7 +31567,7 @@ export namespace Prisma {
     phone?: string | null
     email: string
     location?: string | null
-    level?: string | null
+    level?: $Enums.UserLevel | null
     password?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
@@ -31600,7 +31676,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
-    level?: NullableStringFieldUpdateOperationsInput | string | null
+    level?: NullableEnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel | null
     password?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -31630,7 +31706,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
-    level?: NullableStringFieldUpdateOperationsInput | string | null
+    level?: NullableEnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel | null
     password?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -31693,7 +31769,7 @@ export namespace Prisma {
     phone?: string | null
     email: string
     location?: string | null
-    level?: string | null
+    level?: $Enums.UserLevel | null
     password?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
@@ -31724,7 +31800,7 @@ export namespace Prisma {
     phone?: string | null
     email: string
     location?: string | null
-    level?: string | null
+    level?: $Enums.UserLevel | null
     password?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
@@ -31805,7 +31881,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
-    level?: NullableStringFieldUpdateOperationsInput | string | null
+    level?: NullableEnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel | null
     password?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -31835,7 +31911,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
-    level?: NullableStringFieldUpdateOperationsInput | string | null
+    level?: NullableEnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel | null
     password?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -31905,7 +31981,7 @@ export namespace Prisma {
     phone?: string | null
     email: string
     location?: string | null
-    level?: string | null
+    level?: $Enums.UserLevel | null
     password?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
@@ -31936,7 +32012,7 @@ export namespace Prisma {
     phone?: string | null
     email: string
     location?: string | null
-    level?: string | null
+    level?: $Enums.UserLevel | null
     password?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
@@ -31982,7 +32058,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
-    level?: NullableStringFieldUpdateOperationsInput | string | null
+    level?: NullableEnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel | null
     password?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -32012,7 +32088,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
-    level?: NullableStringFieldUpdateOperationsInput | string | null
+    level?: NullableEnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel | null
     password?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -32043,7 +32119,7 @@ export namespace Prisma {
     phone?: string | null
     email: string
     location?: string | null
-    level?: string | null
+    level?: $Enums.UserLevel | null
     password?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
@@ -32074,7 +32150,7 @@ export namespace Prisma {
     phone?: string | null
     email: string
     location?: string | null
-    level?: string | null
+    level?: $Enums.UserLevel | null
     password?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
@@ -32151,7 +32227,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
-    level?: NullableStringFieldUpdateOperationsInput | string | null
+    level?: NullableEnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel | null
     password?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -32181,7 +32257,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
-    level?: NullableStringFieldUpdateOperationsInput | string | null
+    level?: NullableEnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel | null
     password?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -32247,7 +32323,7 @@ export namespace Prisma {
     phone?: string | null
     email: string
     location?: string | null
-    level?: string | null
+    level?: $Enums.UserLevel | null
     password?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
@@ -32278,7 +32354,7 @@ export namespace Prisma {
     phone?: string | null
     email: string
     location?: string | null
-    level?: string | null
+    level?: $Enums.UserLevel | null
     password?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
@@ -32314,7 +32390,7 @@ export namespace Prisma {
     phone?: string | null
     email: string
     location?: string | null
-    level?: string | null
+    level?: $Enums.UserLevel | null
     password?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
@@ -32345,7 +32421,7 @@ export namespace Prisma {
     phone?: string | null
     email: string
     location?: string | null
-    level?: string | null
+    level?: $Enums.UserLevel | null
     password?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
@@ -32391,7 +32467,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
-    level?: NullableStringFieldUpdateOperationsInput | string | null
+    level?: NullableEnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel | null
     password?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -32421,7 +32497,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
-    level?: NullableStringFieldUpdateOperationsInput | string | null
+    level?: NullableEnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel | null
     password?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -32462,7 +32538,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
-    level?: NullableStringFieldUpdateOperationsInput | string | null
+    level?: NullableEnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel | null
     password?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -32492,7 +32568,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
-    level?: NullableStringFieldUpdateOperationsInput | string | null
+    level?: NullableEnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel | null
     password?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -32523,7 +32599,7 @@ export namespace Prisma {
     phone?: string | null
     email: string
     location?: string | null
-    level?: string | null
+    level?: $Enums.UserLevel | null
     password?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
@@ -32554,7 +32630,7 @@ export namespace Prisma {
     phone?: string | null
     email: string
     location?: string | null
-    level?: string | null
+    level?: $Enums.UserLevel | null
     password?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
@@ -32680,7 +32756,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
-    level?: NullableStringFieldUpdateOperationsInput | string | null
+    level?: NullableEnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel | null
     password?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -32710,7 +32786,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
-    level?: NullableStringFieldUpdateOperationsInput | string | null
+    level?: NullableEnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel | null
     password?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null

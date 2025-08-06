@@ -4,6 +4,7 @@ import { userService } from "./user.service";
 import sendResponse from "../../../shared/ApiResponse";
 import httpstatus from 'http-status'
 import ApiError from "../../../errors/ApiError";
+import { UserRole } from "../../../prismaClient";
 
 
 
@@ -18,12 +19,12 @@ const getUsers = catchAsync(async (req:Request, res:Response)=>{
     })
 })
 
-const updateUser = catchAsync(async (req:Request, res:Response)=>{
+const updateUserProfile = catchAsync(async (req:Request, res:Response)=>{
 
     const body = req.body
     const user = req.user
 
-    const updatedData = await userService.updateUser(user.id,body)
+    const updatedData = await userService.updateProfile(user.id,body)
 
     sendResponse(res, {
         success:true,
@@ -33,6 +34,23 @@ const updateUser = catchAsync(async (req:Request, res:Response)=>{
     })
 })
 
+
+const updateUser = catchAsync(async (req:Request, res:Response)=>{
+
+    const body = req.body
+    const user = req.user
+    const {userId} = req.params
+
+
+    const updatedData = await userService.updateUser(user.id,userId,body)
+
+    sendResponse(res, {
+        success:true,
+        statusCode:httpstatus.OK,
+        message:"User updated successfully",
+        data:updatedData
+    })
+})
 const updateAvatar = catchAsync (async (req:Request, res:Response)=>{
     const file = req.file
 })
@@ -73,7 +91,7 @@ const uploadAvatar = catchAsync(async (req:Request, res:Response)=>{
         throw new ApiError(httpstatus.NOT_FOUND, "file is required")
     }
 
-    const uploadedFilePath = await userService.uploadAvatar(userId,req.file)
+    const uploadedFilePath = await userService.updateProfilePhoto(userId,req.file)
 
     sendResponse(res, {
         success:true,
@@ -91,7 +109,7 @@ const uploadCover = catchAsync(async (req:Request, res:Response)=>{
         throw new ApiError(httpstatus.NOT_FOUND, "file is required")
     }
 
-    const uploadedFilePath = await userService.uploadCover(userId,req.file)
+    const uploadedFilePath = await userService.updateCoverPhoto(userId,req.file)
 
     sendResponse(res, {
         success:true,
@@ -150,6 +168,7 @@ export const userController = {
     forgetPassword,
     verifyOtp,
     updateUser,
+    updateUserProfile,
     getUserDetails,
     resetPassword,
     uploadCover

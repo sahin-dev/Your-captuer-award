@@ -359,6 +359,18 @@ exports.TeamMemberStatus = exports.$Enums.TeamMemberStatus = {
   BLOCKED: 'BLOCKED'
 };
 
+exports.UserLevel = exports.$Enums.UserLevel = {
+  APPRENTICE: 'APPRENTICE',
+  STUDENT: 'STUDENT',
+  TRAINED: 'TRAINED',
+  TALENTED: 'TALENTED',
+  CONTENDER: 'CONTENDER',
+  VIRTUOSO: 'VIRTUOSO',
+  LEADER: 'LEADER',
+  AVANTGARDE: 'AVANTGARDE',
+  PRO: 'PRO'
+};
+
 exports.UserRole = exports.$Enums.UserRole = {
   USER: 'USER',
   ADMIN: 'ADMIN'

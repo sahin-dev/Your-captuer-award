@@ -7,8 +7,8 @@ import { fileUploader } from "../../../helpers/fileUploader"
 import { generateOtp } from "../../../helpers/generateOtp"
 import mailer from "../../../shared/mailSender"
 import { hashing } from "../../../helpers/hash"
-import { OtpStatus } from "../../../prismaClient"
-import { userUpdateData } from "./user.types"
+import { OtpStatus, UserRole } from "../../../prismaClient"
+import { userAdminUpdateData, userUpdateData } from "./user.types"
 
 
 
@@ -61,8 +61,36 @@ const updateCoverPhoto = async (userId:string, file: Express.Multer.File)=>{
 
 
 
-const updateUser = async (userId:string,userData:userUpdateData)=>{
+const updateUser = async (adminId:string,userId:string,userData:userAdminUpdateData)=>{
+    const admin = await prisma.user.findUnique({where:{id:adminId}})
+
+    if(!admin || (admin.role !== UserRole.ADMIN)){
+        throw new ApiError(httpstatus.FORBIDDEN, "you can not update the profile")
+    }
+
     const user = await prisma.user.findUnique({where:{id:userId}})
+
+    if(!user){
+        throw new ApiError(httpstatus.NOT_FOUND, "User not found")
+    }
+
+
+    const updatedUser = await prisma.user.update({where:{id:user.id}, data:{
+        firstName:userData.firstName,
+        lastName:userData.lastName,
+        location:userData.location,
+        level: userData.level
+    }})
+
+    return UserDto(updatedUser)
+}
+
+
+const updateProfile = async (userId:string,userData:userUpdateData)=>{
+
+
+    const user = await prisma.user.findUnique({where:{id:userId}})
+    
     if(!user){
         throw new ApiError(httpstatus.NOT_FOUND, "User not found")
     }
@@ -163,6 +191,8 @@ const forgetPassword = async ( email:string)=>{
     const otp = generateOtp()
     const expires_in = new Date(Date.now() + 5 * 60 * 1000)
 
+
+
     if(existingOtp){
         await prisma.otp.update({where:{userId:user.id}, data:{code:otp,expires_in, expiresAt:expires_in}})
     }else{
@@ -221,11 +251,13 @@ export const userService = {
     getUsers,
     updateUser,
     resetPassword,
-    uploadAvatar,
+    updateCoverPhoto,
+    updateProfilePhoto,
     forgetPassword,
     getUserBySocialId,
     verifyOtp,
     getUserDetails,
     changePassword,
-    uploadCover
+    updateProfile
+    
 }

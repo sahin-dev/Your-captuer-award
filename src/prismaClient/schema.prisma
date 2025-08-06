@@ -278,7 +278,7 @@ model User {
   phone              String?
   email              String               @unique
   location           String?
-  level              String?              @default("Beginner")
+  level              UserLevel?           @default(APPRENTICE)
   password           String?
   role               UserRole             @default(USER)
   accessToken        String?
@@ -410,6 +410,18 @@ model Vote {
 
 //   @@map("loves")
 // }
+
+enum UserLevel {
+  APPRENTICE
+  STUDENT
+  TRAINED
+  TALENTED
+  CONTENDER
+  VIRTUOSO
+  LEADER
+  AVANTGARDE
+  PRO
+}
 
 enum UserRole {
   USER
