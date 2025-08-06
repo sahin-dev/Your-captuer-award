@@ -1,5 +1,16 @@
 import z from "zod";
+import { IUser } from "./user.interface";
 
+
+const updateUserSchema = z.object({
+    firstName:z.string().optional(),
+    lastName:z.string().optional(),
+    location: z.string().optional(),
+
+})
+// .transform(data => {
+//     return Object.fromEntries( Object.entries(data).filter( ([_, v])=> v!== null))
+// })
 
 const resetPasswordSchema = z.object({
     email:z.string().email({message:"email is not valid"}),
@@ -12,5 +23,6 @@ const resetPasswordSchema = z.object({
 
 export const userSchema = {
 
-    resetPasswordSchema
+    resetPasswordSchema,
+    updateUserSchema
 }

@@ -20,11 +20,10 @@ const getUsers = catchAsync(async (req:Request, res:Response)=>{
 
 const updateUser = catchAsync(async (req:Request, res:Response)=>{
 
-    const file = req.file
-    const body = JSON.parse(req.body.data)
+    const body = req.body
     const user = req.user
 
-    const updatedData = await userService.updateUser(user.id,body, file)
+    const updatedData = await userService.updateUser(user.id,body)
 
     sendResponse(res, {
         success:true,
@@ -34,6 +33,9 @@ const updateUser = catchAsync(async (req:Request, res:Response)=>{
     })
 })
 
+const updateAvatar = catchAsync (async (req:Request, res:Response)=>{
+    const file = req.file
+})
 
 const getUserDetails = catchAsync(async (req:Request, res:Response)=>{
     const {userId} = req.params
@@ -65,16 +67,36 @@ const resetPassword = catchAsync(async (req:Request, res:Response)=>{
 
 
 const uploadAvatar = catchAsync(async (req:Request, res:Response)=>{
+    const userId = req.user.id
+
     if (!req.file){
         throw new ApiError(httpstatus.NOT_FOUND, "file is required")
     }
 
-    const uploadedFilePath = await userService.uploadAvatar(req.file)
+    const uploadedFilePath = await userService.uploadAvatar(userId,req.file)
 
     sendResponse(res, {
         success:true,
         statusCode:httpstatus.OK,
-        message:"Photo uploaded successfully",
+        message:"Avatar uploaded successfully",
+        data:uploadedFilePath
+    })
+})
+
+
+const uploadCover = catchAsync(async (req:Request, res:Response)=>{
+    const userId = req.user.id
+
+    if (!req.file){
+        throw new ApiError(httpstatus.NOT_FOUND, "file is required")
+    }
+
+    const uploadedFilePath = await userService.uploadCover(userId,req.file)
+
+    sendResponse(res, {
+        success:true,
+        statusCode:httpstatus.OK,
+        message:"Cover Photo uploaded successfully",
         data:uploadedFilePath
     })
 })
@@ -129,5 +151,6 @@ export const userController = {
     verifyOtp,
     updateUser,
     getUserDetails,
-    resetPassword
+    resetPassword,
+    uploadCover
 }

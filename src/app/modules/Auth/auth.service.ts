@@ -30,7 +30,7 @@ export const handleRegister = async (body:UserRegistrationData)=>{
 
 
 
-    const createdUser = await prisma.user.create({data:{firstName:body.firstname, lastName:body.lastname,email:body.email as string, password:hashedPassword,phone:body.phone}})
+    const createdUser = await prisma.user.create({data:{firstName:body.firstName, lastName:body.lastName,email:body.email as string, password:hashedPassword,phone:body.phone}})
 
     //Publish a event: New user registered
 

@@ -42,6 +42,7 @@ const uploadSingle = upload.single("image");
 const uploadFile = upload.single("file");
 
 const uploadAvatar = upload.single("avatar")
+const uploadCover = upload.single("cover")
 const uploadBadge = upload.single("badge")
 const contestBanner = upload.single("banner");
 
@@ -146,5 +147,6 @@ export const fileUploader = {
   uploadToCloudinary,
   uploadAvatar,
   uploadBadge, 
-  contestBanner
+  contestBanner,
+  uploadCover
 };

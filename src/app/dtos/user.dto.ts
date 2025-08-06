@@ -1,4 +1,6 @@
-import { User } from "@prisma/client";
+import { User } from "../../prismaClient";
+
+
 
 export const UserDto = (user:User)=>{
 
@@ -10,6 +12,9 @@ export const UserDto = (user:User)=>{
         email: user.email,
         role: user.role,
         phone: user.phone,
-        avatar: user.avatar
+        avatar: user.avatar,
+        cover: user.cover,
+        level:user.level,
+        location: user.location
     }
 }

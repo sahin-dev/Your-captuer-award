@@ -1,46 +1,77 @@
 import ApiError from "../../../errors/ApiError"
 import prisma from "../../../shared/prisma"
-import { IPasswordUpdate, IUser, IUserUpdate } from "./user.interface"
+import { IPasswordUpdate, IUser } from "./user.interface"
 import httpstatus from 'http-status'
-import bcrypt from 'bcryptjs'
-import config from "../../../config"
 import { UserDto } from "../../dtos/user.dto"
 import { fileUploader } from "../../../helpers/fileUploader"
 import { generateOtp } from "../../../helpers/generateOtp"
-import { OtpStatus } from "@prisma/client"
 import mailer from "../../../shared/mailSender"
 import { hashing } from "../../../helpers/hash"
+import { OtpStatus } from "../../../prismaClient"
+import { userUpdateData } from "./user.types"
 
 
 
 
 const getUsers = async ()=>{
-    const users = await prisma.user.findMany()
+    const users = await prisma.user.findMany({omit:{password:true, createdAt:true, updatedAt:true,accessToken:true}})
 
-    const mappedUsers = users.map((user)=>{
-        return UserDto(user)
-    })
+    // const mappedUsers = users.map((user)=>{
+    //     return UserDto(user)
+    // })
 
-    return mappedUsers
+    return users
 }
 
-const updateUser = async (userId:string,userData:Partial<IUser>, file?:Express.Multer.File)=>{
+
+const updateProfilePhoto = async (userId:string, file: Express.Multer.File)=>{
+    const user = await prisma.user.findUnique({where:{id:userId}})
+
+    if(!user){
+        throw new ApiError(httpstatus.NOT_FOUND, "user not found")
+    }
+    if(!file){
+        throw new ApiError(httpstatus.BAD_REQUEST, "avatar photo is required")
+    }
+
+    let url = await fileUploader.uploadToDigitalOcean(file)
+
+    await prisma.user.update({where:{id:userId}, data:{avatar:url.Location}})
+
+    return "Cover photo updated!"
+}
+
+
+const updateCoverPhoto = async (userId:string, file: Express.Multer.File)=>{
+    const user = await prisma.user.findUnique({where:{id:userId}})
+
+    if(!user){
+        throw new ApiError(httpstatus.NOT_FOUND, "user not found")
+    }
+    if(!file){
+        throw new ApiError(httpstatus.BAD_REQUEST, "cover photo is required")
+    }
+
+    let url = await fileUploader.uploadToDigitalOcean(file)
+
+    await prisma.user.update({where:{id:userId}, data:{cover:url.Location}})
+
+    return "Cover photo updated!"
+}
+
+
+
+const updateUser = async (userId:string,userData:userUpdateData)=>{
     const user = await prisma.user.findUnique({where:{id:userId}})
     if(!user){
         throw new ApiError(httpstatus.NOT_FOUND, "User not found")
     }
-    let updatedAvatarUrl = null
 
-    if(file){
-        let fileData = await fileUploader.uploadToDigitalOcean(file)
-        updatedAvatarUrl = fileData.Location
-    }
 
     const updatedUser = await prisma.user.update({where:{id:user.id}, data:{
         firstName:userData.firstName,
         lastName:userData.lastName,
-        phone:userData.phone,
-        avatar:updatedAvatarUrl || user.avatar
+        location:userData.location,
     }})
 
     return UserDto(updatedUser)
@@ -48,12 +79,12 @@ const updateUser = async (userId:string,userData:Partial<IUser>, file?:Express.M
 
 const getUserDetails = async (userId:string)=>{
 
-    const user = await prisma.user.findUnique({where:{id:userId}})
+    const user = await prisma.user.findUnique({where:{id:userId}, omit:{password:true, createdAt:true, updatedAt:true,accessToken:true}})
     if(!user){
         throw new ApiError(httpstatus.NOT_FOUND, "User not found")
     }
 
-    return UserDto(user)
+    return user
 }
 
 const changePassword = async (userId:string, newPassword:string)=>{
@@ -92,15 +123,32 @@ const resetPassword = async (email:string,passwordData:IPasswordUpdate, token:st
     return UserDto(updatedUser)
 }
 
-const uploadAvatar = async (file:Express.Multer.File)=>{
+const uploadAvatar = async (userId:string,file:Express.Multer.File)=>{
 
     if (!file){
         throw new ApiError(httpstatus.BAD_REQUEST, "File is required")
     }
 
-    const uploadedFile = fileUploader.uploadToDigitalOcean(file)
+    const uploadedFile = await fileUploader.uploadToDigitalOcean(file)
 
-    return uploadedFile
+    await prisma.user.update({where:{id:userId}, data:{avatar:uploadedFile.Location}})
+
+    return "avatar updated successfully"
+
+}
+
+
+const uploadCover = async (userId:string,file:Express.Multer.File)=>{
+
+    if (!file){
+        throw new ApiError(httpstatus.BAD_REQUEST, "File is required")
+    }
+
+    const uploadedFile = await fileUploader.uploadToDigitalOcean(file)
+
+    await prisma.user.update({where:{id:userId}, data:{cover:uploadedFile.Location}})
+
+    return "cover updated successfully"
 
 }
 
@@ -178,5 +226,6 @@ export const userService = {
     getUserBySocialId,
     verifyOtp,
     getUserDetails,
-    changePassword
+    changePassword,
+    uploadCover
 }
