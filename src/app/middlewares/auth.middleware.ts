@@ -16,6 +16,10 @@ const auth = (...roles: string[]) => {
     next: NextFunction
   ) => {
     try {
+
+      if(!req.headers.authorization){
+        throw new ApiError(httpStatus.FORBIDDEN, "authorization header is not present with request headers")
+      }
       const token = req.headers.authorization?.split(' ')[1];
     
 
@@ -28,7 +32,8 @@ const auth = (...roles: string[]) => {
         config.jwt.jwt_secret as Secret
       );
    
-      const { id, role, email, iat } = verifiedUser;
+      const { id, role, iat } = verifiedUser;
+
 
       const user = await prisma.user.findUnique({
         where: {

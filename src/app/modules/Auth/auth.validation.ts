@@ -14,5 +14,7 @@ export const userRegistrationSchema = z.object({
     lastname:z.string({required_error:"last name is required"}),
     email:z.string().email({message:"Email is invalid"}),
     phone:z.string({required_error:"phone is required"}),
-    password:z.string({required_error:"password is required"})
+    password:z.string({required_error:"password is required"}),
+    confirmPassword: z.string().optional()
 })
+

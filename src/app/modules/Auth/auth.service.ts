@@ -10,9 +10,10 @@ import { UserDto } from "../../dtos/user.dto"
 import { IUser } from "../User/user.interface"
 import globalEventHandler from "../../event/eventEmitter"
 import Events from "../../event/events.constant"
+import { UserRegistrationData, UserSignInData } from "./auth.types"
 
 
-export const handleRegister = async (body:IUser)=>{
+export const handleRegister = async (body:UserRegistrationData)=>{
 
     const existingUser = await prisma.user.findFirst({where:{email:body.email}})
    
@@ -21,15 +22,15 @@ export const handleRegister = async (body:IUser)=>{
         throw new ApiError(httpstatus.CONFLICT, "user already exist with this email")
     }
 
-    if (body.password !== body.confirmPassword){
-        throw new ApiError(httpstatus.BAD_REQUEST, "Password not matched")
+    if ( body.confirmPassword && (body.password !== body.confirmPassword)){
+        throw new ApiError(httpstatus.BAD_REQUEST, "Password does not not matched")
     }
 
     const hashedPassword = await bcrypt.hash(body.password as string, parseInt(config.bcrypt_salt_rounds as string))
 
 
 
-    const createdUser = await prisma.user.create({data:{firstName:body.firstName, lastName:body.lastName,email:body.email as string, password:hashedPassword,phone:body.phone}})
+    const createdUser = await prisma.user.create({data:{firstName:body.firstname, lastName:body.lastname,email:body.email as string, password:hashedPassword,phone:body.phone}})
 
     //Publish a event: New user registered
 
@@ -53,7 +54,7 @@ export const handleRegister = async (body:IUser)=>{
 }
 
 
-export const handleSignIn = async(body:UserSignIn)=>{
+export const handleSignIn = async(body:UserSignInData)=>{
     
     const user = await prisma.user.findFirst({where:{OR:[{email:body.emailorusername}, {username:body.emailorusername}]}})
 

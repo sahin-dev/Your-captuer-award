@@ -2,9 +2,10 @@ import { Router } from "express";
 import { userController } from "./user.controller";
 import { fileUploader } from "../../../helpers/fileUploader";
 import auth from "../../middlewares/auth.middleware";
-import { UserRole } from "@prisma/client";
 import validateRequest from "../../middlewares/validation.middleware";
 import { userSchema } from "./user.validation";
+import { UserRole } from "../../../prismaClient";
+
 
 
 

@@ -7,6 +7,7 @@ import httpstatus from 'http-status'
 
 export const registerUser = catchAsync(async (req:Request, res:Response)=>{
     const body = req.body
+    console.log(body)
 
     const registerData = await handleRegister(body)
     res.cookie("token", registerData.token, {

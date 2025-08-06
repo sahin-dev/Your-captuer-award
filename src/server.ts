@@ -5,6 +5,7 @@ import app from "./app";
 import { setupWebSocket } from "./helpers/websocketSetUp";
 import "./app/modules/Agenda";
 import agenda from "./app/modules/Agenda";
+import prisma from "./shared/prisma";
 
 
 let server: Server;
@@ -34,6 +35,7 @@ async function main() {
       server.close(() => {
         console.info("Server closed!");
         agenda.stop();
+        prisma.$disconnect()
         // restartServer();
       });
     } else {
@@ -64,6 +66,7 @@ async function main() {
 
   process.on("SIGINT", () => {
     console.log("SIGINT signal received. Shutting down gracefully...");
+  
     exitHandler();
   });
 }

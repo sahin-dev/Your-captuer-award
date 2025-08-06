@@ -2,7 +2,9 @@ import {Router} from 'express'
 import { fileUploader } from '../../../helpers/fileUploader'
 import { createContest, getContestById, getContests, joinContest, updateContestDetails } from './contest.controller'
 import auth from '../../middlewares/auth.middleware'
-import { UserRole } from '@prisma/client'
+import { UserRole } from '../../../prismaClient'
+
+
 
 
 

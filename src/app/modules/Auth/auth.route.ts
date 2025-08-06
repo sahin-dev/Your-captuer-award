@@ -6,14 +6,17 @@ import passport from "passport";
 import googleStrategy from "../../passportStrategies/google.strategy";
 import facebookStrategy from "../../passportStrategies/facebook.strategy";
 import validateRequest from "../../middlewares/validation.middleware";
-import { userRegistrationSchema } from "./auth.validation";
+import { SignInSchema, userRegistrationSchema } from "./auth.validation";
 
 
 const router = Router()
 
-router.post("/signin", SignIn)
+router.post("/signin", validateRequest(SignInSchema), SignIn)
+
 router.post('/signout',auth(), SignOut)
+
 router.get("/me",auth(), getAuthenticatedUser)
+
 router.post("/register", validateRequest(userRegistrationSchema), registerUser)
 
 

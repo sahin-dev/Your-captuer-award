@@ -1,4 +1,4 @@
-import { Contest, ContestStatus, ContestType, RecurringContest, RecurringData, RecurringType } from '@prisma/client';
+import { Contest, ContestStatus, ContestType, RecurringContest, RecurringData, RecurringType } from '../../../prismaClient';
 import { Job } from "agenda";
 import prisma from '../../../shared/prisma';
 import agenda from "./init";

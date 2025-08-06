@@ -1,13 +1,9 @@
 import {NextFunction, Request, Response} from 'express'
-import { Profile } from "passport-google-oauth20";
 import { generateToken } from "../../../helpers/jwt";
 import ApiError from "../../../errors/ApiError";
 import httpStatus from "http-status";
-import googlePassport from "../../passportStrategies/google.strategy"
 import { failureRedirect } from './auth.constant';
-import { userService } from '../User/user.service';
 import prisma from '../../../shared/prisma';
-import { IUserRegister } from '../User/user.interface';
 import passport from 'passport';
 
 

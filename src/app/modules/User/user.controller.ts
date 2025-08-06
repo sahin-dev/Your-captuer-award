@@ -110,7 +110,14 @@ export const changePassword = catchAsync(async (req:any, res:Response)=>{
     const userId = req.user.id
     const {newPassword} = req.body
 
-    const result = await userService.changePassword(usersId, newPassword).
+    const result = await userService.changePassword(userId, newPassword)
+
+    sendResponse(res, {
+        success:true,
+        statusCode: httpstatus.OK,
+        message:"Password changed successfully",
+        data:result
+    })
     
 })
 

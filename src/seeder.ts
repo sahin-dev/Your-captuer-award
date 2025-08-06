@@ -1,4 +1,5 @@
-import { PrismaClient } from "@prisma/client"
+import bcrypt from 'bcryptjs'
+import { PrismaClient, UserRole } from "./prismaClient"
 
 class DatabaseSeeder {
 
@@ -16,8 +17,24 @@ class DatabaseSeeder {
          if (!dbUrl){
             throw new Error("Database is not defined")
          }
-        this.client = new PrismaClient()
+        this.client = new PrismaClient({datasourceUrl:dbUrl})
 
+    }
+
+    async createAdmin(email:string, password:string){
+        let existingAdmin = await this.client?.user.findUnique({where:{email}})
+        if(existingAdmin){
+            console.log("user with this email already exist")
+            return
+        }
+        let hashedPassword = await bcrypt.hash(password, 12)
+       let admin =  await this.client?.user.create({data:{email, password:hashedPassword, username:"admin", role:UserRole.ADMIN},omit:{level:true}})
+       if(admin){
+        
+            console.log(`Admin Created.\nEmail: ${email}.\nPassowrd:${password}`)
+       }else {
+            console.log('Admin creation failed!')
+       }
     }
 
     reset ():void{
@@ -26,7 +43,9 @@ class DatabaseSeeder {
         }
         this.client.user.deleteMany()
     }
-    
+    destroyClient(){
+        this.client?.$disconnect()
+    }
 
 }
 
@@ -41,7 +60,14 @@ function  SeederCLI (){
             seeder.reset()
             console.log("Databse reset successfully")
             break
+        case "create:admin":
+            let adminEmail = process.env.ADMIN_EMAIL || 'admin@email.com'
+            let adminPassword = process.env.ADMIN_PASSWORD ||'admin1122'
+            seeder.createAdmin(adminEmail, adminPassword)
+
         default:
+            seeder.destroyClient()
+
             
     }
 }
