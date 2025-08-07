@@ -1,6 +1,7 @@
 
 import { RecurringType } from '../../../prismaClient';
 import { z } from 'zod';
+import { contestRuleSchema } from './ContestRules/contestRule.validation';
 
 
 const contestAwardSchema = z.object({
@@ -18,7 +19,7 @@ export const createContestSchema = z.object({
         recurring: z.boolean({invalid_type_error: "Recurring must be a boolean"}),
         recurringType: z.nativeEnum(RecurringType, {invalid_type_error:"Invalid recurring type"}).optional(),
         awards: z.array(contestAwardSchema, {invalid_type_error:"invalid type contest award"}),
-        rules:z.array(contestRules,{invalid_type_error:"invalid type contest rule"}),
+        rules:z.array(contestRuleSchema,{invalid_type_error:"invalid type contest rule"}),
         startDate: z.string().nonempty("start date must not be empty"),
         endDate: z.string().nonempty('End Date is required'),
     })
