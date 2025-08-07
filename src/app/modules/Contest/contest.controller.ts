@@ -1,6 +1,6 @@
 import { Response } from "express";
 import sendResponse from "../../../shared/ApiResponse";
-import { handleCreateContest, handleGetAllContests, handleGetContestById, handleJoinContest, handleUpdateContest } from "./contest.service";
+import {contestService} from "./contest.service";
 import { IContest } from "./contest.interface";
 import catchAsync from "../../../shared/catchAsync";
 
@@ -9,6 +9,9 @@ import catchAsync from "../../../shared/catchAsync";
 
 export const createContest = catchAsync( async (req: any, res: Response) => {
     const creatorId = req.user.id; // Assuming user ID is stored in req.user
+    const banner = req.file
+
+
 
     const body:IContest = req.body; // Parse the JSON data from the request body
     
@@ -16,7 +19,7 @@ export const createContest = catchAsync( async (req: any, res: Response) => {
    
 
 
-    const contest = await handleCreateContest(creatorId, body, req.file);
+    const contest = await contestService.createContest(creatorId, body, req.file);
     
     sendResponse(res, {
         statusCode: 201,    
@@ -27,7 +30,7 @@ export const createContest = catchAsync( async (req: any, res: Response) => {
 })
 
 export const getContests = catchAsync(async (req:any, res:Response)=>{
-    const contests = await handleGetAllContests()
+    const contests = await contestService.getAllContests()
 
     sendResponse(res, {
         statusCode:200,
@@ -39,7 +42,7 @@ export const getContests = catchAsync(async (req:any, res:Response)=>{
 
 export const getContestById = catchAsync(async (req:any, res:Response)=>{
     const {contestId} = req.params
-    const contest = await handleGetContestById(contestId)
+    const contest = await contestService.getContestById(contestId)
 
     sendResponse(res, {
         statusCode:200,
@@ -53,7 +56,7 @@ export const updateContestDetails = catchAsync(async (req:any, res:Response)=>{
     const {contestId} = req.params
     const contestData:Partial<IContest> = req.body
 
-    const contest = await handleUpdateContest(contestId, contestData)
+    const contest = await contestService.updateContest(contestId, contestData)
 
     sendResponse(res, {
         statusCode:200,
@@ -67,7 +70,7 @@ export const joinContest = catchAsync(async (req:any, res:Response)=>{
     const userId = req.user.id
     const {contestId} = req.params
 
-    const joinData = await handleJoinContest(userId, contestId)
+    const joinData = await contestService.joinContest(userId, contestId)
 
     sendResponse(res, {
         statusCode:200,
@@ -77,3 +80,36 @@ export const joinContest = catchAsync(async (req:any, res:Response)=>{
     })
 })
 
+const getUploadedPhotos =  catchAsync(async  (req:any, res: Response)=>{
+    const {contestId} = req.params
+
+    const uploadedPhotos = await contestService.getContestUploads(contestId)
+
+     sendResponse(res, {
+        statusCode:200,
+        success:true,
+        message:"photos fetched successfully",
+        data:uploadedPhotos
+    })
+})
+
+
+
+const uploadPhoto = catchAsync(async (req:any, res:Response)=>{
+    const userId =req.user.identifyWinner
+    const {contestId, photoId} = req.body
+
+    const uploadedPhotoData = await contestService.uploadPhotoToContest(contestId, userId, photoId)
+
+     sendResponse(res, {
+        statusCode:200,
+        success:true,
+        message:"photo submit to contest successfully",
+        data:uploadedPhotoData
+    })
+})
+
+export const contestController = {
+    uploadPhoto,
+    getUploadedPhotos
+}

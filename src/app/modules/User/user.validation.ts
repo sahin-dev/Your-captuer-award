@@ -20,19 +20,33 @@ const updateUserAdminSchema = z.object({
 const forgetPasswordSchema = z.object({
     email:z.string({required_error:"Email is required"}).email({message:"Email is invalid"})
 })
+
 const resetPasswordSchema = z.object({
     email:z.string().email({message:"email is not valid"}),
     token: z.string(),
     password: z.string(),
     confirmPassword: z.string(),
 
-}).refine(data => data.password === data.confirmPassword, {message:"Password do not match", path:['confirmPassword']})
+}).refine(data => data.password === data.confirmPassword, {message:"Password does not match", path:['confirmPassword']})
 
+
+const changePasswordSchema = z.object({
+    oldPassword: z.string(),
+    newPassword: z.string(),
+
+})
+
+const verifyOtpSchema = z.object({
+    email:z.string({required_error:"Email is required"}).email({message:"email is not valid"}),
+    code:z.string({required_error:"code is required"})
+})
 
 export const userSchema = {
 
     resetPasswordSchema,
     updateUserSchema,
     updateUserAdminSchema,
-    forgetPasswordSchema
+    forgetPasswordSchema,
+    changePasswordSchema,
+    verifyOtpSchema
 }

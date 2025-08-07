@@ -1,4 +1,4 @@
-import { RecurringType } from "@prisma/client";
+import { RecurringType } from "../../../prismaClient";
 
 export interface IContest {
     title: string;    

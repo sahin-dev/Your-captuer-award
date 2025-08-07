@@ -2,10 +2,8 @@ import prisma from '../../../shared/prisma';
 import ApiError from '../../../errors/ApiError';
 import httpstatus from 'http-status';
 import { fileUploader } from '../../../helpers/fileUploader';
-import { Contest, ContestParticipant, ContestStatus, ContestType, RecurringData, RecurringType } from '@prisma/client';
-import agenda from '../Agenda';
+import { Contest, ContestParticipant, ContestStatus, RecurringData } from '../../../prismaClient';
 import { IContest } from './contest.interface';
-import { stat } from 'fs';
 
 
 
@@ -13,36 +11,37 @@ import { stat } from 'fs';
 //Create a new contest
 
 
-export const handleCreateContest = async (creatorId: string, body: IContest, banner:Express.Multer.File) => {
+export const createContest = async (creatorId: string, body: IContest, banner:Express.Multer.File) => {
     let bannerUrl = null;
+    const contestData:any = {
+        creatorId,
+        title: body.title,
+        description: body.description,
+    }
 
     if (banner){
         bannerUrl = (await fileUploader.uploadToDigitalOcean(banner)).Location;
+        contestData.banner = bannerUrl
     }
-    console.log(body)
+    
     // Validate start and end dates
     const startDate = new Date(body.startDate);
     const endDate = new Date(body.endDate);
     const currentDate = new Date();
     
     //Check contest start date and end date
-         //If start date is before end date and start date is in the future
+         //that start date is not after end date and start date is in the future
     if (startDate >= endDate) {
         throw new ApiError(httpstatus.BAD_REQUEST, 'Start date must be before end date');
     }
     // If start date is in the past, throw an error
-    if (currentDate> startDate){
-        throw new ApiError(httpstatus.BAD_REQUEST, 'Start date must be in the future');
-    }
+    // if (currentDate> startDate){
+    //     throw new ApiError(httpstatus.BAD_REQUEST, 'Start date must be in the future');
+    // }
 
 
     // create separate contestData Object to pass prisma to ctreate contest
-    const contestData:any = {
-        creatorId,
-        title: body.title,
-        description: body.description,
-        banner: bannerUrl,
-    }
+    
     // If contest is money contest, add money contest data like max prize and min prize for the paerticipants
     // If isMoneyContest is not provided, it will default to false
 
@@ -90,7 +89,7 @@ const handleRecurringConetst = async ()=>{
 }
 
 
-export const handleUpdateContest = async (contestId:string, contestData:Partial<IContest>)=>{
+export const updateContest = async (contestId:string, contestData:Partial<IContest>)=>{
 
     const updatedContest = await prisma.contest.update({where:{id:contestId}, data:contestData})
 
@@ -104,7 +103,7 @@ export const handleUpdateContest = async (contestId:string, contestData:Partial<
 
 // add a user to the contest participant list
 
-export const handleJoinContest = async (userId:string,contestId:string)=>{
+export const joinContest = async (userId:string,contestId:string)=>{
     const contest = await prisma.contest.findUnique({where:{id:contestId}})
 
     if (!contest || contest.status != ContestStatus.OPEN){
@@ -122,7 +121,7 @@ export const handleJoinContest = async (userId:string,contestId:string)=>{
 }
 
 
-export const handleGetContestById = async (contestId: string) => {
+export const getContestById = async (contestId: string) => {
     const contest = await prisma.contest.findUnique({
         where: { id: contestId },
         include: { creator: true, participants: true }
@@ -134,7 +133,7 @@ export const handleGetContestById = async (contestId: string) => {
 // Get all the contests
 // This will be used to display all the contests in the contest page
 
-export const handleGetContests = async () => {
+export const getContests = async () => {
     const contests = await prisma.contest.findMany({
         include: { creator: true, participants: true }
     });
@@ -142,7 +141,7 @@ export const handleGetContests = async () => {
     return contests;
 };
 
-export const handleGetAllContests = async () => {
+export const getAllContests = async () => {
     const contests = await prisma.contest.findMany({    
         include: { creator: true, participants: true }
     });
@@ -150,7 +149,7 @@ export const handleGetAllContests = async () => {
 };
 
 
-export const handlGetContestsByStatus = async (userId:string,status: ContestStatus) => {
+export const getContestsByStatus = async (userId:string,status: ContestStatus) => {
     let contests :Contest[]= []
     
     let strStatus = status as string
@@ -188,7 +187,7 @@ export const handlGetContestsByStatus = async (userId:string,status: ContestStat
     return contests;
 };
 
-export const handleGetUpcomingContest = async () => {
+export const getUpcomingContest = async () => {
     const contests = await prisma.contest.findMany({
         where: { status: ContestStatus.UPCOMING },
         include: { creator: true}
@@ -198,7 +197,7 @@ export const handleGetUpcomingContest = async () => {
 
 //Get my contests which are completed
 
-export const handleGetMyCompletedContest = async (userId:string) => {
+export const getMyCompletedContest = async (userId:string) => {
     if (!userId){
         throw new ApiError(httpstatus.BAD_REQUEST, "User id is not provided")
     }
@@ -220,7 +219,7 @@ export const handleGetMyCompletedContest = async (userId:string) => {
 
 
 // Fetch completed contest details with winner
-export const handleGetClosedContestsWithWinner = async () => {
+export const getClosedContestsWithWinner = async () => {
     // Fetch contests with status 'COMPLETED' (enum)
     const contests = await prisma.contest.findMany({
         where: { status: ContestStatus.CLOSED },
@@ -297,4 +296,38 @@ export const rankingParticipant = async (participantId:string, contestId:string)
     }
 
     return 1
+}
+
+//Get contest uploaded images
+
+export const getContestUploads = async (contestId:string)=>{
+
+    const contestUploads = await prisma.contestPhoto.findMany({where:{contestId}})
+    return contestUploads
+}   
+
+export const uploadPhotoToContest = async (contestId:string,userId:string, photoId:string)=>{
+    const contest = prisma.contestParticipant.findFirst({where:{userId}})
+
+    if(!contest){
+        throw new ApiError(httpstatus.NOT_FOUND, "contest not found")
+    }
+    const uploadImage = prisma.contestPhoto.create({data:{contestId,participantId:userId,photoId}})
+
+    return uploadImage
+}
+
+export const contestService = {
+    createContest,
+    updateContest,
+    joinContest,
+    getContestById,
+    getAllContests,
+    getContests,
+    getContestsByStatus,
+    getUpcomingContest,
+    getMyCompletedContest,
+    getClosedContestsWithWinner,
+    getContestUploads,
+    uploadPhotoToContest
 }

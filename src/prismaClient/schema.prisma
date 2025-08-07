@@ -19,15 +19,28 @@ model Contest {
   creator       User                  @relation(fields: [creatorId], references: [id])
   participants  ContestParticipant[]
   votes         Vote[]
-  contestRules  ContestRules[]
+  contestRules  ContestRule[]
   contestAwards ContestAward[]
-  // photos      ContestPhoto[]
-  achievements  ContestAchievement[]
   recurringData RecurringContestData?
   createdAt     DateTime              @default(now())
   updatedAt     DateTime              @updatedAt
 
   @@map("contests")
+}
+
+model ContestRule {
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
+  icon        String?
+  name        String
+  description String
+  contestId   String  @db.ObjectId
+
+  contest Contest @relation(fields: [contestId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("contest_rules")
 }
 
 model RecurringContestData {
@@ -79,28 +92,13 @@ model ContestPhoto {
   @@map("contest_photos")
 }
 
-model ContestRules {
-  id        String @id @default(auto()) @map("_id") @db.ObjectId
-  contestId String @db.ObjectId
-  rules     String
-
-  submissionRule String
-
-  contest Contest @relation(fields: [contestId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@map("contest_rules")
-}
-
 model ContestWinner {
-  id              String             @id @default(auto()) @map("_id") @db.ObjectId
-  participantId   String             @db.ObjectId
-  contestId       String             @db.ObjectId
-  contestPhotoId  String             @db.ObjectId
-  achievementType AchievementsType
-  participant     ContestParticipant @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  id             String @id @default(auto()) @map("_id") @db.ObjectId
+  participantId  String @db.ObjectId
+  contestId      String @db.ObjectId
+  contestPhotoId String @db.ObjectId
+
+  participant ContestParticipant @relation(fields: [participantId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -125,15 +123,17 @@ model ContestParticipant {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@unique([contestId, userId])
   @@map("contest_participants")
 }
 
 model ContestAward {
-  id     String           @id @default(auto()) @map("_id") @db.ObjectId
-  type   AchievementsType
-  trade  Int              @default(20)
-  charge Int              @default(15)
-  key    Int              @default(40)
+  id       String    @id @default(auto()) @map("_id") @db.ObjectId
+  category AwardType
+  keys     String
+  trades   Int       @default(0)
+  charges  Int       @default(0)
+  key      Int       @default(0)
 
   contestId String  @db.ObjectId
   contest   Contest @relation(fields: [contestId], references: [id])
@@ -142,14 +142,14 @@ model ContestAward {
 }
 
 model ContestAchievement {
-  id            String           @id @default(auto()) @map("_id") @db.ObjectId
-  type          AchievementsType
-  photoId       String?          @db.ObjectId
-  participantId String?          @db.ObjectId
-  contestId     String           @db.ObjectId
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  category      AwardType
+  photoId       String?   @db.ObjectId
+  participantId String?   @db.ObjectId
+  contestId     String    @db.ObjectId
 
-  photo       ContestPhoto?       @relation(fields: [photoId], references: [id])
-  contest     Contest             @relation(fields: [contestId], references: [id])
+  photo ContestPhoto? @relation(fields: [photoId], references: [id])
+
   participant ContestParticipant? @relation(fields: [participantId], references: [id])
 
   createdAt DateTime @default(now())
@@ -165,9 +165,10 @@ type RecurringData {
   duration           Int           @default(0)
 }
 
-enum AchievementsType {
+enum AwardType {
   TOP_PHOTO
   TOP_PHOTOGRAPHER
+  TOP_YC_PICK
 }
 
 enum ContestStatus {

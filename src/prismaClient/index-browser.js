@@ -130,6 +130,16 @@ exports.Prisma.ContestScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.ContestRuleScalarFieldEnum = {
+  id: 'id',
+  icon: 'icon',
+  name: 'name',
+  description: 'description',
+  contestId: 'contestId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.RecurringContestDataScalarFieldEnum = {
   id: 'id',
   constestId: 'constestId',
@@ -162,21 +172,11 @@ exports.Prisma.ContestPhotoScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
-exports.Prisma.ContestRulesScalarFieldEnum = {
-  id: 'id',
-  contestId: 'contestId',
-  rules: 'rules',
-  submissionRule: 'submissionRule',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-};
-
 exports.Prisma.ContestWinnerScalarFieldEnum = {
   id: 'id',
   participantId: 'participantId',
   contestId: 'contestId',
   contestPhotoId: 'contestPhotoId',
-  achievementType: 'achievementType',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -194,16 +194,17 @@ exports.Prisma.ContestParticipantScalarFieldEnum = {
 
 exports.Prisma.ContestAwardScalarFieldEnum = {
   id: 'id',
-  type: 'type',
-  trade: 'trade',
-  charge: 'charge',
+  category: 'category',
+  keys: 'keys',
+  trades: 'trades',
+  charges: 'charges',
   key: 'key',
   contestId: 'contestId'
 };
 
 exports.Prisma.ContestAchievementScalarFieldEnum = {
   id: 'id',
-  type: 'type',
+  category: 'category',
   photoId: 'photoId',
   participantId: 'participantId',
   contestId: 'contestId',
@@ -330,11 +331,6 @@ exports.ContestStatus = exports.$Enums.ContestStatus = {
   CLOSED: 'CLOSED'
 };
 
-exports.AchievementsType = exports.$Enums.AchievementsType = {
-  TOP_PHOTO: 'TOP_PHOTO',
-  TOP_PHOTOGRAPHER: 'TOP_PHOTOGRAPHER'
-};
-
 exports.ContestParticipantStatus = exports.$Enums.ContestParticipantStatus = {
   ACTIVE: 'ACTIVE',
   BLOCKED: 'BLOCKED'
@@ -346,6 +342,12 @@ exports.ContestLevel = exports.$Enums.ContestLevel = {
   PREMIER: 'PREMIER',
   ELITE: 'ELITE',
   ALL_STAR: 'ALL_STAR'
+};
+
+exports.AwardType = exports.$Enums.AwardType = {
+  TOP_PHOTO: 'TOP_PHOTO',
+  TOP_PHOTOGRAPHER: 'TOP_PHOTOGRAPHER',
+  TOP_YC_PICK: 'TOP_YC_PICK'
 };
 
 exports.TeamAccessibility = exports.$Enums.TeamAccessibility = {
@@ -389,10 +391,10 @@ exports.RecurringType = exports.$Enums.RecurringType = {
 
 exports.Prisma.ModelName = {
   Contest: 'Contest',
+  ContestRule: 'ContestRule',
   RecurringContestData: 'RecurringContestData',
   RecurringContest: 'RecurringContest',
   ContestPhoto: 'ContestPhoto',
-  ContestRules: 'ContestRules',
   ContestWinner: 'ContestWinner',
   ContestParticipant: 'ContestParticipant',
   ContestAward: 'ContestAward',

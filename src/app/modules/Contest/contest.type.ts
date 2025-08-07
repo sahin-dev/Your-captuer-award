@@ -1,4 +1,6 @@
-import { RecurringType } from "@prisma/client";
+import z from "zod";
+import { RecurringType } from "../../../prismaClient";
+import {createContestSchema} from './contest.validation'
 
 export type RecurringData =
 
@@ -9,3 +11,5 @@ export type RecurringData =
     duration: number; // Duration in milliseconds   
 
 }
+
+export type createContestData = z.infer<typeof createContestSchema>

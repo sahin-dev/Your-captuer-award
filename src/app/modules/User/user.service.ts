@@ -1,6 +1,6 @@
 import ApiError from "../../../errors/ApiError"
 import prisma from "../../../shared/prisma"
-import { IPasswordUpdate, IUser } from "./user.interface"
+import { IPasswordUpdate } from "./user.interface"
 import httpstatus from 'http-status'
 import { UserDto } from "../../dtos/user.dto"
 import { fileUploader } from "../../../helpers/fileUploader"
@@ -9,6 +9,7 @@ import mailer from "../../../shared/mailSender"
 import { hashing } from "../../../helpers/hash"
 import { OtpStatus, UserRole } from "../../../prismaClient"
 import { userAdminUpdateData, userUpdateData } from "./user.types"
+import bcrypt from 'bcryptjs'
 
 
 
@@ -115,11 +116,16 @@ const getUserDetails = async (userId:string)=>{
     return user
 }
 
-const changePassword = async (userId:string, newPassword:string)=>{
+const changePassword = async (userId:string,oldPassword:string, newPassword:string)=>{
     const user =  await prisma.user.findUnique({where:{id:userId}})
     if(!user){
         throw new ApiError(httpstatus.NOT_FOUND,"User not found");
     }
+    const oldPasswordMatched = await bcrypt.compare(oldPassword, user.password as string)
+    if(!oldPasswordMatched){
+        throw new ApiError(httpstatus.BAD_REQUEST, "Password does not mathced!")
+    }
+
     const hashedPassword = await hashing.hashPassowrd(newPassword)
     await prisma.user.update({where:{id:userId}, data:{password:hashedPassword}})
 
@@ -128,6 +134,7 @@ const changePassword = async (userId:string, newPassword:string)=>{
 }
 
 const resetPassword = async (email:string,passwordData:IPasswordUpdate, token:string)=>{
+
     
     const user = await prisma.user.findFirst({where:{email}})
     if(!user){
@@ -135,9 +142,8 @@ const resetPassword = async (email:string,passwordData:IPasswordUpdate, token:st
     }
     const otp = await prisma.otp.findFirst({where:{id:token, otpStatus:OtpStatus.VALIDATED}})
     if (!otp){
-        throw new ApiError(httpstatus.BAD_REQUEST, "Sorry, You are not able to reset your password")
+        throw new ApiError(httpstatus.BAD_REQUEST, "Sorry, password reset request is invalid")
     }
-    await prisma.otp.delete({where:{id:otp.id}})
     
     if (passwordData.password !== passwordData.confirmPassword){
         throw new ApiError(httpstatus.BAD_REQUEST, "Password does not matched")
@@ -147,6 +153,7 @@ const resetPassword = async (email:string,passwordData:IPasswordUpdate, token:st
     const hashedPassword = await hashing.hashPassowrd(passwordData.password)
 
     const updatedUser = await prisma.user.update({where:{id:user.id}, data:{password:hashedPassword}})
+    await prisma.otp.delete({where:{id:otp.id}})
 
     return UserDto(updatedUser)
 }
@@ -223,16 +230,18 @@ const verifyOtp = async (email:string, otp:string)=>{
     const existingOtp = await prisma.otp.findUnique({where:{userId:user.id}})
 
     if(!existingOtp){
-        throw new ApiError(httpstatus.BAD_REQUEST,"Invalid otp")
+        throw new ApiError(httpstatus.BAD_REQUEST,"Otp does not exist")
     }
  
-
+ 
     if (existingOtp.code !== otp ){
         throw new ApiError(httpstatus.BAD_REQUEST, 'Otp incorrect')
     }
 
-    if (existingOtp.expires_in <= new Date()){
+    if (existingOtp.expiresAt <= new Date()){
+         await prisma.otp.update({where:{id:existingOtp?.id}, data:{expiresAt:new Date(Date.now())}})
         throw new ApiError(httpstatus.BAD_REQUEST, "Otp expired")
+       
     }
 
     await prisma.otp.update({where:{id:existingOtp.id}, data:{otpStatus:OtpStatus.VALIDATED}})

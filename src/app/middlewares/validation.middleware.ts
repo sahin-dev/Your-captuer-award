@@ -9,6 +9,7 @@ const validateRequest =
       req.body = parsedData
       return next();
     } catch (err) {
+      console.log(err)
       next(err);
     }
   };

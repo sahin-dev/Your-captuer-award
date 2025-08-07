@@ -6,7 +6,7 @@ const hashPassowrd = async (password:string)=>{
     if(!salt){
         throw new Error("Salt is not provided")
     }
-    const hashedPassword = await bcrypt.hash(password, salt)
+    const hashedPassword = await bcrypt.hash(password, Number(salt))
 
     return hashedPassword
 }
