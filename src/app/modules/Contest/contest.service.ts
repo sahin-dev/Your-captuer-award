@@ -4,6 +4,9 @@ import httpstatus from 'http-status';
 import { fileUploader } from '../../../helpers/fileUploader';
 import { Contest, ContestParticipant, ContestStatus, RecurringData } from '../../../prismaClient';
 import { IContest } from './contest.interface';
+import { contestData } from './contest.type';
+import { contestRuleService } from './ContestRules/contestRules.service';
+import { addContestPrizes } from './ContestPrizes/contestPrize.service';
 
 
 
@@ -11,8 +14,9 @@ import { IContest } from './contest.interface';
 //Create a new contest
 
 
-export const createContest = async (creatorId: string, body: IContest, banner:Express.Multer.File) => {
+export const createContest = async (creatorId: string, body: contestData, banner:Express.Multer.File) => {
     let bannerUrl = null;
+    
     const contestData:any = {
         creatorId,
         title: body.title,
@@ -53,7 +57,8 @@ export const createContest = async (creatorId: string, body: IContest, banner:Ex
 
     //If contest is recurring, Add recurring data to the contest object
     // By default every object is recurring false, so if conetest is not recurring, it will not have recurring data
-    
+    contestData.startDate = startDate
+    contestData.endDate = endDate
 
     if (body.recurring) {
 
@@ -80,6 +85,15 @@ export const createContest = async (creatorId: string, body: IContest, banner:Ex
     // agenda.schedule(startDate, 'contest:checkUpcoming', {
     //     contestId: contest.id
     // });
+    if(body.rules){
+        console.log(JSON.parse(body.rules))
+        
+        // await contestRuleService.addContestRules(contest.id, body.rules)
+    }
+   
+    if(body.prizes){
+        await addContestPrizes(contest.id, body.prizes)
+    }
 
     return contest;
 };

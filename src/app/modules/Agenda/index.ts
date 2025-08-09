@@ -5,7 +5,7 @@ import agenda from "./jobs"
 
 agenda.on('ready', async () => {
     console.log("Agenda is ready"); 
-    agenda.start();
+    // agenda.start();
     agenda.every("one minute", "contest:checkRecurring");   
 });
 agenda.on("error", (e) => {

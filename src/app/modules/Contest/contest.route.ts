@@ -12,7 +12,7 @@ import { createContestSchema } from './contest.validation'
 
 const router = Router()
 
-router.route("/").post(validateRequest(createContestSchema), auth(UserRole.ADMIN), fileUploader.contestBanner, createContest).get(auth(UserRole.ADMIN), getContests)
+router.route("/").post(fileUploader.contestBanner,validateRequest(createContestSchema), auth(UserRole.ADMIN),  createContest).get(auth(UserRole.ADMIN), getContests)
 router.get("/:contestId/photos", auth(), contestController.getUploadedPhotos)
 
 router.post("/:contestId/upload", auth(), contestController.uploadPhoto)

@@ -3,6 +3,7 @@ import sendResponse from "../../../shared/ApiResponse";
 import {contestService} from "./contest.service";
 import { IContest } from "./contest.interface";
 import catchAsync from "../../../shared/catchAsync";
+import { contestData } from "./contest.type";
 
 
 
@@ -10,15 +11,7 @@ import catchAsync from "../../../shared/catchAsync";
 export const createContest = catchAsync( async (req: any, res: Response) => {
     const creatorId = req.user.id; // Assuming user ID is stored in req.user
     const banner = req.file
-
-
-
-    const body:IContest = req.body; // Parse the JSON data from the request body
-    
-    console.log("Creating contest with body:", body);
-   
-
-
+    const body:contestData = req.body; // Parse the JSON data from the request body
     const contest = await contestService.createContest(creatorId, body, req.file);
     
     sendResponse(res, {

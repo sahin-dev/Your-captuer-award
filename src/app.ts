@@ -11,6 +11,7 @@ import ErrorHandler from "./app/middlewares/error.middleware";
 import { User } from "./prismaClient";
 import './app/event'
 import prisma from "./shared/prisma";
+import bodyParser from "body-parser";
 
 
 

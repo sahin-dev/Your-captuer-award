@@ -1,5 +1,5 @@
 import ApiError from "../../../../errors/ApiError";
-import { ContestRule } from "../../../../prismaClient";
+import { ContestRule } from "./conetstRules.type";
 import prisma from "../../../../shared/prisma";
 import httpStatus from 'http-status'
 
@@ -19,7 +19,12 @@ const addContestRules = async (contestId:string,rules:ContestRule[])=>{
 }
 
 const getContestRules = async (contestId:string)=>{
-    const contestRule = prisma.contest.findUnique({where:{id:contestId}, select:{contestRules:true}})
+    const contestRules = await prisma.contest.findUnique({where:{id:contestId}, select:{contestRules:true}})
 
-    return contestRule
+    return contestRules
+}
+
+export const contestRuleService = {
+    addContestRules,
+    getContestRules
 }

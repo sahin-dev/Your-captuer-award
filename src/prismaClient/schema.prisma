@@ -20,7 +20,7 @@ model Contest {
   participants  ContestParticipant[]
   votes         Vote[]
   contestRules  ContestRule[]
-  contestAwards ContestAward[]
+  contestPrizes ContestPrize[]
   recurringData RecurringContestData?
   createdAt     DateTime              @default(now())
   updatedAt     DateTime              @updatedAt
@@ -81,13 +81,14 @@ model ContestPhoto {
   rank          Int?    @default(0)
 
   // contest   Contest @relation(fields: [contestId],references: [id])
-  participant  ContestParticipant   @relation(fields: [participantId], references: [id], onDelete: Cascade)
-  votes        Vote[]
-  photo        UserPhoto            @relation(fields: [photoId], references: [id], onDelete: Cascade)
-  comments     Comment[]
-  achievements ContestAchievement[]
-  createdAt    DateTime             @default(now())
-  updatedAt    DateTime             @updatedAt
+  participant   ContestParticipant   @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  votes         Vote[]
+  photo         UserPhoto            @relation(fields: [photoId], references: [id], onDelete: Cascade)
+  comments      Comment[]
+  achievements  ContestAchievement[]
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+  ContestWinner ContestWinner[]
 
   @@map("contest_photos")
 }
@@ -99,9 +100,9 @@ model ContestWinner {
   contestPhotoId String @db.ObjectId
 
   participant ContestParticipant @relation(fields: [participantId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  photo       ContestPhoto       @relation(fields: [contestPhotoId], references: [id])
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
 
   @@map("contest_winners")
 }
@@ -127,23 +128,22 @@ model ContestParticipant {
   @@map("contest_participants")
 }
 
-model ContestAward {
+model ContestPrize {
   id       String    @id @default(auto()) @map("_id") @db.ObjectId
-  category AwardType
-  keys     String
+  category PrizeType
   trades   Int       @default(0)
   charges  Int       @default(0)
-  key      Int       @default(0)
+  keys     Int       @default(0)
 
   contestId String  @db.ObjectId
   contest   Contest @relation(fields: [contestId], references: [id])
 
-  @@map("contest_awards")
+  @@map("contest_prizes")
 }
 
 model ContestAchievement {
   id            String    @id @default(auto()) @map("_id") @db.ObjectId
-  category      AwardType
+  category      PrizeType
   photoId       String?   @db.ObjectId
   participantId String?   @db.ObjectId
   contestId     String    @db.ObjectId
@@ -165,7 +165,7 @@ type RecurringData {
   duration           Int           @default(0)
 }
 
-enum AwardType {
+enum PrizeType {
   TOP_PHOTO
   TOP_PHOTOGRAPHER
   TOP_YC_PICK

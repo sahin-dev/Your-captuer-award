@@ -192,13 +192,12 @@ exports.Prisma.ContestParticipantScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
-exports.Prisma.ContestAwardScalarFieldEnum = {
+exports.Prisma.ContestPrizeScalarFieldEnum = {
   id: 'id',
   category: 'category',
-  keys: 'keys',
   trades: 'trades',
   charges: 'charges',
-  key: 'key',
+  keys: 'keys',
   contestId: 'contestId'
 };
 
@@ -344,7 +343,7 @@ exports.ContestLevel = exports.$Enums.ContestLevel = {
   ALL_STAR: 'ALL_STAR'
 };
 
-exports.AwardType = exports.$Enums.AwardType = {
+exports.PrizeType = exports.$Enums.PrizeType = {
   TOP_PHOTO: 'TOP_PHOTO',
   TOP_PHOTOGRAPHER: 'TOP_PHOTOGRAPHER',
   TOP_YC_PICK: 'TOP_YC_PICK'
@@ -397,7 +396,7 @@ exports.Prisma.ModelName = {
   ContestPhoto: 'ContestPhoto',
   ContestWinner: 'ContestWinner',
   ContestParticipant: 'ContestParticipant',
-  ContestAward: 'ContestAward',
+  ContestPrize: 'ContestPrize',
   ContestAchievement: 'ContestAchievement',
   Team: 'Team',
   TeamMember: 'TeamMember',

@@ -12,4 +12,6 @@ export type RecurringData =
 
 }
 
+export type contestData = z.infer<typeof createContestSchema>
+
 export type createContestData = z.infer<typeof createContestSchema>
