@@ -16,7 +16,7 @@ router.route("/").post(fileUploader.contestBanner,validateRequest(createContestS
 router.get("/:contestId/photos", auth(), contestController.getUploadedPhotos)
 
 router.post("/:contestId/upload", auth(), contestController.uploadPhoto)
-router.route("/:contestId").get(auth(), getContestById).put(auth(), updateContestDetails)
+router.route("/:contestId").get(auth(), getContestById).put(auth(UserRole.ADMIN), updateContestDetails).delete(auth(UserRole.ADMIN), contestController.deleteContest)
 
 router.route("/:contestId/join").post(auth(),joinContest)
 

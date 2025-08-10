@@ -2,11 +2,13 @@ import prisma from '../../../shared/prisma';
 import ApiError from '../../../errors/ApiError';
 import httpstatus from 'http-status';
 import { fileUploader } from '../../../helpers/fileUploader';
-import { Contest, ContestParticipant, ContestStatus, RecurringData } from '../../../prismaClient';
+import { Contest, ContestParticipant, ContestStatus, RecurringData, RecurringType, Vote } from '../../../prismaClient';
 import { IContest } from './contest.interface';
 import { contestData } from './contest.type';
 import { contestRuleService } from './ContestRules/contestRules.service';
 import { addContestPrizes } from './ContestPrizes/contestPrize.service';
+import { ContestRule } from './ContestRules/conetstRules.type';
+import { ContestPrizeData } from './ContestPrizes/contestPrize.type';
 
 
 
@@ -16,6 +18,7 @@ import { addContestPrizes } from './ContestPrizes/contestPrize.service';
 
 export const createContest = async (creatorId: string, body: contestData, banner:Express.Multer.File) => {
     let bannerUrl = null;
+
     
     const contestData:any = {
         creatorId,
@@ -63,11 +66,11 @@ export const createContest = async (creatorId: string, body: contestData, banner
     if (body.recurring) {
 
         const recurringData:RecurringData = {
-        recurringType: body.recurringType!,
-        previousOccurrence: new Date(),
-        nextOccurrence: new Date(body.startDate),
-        duration:new Date(body.endDate).getTime() - new Date(body.startDate).getTime()
-    }
+            recurringType: body.recurringType!,
+            previousOccurrence: new Date(),
+            nextOccurrence: new Date(body.startDate),
+            duration:new Date(body.endDate).getTime() - new Date(body.startDate).getTime()
+        }
         contestData.recurringData = recurringData;
 
         console.log(contestData)
@@ -77,31 +80,83 @@ export const createContest = async (creatorId: string, body: contestData, banner
         });
         return recurringContest;
     }
-    // If contest is not recurring, create a normal contest
+
+    // Create a normal contest entry for all type of contest
        let contest = await prisma.contest.create({
             data: contestData
         });
 
-    // agenda.schedule(startDate, 'contest:checkUpcoming', {
-    //     contestId: contest.id
-    // });
+   
     if(body.rules){
-        console.log(JSON.parse(body.rules))
+        const rules:ContestRule[] = JSON.parse(body.rules)
         
-        // await contestRuleService.addContestRules(contest.id, body.rules)
+        await contestRuleService.addContestRules(contest.id, rules)
     }
    
     if(body.prizes){
-        await addContestPrizes(contest.id, body.prizes)
+         const prizes:ContestPrizeData[] = JSON.parse(body.prizes)
+        await addContestPrizes(contest.id, prizes)
+    }
+
+    //If contest is recurring , save recurring data separately
+    if(body.recurring){
+        handleRecurringContest(contest.id, body)
     }
 
     return contest;
 };
 
-const handleRecurringConetst = async ()=>{
 
+//manage recurring contest separately
+
+const handleRecurringContest  =  async (contestId:string,body:contestData)=>{
+    if (body.recurring) {
+
+        const recurringData:RecurringData = {
+            recurringType: body.recurringType!,
+            previousOccurrence: new Date(body.startDate),
+            nextOccurrence: calculateNextOccurance(body.startDate, body.recurringType),
+            duration:new Date(body.endDate).getTime() - new Date(body.startDate).getTime()
+        }
+      
+
+        let recurringContest = await prisma.recurringContestData.create({
+            data: {
+                lastRunAt:recurringData.previousOccurrence,
+                nextRunAt:recurringData.nextOccurrence,
+                contestId,
+                recurringType:recurringData.recurringType
+
+            }
+        });
+        return recurringContest;
+    }
 }
 
+
+//Calculate next occurance time of a recurring contest based on recurring type
+const calculateNextOccurance = (date:string, type:RecurringType = 'DAILY'):Date=>{
+
+    let result;
+    
+    switch(type){
+        case RecurringType.DAILY:
+            result = new Date(date)
+            break
+        case RecurringType.WEEKLY:
+            result = new Date(date)
+            break
+        case RecurringType.MONTHLY:
+            result = new Date(date)
+            break
+        default:
+            result = new Date(date)
+
+    }
+
+    return result
+    
+}
 
 export const updateContest = async (contestId:string, contestData:Partial<IContest>)=>{
 
@@ -109,7 +164,19 @@ export const updateContest = async (contestId:string, contestData:Partial<IConte
 
     return updatedContest
 
-}   
+}
+
+
+//delete a contest by the contest id
+const deleteContestByContestId =async (contestId:string)=>{
+    const contest = await prisma.contest.findUnique({where:{id:contestId}})
+    if(!contest){
+        throw new ApiError(httpstatus.NOT_FOUND, "contest not found!")
+    }
+
+    await prisma.contest.delete({where:{id:contestId}})
+    return "contest deleted!"
+}  
 
 
 
@@ -135,6 +202,8 @@ export const joinContest = async (userId:string,contestId:string)=>{
 }
 
 
+//get the contest by it's id
+
 export const getContestById = async (contestId: string) => {
     const contest = await prisma.contest.findUnique({
         where: { id: contestId },
@@ -149,20 +218,21 @@ export const getContestById = async (contestId: string) => {
 
 export const getContests = async () => {
     const contests = await prisma.contest.findMany({
-        include: { creator: true, participants: true }
+        include: { creator: true}
     });
 
     return contests;
 };
 
+//Return all the contests
 export const getAllContests = async () => {
     const contests = await prisma.contest.findMany({    
-        include: { creator: true, participants: true }
+        include: { creator: true}
     });
     return contests;
 };
 
-
+//Search contest by contest status
 export const getContestsByStatus = async (userId:string,status: ContestStatus) => {
     let contests :Contest[]= []
     
@@ -312,7 +382,15 @@ export const rankingParticipant = async (participantId:string, contestId:string)
     return 1
 }
 
-//Get contest uploaded images
+//Get all uploads of a user
+
+const getContestUploadsByUserId = async (contestId:string, userId:string)=>{
+    const userUploads = await prisma.contestPhoto.findMany({where:{contestId:contestId, photo:{userId}}})
+
+    return userUploads
+}
+
+//Get all contest uploaded images
 
 export const getContestUploads = async (contestId:string)=>{
 
@@ -320,15 +398,63 @@ export const getContestUploads = async (contestId:string)=>{
     return contestUploads
 }   
 
-export const uploadPhotoToContest = async (contestId:string,userId:string, photoId:string)=>{
-    const contest = prisma.contestParticipant.findFirst({where:{userId}})
+//Upload photo to a contest
 
-    if(!contest){
-        throw new ApiError(httpstatus.NOT_FOUND, "contest not found")
+export const uploadPhotoToContest = async (contestId:string,userId:string, photoId:string)=>{
+    const contestParticipant = prisma.contest.findFirst({where:{id:contestId, participants:{some:{id:userId}}}})
+
+    if(!contestParticipant){
+        throw new ApiError(httpstatus.NOT_FOUND, "Sorry, You are not allowed to upload photo in this contest")
     }
     const uploadImage = prisma.contestPhoto.create({data:{contestId,participantId:userId,photoId}})
 
     return uploadImage
+}
+
+
+const getContestDetails = async (contestId:string)=>{
+    
+    return (await prisma.contest.findUnique({where:{id:contestId},include:{votes:true, participants:true}}))
+}
+
+
+
+const getContestSummary = async (contestId:string, userId:string)=>{
+
+    const contestData = await getContestDetails(contestId)
+
+    let participantData = contestData?.participants.find(data => data.userId === userId)
+    let participatorLevel = participantData?.level
+    let totalVotes = await getParticipantTotalVotes
+
+}
+
+
+const getParticipantTotalVotes =  (votes:Vote[], participantId:string)=>{
+    let count = 0
+    votes.forEach(data=> data.photoId)
+    
+    return voteCounts
+}
+
+const getParticipantLevelRank = async (contestId:string, participantId:string)=>{
+
+    const participant = await prisma.contestParticipant.findUnique({where:{id:participantId}})
+   
+
+    if(!participant){
+        return new ApiError(httpstatus.NOT_FOUND, "participant not found")
+    }
+     const targetVoteCount = await getParticipantTotalVotes(contestId, participant.id)
+    const otherParticipantsInSameLevel = await prisma.contestParticipant.findMany({where:{contestId, level:participant.level}})
+    const totalInSameLevel = otherParticipantsInSameLevel.length
+
+
+}
+
+const getParticipantRank = async (contestId:string, participantId:string)=>{
+
+    const partipantsVoteCount = await prisma.contestParticipant
 }
 
 export const contestService = {
@@ -343,5 +469,7 @@ export const contestService = {
     getMyCompletedContest,
     getClosedContestsWithWinner,
     getContestUploads,
-    uploadPhotoToContest
+    uploadPhotoToContest,
+    deleteContestByContestId,
+    getContestUploadsByUserId
 }

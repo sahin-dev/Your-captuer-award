@@ -17,6 +17,7 @@ model User {
   role               UserRole             @default(USER)
   accessToken        String?
   otps               Otp?
+  store              UserStore?
   createdTeam        Team[]
   joinedTeam         TeamMember?
   createdContests    Contest[]
@@ -32,6 +33,21 @@ model User {
   updatedAt DateTime @updatedAt
 
   @@map("users")
+}
+
+model UserStore {
+  id      String    @id  @default(auto())  @map("_id") @db.ObjectId
+  userId    String  @db.ObjectId @unique 
+  keys      Int     @default(0)
+  trades    Int     @default(0)
+  charges   Int     @default(0)
+
+  user    User?      @relation(fields: [userId], references: [id])
+
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  
+  @@map("user_stores")
 }
 
 model UserPhoto {

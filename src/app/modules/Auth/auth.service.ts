@@ -49,8 +49,16 @@ export const handleRegister = async (body:UserRegistrationData)=>{
     //         role: createdUser.role,
     //         phone: createdUser.phone
     //     }
+    
+    //create user store for every user register
+    await attachStoreToUser(createdUser.id)
 
     return {user:UserDto(createdUser), token}
+}
+
+const attachStoreToUser = async (userId:string)=>{
+    const store = await prisma.userStore.create({data:{userId}})
+
 }
 
 

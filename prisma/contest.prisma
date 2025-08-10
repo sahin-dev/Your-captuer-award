@@ -11,7 +11,8 @@ model Contest {
   isMoneyContest Boolean       @default(false)
   maxPrize       Int?          @default(0)
   minPrize       Int?          @default(0)
-
+  level_requirements    Int[]
+  
   startDate DateTime
   endDate   DateTime
 
@@ -20,7 +21,7 @@ model Contest {
   creator      User                 @relation(fields: [creatorId], references: [id])
   participants ContestParticipant[]
   votes        Vote[]
-  contestRules ContestRule[]
+  contestRules ContestRule[] 
   contestPrizes ContestPrize[]
   recurringData   RecurringContestData?
   createdAt    DateTime             @default(now())
@@ -31,6 +32,12 @@ model Contest {
 }
 
 
+type Rules {
+  name    String
+  icon    String
+  description   String
+}
+
 model ContestRule {
   id    String  @id @default(auto())  @map("_id")  @db.ObjectId
   icon  String?
@@ -38,7 +45,7 @@ model ContestRule {
   description     String
   contestId    String  @db.ObjectId
 
-  contest  Contest  @relation(fields: [contestId], references: [id])
+  contest  Contest  @relation(fields: [contestId], references: [id], onDelete: Cascade)
 
   createdAt    DateTime @default(now())
   updatedAt   DateTime    @updatedAt
@@ -48,10 +55,11 @@ model ContestRule {
 
 model RecurringContestData {
   id        String      @id  @default(auto())  @map("_id") @db.ObjectId
-  constestId    String   @db.ObjectId @unique
-  lastRunAt  DateTime?
+  contestId    String   @db.ObjectId @unique
+  lastRunAt  DateTime
+  recurringType RecurringType
   nextRunAt  DateTime
-  contest  Contest  @relation(fields: [constestId], references: [id])
+  contest  Contest  @relation(fields: [contestId], references: [id], onDelete: Cascade)
 
   @@map("recurring_contest_data")
 }
@@ -118,7 +126,7 @@ model ContestParticipant {
   status    ContestParticipantStatus @default(ACTIVE)
   contestId String                   @db.ObjectId
   userId    String                   @db.ObjectId
-  level     ContestLevel             @default(POPULAR)
+  level     YCLevel                  @default(AMATEUR)
   rank      Int?                     @default(0)
 
   contest            Contest              @relation(fields: [contestId], references: [id], onDelete: Cascade)
@@ -142,7 +150,7 @@ model ContestPrize {
   keys     Int   @default(0)
 
   contestId   String @db.ObjectId 
-  contest   Contest  @relation(fields: [contestId], references: [id])
+  contest   Contest  @relation(fields: [contestId], references: [id], onDelete: Cascade)
 
   @@map("contest_prizes")
 }
@@ -209,7 +217,7 @@ enum ContestLevel {
   ALL_STAR
 }
 
-enum ContestLevel2 {
+enum YCLevel {
   AMATEUR
   TALANTED
   SUPREME

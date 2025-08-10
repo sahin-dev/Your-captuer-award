@@ -35,7 +35,7 @@ model ContestRule {
   description String
   contestId   String  @db.ObjectId
 
-  contest Contest @relation(fields: [contestId], references: [id])
+  contest Contest @relation(fields: [contestId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -44,11 +44,12 @@ model ContestRule {
 }
 
 model RecurringContestData {
-  id         String    @id @default(auto()) @map("_id") @db.ObjectId
-  constestId String    @unique @db.ObjectId
-  lastRunAt  DateTime?
-  nextRunAt  DateTime
-  contest    Contest   @relation(fields: [constestId], references: [id])
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  contestId     String        @unique @db.ObjectId
+  lastRunAt     DateTime
+  recurringType RecurringType
+  nextRunAt     DateTime
+  contest       Contest       @relation(fields: [contestId], references: [id], onDelete: Cascade)
 
   @@map("recurring_contest_data")
 }
@@ -112,7 +113,7 @@ model ContestParticipant {
   status    ContestParticipantStatus @default(ACTIVE)
   contestId String                   @db.ObjectId
   userId    String                   @db.ObjectId
-  level     ContestLevel             @default(POPULAR)
+  level     YCLevel                  @default(AMATEUR)
   rank      Int?                     @default(0)
 
   contest            Contest              @relation(fields: [contestId], references: [id], onDelete: Cascade)
@@ -136,7 +137,7 @@ model ContestPrize {
   keys     Int       @default(0)
 
   contestId String  @db.ObjectId
-  contest   Contest @relation(fields: [contestId], references: [id])
+  contest   Contest @relation(fields: [contestId], references: [id], onDelete: Cascade)
 
   @@map("contest_prizes")
 }
@@ -198,7 +199,7 @@ enum ContestLevel {
   ALL_STAR
 }
 
-enum ContestLevel2 {
+enum YCLevel {
   AMATEUR
   TALANTED
   SUPREME
@@ -284,6 +285,7 @@ model User {
   role               UserRole             @default(USER)
   accessToken        String?
   otps               Otp?
+  store              UserStore?
   createdTeam        Team[]
   joinedTeam         TeamMember?
   createdContests    Contest[]
@@ -299,6 +301,21 @@ model User {
   updatedAt DateTime @updatedAt
 
   @@map("users")
+}
+
+model UserStore {
+  id      String @id @default(auto()) @map("_id") @db.ObjectId
+  userId  String @unique @db.ObjectId
+  keys    Int    @default(0)
+  trades  Int    @default(0)
+  charges Int    @default(0)
+
+  user User? @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("user_stores")
 }
 
 model UserPhoto {

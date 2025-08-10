@@ -4,16 +4,17 @@ import { ContestPrizeData } from "./contestPrize.type";
 import httpStatus from 'http-status'
 
 
-export const addContestPrizes = async (contestId:string, prizes:string)=>{
+
+export const addContestPrizes = async (contestId:string, prizes:ContestPrizeData[])=>{
     const contest = await prisma.contest.findUnique({where:{id:contestId}})
     try{
-         const parsedPrizes:ContestPrizeData[] = JSON.parse(prizes)
+        
 
         if(!contest){
             throw new ApiError(httpStatus.NOT_FOUND, "contest not found")
         }
 
-        parsedPrizes.forEach(async (prize)=>{
+        prizes.forEach(async (prize)=>{
             await prisma.contestPrize.create({data:{contestId:contestId, category:prize.category,keys:prize.keys, trades:prize.trades, charges:prize.charges}})
         })
 

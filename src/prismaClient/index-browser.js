@@ -142,8 +142,9 @@ exports.Prisma.ContestRuleScalarFieldEnum = {
 
 exports.Prisma.RecurringContestDataScalarFieldEnum = {
   id: 'id',
-  constestId: 'constestId',
+  contestId: 'contestId',
   lastRunAt: 'lastRunAt',
+  recurringType: 'recurringType',
   nextRunAt: 'nextRunAt'
 };
 
@@ -255,6 +256,16 @@ exports.Prisma.UserScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.UserStoreScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  keys: 'keys',
+  trades: 'trades',
+  charges: 'charges',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.UserPhotoScalarFieldEnum = {
   id: 'id',
   url: 'url',
@@ -330,17 +341,23 @@ exports.ContestStatus = exports.$Enums.ContestStatus = {
   CLOSED: 'CLOSED'
 };
 
+exports.RecurringType = exports.$Enums.RecurringType = {
+  DAILY: 'DAILY',
+  WEEKLY: 'WEEKLY',
+  MONTHLY: 'MONTHLY'
+};
+
 exports.ContestParticipantStatus = exports.$Enums.ContestParticipantStatus = {
   ACTIVE: 'ACTIVE',
   BLOCKED: 'BLOCKED'
 };
 
-exports.ContestLevel = exports.$Enums.ContestLevel = {
-  POPULAR: 'POPULAR',
-  SKILLED: 'SKILLED',
-  PREMIER: 'PREMIER',
-  ELITE: 'ELITE',
-  ALL_STAR: 'ALL_STAR'
+exports.YCLevel = exports.$Enums.YCLevel = {
+  AMATEUR: 'AMATEUR',
+  TALANTED: 'TALANTED',
+  SUPREME: 'SUPREME',
+  SUPERIOR: 'SUPERIOR',
+  TOP_NOTCH: 'TOP_NOTCH'
 };
 
 exports.PrizeType = exports.$Enums.PrizeType = {
@@ -382,12 +399,6 @@ exports.OtpStatus = exports.$Enums.OtpStatus = {
   VALIDATED: 'VALIDATED'
 };
 
-exports.RecurringType = exports.$Enums.RecurringType = {
-  DAILY: 'DAILY',
-  WEEKLY: 'WEEKLY',
-  MONTHLY: 'MONTHLY'
-};
-
 exports.Prisma.ModelName = {
   Contest: 'Contest',
   ContestRule: 'ContestRule',
@@ -401,6 +412,7 @@ exports.Prisma.ModelName = {
   Team: 'Team',
   TeamMember: 'TeamMember',
   User: 'User',
+  UserStore: 'UserStore',
   UserPhoto: 'UserPhoto',
   Like: 'Like',
   Otp: 'Otp',

@@ -102,7 +102,21 @@ const uploadPhoto = catchAsync(async (req:any, res:Response)=>{
     })
 })
 
+const deleteContest = catchAsync(async (req:any, res:Response)=>{
+
+    const {contestId} = req.params
+    await contestService.deleteContestByContestId(contestId)
+
+    sendResponse(res, {
+        statusCode:200,
+        success:true,
+        message:"Contest deleted successfully",
+        data:null
+    })
+})
+
 export const contestController = {
     uploadPhoto,
-    getUploadedPhotos
+    getUploadedPhotos,
+    deleteContest
 }

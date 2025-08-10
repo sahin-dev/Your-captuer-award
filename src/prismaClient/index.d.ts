@@ -84,6 +84,11 @@ export type TeamMember = $Result.DefaultSelection<Prisma.$TeamMemberPayload>
  */
 export type User = $Result.DefaultSelection<Prisma.$UserPayload>
 /**
+ * Model UserStore
+ * 
+ */
+export type UserStore = $Result.DefaultSelection<Prisma.$UserStorePayload>
+/**
  * Model UserPhoto
  * 
  */
@@ -166,7 +171,7 @@ export const ContestLevel: {
 export type ContestLevel = (typeof ContestLevel)[keyof typeof ContestLevel]
 
 
-export const ContestLevel2: {
+export const YCLevel: {
   AMATEUR: 'AMATEUR',
   TALANTED: 'TALANTED',
   SUPREME: 'SUPREME',
@@ -174,7 +179,7 @@ export const ContestLevel2: {
   TOP_NOTCH: 'TOP_NOTCH'
 };
 
-export type ContestLevel2 = (typeof ContestLevel2)[keyof typeof ContestLevel2]
+export type YCLevel = (typeof YCLevel)[keyof typeof YCLevel]
 
 
 export const ContestParticipantStatus: {
@@ -254,9 +259,9 @@ export type ContestLevel = $Enums.ContestLevel
 
 export const ContestLevel: typeof $Enums.ContestLevel
 
-export type ContestLevel2 = $Enums.ContestLevel2
+export type YCLevel = $Enums.YCLevel
 
-export const ContestLevel2: typeof $Enums.ContestLevel2
+export const YCLevel: typeof $Enums.YCLevel
 
 export type ContestParticipantStatus = $Enums.ContestParticipantStatus
 
@@ -493,6 +498,16 @@ export class PrismaClient<
     * ```
     */
   get user(): Prisma.UserDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.userStore`: Exposes CRUD operations for the **UserStore** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more UserStores
+    * const userStores = await prisma.userStore.findMany()
+    * ```
+    */
+  get userStore(): Prisma.UserStoreDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.userPhoto`: Exposes CRUD operations for the **UserPhoto** model.
@@ -1005,6 +1020,7 @@ export namespace Prisma {
     Team: 'Team',
     TeamMember: 'TeamMember',
     User: 'User',
+    UserStore: 'UserStore',
     UserPhoto: 'UserPhoto',
     Like: 'Like',
     Otp: 'Otp',
@@ -1029,7 +1045,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "contest" | "contestRule" | "recurringContestData" | "recurringContest" | "contestPhoto" | "contestWinner" | "contestParticipant" | "contestPrize" | "contestAchievement" | "team" | "teamMember" | "user" | "userPhoto" | "like" | "otp" | "comment" | "follow" | "vote"
+      modelProps: "contest" | "contestRule" | "recurringContestData" | "recurringContest" | "contestPhoto" | "contestWinner" | "contestParticipant" | "contestPrize" | "contestAchievement" | "team" | "teamMember" | "user" | "userStore" | "userPhoto" | "like" | "otp" | "comment" | "follow" | "vote"
       txIsolationLevel: never
     }
     model: {
@@ -1921,6 +1937,80 @@ export namespace Prisma {
           }
         }
       }
+      UserStore: {
+        payload: Prisma.$UserStorePayload<ExtArgs>
+        fields: Prisma.UserStoreFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.UserStoreFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserStorePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.UserStoreFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserStorePayload>
+          }
+          findFirst: {
+            args: Prisma.UserStoreFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserStorePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.UserStoreFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserStorePayload>
+          }
+          findMany: {
+            args: Prisma.UserStoreFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserStorePayload>[]
+          }
+          create: {
+            args: Prisma.UserStoreCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserStorePayload>
+          }
+          createMany: {
+            args: Prisma.UserStoreCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.UserStoreDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserStorePayload>
+          }
+          update: {
+            args: Prisma.UserStoreUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserStorePayload>
+          }
+          deleteMany: {
+            args: Prisma.UserStoreDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.UserStoreUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.UserStoreUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserStorePayload>
+          }
+          aggregate: {
+            args: Prisma.UserStoreAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateUserStore>
+          }
+          groupBy: {
+            args: Prisma.UserStoreGroupByArgs<ExtArgs>
+            result: $Utils.Optional<UserStoreGroupByOutputType>[]
+          }
+          findRaw: {
+            args: Prisma.UserStoreFindRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          aggregateRaw: {
+            args: Prisma.UserStoreAggregateRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          count: {
+            args: Prisma.UserStoreCountArgs<ExtArgs>
+            result: $Utils.Optional<UserStoreCountAggregateOutputType> | number
+          }
+        }
+      }
       UserPhoto: {
         payload: Prisma.$UserPhotoPayload<ExtArgs>
         fields: Prisma.UserPhotoFieldRefs
@@ -2448,6 +2538,7 @@ export namespace Prisma {
     team?: TeamOmit
     teamMember?: TeamMemberOmit
     user?: UserOmit
+    userStore?: UserStoreOmit
     userPhoto?: UserPhotoOmit
     like?: LikeOmit
     otp?: OtpOmit
@@ -5298,22 +5389,25 @@ export namespace Prisma {
 
   export type RecurringContestDataMinAggregateOutputType = {
     id: string | null
-    constestId: string | null
+    contestId: string | null
     lastRunAt: Date | null
+    recurringType: $Enums.RecurringType | null
     nextRunAt: Date | null
   }
 
   export type RecurringContestDataMaxAggregateOutputType = {
     id: string | null
-    constestId: string | null
+    contestId: string | null
     lastRunAt: Date | null
+    recurringType: $Enums.RecurringType | null
     nextRunAt: Date | null
   }
 
   export type RecurringContestDataCountAggregateOutputType = {
     id: number
-    constestId: number
+    contestId: number
     lastRunAt: number
+    recurringType: number
     nextRunAt: number
     _all: number
   }
@@ -5321,22 +5415,25 @@ export namespace Prisma {
 
   export type RecurringContestDataMinAggregateInputType = {
     id?: true
-    constestId?: true
+    contestId?: true
     lastRunAt?: true
+    recurringType?: true
     nextRunAt?: true
   }
 
   export type RecurringContestDataMaxAggregateInputType = {
     id?: true
-    constestId?: true
+    contestId?: true
     lastRunAt?: true
+    recurringType?: true
     nextRunAt?: true
   }
 
   export type RecurringContestDataCountAggregateInputType = {
     id?: true
-    constestId?: true
+    contestId?: true
     lastRunAt?: true
+    recurringType?: true
     nextRunAt?: true
     _all?: true
   }
@@ -5415,8 +5512,9 @@ export namespace Prisma {
 
   export type RecurringContestDataGroupByOutputType = {
     id: string
-    constestId: string
-    lastRunAt: Date | null
+    contestId: string
+    lastRunAt: Date
+    recurringType: $Enums.RecurringType
     nextRunAt: Date
     _count: RecurringContestDataCountAggregateOutputType | null
     _min: RecurringContestDataMinAggregateOutputType | null
@@ -5439,8 +5537,9 @@ export namespace Prisma {
 
   export type RecurringContestDataSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
-    constestId?: boolean
+    contestId?: boolean
     lastRunAt?: boolean
+    recurringType?: boolean
     nextRunAt?: boolean
     contest?: boolean | ContestDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["recurringContestData"]>
@@ -5449,12 +5548,13 @@ export namespace Prisma {
 
   export type RecurringContestDataSelectScalar = {
     id?: boolean
-    constestId?: boolean
+    contestId?: boolean
     lastRunAt?: boolean
+    recurringType?: boolean
     nextRunAt?: boolean
   }
 
-  export type RecurringContestDataOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "constestId" | "lastRunAt" | "nextRunAt", ExtArgs["result"]["recurringContestData"]>
+  export type RecurringContestDataOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "contestId" | "lastRunAt" | "recurringType" | "nextRunAt", ExtArgs["result"]["recurringContestData"]>
   export type RecurringContestDataInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     contest?: boolean | ContestDefaultArgs<ExtArgs>
   }
@@ -5466,8 +5566,9 @@ export namespace Prisma {
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
-      constestId: string
-      lastRunAt: Date | null
+      contestId: string
+      lastRunAt: Date
+      recurringType: $Enums.RecurringType
       nextRunAt: Date
     }, ExtArgs["result"]["recurringContestData"]>
     composites: {}
@@ -5863,8 +5964,9 @@ export namespace Prisma {
    */
   interface RecurringContestDataFieldRefs {
     readonly id: FieldRef<"RecurringContestData", 'String'>
-    readonly constestId: FieldRef<"RecurringContestData", 'String'>
+    readonly contestId: FieldRef<"RecurringContestData", 'String'>
     readonly lastRunAt: FieldRef<"RecurringContestData", 'DateTime'>
+    readonly recurringType: FieldRef<"RecurringContestData", 'RecurringType'>
     readonly nextRunAt: FieldRef<"RecurringContestData", 'DateTime'>
   }
     
@@ -9521,7 +9623,7 @@ export namespace Prisma {
     status: $Enums.ContestParticipantStatus | null
     contestId: string | null
     userId: string | null
-    level: $Enums.ContestLevel | null
+    level: $Enums.YCLevel | null
     rank: number | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -9532,7 +9634,7 @@ export namespace Prisma {
     status: $Enums.ContestParticipantStatus | null
     contestId: string | null
     userId: string | null
-    level: $Enums.ContestLevel | null
+    level: $Enums.YCLevel | null
     rank: number | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -9684,7 +9786,7 @@ export namespace Prisma {
     status: $Enums.ContestParticipantStatus
     contestId: string
     userId: string
-    level: $Enums.ContestLevel
+    level: $Enums.YCLevel
     rank: number | null
     createdAt: Date
     updatedAt: Date
@@ -9763,7 +9865,7 @@ export namespace Prisma {
       status: $Enums.ContestParticipantStatus
       contestId: string
       userId: string
-      level: $Enums.ContestLevel
+      level: $Enums.YCLevel
       rank: number | null
       createdAt: Date
       updatedAt: Date
@@ -10168,7 +10270,7 @@ export namespace Prisma {
     readonly status: FieldRef<"ContestParticipant", 'ContestParticipantStatus'>
     readonly contestId: FieldRef<"ContestParticipant", 'String'>
     readonly userId: FieldRef<"ContestParticipant", 'String'>
-    readonly level: FieldRef<"ContestParticipant", 'ContestLevel'>
+    readonly level: FieldRef<"ContestParticipant", 'YCLevel'>
     readonly rank: FieldRef<"ContestParticipant", 'Int'>
     readonly createdAt: FieldRef<"ContestParticipant", 'DateTime'>
     readonly updatedAt: FieldRef<"ContestParticipant", 'DateTime'>
@@ -15045,6 +15147,7 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     otps?: boolean | User$otpsArgs<ExtArgs>
+    store?: boolean | User$storeArgs<ExtArgs>
     createdTeam?: boolean | User$createdTeamArgs<ExtArgs>
     joinedTeam?: boolean | User$joinedTeamArgs<ExtArgs>
     createdContests?: boolean | User$createdContestsArgs<ExtArgs>
@@ -15084,6 +15187,7 @@ export namespace Prisma {
   export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "cover" | "avatar" | "socialId" | "socialProvider" | "firstName" | "lastName" | "fullName" | "username" | "phone" | "email" | "location" | "level" | "password" | "role" | "accessToken" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     otps?: boolean | User$otpsArgs<ExtArgs>
+    store?: boolean | User$storeArgs<ExtArgs>
     createdTeam?: boolean | User$createdTeamArgs<ExtArgs>
     joinedTeam?: boolean | User$joinedTeamArgs<ExtArgs>
     createdContests?: boolean | User$createdContestsArgs<ExtArgs>
@@ -15101,6 +15205,7 @@ export namespace Prisma {
     name: "User"
     objects: {
       otps: Prisma.$OtpPayload<ExtArgs> | null
+      store: Prisma.$UserStorePayload<ExtArgs> | null
       createdTeam: Prisma.$TeamPayload<ExtArgs>[]
       joinedTeam: Prisma.$TeamMemberPayload<ExtArgs> | null
       createdContests: Prisma.$ContestPayload<ExtArgs>[]
@@ -15495,6 +15600,7 @@ export namespace Prisma {
   export interface Prisma__UserClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     otps<T extends User$otpsArgs<ExtArgs> = {}>(args?: Subset<T, User$otpsArgs<ExtArgs>>): Prisma__OtpClient<$Result.GetResult<Prisma.$OtpPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    store<T extends User$storeArgs<ExtArgs> = {}>(args?: Subset<T, User$storeArgs<ExtArgs>>): Prisma__UserStoreClient<$Result.GetResult<Prisma.$UserStorePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     createdTeam<T extends User$createdTeamArgs<ExtArgs> = {}>(args?: Subset<T, User$createdTeamArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TeamPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     joinedTeam<T extends User$joinedTeamArgs<ExtArgs> = {}>(args?: Subset<T, User$joinedTeamArgs<ExtArgs>>): Prisma__TeamMemberClient<$Result.GetResult<Prisma.$TeamMemberPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     createdContests<T extends User$createdContestsArgs<ExtArgs> = {}>(args?: Subset<T, User$createdContestsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ContestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -15941,6 +16047,25 @@ export namespace Prisma {
   }
 
   /**
+   * User.store
+   */
+  export type User$storeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserStore
+     */
+    select?: UserStoreSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserStore
+     */
+    omit?: UserStoreOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserStoreInclude<ExtArgs> | null
+    where?: UserStoreWhereInput
+  }
+
+  /**
    * User.createdTeam
    */
   export type User$createdTeamArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -16191,6 +16316,1068 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: UserInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model UserStore
+   */
+
+  export type AggregateUserStore = {
+    _count: UserStoreCountAggregateOutputType | null
+    _avg: UserStoreAvgAggregateOutputType | null
+    _sum: UserStoreSumAggregateOutputType | null
+    _min: UserStoreMinAggregateOutputType | null
+    _max: UserStoreMaxAggregateOutputType | null
+  }
+
+  export type UserStoreAvgAggregateOutputType = {
+    keys: number | null
+    trades: number | null
+    charges: number | null
+  }
+
+  export type UserStoreSumAggregateOutputType = {
+    keys: number | null
+    trades: number | null
+    charges: number | null
+  }
+
+  export type UserStoreMinAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    keys: number | null
+    trades: number | null
+    charges: number | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type UserStoreMaxAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    keys: number | null
+    trades: number | null
+    charges: number | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type UserStoreCountAggregateOutputType = {
+    id: number
+    userId: number
+    keys: number
+    trades: number
+    charges: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type UserStoreAvgAggregateInputType = {
+    keys?: true
+    trades?: true
+    charges?: true
+  }
+
+  export type UserStoreSumAggregateInputType = {
+    keys?: true
+    trades?: true
+    charges?: true
+  }
+
+  export type UserStoreMinAggregateInputType = {
+    id?: true
+    userId?: true
+    keys?: true
+    trades?: true
+    charges?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type UserStoreMaxAggregateInputType = {
+    id?: true
+    userId?: true
+    keys?: true
+    trades?: true
+    charges?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type UserStoreCountAggregateInputType = {
+    id?: true
+    userId?: true
+    keys?: true
+    trades?: true
+    charges?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type UserStoreAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which UserStore to aggregate.
+     */
+    where?: UserStoreWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UserStores to fetch.
+     */
+    orderBy?: UserStoreOrderByWithRelationInput | UserStoreOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: UserStoreWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UserStores from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UserStores.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned UserStores
+    **/
+    _count?: true | UserStoreCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: UserStoreAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: UserStoreSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: UserStoreMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: UserStoreMaxAggregateInputType
+  }
+
+  export type GetUserStoreAggregateType<T extends UserStoreAggregateArgs> = {
+        [P in keyof T & keyof AggregateUserStore]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateUserStore[P]>
+      : GetScalarType<T[P], AggregateUserStore[P]>
+  }
+
+
+
+
+  export type UserStoreGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: UserStoreWhereInput
+    orderBy?: UserStoreOrderByWithAggregationInput | UserStoreOrderByWithAggregationInput[]
+    by: UserStoreScalarFieldEnum[] | UserStoreScalarFieldEnum
+    having?: UserStoreScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: UserStoreCountAggregateInputType | true
+    _avg?: UserStoreAvgAggregateInputType
+    _sum?: UserStoreSumAggregateInputType
+    _min?: UserStoreMinAggregateInputType
+    _max?: UserStoreMaxAggregateInputType
+  }
+
+  export type UserStoreGroupByOutputType = {
+    id: string
+    userId: string
+    keys: number
+    trades: number
+    charges: number
+    createdAt: Date
+    updatedAt: Date
+    _count: UserStoreCountAggregateOutputType | null
+    _avg: UserStoreAvgAggregateOutputType | null
+    _sum: UserStoreSumAggregateOutputType | null
+    _min: UserStoreMinAggregateOutputType | null
+    _max: UserStoreMaxAggregateOutputType | null
+  }
+
+  type GetUserStoreGroupByPayload<T extends UserStoreGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<UserStoreGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof UserStoreGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], UserStoreGroupByOutputType[P]>
+            : GetScalarType<T[P], UserStoreGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type UserStoreSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    keys?: boolean
+    trades?: boolean
+    charges?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserStore$userArgs<ExtArgs>
+  }, ExtArgs["result"]["userStore"]>
+
+
+
+  export type UserStoreSelectScalar = {
+    id?: boolean
+    userId?: boolean
+    keys?: boolean
+    trades?: boolean
+    charges?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type UserStoreOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "keys" | "trades" | "charges" | "createdAt" | "updatedAt", ExtArgs["result"]["userStore"]>
+  export type UserStoreInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserStore$userArgs<ExtArgs>
+  }
+
+  export type $UserStorePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "UserStore"
+    objects: {
+      user: Prisma.$UserPayload<ExtArgs> | null
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      userId: string
+      keys: number
+      trades: number
+      charges: number
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["userStore"]>
+    composites: {}
+  }
+
+  type UserStoreGetPayload<S extends boolean | null | undefined | UserStoreDefaultArgs> = $Result.GetResult<Prisma.$UserStorePayload, S>
+
+  type UserStoreCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<UserStoreFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: UserStoreCountAggregateInputType | true
+    }
+
+  export interface UserStoreDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['UserStore'], meta: { name: 'UserStore' } }
+    /**
+     * Find zero or one UserStore that matches the filter.
+     * @param {UserStoreFindUniqueArgs} args - Arguments to find a UserStore
+     * @example
+     * // Get one UserStore
+     * const userStore = await prisma.userStore.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends UserStoreFindUniqueArgs>(args: SelectSubset<T, UserStoreFindUniqueArgs<ExtArgs>>): Prisma__UserStoreClient<$Result.GetResult<Prisma.$UserStorePayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one UserStore that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {UserStoreFindUniqueOrThrowArgs} args - Arguments to find a UserStore
+     * @example
+     * // Get one UserStore
+     * const userStore = await prisma.userStore.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends UserStoreFindUniqueOrThrowArgs>(args: SelectSubset<T, UserStoreFindUniqueOrThrowArgs<ExtArgs>>): Prisma__UserStoreClient<$Result.GetResult<Prisma.$UserStorePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first UserStore that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserStoreFindFirstArgs} args - Arguments to find a UserStore
+     * @example
+     * // Get one UserStore
+     * const userStore = await prisma.userStore.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends UserStoreFindFirstArgs>(args?: SelectSubset<T, UserStoreFindFirstArgs<ExtArgs>>): Prisma__UserStoreClient<$Result.GetResult<Prisma.$UserStorePayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first UserStore that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserStoreFindFirstOrThrowArgs} args - Arguments to find a UserStore
+     * @example
+     * // Get one UserStore
+     * const userStore = await prisma.userStore.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends UserStoreFindFirstOrThrowArgs>(args?: SelectSubset<T, UserStoreFindFirstOrThrowArgs<ExtArgs>>): Prisma__UserStoreClient<$Result.GetResult<Prisma.$UserStorePayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more UserStores that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserStoreFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all UserStores
+     * const userStores = await prisma.userStore.findMany()
+     * 
+     * // Get first 10 UserStores
+     * const userStores = await prisma.userStore.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const userStoreWithIdOnly = await prisma.userStore.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends UserStoreFindManyArgs>(args?: SelectSubset<T, UserStoreFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserStorePayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a UserStore.
+     * @param {UserStoreCreateArgs} args - Arguments to create a UserStore.
+     * @example
+     * // Create one UserStore
+     * const UserStore = await prisma.userStore.create({
+     *   data: {
+     *     // ... data to create a UserStore
+     *   }
+     * })
+     * 
+     */
+    create<T extends UserStoreCreateArgs>(args: SelectSubset<T, UserStoreCreateArgs<ExtArgs>>): Prisma__UserStoreClient<$Result.GetResult<Prisma.$UserStorePayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many UserStores.
+     * @param {UserStoreCreateManyArgs} args - Arguments to create many UserStores.
+     * @example
+     * // Create many UserStores
+     * const userStore = await prisma.userStore.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends UserStoreCreateManyArgs>(args?: SelectSubset<T, UserStoreCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a UserStore.
+     * @param {UserStoreDeleteArgs} args - Arguments to delete one UserStore.
+     * @example
+     * // Delete one UserStore
+     * const UserStore = await prisma.userStore.delete({
+     *   where: {
+     *     // ... filter to delete one UserStore
+     *   }
+     * })
+     * 
+     */
+    delete<T extends UserStoreDeleteArgs>(args: SelectSubset<T, UserStoreDeleteArgs<ExtArgs>>): Prisma__UserStoreClient<$Result.GetResult<Prisma.$UserStorePayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one UserStore.
+     * @param {UserStoreUpdateArgs} args - Arguments to update one UserStore.
+     * @example
+     * // Update one UserStore
+     * const userStore = await prisma.userStore.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends UserStoreUpdateArgs>(args: SelectSubset<T, UserStoreUpdateArgs<ExtArgs>>): Prisma__UserStoreClient<$Result.GetResult<Prisma.$UserStorePayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more UserStores.
+     * @param {UserStoreDeleteManyArgs} args - Arguments to filter UserStores to delete.
+     * @example
+     * // Delete a few UserStores
+     * const { count } = await prisma.userStore.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends UserStoreDeleteManyArgs>(args?: SelectSubset<T, UserStoreDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more UserStores.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserStoreUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many UserStores
+     * const userStore = await prisma.userStore.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends UserStoreUpdateManyArgs>(args: SelectSubset<T, UserStoreUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one UserStore.
+     * @param {UserStoreUpsertArgs} args - Arguments to update or create a UserStore.
+     * @example
+     * // Update or create a UserStore
+     * const userStore = await prisma.userStore.upsert({
+     *   create: {
+     *     // ... data to create a UserStore
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the UserStore we want to update
+     *   }
+     * })
+     */
+    upsert<T extends UserStoreUpsertArgs>(args: SelectSubset<T, UserStoreUpsertArgs<ExtArgs>>): Prisma__UserStoreClient<$Result.GetResult<Prisma.$UserStorePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more UserStores that matches the filter.
+     * @param {UserStoreFindRawArgs} args - Select which filters you would like to apply.
+     * @example
+     * const userStore = await prisma.userStore.findRaw({
+     *   filter: { age: { $gt: 25 } }
+     * })
+     */
+    findRaw(args?: UserStoreFindRawArgs): Prisma.PrismaPromise<JsonObject>
+
+    /**
+     * Perform aggregation operations on a UserStore.
+     * @param {UserStoreAggregateRawArgs} args - Select which aggregations you would like to apply.
+     * @example
+     * const userStore = await prisma.userStore.aggregateRaw({
+     *   pipeline: [
+     *     { $match: { status: "registered" } },
+     *     { $group: { _id: "$country", total: { $sum: 1 } } }
+     *   ]
+     * })
+     */
+    aggregateRaw(args?: UserStoreAggregateRawArgs): Prisma.PrismaPromise<JsonObject>
+
+
+    /**
+     * Count the number of UserStores.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserStoreCountArgs} args - Arguments to filter UserStores to count.
+     * @example
+     * // Count the number of UserStores
+     * const count = await prisma.userStore.count({
+     *   where: {
+     *     // ... the filter for the UserStores we want to count
+     *   }
+     * })
+    **/
+    count<T extends UserStoreCountArgs>(
+      args?: Subset<T, UserStoreCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], UserStoreCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a UserStore.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserStoreAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends UserStoreAggregateArgs>(args: Subset<T, UserStoreAggregateArgs>): Prisma.PrismaPromise<GetUserStoreAggregateType<T>>
+
+    /**
+     * Group by UserStore.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserStoreGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends UserStoreGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: UserStoreGroupByArgs['orderBy'] }
+        : { orderBy?: UserStoreGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, UserStoreGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetUserStoreGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the UserStore model
+   */
+  readonly fields: UserStoreFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for UserStore.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__UserStoreClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    user<T extends UserStore$userArgs<ExtArgs> = {}>(args?: Subset<T, UserStore$userArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the UserStore model
+   */
+  interface UserStoreFieldRefs {
+    readonly id: FieldRef<"UserStore", 'String'>
+    readonly userId: FieldRef<"UserStore", 'String'>
+    readonly keys: FieldRef<"UserStore", 'Int'>
+    readonly trades: FieldRef<"UserStore", 'Int'>
+    readonly charges: FieldRef<"UserStore", 'Int'>
+    readonly createdAt: FieldRef<"UserStore", 'DateTime'>
+    readonly updatedAt: FieldRef<"UserStore", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * UserStore findUnique
+   */
+  export type UserStoreFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserStore
+     */
+    select?: UserStoreSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserStore
+     */
+    omit?: UserStoreOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserStoreInclude<ExtArgs> | null
+    /**
+     * Filter, which UserStore to fetch.
+     */
+    where: UserStoreWhereUniqueInput
+  }
+
+  /**
+   * UserStore findUniqueOrThrow
+   */
+  export type UserStoreFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserStore
+     */
+    select?: UserStoreSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserStore
+     */
+    omit?: UserStoreOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserStoreInclude<ExtArgs> | null
+    /**
+     * Filter, which UserStore to fetch.
+     */
+    where: UserStoreWhereUniqueInput
+  }
+
+  /**
+   * UserStore findFirst
+   */
+  export type UserStoreFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserStore
+     */
+    select?: UserStoreSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserStore
+     */
+    omit?: UserStoreOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserStoreInclude<ExtArgs> | null
+    /**
+     * Filter, which UserStore to fetch.
+     */
+    where?: UserStoreWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UserStores to fetch.
+     */
+    orderBy?: UserStoreOrderByWithRelationInput | UserStoreOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for UserStores.
+     */
+    cursor?: UserStoreWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UserStores from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UserStores.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of UserStores.
+     */
+    distinct?: UserStoreScalarFieldEnum | UserStoreScalarFieldEnum[]
+  }
+
+  /**
+   * UserStore findFirstOrThrow
+   */
+  export type UserStoreFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserStore
+     */
+    select?: UserStoreSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserStore
+     */
+    omit?: UserStoreOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserStoreInclude<ExtArgs> | null
+    /**
+     * Filter, which UserStore to fetch.
+     */
+    where?: UserStoreWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UserStores to fetch.
+     */
+    orderBy?: UserStoreOrderByWithRelationInput | UserStoreOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for UserStores.
+     */
+    cursor?: UserStoreWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UserStores from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UserStores.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of UserStores.
+     */
+    distinct?: UserStoreScalarFieldEnum | UserStoreScalarFieldEnum[]
+  }
+
+  /**
+   * UserStore findMany
+   */
+  export type UserStoreFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserStore
+     */
+    select?: UserStoreSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserStore
+     */
+    omit?: UserStoreOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserStoreInclude<ExtArgs> | null
+    /**
+     * Filter, which UserStores to fetch.
+     */
+    where?: UserStoreWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UserStores to fetch.
+     */
+    orderBy?: UserStoreOrderByWithRelationInput | UserStoreOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing UserStores.
+     */
+    cursor?: UserStoreWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UserStores from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UserStores.
+     */
+    skip?: number
+    distinct?: UserStoreScalarFieldEnum | UserStoreScalarFieldEnum[]
+  }
+
+  /**
+   * UserStore create
+   */
+  export type UserStoreCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserStore
+     */
+    select?: UserStoreSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserStore
+     */
+    omit?: UserStoreOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserStoreInclude<ExtArgs> | null
+    /**
+     * The data needed to create a UserStore.
+     */
+    data: XOR<UserStoreCreateInput, UserStoreUncheckedCreateInput>
+  }
+
+  /**
+   * UserStore createMany
+   */
+  export type UserStoreCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many UserStores.
+     */
+    data: UserStoreCreateManyInput | UserStoreCreateManyInput[]
+  }
+
+  /**
+   * UserStore update
+   */
+  export type UserStoreUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserStore
+     */
+    select?: UserStoreSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserStore
+     */
+    omit?: UserStoreOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserStoreInclude<ExtArgs> | null
+    /**
+     * The data needed to update a UserStore.
+     */
+    data: XOR<UserStoreUpdateInput, UserStoreUncheckedUpdateInput>
+    /**
+     * Choose, which UserStore to update.
+     */
+    where: UserStoreWhereUniqueInput
+  }
+
+  /**
+   * UserStore updateMany
+   */
+  export type UserStoreUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update UserStores.
+     */
+    data: XOR<UserStoreUpdateManyMutationInput, UserStoreUncheckedUpdateManyInput>
+    /**
+     * Filter which UserStores to update
+     */
+    where?: UserStoreWhereInput
+    /**
+     * Limit how many UserStores to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * UserStore upsert
+   */
+  export type UserStoreUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserStore
+     */
+    select?: UserStoreSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserStore
+     */
+    omit?: UserStoreOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserStoreInclude<ExtArgs> | null
+    /**
+     * The filter to search for the UserStore to update in case it exists.
+     */
+    where: UserStoreWhereUniqueInput
+    /**
+     * In case the UserStore found by the `where` argument doesn't exist, create a new UserStore with this data.
+     */
+    create: XOR<UserStoreCreateInput, UserStoreUncheckedCreateInput>
+    /**
+     * In case the UserStore was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<UserStoreUpdateInput, UserStoreUncheckedUpdateInput>
+  }
+
+  /**
+   * UserStore delete
+   */
+  export type UserStoreDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserStore
+     */
+    select?: UserStoreSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserStore
+     */
+    omit?: UserStoreOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserStoreInclude<ExtArgs> | null
+    /**
+     * Filter which UserStore to delete.
+     */
+    where: UserStoreWhereUniqueInput
+  }
+
+  /**
+   * UserStore deleteMany
+   */
+  export type UserStoreDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which UserStores to delete
+     */
+    where?: UserStoreWhereInput
+    /**
+     * Limit how many UserStores to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * UserStore findRaw
+   */
+  export type UserStoreFindRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The query predicate filter. If unspecified, then all documents in the collection will match the predicate. ${@link https://docs.mongodb.com/manual/reference/operator/query MongoDB Docs}.
+     */
+    filter?: InputJsonValue
+    /**
+     * Additional options to pass to the `find` command ${@link https://docs.mongodb.com/manual/reference/command/find/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * UserStore aggregateRaw
+   */
+  export type UserStoreAggregateRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * An array of aggregation stages to process and transform the document stream via the aggregation pipeline. ${@link https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline MongoDB Docs}.
+     */
+    pipeline?: InputJsonValue[]
+    /**
+     * Additional options to pass to the `aggregate` command ${@link https://docs.mongodb.com/manual/reference/command/aggregate/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * UserStore.user
+   */
+  export type UserStore$userArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the User
+     */
+    omit?: UserOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
+  }
+
+  /**
+   * UserStore without action
+   */
+  export type UserStoreDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserStore
+     */
+    select?: UserStoreSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserStore
+     */
+    omit?: UserStoreOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserStoreInclude<ExtArgs> | null
   }
 
 
@@ -22328,8 +23515,9 @@ export namespace Prisma {
 
   export const RecurringContestDataScalarFieldEnum: {
     id: 'id',
-    constestId: 'constestId',
+    contestId: 'contestId',
     lastRunAt: 'lastRunAt',
+    recurringType: 'recurringType',
     nextRunAt: 'nextRunAt'
   };
 
@@ -22469,6 +23657,19 @@ export namespace Prisma {
   };
 
   export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
+
+
+  export const UserStoreScalarFieldEnum: {
+    id: 'id',
+    userId: 'userId',
+    keys: 'keys',
+    trades: 'trades',
+    charges: 'charges',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type UserStoreScalarFieldEnum = (typeof UserStoreScalarFieldEnum)[keyof typeof UserStoreScalarFieldEnum]
 
 
   export const UserPhotoScalarFieldEnum: {
@@ -22632,6 +23833,20 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'RecurringType'
+   */
+  export type EnumRecurringTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RecurringType'>
+    
+
+
+  /**
+   * Reference to a field of type 'RecurringType[]'
+   */
+  export type ListEnumRecurringTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RecurringType[]'>
+    
+
+
+  /**
    * Reference to a field of type 'ContestParticipantStatus'
    */
   export type EnumContestParticipantStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ContestParticipantStatus'>
@@ -22646,16 +23861,16 @@ export namespace Prisma {
 
 
   /**
-   * Reference to a field of type 'ContestLevel'
+   * Reference to a field of type 'YCLevel'
    */
-  export type EnumContestLevelFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ContestLevel'>
+  export type EnumYCLevelFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'YCLevel'>
     
 
 
   /**
-   * Reference to a field of type 'ContestLevel[]'
+   * Reference to a field of type 'YCLevel[]'
    */
-  export type ListEnumContestLevelFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ContestLevel[]'>
+  export type ListEnumYCLevelFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'YCLevel[]'>
     
 
 
@@ -22754,20 +23969,6 @@ export namespace Prisma {
    * Reference to a field of type 'Float[]'
    */
   export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
-    
-
-
-  /**
-   * Reference to a field of type 'RecurringType'
-   */
-  export type EnumRecurringTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RecurringType'>
-    
-
-
-  /**
-   * Reference to a field of type 'RecurringType[]'
-   */
-  export type ListEnumRecurringTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RecurringType[]'>
     
   /**
    * Deep Input Types
@@ -22961,35 +24162,39 @@ export namespace Prisma {
     OR?: RecurringContestDataWhereInput[]
     NOT?: RecurringContestDataWhereInput | RecurringContestDataWhereInput[]
     id?: StringFilter<"RecurringContestData"> | string
-    constestId?: StringFilter<"RecurringContestData"> | string
-    lastRunAt?: DateTimeNullableFilter<"RecurringContestData"> | Date | string | null
+    contestId?: StringFilter<"RecurringContestData"> | string
+    lastRunAt?: DateTimeFilter<"RecurringContestData"> | Date | string
+    recurringType?: EnumRecurringTypeFilter<"RecurringContestData"> | $Enums.RecurringType
     nextRunAt?: DateTimeFilter<"RecurringContestData"> | Date | string
     contest?: XOR<ContestScalarRelationFilter, ContestWhereInput>
   }
 
   export type RecurringContestDataOrderByWithRelationInput = {
     id?: SortOrder
-    constestId?: SortOrder
+    contestId?: SortOrder
     lastRunAt?: SortOrder
+    recurringType?: SortOrder
     nextRunAt?: SortOrder
     contest?: ContestOrderByWithRelationInput
   }
 
   export type RecurringContestDataWhereUniqueInput = Prisma.AtLeast<{
     id?: string
-    constestId?: string
+    contestId?: string
     AND?: RecurringContestDataWhereInput | RecurringContestDataWhereInput[]
     OR?: RecurringContestDataWhereInput[]
     NOT?: RecurringContestDataWhereInput | RecurringContestDataWhereInput[]
-    lastRunAt?: DateTimeNullableFilter<"RecurringContestData"> | Date | string | null
+    lastRunAt?: DateTimeFilter<"RecurringContestData"> | Date | string
+    recurringType?: EnumRecurringTypeFilter<"RecurringContestData"> | $Enums.RecurringType
     nextRunAt?: DateTimeFilter<"RecurringContestData"> | Date | string
     contest?: XOR<ContestScalarRelationFilter, ContestWhereInput>
-  }, "id" | "constestId">
+  }, "id" | "contestId">
 
   export type RecurringContestDataOrderByWithAggregationInput = {
     id?: SortOrder
-    constestId?: SortOrder
+    contestId?: SortOrder
     lastRunAt?: SortOrder
+    recurringType?: SortOrder
     nextRunAt?: SortOrder
     _count?: RecurringContestDataCountOrderByAggregateInput
     _max?: RecurringContestDataMaxOrderByAggregateInput
@@ -23001,8 +24206,9 @@ export namespace Prisma {
     OR?: RecurringContestDataScalarWhereWithAggregatesInput[]
     NOT?: RecurringContestDataScalarWhereWithAggregatesInput | RecurringContestDataScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"RecurringContestData"> | string
-    constestId?: StringWithAggregatesFilter<"RecurringContestData"> | string
-    lastRunAt?: DateTimeNullableWithAggregatesFilter<"RecurringContestData"> | Date | string | null
+    contestId?: StringWithAggregatesFilter<"RecurringContestData"> | string
+    lastRunAt?: DateTimeWithAggregatesFilter<"RecurringContestData"> | Date | string
+    recurringType?: EnumRecurringTypeWithAggregatesFilter<"RecurringContestData"> | $Enums.RecurringType
     nextRunAt?: DateTimeWithAggregatesFilter<"RecurringContestData"> | Date | string
   }
 
@@ -23251,7 +24457,7 @@ export namespace Prisma {
     status?: EnumContestParticipantStatusFilter<"ContestParticipant"> | $Enums.ContestParticipantStatus
     contestId?: StringFilter<"ContestParticipant"> | string
     userId?: StringFilter<"ContestParticipant"> | string
-    level?: EnumContestLevelFilter<"ContestParticipant"> | $Enums.ContestLevel
+    level?: EnumYCLevelFilter<"ContestParticipant"> | $Enums.YCLevel
     rank?: IntNullableFilter<"ContestParticipant"> | number | null
     createdAt?: DateTimeFilter<"ContestParticipant"> | Date | string
     updatedAt?: DateTimeFilter<"ContestParticipant"> | Date | string
@@ -23287,7 +24493,7 @@ export namespace Prisma {
     status?: EnumContestParticipantStatusFilter<"ContestParticipant"> | $Enums.ContestParticipantStatus
     contestId?: StringFilter<"ContestParticipant"> | string
     userId?: StringFilter<"ContestParticipant"> | string
-    level?: EnumContestLevelFilter<"ContestParticipant"> | $Enums.ContestLevel
+    level?: EnumYCLevelFilter<"ContestParticipant"> | $Enums.YCLevel
     rank?: IntNullableFilter<"ContestParticipant"> | number | null
     createdAt?: DateTimeFilter<"ContestParticipant"> | Date | string
     updatedAt?: DateTimeFilter<"ContestParticipant"> | Date | string
@@ -23322,7 +24528,7 @@ export namespace Prisma {
     status?: EnumContestParticipantStatusWithAggregatesFilter<"ContestParticipant"> | $Enums.ContestParticipantStatus
     contestId?: StringWithAggregatesFilter<"ContestParticipant"> | string
     userId?: StringWithAggregatesFilter<"ContestParticipant"> | string
-    level?: EnumContestLevelWithAggregatesFilter<"ContestParticipant"> | $Enums.ContestLevel
+    level?: EnumYCLevelWithAggregatesFilter<"ContestParticipant"> | $Enums.YCLevel
     rank?: IntNullableWithAggregatesFilter<"ContestParticipant"> | number | null
     createdAt?: DateTimeWithAggregatesFilter<"ContestParticipant"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"ContestParticipant"> | Date | string
@@ -23632,6 +24838,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
     otps?: XOR<OtpNullableScalarRelationFilter, OtpWhereInput> | null
+    store?: XOR<UserStoreNullableScalarRelationFilter, UserStoreWhereInput> | null
     createdTeam?: TeamListRelationFilter
     joinedTeam?: XOR<TeamMemberNullableScalarRelationFilter, TeamMemberWhereInput> | null
     createdContests?: ContestListRelationFilter
@@ -23664,6 +24871,7 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrder
     otps?: OtpOrderByWithRelationInput
+    store?: UserStoreOrderByWithRelationInput
     createdTeam?: TeamOrderByRelationAggregateInput
     joinedTeam?: TeamMemberOrderByWithRelationInput
     createdContests?: ContestOrderByRelationAggregateInput
@@ -23699,6 +24907,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
     otps?: XOR<OtpNullableScalarRelationFilter, OtpWhereInput> | null
+    store?: XOR<UserStoreNullableScalarRelationFilter, UserStoreWhereInput> | null
     createdTeam?: TeamListRelationFilter
     joinedTeam?: XOR<TeamMemberNullableScalarRelationFilter, TeamMemberWhereInput> | null
     createdContests?: ContestListRelationFilter
@@ -23757,6 +24966,73 @@ export namespace Prisma {
     accessToken?: StringNullableWithAggregatesFilter<"User"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
+  }
+
+  export type UserStoreWhereInput = {
+    AND?: UserStoreWhereInput | UserStoreWhereInput[]
+    OR?: UserStoreWhereInput[]
+    NOT?: UserStoreWhereInput | UserStoreWhereInput[]
+    id?: StringFilter<"UserStore"> | string
+    userId?: StringFilter<"UserStore"> | string
+    keys?: IntFilter<"UserStore"> | number
+    trades?: IntFilter<"UserStore"> | number
+    charges?: IntFilter<"UserStore"> | number
+    createdAt?: DateTimeFilter<"UserStore"> | Date | string
+    updatedAt?: DateTimeFilter<"UserStore"> | Date | string
+    user?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
+  }
+
+  export type UserStoreOrderByWithRelationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    keys?: SortOrder
+    trades?: SortOrder
+    charges?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    user?: UserOrderByWithRelationInput
+  }
+
+  export type UserStoreWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    userId?: string
+    AND?: UserStoreWhereInput | UserStoreWhereInput[]
+    OR?: UserStoreWhereInput[]
+    NOT?: UserStoreWhereInput | UserStoreWhereInput[]
+    keys?: IntFilter<"UserStore"> | number
+    trades?: IntFilter<"UserStore"> | number
+    charges?: IntFilter<"UserStore"> | number
+    createdAt?: DateTimeFilter<"UserStore"> | Date | string
+    updatedAt?: DateTimeFilter<"UserStore"> | Date | string
+    user?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
+  }, "id" | "userId">
+
+  export type UserStoreOrderByWithAggregationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    keys?: SortOrder
+    trades?: SortOrder
+    charges?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: UserStoreCountOrderByAggregateInput
+    _avg?: UserStoreAvgOrderByAggregateInput
+    _max?: UserStoreMaxOrderByAggregateInput
+    _min?: UserStoreMinOrderByAggregateInput
+    _sum?: UserStoreSumOrderByAggregateInput
+  }
+
+  export type UserStoreScalarWhereWithAggregatesInput = {
+    AND?: UserStoreScalarWhereWithAggregatesInput | UserStoreScalarWhereWithAggregatesInput[]
+    OR?: UserStoreScalarWhereWithAggregatesInput[]
+    NOT?: UserStoreScalarWhereWithAggregatesInput | UserStoreScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"UserStore"> | string
+    userId?: StringWithAggregatesFilter<"UserStore"> | string
+    keys?: IntWithAggregatesFilter<"UserStore"> | number
+    trades?: IntWithAggregatesFilter<"UserStore"> | number
+    charges?: IntWithAggregatesFilter<"UserStore"> | number
+    createdAt?: DateTimeWithAggregatesFilter<"UserStore"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"UserStore"> | Date | string
   }
 
   export type UserPhotoWhereInput = {
@@ -24368,45 +25644,52 @@ export namespace Prisma {
 
   export type RecurringContestDataCreateInput = {
     id?: string
-    lastRunAt?: Date | string | null
+    lastRunAt: Date | string
+    recurringType: $Enums.RecurringType
     nextRunAt: Date | string
     contest: ContestCreateNestedOneWithoutRecurringDataInput
   }
 
   export type RecurringContestDataUncheckedCreateInput = {
     id?: string
-    constestId: string
-    lastRunAt?: Date | string | null
+    contestId: string
+    lastRunAt: Date | string
+    recurringType: $Enums.RecurringType
     nextRunAt: Date | string
   }
 
   export type RecurringContestDataUpdateInput = {
-    lastRunAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastRunAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    recurringType?: EnumRecurringTypeFieldUpdateOperationsInput | $Enums.RecurringType
     nextRunAt?: DateTimeFieldUpdateOperationsInput | Date | string
     contest?: ContestUpdateOneRequiredWithoutRecurringDataNestedInput
   }
 
   export type RecurringContestDataUncheckedUpdateInput = {
-    constestId?: StringFieldUpdateOperationsInput | string
-    lastRunAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    contestId?: StringFieldUpdateOperationsInput | string
+    lastRunAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    recurringType?: EnumRecurringTypeFieldUpdateOperationsInput | $Enums.RecurringType
     nextRunAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type RecurringContestDataCreateManyInput = {
     id?: string
-    constestId: string
-    lastRunAt?: Date | string | null
+    contestId: string
+    lastRunAt: Date | string
+    recurringType: $Enums.RecurringType
     nextRunAt: Date | string
   }
 
   export type RecurringContestDataUpdateManyMutationInput = {
-    lastRunAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastRunAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    recurringType?: EnumRecurringTypeFieldUpdateOperationsInput | $Enums.RecurringType
     nextRunAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type RecurringContestDataUncheckedUpdateManyInput = {
-    constestId?: StringFieldUpdateOperationsInput | string
-    lastRunAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    contestId?: StringFieldUpdateOperationsInput | string
+    lastRunAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    recurringType?: EnumRecurringTypeFieldUpdateOperationsInput | $Enums.RecurringType
     nextRunAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -24658,7 +25941,7 @@ export namespace Prisma {
   export type ContestParticipantCreateInput = {
     id?: string
     status?: $Enums.ContestParticipantStatus
-    level?: $Enums.ContestLevel
+    level?: $Enums.YCLevel
     rank?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -24674,7 +25957,7 @@ export namespace Prisma {
     status?: $Enums.ContestParticipantStatus
     contestId: string
     userId: string
-    level?: $Enums.ContestLevel
+    level?: $Enums.YCLevel
     rank?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -24685,7 +25968,7 @@ export namespace Prisma {
 
   export type ContestParticipantUpdateInput = {
     status?: EnumContestParticipantStatusFieldUpdateOperationsInput | $Enums.ContestParticipantStatus
-    level?: EnumContestLevelFieldUpdateOperationsInput | $Enums.ContestLevel
+    level?: EnumYCLevelFieldUpdateOperationsInput | $Enums.YCLevel
     rank?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -24700,7 +25983,7 @@ export namespace Prisma {
     status?: EnumContestParticipantStatusFieldUpdateOperationsInput | $Enums.ContestParticipantStatus
     contestId?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
-    level?: EnumContestLevelFieldUpdateOperationsInput | $Enums.ContestLevel
+    level?: EnumYCLevelFieldUpdateOperationsInput | $Enums.YCLevel
     rank?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -24714,7 +25997,7 @@ export namespace Prisma {
     status?: $Enums.ContestParticipantStatus
     contestId: string
     userId: string
-    level?: $Enums.ContestLevel
+    level?: $Enums.YCLevel
     rank?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -24722,7 +26005,7 @@ export namespace Prisma {
 
   export type ContestParticipantUpdateManyMutationInput = {
     status?: EnumContestParticipantStatusFieldUpdateOperationsInput | $Enums.ContestParticipantStatus
-    level?: EnumContestLevelFieldUpdateOperationsInput | $Enums.ContestLevel
+    level?: EnumYCLevelFieldUpdateOperationsInput | $Enums.YCLevel
     rank?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -24732,7 +26015,7 @@ export namespace Prisma {
     status?: EnumContestParticipantStatusFieldUpdateOperationsInput | $Enums.ContestParticipantStatus
     contestId?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
-    level?: EnumContestLevelFieldUpdateOperationsInput | $Enums.ContestLevel
+    level?: EnumYCLevelFieldUpdateOperationsInput | $Enums.YCLevel
     rank?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -25034,6 +26317,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     otps?: OtpCreateNestedOneWithoutUserInput
+    store?: UserStoreCreateNestedOneWithoutUserInput
     createdTeam?: TeamCreateNestedManyWithoutCreatorInput
     joinedTeam?: TeamMemberCreateNestedOneWithoutMemberInput
     createdContests?: ContestCreateNestedManyWithoutCreatorInput
@@ -25066,6 +26350,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     otps?: OtpUncheckedCreateNestedOneWithoutUserInput
+    store?: UserStoreUncheckedCreateNestedOneWithoutUserInput
     createdTeam?: TeamUncheckedCreateNestedManyWithoutCreatorInput
     joinedTeam?: TeamMemberUncheckedCreateNestedOneWithoutMemberInput
     createdContests?: ContestUncheckedCreateNestedManyWithoutCreatorInput
@@ -25097,6 +26382,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     otps?: OtpUpdateOneWithoutUserNestedInput
+    store?: UserStoreUpdateOneWithoutUserNestedInput
     createdTeam?: TeamUpdateManyWithoutCreatorNestedInput
     joinedTeam?: TeamMemberUpdateOneWithoutMemberNestedInput
     createdContests?: ContestUpdateManyWithoutCreatorNestedInput
@@ -25128,6 +26414,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     otps?: OtpUncheckedUpdateOneWithoutUserNestedInput
+    store?: UserStoreUncheckedUpdateOneWithoutUserNestedInput
     createdTeam?: TeamUncheckedUpdateManyWithoutCreatorNestedInput
     joinedTeam?: TeamMemberUncheckedUpdateOneWithoutMemberNestedInput
     createdContests?: ContestUncheckedUpdateManyWithoutCreatorNestedInput
@@ -25197,6 +26484,71 @@ export namespace Prisma {
     password?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserStoreCreateInput = {
+    id?: string
+    keys?: number
+    trades?: number
+    charges?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user?: UserCreateNestedOneWithoutStoreInput
+  }
+
+  export type UserStoreUncheckedCreateInput = {
+    id?: string
+    userId: string
+    keys?: number
+    trades?: number
+    charges?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type UserStoreUpdateInput = {
+    keys?: IntFieldUpdateOperationsInput | number
+    trades?: IntFieldUpdateOperationsInput | number
+    charges?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneWithoutStoreNestedInput
+  }
+
+  export type UserStoreUncheckedUpdateInput = {
+    userId?: StringFieldUpdateOperationsInput | string
+    keys?: IntFieldUpdateOperationsInput | number
+    trades?: IntFieldUpdateOperationsInput | number
+    charges?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserStoreCreateManyInput = {
+    id?: string
+    userId: string
+    keys?: number
+    trades?: number
+    charges?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type UserStoreUpdateManyMutationInput = {
+    keys?: IntFieldUpdateOperationsInput | number
+    trades?: IntFieldUpdateOperationsInput | number
+    charges?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserStoreUncheckedUpdateManyInput = {
+    userId?: StringFieldUpdateOperationsInput | string
+    keys?: IntFieldUpdateOperationsInput | number
+    trades?: IntFieldUpdateOperationsInput | number
+    charges?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -25887,52 +27239,45 @@ export namespace Prisma {
     updatedAt?: SortOrder
   }
 
-  export type DateTimeNullableFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
-    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
-    isSet?: boolean
+  export type EnumRecurringTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.RecurringType | EnumRecurringTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.RecurringType[] | ListEnumRecurringTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.RecurringType[] | ListEnumRecurringTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumRecurringTypeFilter<$PrismaModel> | $Enums.RecurringType
   }
 
   export type RecurringContestDataCountOrderByAggregateInput = {
     id?: SortOrder
-    constestId?: SortOrder
+    contestId?: SortOrder
     lastRunAt?: SortOrder
+    recurringType?: SortOrder
     nextRunAt?: SortOrder
   }
 
   export type RecurringContestDataMaxOrderByAggregateInput = {
     id?: SortOrder
-    constestId?: SortOrder
+    contestId?: SortOrder
     lastRunAt?: SortOrder
+    recurringType?: SortOrder
     nextRunAt?: SortOrder
   }
 
   export type RecurringContestDataMinOrderByAggregateInput = {
     id?: SortOrder
-    constestId?: SortOrder
+    contestId?: SortOrder
     lastRunAt?: SortOrder
+    recurringType?: SortOrder
     nextRunAt?: SortOrder
   }
 
-  export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
-    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedDateTimeNullableFilter<$PrismaModel>
-    _max?: NestedDateTimeNullableFilter<$PrismaModel>
-    isSet?: boolean
+  export type EnumRecurringTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.RecurringType | EnumRecurringTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.RecurringType[] | ListEnumRecurringTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.RecurringType[] | ListEnumRecurringTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumRecurringTypeWithAggregatesFilter<$PrismaModel> | $Enums.RecurringType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumRecurringTypeFilter<$PrismaModel>
+    _max?: NestedEnumRecurringTypeFilter<$PrismaModel>
   }
 
   export type RecurringDataCompositeFilter = {
@@ -26129,11 +27474,11 @@ export namespace Prisma {
     not?: NestedEnumContestParticipantStatusFilter<$PrismaModel> | $Enums.ContestParticipantStatus
   }
 
-  export type EnumContestLevelFilter<$PrismaModel = never> = {
-    equals?: $Enums.ContestLevel | EnumContestLevelFieldRefInput<$PrismaModel>
-    in?: $Enums.ContestLevel[] | ListEnumContestLevelFieldRefInput<$PrismaModel>
-    notIn?: $Enums.ContestLevel[] | ListEnumContestLevelFieldRefInput<$PrismaModel>
-    not?: NestedEnumContestLevelFilter<$PrismaModel> | $Enums.ContestLevel
+  export type EnumYCLevelFilter<$PrismaModel = never> = {
+    equals?: $Enums.YCLevel | EnumYCLevelFieldRefInput<$PrismaModel>
+    in?: $Enums.YCLevel[] | ListEnumYCLevelFieldRefInput<$PrismaModel>
+    notIn?: $Enums.YCLevel[] | ListEnumYCLevelFieldRefInput<$PrismaModel>
+    not?: NestedEnumYCLevelFilter<$PrismaModel> | $Enums.YCLevel
   }
 
   export type ContestPhotoListRelationFilter = {
@@ -26202,14 +27547,14 @@ export namespace Prisma {
     _max?: NestedEnumContestParticipantStatusFilter<$PrismaModel>
   }
 
-  export type EnumContestLevelWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.ContestLevel | EnumContestLevelFieldRefInput<$PrismaModel>
-    in?: $Enums.ContestLevel[] | ListEnumContestLevelFieldRefInput<$PrismaModel>
-    notIn?: $Enums.ContestLevel[] | ListEnumContestLevelFieldRefInput<$PrismaModel>
-    not?: NestedEnumContestLevelWithAggregatesFilter<$PrismaModel> | $Enums.ContestLevel
+  export type EnumYCLevelWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.YCLevel | EnumYCLevelFieldRefInput<$PrismaModel>
+    in?: $Enums.YCLevel[] | ListEnumYCLevelFieldRefInput<$PrismaModel>
+    notIn?: $Enums.YCLevel[] | ListEnumYCLevelFieldRefInput<$PrismaModel>
+    not?: NestedEnumYCLevelWithAggregatesFilter<$PrismaModel> | $Enums.YCLevel
     _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumContestLevelFilter<$PrismaModel>
-    _max?: NestedEnumContestLevelFilter<$PrismaModel>
+    _min?: NestedEnumYCLevelFilter<$PrismaModel>
+    _max?: NestedEnumYCLevelFilter<$PrismaModel>
   }
 
   export type EnumPrizeTypeFilter<$PrismaModel = never> = {
@@ -26473,6 +27818,11 @@ export namespace Prisma {
     isNot?: OtpWhereInput | null
   }
 
+  export type UserStoreNullableScalarRelationFilter = {
+    is?: UserStoreWhereInput | null
+    isNot?: UserStoreWhereInput | null
+  }
+
   export type TeamListRelationFilter = {
     every?: TeamWhereInput
     some?: TeamWhereInput
@@ -26610,6 +27960,53 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumUserRoleFilter<$PrismaModel>
     _max?: NestedEnumUserRoleFilter<$PrismaModel>
+  }
+
+  export type UserNullableScalarRelationFilter = {
+    is?: UserWhereInput | null
+    isNot?: UserWhereInput | null
+  }
+
+  export type UserStoreCountOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    keys?: SortOrder
+    trades?: SortOrder
+    charges?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type UserStoreAvgOrderByAggregateInput = {
+    keys?: SortOrder
+    trades?: SortOrder
+    charges?: SortOrder
+  }
+
+  export type UserStoreMaxOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    keys?: SortOrder
+    trades?: SortOrder
+    charges?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type UserStoreMinOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    keys?: SortOrder
+    trades?: SortOrder
+    charges?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type UserStoreSumOrderByAggregateInput = {
+    keys?: SortOrder
+    trades?: SortOrder
+    charges?: SortOrder
   }
 
   export type PhotoStatsNullableCompositeFilter = {
@@ -27112,9 +28509,8 @@ export namespace Prisma {
     connect?: ContestWhereUniqueInput
   }
 
-  export type NullableDateTimeFieldUpdateOperationsInput = {
-    set?: Date | string | null
-    unset?: boolean
+  export type EnumRecurringTypeFieldUpdateOperationsInput = {
+    set?: $Enums.RecurringType
   }
 
   export type ContestUpdateOneRequiredWithoutRecurringDataNestedInput = {
@@ -27423,8 +28819,8 @@ export namespace Prisma {
     set?: $Enums.ContestParticipantStatus
   }
 
-  export type EnumContestLevelFieldUpdateOperationsInput = {
-    set?: $Enums.ContestLevel
+  export type EnumYCLevelFieldUpdateOperationsInput = {
+    set?: $Enums.YCLevel
   }
 
   export type ContestUpdateOneRequiredWithoutParticipantsNestedInput = {
@@ -27683,6 +29079,12 @@ export namespace Prisma {
     connect?: OtpWhereUniqueInput
   }
 
+  export type UserStoreCreateNestedOneWithoutUserInput = {
+    create?: XOR<UserStoreCreateWithoutUserInput, UserStoreUncheckedCreateWithoutUserInput>
+    connectOrCreate?: UserStoreCreateOrConnectWithoutUserInput
+    connect?: UserStoreWhereUniqueInput
+  }
+
   export type TeamCreateNestedManyWithoutCreatorInput = {
     create?: XOR<TeamCreateWithoutCreatorInput, TeamUncheckedCreateWithoutCreatorInput> | TeamCreateWithoutCreatorInput[] | TeamUncheckedCreateWithoutCreatorInput[]
     connectOrCreate?: TeamCreateOrConnectWithoutCreatorInput | TeamCreateOrConnectWithoutCreatorInput[]
@@ -27756,6 +29158,12 @@ export namespace Prisma {
     create?: XOR<OtpCreateWithoutUserInput, OtpUncheckedCreateWithoutUserInput>
     connectOrCreate?: OtpCreateOrConnectWithoutUserInput
     connect?: OtpWhereUniqueInput
+  }
+
+  export type UserStoreUncheckedCreateNestedOneWithoutUserInput = {
+    create?: XOR<UserStoreCreateWithoutUserInput, UserStoreUncheckedCreateWithoutUserInput>
+    connectOrCreate?: UserStoreCreateOrConnectWithoutUserInput
+    connect?: UserStoreWhereUniqueInput
   }
 
   export type TeamUncheckedCreateNestedManyWithoutCreatorInput = {
@@ -27844,6 +29252,16 @@ export namespace Prisma {
     delete?: OtpWhereInput | boolean
     connect?: OtpWhereUniqueInput
     update?: XOR<XOR<OtpUpdateToOneWithWhereWithoutUserInput, OtpUpdateWithoutUserInput>, OtpUncheckedUpdateWithoutUserInput>
+  }
+
+  export type UserStoreUpdateOneWithoutUserNestedInput = {
+    create?: XOR<UserStoreCreateWithoutUserInput, UserStoreUncheckedCreateWithoutUserInput>
+    connectOrCreate?: UserStoreCreateOrConnectWithoutUserInput
+    upsert?: UserStoreUpsertWithoutUserInput
+    disconnect?: UserStoreWhereInput | boolean
+    delete?: UserStoreWhereInput | boolean
+    connect?: UserStoreWhereUniqueInput
+    update?: XOR<XOR<UserStoreUpdateToOneWithWhereWithoutUserInput, UserStoreUpdateWithoutUserInput>, UserStoreUncheckedUpdateWithoutUserInput>
   }
 
   export type TeamUpdateManyWithoutCreatorNestedInput = {
@@ -27992,6 +29410,16 @@ export namespace Prisma {
     update?: XOR<XOR<OtpUpdateToOneWithWhereWithoutUserInput, OtpUpdateWithoutUserInput>, OtpUncheckedUpdateWithoutUserInput>
   }
 
+  export type UserStoreUncheckedUpdateOneWithoutUserNestedInput = {
+    create?: XOR<UserStoreCreateWithoutUserInput, UserStoreUncheckedCreateWithoutUserInput>
+    connectOrCreate?: UserStoreCreateOrConnectWithoutUserInput
+    upsert?: UserStoreUpsertWithoutUserInput
+    disconnect?: UserStoreWhereInput | boolean
+    delete?: UserStoreWhereInput | boolean
+    connect?: UserStoreWhereUniqueInput
+    update?: XOR<XOR<UserStoreUpdateToOneWithWhereWithoutUserInput, UserStoreUpdateWithoutUserInput>, UserStoreUncheckedUpdateWithoutUserInput>
+  }
+
   export type TeamUncheckedUpdateManyWithoutCreatorNestedInput = {
     create?: XOR<TeamCreateWithoutCreatorInput, TeamUncheckedCreateWithoutCreatorInput> | TeamCreateWithoutCreatorInput[] | TeamUncheckedCreateWithoutCreatorInput[]
     connectOrCreate?: TeamCreateOrConnectWithoutCreatorInput | TeamCreateOrConnectWithoutCreatorInput[]
@@ -28126,6 +29554,22 @@ export namespace Prisma {
     update?: ContestParticipantUpdateWithWhereUniqueWithoutUserInput | ContestParticipantUpdateWithWhereUniqueWithoutUserInput[]
     updateMany?: ContestParticipantUpdateManyWithWhereWithoutUserInput | ContestParticipantUpdateManyWithWhereWithoutUserInput[]
     deleteMany?: ContestParticipantScalarWhereInput | ContestParticipantScalarWhereInput[]
+  }
+
+  export type UserCreateNestedOneWithoutStoreInput = {
+    create?: XOR<UserCreateWithoutStoreInput, UserUncheckedCreateWithoutStoreInput>
+    connectOrCreate?: UserCreateOrConnectWithoutStoreInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type UserUpdateOneWithoutStoreNestedInput = {
+    create?: XOR<UserCreateWithoutStoreInput, UserUncheckedCreateWithoutStoreInput>
+    connectOrCreate?: UserCreateOrConnectWithoutStoreInput
+    upsert?: UserUpsertWithoutStoreInput
+    disconnect?: boolean
+    delete?: UserWhereInput | boolean
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutStoreInput, UserUpdateWithoutStoreInput>, UserUncheckedUpdateWithoutStoreInput>
   }
 
   export type PhotoStatsNullableCreateEnvelopeInput = {
@@ -28567,31 +30011,21 @@ export namespace Prisma {
     _max?: NestedDateTimeFilter<$PrismaModel>
   }
 
-  export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
-    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
-    isSet?: boolean
+  export type NestedEnumRecurringTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.RecurringType | EnumRecurringTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.RecurringType[] | ListEnumRecurringTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.RecurringType[] | ListEnumRecurringTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumRecurringTypeFilter<$PrismaModel> | $Enums.RecurringType
   }
 
-  export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
-    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedDateTimeNullableFilter<$PrismaModel>
-    _max?: NestedDateTimeNullableFilter<$PrismaModel>
-    isSet?: boolean
+  export type NestedEnumRecurringTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.RecurringType | EnumRecurringTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.RecurringType[] | ListEnumRecurringTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.RecurringType[] | ListEnumRecurringTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumRecurringTypeWithAggregatesFilter<$PrismaModel> | $Enums.RecurringType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumRecurringTypeFilter<$PrismaModel>
+    _max?: NestedEnumRecurringTypeFilter<$PrismaModel>
   }
 
   export type RecurringDataWhereInput = {
@@ -28611,11 +30045,11 @@ export namespace Prisma {
     not?: NestedEnumContestParticipantStatusFilter<$PrismaModel> | $Enums.ContestParticipantStatus
   }
 
-  export type NestedEnumContestLevelFilter<$PrismaModel = never> = {
-    equals?: $Enums.ContestLevel | EnumContestLevelFieldRefInput<$PrismaModel>
-    in?: $Enums.ContestLevel[] | ListEnumContestLevelFieldRefInput<$PrismaModel>
-    notIn?: $Enums.ContestLevel[] | ListEnumContestLevelFieldRefInput<$PrismaModel>
-    not?: NestedEnumContestLevelFilter<$PrismaModel> | $Enums.ContestLevel
+  export type NestedEnumYCLevelFilter<$PrismaModel = never> = {
+    equals?: $Enums.YCLevel | EnumYCLevelFieldRefInput<$PrismaModel>
+    in?: $Enums.YCLevel[] | ListEnumYCLevelFieldRefInput<$PrismaModel>
+    notIn?: $Enums.YCLevel[] | ListEnumYCLevelFieldRefInput<$PrismaModel>
+    not?: NestedEnumYCLevelFilter<$PrismaModel> | $Enums.YCLevel
   }
 
   export type NestedEnumContestParticipantStatusWithAggregatesFilter<$PrismaModel = never> = {
@@ -28628,14 +30062,14 @@ export namespace Prisma {
     _max?: NestedEnumContestParticipantStatusFilter<$PrismaModel>
   }
 
-  export type NestedEnumContestLevelWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.ContestLevel | EnumContestLevelFieldRefInput<$PrismaModel>
-    in?: $Enums.ContestLevel[] | ListEnumContestLevelFieldRefInput<$PrismaModel>
-    notIn?: $Enums.ContestLevel[] | ListEnumContestLevelFieldRefInput<$PrismaModel>
-    not?: NestedEnumContestLevelWithAggregatesFilter<$PrismaModel> | $Enums.ContestLevel
+  export type NestedEnumYCLevelWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.YCLevel | EnumYCLevelFieldRefInput<$PrismaModel>
+    in?: $Enums.YCLevel[] | ListEnumYCLevelFieldRefInput<$PrismaModel>
+    notIn?: $Enums.YCLevel[] | ListEnumYCLevelFieldRefInput<$PrismaModel>
+    not?: NestedEnumYCLevelWithAggregatesFilter<$PrismaModel> | $Enums.YCLevel
     _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumContestLevelFilter<$PrismaModel>
-    _max?: NestedEnumContestLevelFilter<$PrismaModel>
+    _min?: NestedEnumYCLevelFilter<$PrismaModel>
+    _max?: NestedEnumYCLevelFilter<$PrismaModel>
   }
 
   export type NestedEnumPrizeTypeFilter<$PrismaModel = never> = {
@@ -28799,6 +30233,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     otps?: OtpCreateNestedOneWithoutUserInput
+    store?: UserStoreCreateNestedOneWithoutUserInput
     createdTeam?: TeamCreateNestedManyWithoutCreatorInput
     joinedTeam?: TeamMemberCreateNestedOneWithoutMemberInput
     commentProvides?: CommentCreateNestedManyWithoutProviderInput
@@ -28830,6 +30265,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     otps?: OtpUncheckedCreateNestedOneWithoutUserInput
+    store?: UserStoreUncheckedCreateNestedOneWithoutUserInput
     createdTeam?: TeamUncheckedCreateNestedManyWithoutCreatorInput
     joinedTeam?: TeamMemberUncheckedCreateNestedOneWithoutMemberInput
     commentProvides?: CommentUncheckedCreateNestedManyWithoutProviderInput
@@ -28849,7 +30285,7 @@ export namespace Prisma {
   export type ContestParticipantCreateWithoutContestInput = {
     id?: string
     status?: $Enums.ContestParticipantStatus
-    level?: $Enums.ContestLevel
+    level?: $Enums.YCLevel
     rank?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -28863,7 +30299,7 @@ export namespace Prisma {
     id?: string
     status?: $Enums.ContestParticipantStatus
     userId: string
-    level?: $Enums.ContestLevel
+    level?: $Enums.YCLevel
     rank?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -28960,13 +30396,15 @@ export namespace Prisma {
 
   export type RecurringContestDataCreateWithoutContestInput = {
     id?: string
-    lastRunAt?: Date | string | null
+    lastRunAt: Date | string
+    recurringType: $Enums.RecurringType
     nextRunAt: Date | string
   }
 
   export type RecurringContestDataUncheckedCreateWithoutContestInput = {
     id?: string
-    lastRunAt?: Date | string | null
+    lastRunAt: Date | string
+    recurringType: $Enums.RecurringType
     nextRunAt: Date | string
   }
 
@@ -29005,6 +30443,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     otps?: OtpUpdateOneWithoutUserNestedInput
+    store?: UserStoreUpdateOneWithoutUserNestedInput
     createdTeam?: TeamUpdateManyWithoutCreatorNestedInput
     joinedTeam?: TeamMemberUpdateOneWithoutMemberNestedInput
     commentProvides?: CommentUpdateManyWithoutProviderNestedInput
@@ -29035,6 +30474,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     otps?: OtpUncheckedUpdateOneWithoutUserNestedInput
+    store?: UserStoreUncheckedUpdateOneWithoutUserNestedInput
     createdTeam?: TeamUncheckedUpdateManyWithoutCreatorNestedInput
     joinedTeam?: TeamMemberUncheckedUpdateOneWithoutMemberNestedInput
     commentProvides?: CommentUncheckedUpdateManyWithoutProviderNestedInput
@@ -29070,7 +30510,7 @@ export namespace Prisma {
     status?: EnumContestParticipantStatusFilter<"ContestParticipant"> | $Enums.ContestParticipantStatus
     contestId?: StringFilter<"ContestParticipant"> | string
     userId?: StringFilter<"ContestParticipant"> | string
-    level?: EnumContestLevelFilter<"ContestParticipant"> | $Enums.ContestLevel
+    level?: EnumYCLevelFilter<"ContestParticipant"> | $Enums.YCLevel
     rank?: IntNullableFilter<"ContestParticipant"> | number | null
     createdAt?: DateTimeFilter<"ContestParticipant"> | Date | string
     updatedAt?: DateTimeFilter<"ContestParticipant"> | Date | string
@@ -29173,12 +30613,14 @@ export namespace Prisma {
   }
 
   export type RecurringContestDataUpdateWithoutContestInput = {
-    lastRunAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastRunAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    recurringType?: EnumRecurringTypeFieldUpdateOperationsInput | $Enums.RecurringType
     nextRunAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type RecurringContestDataUncheckedUpdateWithoutContestInput = {
-    lastRunAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastRunAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    recurringType?: EnumRecurringTypeFieldUpdateOperationsInput | $Enums.RecurringType
     nextRunAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -29388,7 +30830,7 @@ export namespace Prisma {
   export type ContestParticipantCreateWithoutPhotosInput = {
     id?: string
     status?: $Enums.ContestParticipantStatus
-    level?: $Enums.ContestLevel
+    level?: $Enums.YCLevel
     rank?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -29403,7 +30845,7 @@ export namespace Prisma {
     status?: $Enums.ContestParticipantStatus
     contestId: string
     userId: string
-    level?: $Enums.ContestLevel
+    level?: $Enums.YCLevel
     rank?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -29566,7 +31008,7 @@ export namespace Prisma {
 
   export type ContestParticipantUpdateWithoutPhotosInput = {
     status?: EnumContestParticipantStatusFieldUpdateOperationsInput | $Enums.ContestParticipantStatus
-    level?: EnumContestLevelFieldUpdateOperationsInput | $Enums.ContestLevel
+    level?: EnumYCLevelFieldUpdateOperationsInput | $Enums.YCLevel
     rank?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -29580,7 +31022,7 @@ export namespace Prisma {
     status?: EnumContestParticipantStatusFieldUpdateOperationsInput | $Enums.ContestParticipantStatus
     contestId?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
-    level?: EnumContestLevelFieldUpdateOperationsInput | $Enums.ContestLevel
+    level?: EnumYCLevelFieldUpdateOperationsInput | $Enums.YCLevel
     rank?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -29731,7 +31173,7 @@ export namespace Prisma {
   export type ContestParticipantCreateWithoutContestWinnerInput = {
     id?: string
     status?: $Enums.ContestParticipantStatus
-    level?: $Enums.ContestLevel
+    level?: $Enums.YCLevel
     rank?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -29746,7 +31188,7 @@ export namespace Prisma {
     status?: $Enums.ContestParticipantStatus
     contestId: string
     userId: string
-    level?: $Enums.ContestLevel
+    level?: $Enums.YCLevel
     rank?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -29805,7 +31247,7 @@ export namespace Prisma {
 
   export type ContestParticipantUpdateWithoutContestWinnerInput = {
     status?: EnumContestParticipantStatusFieldUpdateOperationsInput | $Enums.ContestParticipantStatus
-    level?: EnumContestLevelFieldUpdateOperationsInput | $Enums.ContestLevel
+    level?: EnumYCLevelFieldUpdateOperationsInput | $Enums.YCLevel
     rank?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -29819,7 +31261,7 @@ export namespace Prisma {
     status?: EnumContestParticipantStatusFieldUpdateOperationsInput | $Enums.ContestParticipantStatus
     contestId?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
-    level?: EnumContestLevelFieldUpdateOperationsInput | $Enums.ContestLevel
+    level?: EnumYCLevelFieldUpdateOperationsInput | $Enums.YCLevel
     rank?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -29931,6 +31373,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     otps?: OtpCreateNestedOneWithoutUserInput
+    store?: UserStoreCreateNestedOneWithoutUserInput
     createdTeam?: TeamCreateNestedManyWithoutCreatorInput
     joinedTeam?: TeamMemberCreateNestedOneWithoutMemberInput
     createdContests?: ContestCreateNestedManyWithoutCreatorInput
@@ -29962,6 +31405,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     otps?: OtpUncheckedCreateNestedOneWithoutUserInput
+    store?: UserStoreUncheckedCreateNestedOneWithoutUserInput
     createdTeam?: TeamUncheckedCreateNestedManyWithoutCreatorInput
     joinedTeam?: TeamMemberUncheckedCreateNestedOneWithoutMemberInput
     createdContests?: ContestUncheckedCreateNestedManyWithoutCreatorInput
@@ -30148,6 +31592,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     otps?: OtpUpdateOneWithoutUserNestedInput
+    store?: UserStoreUpdateOneWithoutUserNestedInput
     createdTeam?: TeamUpdateManyWithoutCreatorNestedInput
     joinedTeam?: TeamMemberUpdateOneWithoutMemberNestedInput
     createdContests?: ContestUpdateManyWithoutCreatorNestedInput
@@ -30178,6 +31623,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     otps?: OtpUncheckedUpdateOneWithoutUserNestedInput
+    store?: UserStoreUncheckedUpdateOneWithoutUserNestedInput
     createdTeam?: TeamUncheckedUpdateManyWithoutCreatorNestedInput
     joinedTeam?: TeamMemberUncheckedUpdateOneWithoutMemberNestedInput
     createdContests?: ContestUncheckedUpdateManyWithoutCreatorNestedInput
@@ -30385,7 +31831,7 @@ export namespace Prisma {
   export type ContestParticipantCreateWithoutContestAchievementInput = {
     id?: string
     status?: $Enums.ContestParticipantStatus
-    level?: $Enums.ContestLevel
+    level?: $Enums.YCLevel
     rank?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -30400,7 +31846,7 @@ export namespace Prisma {
     status?: $Enums.ContestParticipantStatus
     contestId: string
     userId: string
-    level?: $Enums.ContestLevel
+    level?: $Enums.YCLevel
     rank?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -30463,7 +31909,7 @@ export namespace Prisma {
 
   export type ContestParticipantUpdateWithoutContestAchievementInput = {
     status?: EnumContestParticipantStatusFieldUpdateOperationsInput | $Enums.ContestParticipantStatus
-    level?: EnumContestLevelFieldUpdateOperationsInput | $Enums.ContestLevel
+    level?: EnumYCLevelFieldUpdateOperationsInput | $Enums.YCLevel
     rank?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -30477,7 +31923,7 @@ export namespace Prisma {
     status?: EnumContestParticipantStatusFieldUpdateOperationsInput | $Enums.ContestParticipantStatus
     contestId?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
-    level?: EnumContestLevelFieldUpdateOperationsInput | $Enums.ContestLevel
+    level?: EnumYCLevelFieldUpdateOperationsInput | $Enums.YCLevel
     rank?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -30505,6 +31951,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     otps?: OtpCreateNestedOneWithoutUserInput
+    store?: UserStoreCreateNestedOneWithoutUserInput
     joinedTeam?: TeamMemberCreateNestedOneWithoutMemberInput
     createdContests?: ContestCreateNestedManyWithoutCreatorInput
     commentProvides?: CommentCreateNestedManyWithoutProviderInput
@@ -30536,6 +31983,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     otps?: OtpUncheckedCreateNestedOneWithoutUserInput
+    store?: UserStoreUncheckedCreateNestedOneWithoutUserInput
     joinedTeam?: TeamMemberUncheckedCreateNestedOneWithoutMemberInput
     createdContests?: ContestUncheckedCreateNestedManyWithoutCreatorInput
     commentProvides?: CommentUncheckedCreateNestedManyWithoutProviderInput
@@ -30607,6 +32055,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     otps?: OtpUpdateOneWithoutUserNestedInput
+    store?: UserStoreUpdateOneWithoutUserNestedInput
     joinedTeam?: TeamMemberUpdateOneWithoutMemberNestedInput
     createdContests?: ContestUpdateManyWithoutCreatorNestedInput
     commentProvides?: CommentUpdateManyWithoutProviderNestedInput
@@ -30637,6 +32086,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     otps?: OtpUncheckedUpdateOneWithoutUserNestedInput
+    store?: UserStoreUncheckedUpdateOneWithoutUserNestedInput
     joinedTeam?: TeamMemberUncheckedUpdateOneWithoutMemberNestedInput
     createdContests?: ContestUncheckedUpdateManyWithoutCreatorNestedInput
     commentProvides?: CommentUncheckedUpdateManyWithoutProviderNestedInput
@@ -30729,6 +32179,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     otps?: OtpCreateNestedOneWithoutUserInput
+    store?: UserStoreCreateNestedOneWithoutUserInput
     createdTeam?: TeamCreateNestedManyWithoutCreatorInput
     createdContests?: ContestCreateNestedManyWithoutCreatorInput
     commentProvides?: CommentCreateNestedManyWithoutProviderInput
@@ -30760,6 +32211,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     otps?: OtpUncheckedCreateNestedOneWithoutUserInput
+    store?: UserStoreUncheckedCreateNestedOneWithoutUserInput
     createdTeam?: TeamUncheckedCreateNestedManyWithoutCreatorInput
     createdContests?: ContestUncheckedCreateNestedManyWithoutCreatorInput
     commentProvides?: CommentUncheckedCreateNestedManyWithoutProviderInput
@@ -30843,6 +32295,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     otps?: OtpUpdateOneWithoutUserNestedInput
+    store?: UserStoreUpdateOneWithoutUserNestedInput
     createdTeam?: TeamUpdateManyWithoutCreatorNestedInput
     createdContests?: ContestUpdateManyWithoutCreatorNestedInput
     commentProvides?: CommentUpdateManyWithoutProviderNestedInput
@@ -30873,6 +32326,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     otps?: OtpUncheckedUpdateOneWithoutUserNestedInput
+    store?: UserStoreUncheckedUpdateOneWithoutUserNestedInput
     createdTeam?: TeamUncheckedUpdateManyWithoutCreatorNestedInput
     createdContests?: ContestUncheckedUpdateManyWithoutCreatorNestedInput
     commentProvides?: CommentUncheckedUpdateManyWithoutProviderNestedInput
@@ -30907,6 +32361,29 @@ export namespace Prisma {
   export type OtpCreateOrConnectWithoutUserInput = {
     where: OtpWhereUniqueInput
     create: XOR<OtpCreateWithoutUserInput, OtpUncheckedCreateWithoutUserInput>
+  }
+
+  export type UserStoreCreateWithoutUserInput = {
+    id?: string
+    keys?: number
+    trades?: number
+    charges?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type UserStoreUncheckedCreateWithoutUserInput = {
+    id?: string
+    keys?: number
+    trades?: number
+    charges?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type UserStoreCreateOrConnectWithoutUserInput = {
+    where: UserStoreWhereUniqueInput
+    create: XOR<UserStoreCreateWithoutUserInput, UserStoreUncheckedCreateWithoutUserInput>
   }
 
   export type TeamCreateWithoutCreatorInput = {
@@ -31179,7 +32656,7 @@ export namespace Prisma {
   export type ContestParticipantCreateWithoutUserInput = {
     id?: string
     status?: $Enums.ContestParticipantStatus
-    level?: $Enums.ContestLevel
+    level?: $Enums.YCLevel
     rank?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -31193,7 +32670,7 @@ export namespace Prisma {
     id?: string
     status?: $Enums.ContestParticipantStatus
     contestId: string
-    level?: $Enums.ContestLevel
+    level?: $Enums.YCLevel
     rank?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -31238,6 +32715,33 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserStoreUpsertWithoutUserInput = {
+    update: XOR<UserStoreUpdateWithoutUserInput, UserStoreUncheckedUpdateWithoutUserInput>
+    create: XOR<UserStoreCreateWithoutUserInput, UserStoreUncheckedCreateWithoutUserInput>
+    where?: UserStoreWhereInput
+  }
+
+  export type UserStoreUpdateToOneWithWhereWithoutUserInput = {
+    where?: UserStoreWhereInput
+    data: XOR<UserStoreUpdateWithoutUserInput, UserStoreUncheckedUpdateWithoutUserInput>
+  }
+
+  export type UserStoreUpdateWithoutUserInput = {
+    keys?: IntFieldUpdateOperationsInput | number
+    trades?: IntFieldUpdateOperationsInput | number
+    charges?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserStoreUncheckedUpdateWithoutUserInput = {
+    keys?: IntFieldUpdateOperationsInput | number
+    trades?: IntFieldUpdateOperationsInput | number
+    charges?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type TeamUpsertWithWhereUniqueWithoutCreatorInput = {
@@ -31484,6 +32988,148 @@ export namespace Prisma {
     data: XOR<ContestParticipantUpdateManyMutationInput, ContestParticipantUncheckedUpdateManyWithoutUserInput>
   }
 
+  export type UserCreateWithoutStoreInput = {
+    id?: string
+    cover?: string | null
+    avatar?: string | null
+    socialId?: string | null
+    socialProvider?: string | null
+    firstName?: string | null
+    lastName?: string | null
+    fullName?: string | null
+    username?: string | null
+    phone?: string | null
+    email: string
+    location?: string | null
+    level?: $Enums.UserLevel | null
+    password?: string | null
+    role?: $Enums.UserRole
+    accessToken?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    otps?: OtpCreateNestedOneWithoutUserInput
+    createdTeam?: TeamCreateNestedManyWithoutCreatorInput
+    joinedTeam?: TeamMemberCreateNestedOneWithoutMemberInput
+    createdContests?: ContestCreateNestedManyWithoutCreatorInput
+    commentProvides?: CommentCreateNestedManyWithoutProviderInput
+    followers?: FollowCreateNestedManyWithoutFollowerInput
+    followings?: FollowCreateNestedManyWithoutFollowingInput
+    votes?: VoteCreateNestedManyWithoutProviderInput
+    likes?: LikeCreateNestedManyWithoutProviderInput
+    userPhotos?: UserPhotoCreateNestedManyWithoutUserInput
+    ContestParticipant?: ContestParticipantCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutStoreInput = {
+    id?: string
+    cover?: string | null
+    avatar?: string | null
+    socialId?: string | null
+    socialProvider?: string | null
+    firstName?: string | null
+    lastName?: string | null
+    fullName?: string | null
+    username?: string | null
+    phone?: string | null
+    email: string
+    location?: string | null
+    level?: $Enums.UserLevel | null
+    password?: string | null
+    role?: $Enums.UserRole
+    accessToken?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    otps?: OtpUncheckedCreateNestedOneWithoutUserInput
+    createdTeam?: TeamUncheckedCreateNestedManyWithoutCreatorInput
+    joinedTeam?: TeamMemberUncheckedCreateNestedOneWithoutMemberInput
+    createdContests?: ContestUncheckedCreateNestedManyWithoutCreatorInput
+    commentProvides?: CommentUncheckedCreateNestedManyWithoutProviderInput
+    followers?: FollowUncheckedCreateNestedManyWithoutFollowerInput
+    followings?: FollowUncheckedCreateNestedManyWithoutFollowingInput
+    votes?: VoteUncheckedCreateNestedManyWithoutProviderInput
+    likes?: LikeUncheckedCreateNestedManyWithoutProviderInput
+    userPhotos?: UserPhotoUncheckedCreateNestedManyWithoutUserInput
+    ContestParticipant?: ContestParticipantUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutStoreInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutStoreInput, UserUncheckedCreateWithoutStoreInput>
+  }
+
+  export type UserUpsertWithoutStoreInput = {
+    update: XOR<UserUpdateWithoutStoreInput, UserUncheckedUpdateWithoutStoreInput>
+    create: XOR<UserCreateWithoutStoreInput, UserUncheckedCreateWithoutStoreInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutStoreInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutStoreInput, UserUncheckedUpdateWithoutStoreInput>
+  }
+
+  export type UserUpdateWithoutStoreInput = {
+    cover?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    socialId?: NullableStringFieldUpdateOperationsInput | string | null
+    socialProvider?: NullableStringFieldUpdateOperationsInput | string | null
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    fullName?: NullableStringFieldUpdateOperationsInput | string | null
+    username?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    level?: NullableEnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel | null
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    accessToken?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    otps?: OtpUpdateOneWithoutUserNestedInput
+    createdTeam?: TeamUpdateManyWithoutCreatorNestedInput
+    joinedTeam?: TeamMemberUpdateOneWithoutMemberNestedInput
+    createdContests?: ContestUpdateManyWithoutCreatorNestedInput
+    commentProvides?: CommentUpdateManyWithoutProviderNestedInput
+    followers?: FollowUpdateManyWithoutFollowerNestedInput
+    followings?: FollowUpdateManyWithoutFollowingNestedInput
+    votes?: VoteUpdateManyWithoutProviderNestedInput
+    likes?: LikeUpdateManyWithoutProviderNestedInput
+    userPhotos?: UserPhotoUpdateManyWithoutUserNestedInput
+    ContestParticipant?: ContestParticipantUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutStoreInput = {
+    cover?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    socialId?: NullableStringFieldUpdateOperationsInput | string | null
+    socialProvider?: NullableStringFieldUpdateOperationsInput | string | null
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    fullName?: NullableStringFieldUpdateOperationsInput | string | null
+    username?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    level?: NullableEnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel | null
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    accessToken?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    otps?: OtpUncheckedUpdateOneWithoutUserNestedInput
+    createdTeam?: TeamUncheckedUpdateManyWithoutCreatorNestedInput
+    joinedTeam?: TeamMemberUncheckedUpdateOneWithoutMemberNestedInput
+    createdContests?: ContestUncheckedUpdateManyWithoutCreatorNestedInput
+    commentProvides?: CommentUncheckedUpdateManyWithoutProviderNestedInput
+    followers?: FollowUncheckedUpdateManyWithoutFollowerNestedInput
+    followings?: FollowUncheckedUpdateManyWithoutFollowingNestedInput
+    votes?: VoteUncheckedUpdateManyWithoutProviderNestedInput
+    likes?: LikeUncheckedUpdateManyWithoutProviderNestedInput
+    userPhotos?: UserPhotoUncheckedUpdateManyWithoutUserNestedInput
+    ContestParticipant?: ContestParticipantUncheckedUpdateManyWithoutUserNestedInput
+  }
+
   export type UserCreateWithoutUserPhotosInput = {
     id?: string
     cover?: string | null
@@ -31504,6 +33150,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     otps?: OtpCreateNestedOneWithoutUserInput
+    store?: UserStoreCreateNestedOneWithoutUserInput
     createdTeam?: TeamCreateNestedManyWithoutCreatorInput
     joinedTeam?: TeamMemberCreateNestedOneWithoutMemberInput
     createdContests?: ContestCreateNestedManyWithoutCreatorInput
@@ -31535,6 +33182,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     otps?: OtpUncheckedCreateNestedOneWithoutUserInput
+    store?: UserStoreUncheckedCreateNestedOneWithoutUserInput
     createdTeam?: TeamUncheckedCreateNestedManyWithoutCreatorInput
     joinedTeam?: TeamMemberUncheckedCreateNestedOneWithoutMemberInput
     createdContests?: ContestUncheckedCreateNestedManyWithoutCreatorInput
@@ -31646,6 +33294,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     otps?: OtpUpdateOneWithoutUserNestedInput
+    store?: UserStoreUpdateOneWithoutUserNestedInput
     createdTeam?: TeamUpdateManyWithoutCreatorNestedInput
     joinedTeam?: TeamMemberUpdateOneWithoutMemberNestedInput
     createdContests?: ContestUpdateManyWithoutCreatorNestedInput
@@ -31676,6 +33325,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     otps?: OtpUncheckedUpdateOneWithoutUserNestedInput
+    store?: UserStoreUncheckedUpdateOneWithoutUserNestedInput
     createdTeam?: TeamUncheckedUpdateManyWithoutCreatorNestedInput
     joinedTeam?: TeamMemberUncheckedUpdateOneWithoutMemberNestedInput
     createdContests?: ContestUncheckedUpdateManyWithoutCreatorNestedInput
@@ -31739,6 +33389,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     otps?: OtpCreateNestedOneWithoutUserInput
+    store?: UserStoreCreateNestedOneWithoutUserInput
     createdTeam?: TeamCreateNestedManyWithoutCreatorInput
     joinedTeam?: TeamMemberCreateNestedOneWithoutMemberInput
     createdContests?: ContestCreateNestedManyWithoutCreatorInput
@@ -31770,6 +33421,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     otps?: OtpUncheckedCreateNestedOneWithoutUserInput
+    store?: UserStoreUncheckedCreateNestedOneWithoutUserInput
     createdTeam?: TeamUncheckedCreateNestedManyWithoutCreatorInput
     joinedTeam?: TeamMemberUncheckedCreateNestedOneWithoutMemberInput
     createdContests?: ContestUncheckedCreateNestedManyWithoutCreatorInput
@@ -31851,6 +33503,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     otps?: OtpUpdateOneWithoutUserNestedInput
+    store?: UserStoreUpdateOneWithoutUserNestedInput
     createdTeam?: TeamUpdateManyWithoutCreatorNestedInput
     joinedTeam?: TeamMemberUpdateOneWithoutMemberNestedInput
     createdContests?: ContestUpdateManyWithoutCreatorNestedInput
@@ -31881,6 +33534,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     otps?: OtpUncheckedUpdateOneWithoutUserNestedInput
+    store?: UserStoreUncheckedUpdateOneWithoutUserNestedInput
     createdTeam?: TeamUncheckedUpdateManyWithoutCreatorNestedInput
     joinedTeam?: TeamMemberUncheckedUpdateOneWithoutMemberNestedInput
     createdContests?: ContestUncheckedUpdateManyWithoutCreatorNestedInput
@@ -31950,6 +33604,7 @@ export namespace Prisma {
     accessToken?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    store?: UserStoreCreateNestedOneWithoutUserInput
     createdTeam?: TeamCreateNestedManyWithoutCreatorInput
     joinedTeam?: TeamMemberCreateNestedOneWithoutMemberInput
     createdContests?: ContestCreateNestedManyWithoutCreatorInput
@@ -31981,6 +33636,7 @@ export namespace Prisma {
     accessToken?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    store?: UserStoreUncheckedCreateNestedOneWithoutUserInput
     createdTeam?: TeamUncheckedCreateNestedManyWithoutCreatorInput
     joinedTeam?: TeamMemberUncheckedCreateNestedOneWithoutMemberInput
     createdContests?: ContestUncheckedCreateNestedManyWithoutCreatorInput
@@ -32027,6 +33683,7 @@ export namespace Prisma {
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    store?: UserStoreUpdateOneWithoutUserNestedInput
     createdTeam?: TeamUpdateManyWithoutCreatorNestedInput
     joinedTeam?: TeamMemberUpdateOneWithoutMemberNestedInput
     createdContests?: ContestUpdateManyWithoutCreatorNestedInput
@@ -32057,6 +33714,7 @@ export namespace Prisma {
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    store?: UserStoreUncheckedUpdateOneWithoutUserNestedInput
     createdTeam?: TeamUncheckedUpdateManyWithoutCreatorNestedInput
     joinedTeam?: TeamMemberUncheckedUpdateOneWithoutMemberNestedInput
     createdContests?: ContestUncheckedUpdateManyWithoutCreatorNestedInput
@@ -32089,6 +33747,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     otps?: OtpCreateNestedOneWithoutUserInput
+    store?: UserStoreCreateNestedOneWithoutUserInput
     createdTeam?: TeamCreateNestedManyWithoutCreatorInput
     joinedTeam?: TeamMemberCreateNestedOneWithoutMemberInput
     createdContests?: ContestCreateNestedManyWithoutCreatorInput
@@ -32120,6 +33779,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     otps?: OtpUncheckedCreateNestedOneWithoutUserInput
+    store?: UserStoreUncheckedCreateNestedOneWithoutUserInput
     createdTeam?: TeamUncheckedCreateNestedManyWithoutCreatorInput
     joinedTeam?: TeamMemberUncheckedCreateNestedOneWithoutMemberInput
     createdContests?: ContestUncheckedCreateNestedManyWithoutCreatorInput
@@ -32199,6 +33859,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     otps?: OtpUpdateOneWithoutUserNestedInput
+    store?: UserStoreUpdateOneWithoutUserNestedInput
     createdTeam?: TeamUpdateManyWithoutCreatorNestedInput
     joinedTeam?: TeamMemberUpdateOneWithoutMemberNestedInput
     createdContests?: ContestUpdateManyWithoutCreatorNestedInput
@@ -32229,6 +33890,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     otps?: OtpUncheckedUpdateOneWithoutUserNestedInput
+    store?: UserStoreUncheckedUpdateOneWithoutUserNestedInput
     createdTeam?: TeamUncheckedUpdateManyWithoutCreatorNestedInput
     joinedTeam?: TeamMemberUncheckedUpdateOneWithoutMemberNestedInput
     createdContests?: ContestUncheckedUpdateManyWithoutCreatorNestedInput
@@ -32297,6 +33959,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     otps?: OtpCreateNestedOneWithoutUserInput
+    store?: UserStoreCreateNestedOneWithoutUserInput
     createdTeam?: TeamCreateNestedManyWithoutCreatorInput
     joinedTeam?: TeamMemberCreateNestedOneWithoutMemberInput
     createdContests?: ContestCreateNestedManyWithoutCreatorInput
@@ -32328,6 +33991,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     otps?: OtpUncheckedCreateNestedOneWithoutUserInput
+    store?: UserStoreUncheckedCreateNestedOneWithoutUserInput
     createdTeam?: TeamUncheckedCreateNestedManyWithoutCreatorInput
     joinedTeam?: TeamMemberUncheckedCreateNestedOneWithoutMemberInput
     createdContests?: ContestUncheckedCreateNestedManyWithoutCreatorInput
@@ -32364,6 +34028,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     otps?: OtpCreateNestedOneWithoutUserInput
+    store?: UserStoreCreateNestedOneWithoutUserInput
     createdTeam?: TeamCreateNestedManyWithoutCreatorInput
     joinedTeam?: TeamMemberCreateNestedOneWithoutMemberInput
     createdContests?: ContestCreateNestedManyWithoutCreatorInput
@@ -32395,6 +34060,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     otps?: OtpUncheckedCreateNestedOneWithoutUserInput
+    store?: UserStoreUncheckedCreateNestedOneWithoutUserInput
     createdTeam?: TeamUncheckedCreateNestedManyWithoutCreatorInput
     joinedTeam?: TeamMemberUncheckedCreateNestedOneWithoutMemberInput
     createdContests?: ContestUncheckedCreateNestedManyWithoutCreatorInput
@@ -32441,6 +34107,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     otps?: OtpUpdateOneWithoutUserNestedInput
+    store?: UserStoreUpdateOneWithoutUserNestedInput
     createdTeam?: TeamUpdateManyWithoutCreatorNestedInput
     joinedTeam?: TeamMemberUpdateOneWithoutMemberNestedInput
     createdContests?: ContestUpdateManyWithoutCreatorNestedInput
@@ -32471,6 +34138,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     otps?: OtpUncheckedUpdateOneWithoutUserNestedInput
+    store?: UserStoreUncheckedUpdateOneWithoutUserNestedInput
     createdTeam?: TeamUncheckedUpdateManyWithoutCreatorNestedInput
     joinedTeam?: TeamMemberUncheckedUpdateOneWithoutMemberNestedInput
     createdContests?: ContestUncheckedUpdateManyWithoutCreatorNestedInput
@@ -32512,6 +34180,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     otps?: OtpUpdateOneWithoutUserNestedInput
+    store?: UserStoreUpdateOneWithoutUserNestedInput
     createdTeam?: TeamUpdateManyWithoutCreatorNestedInput
     joinedTeam?: TeamMemberUpdateOneWithoutMemberNestedInput
     createdContests?: ContestUpdateManyWithoutCreatorNestedInput
@@ -32542,6 +34211,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     otps?: OtpUncheckedUpdateOneWithoutUserNestedInput
+    store?: UserStoreUncheckedUpdateOneWithoutUserNestedInput
     createdTeam?: TeamUncheckedUpdateManyWithoutCreatorNestedInput
     joinedTeam?: TeamMemberUncheckedUpdateOneWithoutMemberNestedInput
     createdContests?: ContestUncheckedUpdateManyWithoutCreatorNestedInput
@@ -32573,6 +34243,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     otps?: OtpCreateNestedOneWithoutUserInput
+    store?: UserStoreCreateNestedOneWithoutUserInput
     createdTeam?: TeamCreateNestedManyWithoutCreatorInput
     joinedTeam?: TeamMemberCreateNestedOneWithoutMemberInput
     createdContests?: ContestCreateNestedManyWithoutCreatorInput
@@ -32604,6 +34275,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     otps?: OtpUncheckedCreateNestedOneWithoutUserInput
+    store?: UserStoreUncheckedCreateNestedOneWithoutUserInput
     createdTeam?: TeamUncheckedCreateNestedManyWithoutCreatorInput
     joinedTeam?: TeamMemberUncheckedCreateNestedOneWithoutMemberInput
     createdContests?: ContestUncheckedCreateNestedManyWithoutCreatorInput
@@ -32730,6 +34402,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     otps?: OtpUpdateOneWithoutUserNestedInput
+    store?: UserStoreUpdateOneWithoutUserNestedInput
     createdTeam?: TeamUpdateManyWithoutCreatorNestedInput
     joinedTeam?: TeamMemberUpdateOneWithoutMemberNestedInput
     createdContests?: ContestUpdateManyWithoutCreatorNestedInput
@@ -32760,6 +34433,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     otps?: OtpUncheckedUpdateOneWithoutUserNestedInput
+    store?: UserStoreUncheckedUpdateOneWithoutUserNestedInput
     createdTeam?: TeamUncheckedUpdateManyWithoutCreatorNestedInput
     joinedTeam?: TeamMemberUncheckedUpdateOneWithoutMemberNestedInput
     createdContests?: ContestUncheckedUpdateManyWithoutCreatorNestedInput
@@ -32859,18 +34533,11 @@ export namespace Prisma {
     recurringData?: RecurringContestDataUncheckedUpdateOneWithoutContestNestedInput
   }
 
-  export type EnumRecurringTypeFilter<$PrismaModel = never> = {
-    equals?: $Enums.RecurringType | EnumRecurringTypeFieldRefInput<$PrismaModel>
-    in?: $Enums.RecurringType[] | ListEnumRecurringTypeFieldRefInput<$PrismaModel>
-    notIn?: $Enums.RecurringType[] | ListEnumRecurringTypeFieldRefInput<$PrismaModel>
-    not?: NestedEnumRecurringTypeFilter<$PrismaModel> | $Enums.RecurringType
-  }
-
   export type ContestParticipantCreateManyContestInput = {
     id?: string
     status?: $Enums.ContestParticipantStatus
     userId: string
-    level?: $Enums.ContestLevel
+    level?: $Enums.YCLevel
     rank?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -32903,7 +34570,7 @@ export namespace Prisma {
 
   export type ContestParticipantUpdateWithoutContestInput = {
     status?: EnumContestParticipantStatusFieldUpdateOperationsInput | $Enums.ContestParticipantStatus
-    level?: EnumContestLevelFieldUpdateOperationsInput | $Enums.ContestLevel
+    level?: EnumYCLevelFieldUpdateOperationsInput | $Enums.YCLevel
     rank?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -32916,7 +34583,7 @@ export namespace Prisma {
   export type ContestParticipantUncheckedUpdateWithoutContestInput = {
     status?: EnumContestParticipantStatusFieldUpdateOperationsInput | $Enums.ContestParticipantStatus
     userId?: StringFieldUpdateOperationsInput | string
-    level?: EnumContestLevelFieldUpdateOperationsInput | $Enums.ContestLevel
+    level?: EnumYCLevelFieldUpdateOperationsInput | $Enums.YCLevel
     rank?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -32928,7 +34595,7 @@ export namespace Prisma {
   export type ContestParticipantUncheckedUpdateManyWithoutContestInput = {
     status?: EnumContestParticipantStatusFieldUpdateOperationsInput | $Enums.ContestParticipantStatus
     userId?: StringFieldUpdateOperationsInput | string
-    level?: EnumContestLevelFieldUpdateOperationsInput | $Enums.ContestLevel
+    level?: EnumYCLevelFieldUpdateOperationsInput | $Enums.YCLevel
     rank?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -32998,10 +34665,6 @@ export namespace Prisma {
     trades?: IntFieldUpdateOperationsInput | number
     charges?: IntFieldUpdateOperationsInput | number
     keys?: IntFieldUpdateOperationsInput | number
-  }
-
-  export type EnumRecurringTypeFieldUpdateOperationsInput = {
-    set?: $Enums.RecurringType
   }
 
   export type VoteCreateManyPhotoInput = {
@@ -33343,7 +35006,7 @@ export namespace Prisma {
     id?: string
     status?: $Enums.ContestParticipantStatus
     contestId: string
-    level?: $Enums.ContestLevel
+    level?: $Enums.YCLevel
     rank?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -33580,7 +35243,7 @@ export namespace Prisma {
 
   export type ContestParticipantUpdateWithoutUserInput = {
     status?: EnumContestParticipantStatusFieldUpdateOperationsInput | $Enums.ContestParticipantStatus
-    level?: EnumContestLevelFieldUpdateOperationsInput | $Enums.ContestLevel
+    level?: EnumYCLevelFieldUpdateOperationsInput | $Enums.YCLevel
     rank?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -33593,7 +35256,7 @@ export namespace Prisma {
   export type ContestParticipantUncheckedUpdateWithoutUserInput = {
     status?: EnumContestParticipantStatusFieldUpdateOperationsInput | $Enums.ContestParticipantStatus
     contestId?: StringFieldUpdateOperationsInput | string
-    level?: EnumContestLevelFieldUpdateOperationsInput | $Enums.ContestLevel
+    level?: EnumYCLevelFieldUpdateOperationsInput | $Enums.YCLevel
     rank?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -33605,7 +35268,7 @@ export namespace Prisma {
   export type ContestParticipantUncheckedUpdateManyWithoutUserInput = {
     status?: EnumContestParticipantStatusFieldUpdateOperationsInput | $Enums.ContestParticipantStatus
     contestId?: StringFieldUpdateOperationsInput | string
-    level?: EnumContestLevelFieldUpdateOperationsInput | $Enums.ContestLevel
+    level?: EnumYCLevelFieldUpdateOperationsInput | $Enums.YCLevel
     rank?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -33686,13 +35349,6 @@ export namespace Prisma {
     providerId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type NestedEnumRecurringTypeFilter<$PrismaModel = never> = {
-    equals?: $Enums.RecurringType | EnumRecurringTypeFieldRefInput<$PrismaModel>
-    in?: $Enums.RecurringType[] | ListEnumRecurringTypeFieldRefInput<$PrismaModel>
-    notIn?: $Enums.RecurringType[] | ListEnumRecurringTypeFieldRefInput<$PrismaModel>
-    not?: NestedEnumRecurringTypeFilter<$PrismaModel> | $Enums.RecurringType
   }
 
 

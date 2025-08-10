@@ -8,6 +8,7 @@ import { followRoutes } from "../modules/Follow/follow..route";
 import { commentRoutes } from "../modules/Comment/comment.route";
 import { teamRoutes } from "../modules/Team/team.route";
 import { achievementRoutes } from "../modules/Achievements/achievement.route";
+import { voteRouter } from "../modules/Vote/vote.route";
 
 
 
@@ -23,6 +24,7 @@ const moduleRoutes = [
     {path:"/comments", route:commentRoutes},
     {path:"/teams", route:teamRoutes},
     {path:"/achievements", route:achievementRoutes},
+    {path:"/votes", route:voteRouter}
 
 ]
 
