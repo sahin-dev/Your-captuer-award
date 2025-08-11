@@ -2,7 +2,7 @@ import prisma from '../../../shared/prisma';
 import ApiError from '../../../errors/ApiError';
 import httpstatus from 'http-status';
 import { fileUploader } from '../../../helpers/fileUploader';
-import { Contest, ContestParticipant, ContestStatus, RecurringData, RecurringType, Vote } from '../../../prismaClient';
+import { Contest, ContestParticipant, ContestStatus, RecurringData, RecurringType, Vote, YCLevel } from '../../../prismaClient';
 import { IContest } from './contest.interface';
 import { contestData } from './contest.type';
 import { contestRuleService } from './ContestRules/contestRules.service';
@@ -418,26 +418,33 @@ const getContestDetails = async (contestId:string)=>{
 }
 
 
-
+//Get currently active contest data like total vote and level
 const getContestSummary = async (contestId:string, userId:string)=>{
 
-    const contestData = await getContestDetails(contestId)
+    const contestData = await prisma.contest.findUnique({where:{id:contestId},include:{participants:{where:{userId}}}})
 
-    let participantData = contestData?.participants.find(data => data.userId === userId)
-    let participatorLevel = participantData?.level
-    let totalVotes = await getParticipantTotalVotes
+    const participant = contestData?.participants[0]
+    if(!participant){
+        throw new ApiError(httpstatus.NOT_FOUND, "Participant not found")
+    }
 
-}
+    const totalVoteCoaunt = await getParticipantTotalVotes(contestId, participant.id)
 
 
-const getParticipantTotalVotes =  (votes:Vote[], participantId:string)=>{
-    let count = 0
-    votes.forEach(data=> data.photoId)
     
-    return voteCounts
+    return {level:participant?.level, votees:totalVoteCoaunt}
+
 }
 
-const getParticipantLevelRank = async (contestId:string, participantId:string)=>{
+
+const getParticipantTotalVotes =  async(contestId:string, participantId:string)=>{
+    
+    const votes = await prisma.vote.count({where:{contestId, photo:{participantId}}})
+    
+    return votes
+}
+
+const getParticipantLevelRank = async (contestId:string, participantId:string, participantLevel:YCLevel)=>{
 
     const participant = await prisma.contestParticipant.findUnique({where:{id:participantId}})
    
@@ -445,11 +452,9 @@ const getParticipantLevelRank = async (contestId:string, participantId:string)=>
     if(!participant){
         return new ApiError(httpstatus.NOT_FOUND, "participant not found")
     }
-     const targetVoteCount = await getParticipantTotalVotes(contestId, participant.id)
+    const targetVoteCount = await getParticipantTotalVotes(contestId, participant.id)
     const otherParticipantsInSameLevel = await prisma.contestParticipant.findMany({where:{contestId, level:participant.level}})
     const totalInSameLevel = otherParticipantsInSameLevel.length
-
-
 }
 
 const getParticipantRank = async (contestId:string, participantId:string)=>{
