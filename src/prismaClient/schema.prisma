@@ -1,15 +1,16 @@
 //Contest models
 
 model Contest {
-  id             String        @id @default(auto()) @map("_id") @db.ObjectId
-  title          String
-  description    String
-  banner         String?       @default("https://images.unsplash.com/photo-1689539137236-b68e436248de?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D")
-  status         ContestStatus @default(UPCOMING)
-  maxUploads     Int?          @default(1)
-  isMoneyContest Boolean       @default(false)
-  maxPrize       Int?          @default(0)
-  minPrize       Int?          @default(0)
+  id                 String        @id @default(auto()) @map("_id") @db.ObjectId
+  title              String
+  description        String
+  banner             String?       @default("https://images.unsplash.com/photo-1689539137236-b68e436248de?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D")
+  status             ContestStatus @default(UPCOMING)
+  maxUploads         Int?          @default(1)
+  isMoneyContest     Boolean       @default(false)
+  maxPrize           Int?          @default(0)
+  minPrize           Int?          @default(0)
+  level_requirements Int[]
 
   startDate DateTime
   endDate   DateTime
@@ -22,10 +23,17 @@ model Contest {
   contestRules  ContestRule[]
   contestPrizes ContestPrize[]
   recurringData RecurringContestData?
+  achievements  ContestAchievement[]
   createdAt     DateTime              @default(now())
   updatedAt     DateTime              @updatedAt
 
   @@map("contests")
+}
+
+type Rules {
+  name        String
+  icon        String
+  description String
 }
 
 model ContestRule {
@@ -87,9 +95,9 @@ model ContestPhoto {
   photo         UserPhoto            @relation(fields: [photoId], references: [id], onDelete: Cascade)
   comments      Comment[]
   achievements  ContestAchievement[]
+  ContestWinner ContestWinner[]
   createdAt     DateTime             @default(now())
   updatedAt     DateTime             @updatedAt
-  ContestWinner ContestWinner[]
 
   @@map("contest_photos")
 }
@@ -149,7 +157,8 @@ model ContestAchievement {
   participantId String?   @db.ObjectId
   contestId     String    @db.ObjectId
 
-  photo ContestPhoto? @relation(fields: [photoId], references: [id])
+  photo   ContestPhoto? @relation(fields: [photoId], references: [id])
+  contest Contest       @relation(fields: [contestId], references: [id])
 
   participant ContestParticipant? @relation(fields: [participantId], references: [id])
 

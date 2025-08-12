@@ -2643,6 +2643,7 @@ export namespace Prisma {
     votes: number
     contestRules: number
     contestPrizes: number
+    achievements: number
   }
 
   export type ContestCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -2650,6 +2651,7 @@ export namespace Prisma {
     votes?: boolean | ContestCountOutputTypeCountVotesArgs
     contestRules?: boolean | ContestCountOutputTypeCountContestRulesArgs
     contestPrizes?: boolean | ContestCountOutputTypeCountContestPrizesArgs
+    achievements?: boolean | ContestCountOutputTypeCountAchievementsArgs
   }
 
   // Custom InputTypes
@@ -2689,6 +2691,13 @@ export namespace Prisma {
    */
   export type ContestCountOutputTypeCountContestPrizesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: ContestPrizeWhereInput
+  }
+
+  /**
+   * ContestCountOutputType without action
+   */
+  export type ContestCountOutputTypeCountAchievementsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ContestAchievementWhereInput
   }
 
 
@@ -3135,12 +3144,14 @@ export namespace Prisma {
     maxUploads: number | null
     maxPrize: number | null
     minPrize: number | null
+    level_requirements: number | null
   }
 
   export type ContestSumAggregateOutputType = {
     maxUploads: number | null
     maxPrize: number | null
     minPrize: number | null
+    level_requirements: number[]
   }
 
   export type ContestMinAggregateOutputType = {
@@ -3187,6 +3198,7 @@ export namespace Prisma {
     isMoneyContest: number
     maxPrize: number
     minPrize: number
+    level_requirements: number
     startDate: number
     endDate: number
     creatorId: number
@@ -3200,12 +3212,14 @@ export namespace Prisma {
     maxUploads?: true
     maxPrize?: true
     minPrize?: true
+    level_requirements?: true
   }
 
   export type ContestSumAggregateInputType = {
     maxUploads?: true
     maxPrize?: true
     minPrize?: true
+    level_requirements?: true
   }
 
   export type ContestMinAggregateInputType = {
@@ -3252,6 +3266,7 @@ export namespace Prisma {
     isMoneyContest?: true
     maxPrize?: true
     minPrize?: true
+    level_requirements?: true
     startDate?: true
     endDate?: true
     creatorId?: true
@@ -3356,6 +3371,7 @@ export namespace Prisma {
     isMoneyContest: boolean
     maxPrize: number | null
     minPrize: number | null
+    level_requirements: number[]
     startDate: Date
     endDate: Date
     creatorId: string
@@ -3392,6 +3408,7 @@ export namespace Prisma {
     isMoneyContest?: boolean
     maxPrize?: boolean
     minPrize?: boolean
+    level_requirements?: boolean
     startDate?: boolean
     endDate?: boolean
     creatorId?: boolean
@@ -3403,6 +3420,7 @@ export namespace Prisma {
     contestRules?: boolean | Contest$contestRulesArgs<ExtArgs>
     contestPrizes?: boolean | Contest$contestPrizesArgs<ExtArgs>
     recurringData?: boolean | Contest$recurringDataArgs<ExtArgs>
+    achievements?: boolean | Contest$achievementsArgs<ExtArgs>
     _count?: boolean | ContestCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["contest"]>
 
@@ -3418,6 +3436,7 @@ export namespace Prisma {
     isMoneyContest?: boolean
     maxPrize?: boolean
     minPrize?: boolean
+    level_requirements?: boolean
     startDate?: boolean
     endDate?: boolean
     creatorId?: boolean
@@ -3425,7 +3444,7 @@ export namespace Prisma {
     updatedAt?: boolean
   }
 
-  export type ContestOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "description" | "banner" | "status" | "maxUploads" | "isMoneyContest" | "maxPrize" | "minPrize" | "startDate" | "endDate" | "creatorId" | "createdAt" | "updatedAt", ExtArgs["result"]["contest"]>
+  export type ContestOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "description" | "banner" | "status" | "maxUploads" | "isMoneyContest" | "maxPrize" | "minPrize" | "level_requirements" | "startDate" | "endDate" | "creatorId" | "createdAt" | "updatedAt", ExtArgs["result"]["contest"]>
   export type ContestInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     creator?: boolean | UserDefaultArgs<ExtArgs>
     participants?: boolean | Contest$participantsArgs<ExtArgs>
@@ -3433,6 +3452,7 @@ export namespace Prisma {
     contestRules?: boolean | Contest$contestRulesArgs<ExtArgs>
     contestPrizes?: boolean | Contest$contestPrizesArgs<ExtArgs>
     recurringData?: boolean | Contest$recurringDataArgs<ExtArgs>
+    achievements?: boolean | Contest$achievementsArgs<ExtArgs>
     _count?: boolean | ContestCountOutputTypeDefaultArgs<ExtArgs>
   }
 
@@ -3445,6 +3465,7 @@ export namespace Prisma {
       contestRules: Prisma.$ContestRulePayload<ExtArgs>[]
       contestPrizes: Prisma.$ContestPrizePayload<ExtArgs>[]
       recurringData: Prisma.$RecurringContestDataPayload<ExtArgs> | null
+      achievements: Prisma.$ContestAchievementPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -3456,6 +3477,7 @@ export namespace Prisma {
       isMoneyContest: boolean
       maxPrize: number | null
       minPrize: number | null
+      level_requirements: number[]
       startDate: Date
       endDate: Date
       creatorId: string
@@ -3830,6 +3852,7 @@ export namespace Prisma {
     contestRules<T extends Contest$contestRulesArgs<ExtArgs> = {}>(args?: Subset<T, Contest$contestRulesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ContestRulePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     contestPrizes<T extends Contest$contestPrizesArgs<ExtArgs> = {}>(args?: Subset<T, Contest$contestPrizesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ContestPrizePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     recurringData<T extends Contest$recurringDataArgs<ExtArgs> = {}>(args?: Subset<T, Contest$recurringDataArgs<ExtArgs>>): Prisma__RecurringContestDataClient<$Result.GetResult<Prisma.$RecurringContestDataPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    achievements<T extends Contest$achievementsArgs<ExtArgs> = {}>(args?: Subset<T, Contest$achievementsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ContestAchievementPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3868,6 +3891,7 @@ export namespace Prisma {
     readonly isMoneyContest: FieldRef<"Contest", 'Boolean'>
     readonly maxPrize: FieldRef<"Contest", 'Int'>
     readonly minPrize: FieldRef<"Contest", 'Int'>
+    readonly level_requirements: FieldRef<"Contest", 'Int[]'>
     readonly startDate: FieldRef<"Contest", 'DateTime'>
     readonly endDate: FieldRef<"Contest", 'DateTime'>
     readonly creatorId: FieldRef<"Contest", 'String'>
@@ -4355,6 +4379,30 @@ export namespace Prisma {
      */
     include?: RecurringContestDataInclude<ExtArgs> | null
     where?: RecurringContestDataWhereInput
+  }
+
+  /**
+   * Contest.achievements
+   */
+  export type Contest$achievementsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContestAchievement
+     */
+    select?: ContestAchievementSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContestAchievement
+     */
+    omit?: ContestAchievementOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContestAchievementInclude<ExtArgs> | null
+    where?: ContestAchievementWhereInput
+    orderBy?: ContestAchievementOrderByWithRelationInput | ContestAchievementOrderByWithRelationInput[]
+    cursor?: ContestAchievementWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ContestAchievementScalarFieldEnum | ContestAchievementScalarFieldEnum[]
   }
 
   /**
@@ -11947,6 +11995,7 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     photo?: boolean | ContestAchievement$photoArgs<ExtArgs>
+    contest?: boolean | ContestDefaultArgs<ExtArgs>
     participant?: boolean | ContestAchievement$participantArgs<ExtArgs>
   }, ExtArgs["result"]["contestAchievement"]>
 
@@ -11965,6 +12014,7 @@ export namespace Prisma {
   export type ContestAchievementOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "category" | "photoId" | "participantId" | "contestId" | "createdAt" | "updatedAt", ExtArgs["result"]["contestAchievement"]>
   export type ContestAchievementInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     photo?: boolean | ContestAchievement$photoArgs<ExtArgs>
+    contest?: boolean | ContestDefaultArgs<ExtArgs>
     participant?: boolean | ContestAchievement$participantArgs<ExtArgs>
   }
 
@@ -11972,6 +12022,7 @@ export namespace Prisma {
     name: "ContestAchievement"
     objects: {
       photo: Prisma.$ContestPhotoPayload<ExtArgs> | null
+      contest: Prisma.$ContestPayload<ExtArgs>
       participant: Prisma.$ContestParticipantPayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
@@ -12346,6 +12397,7 @@ export namespace Prisma {
   export interface Prisma__ContestAchievementClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     photo<T extends ContestAchievement$photoArgs<ExtArgs> = {}>(args?: Subset<T, ContestAchievement$photoArgs<ExtArgs>>): Prisma__ContestPhotoClient<$Result.GetResult<Prisma.$ContestPhotoPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    contest<T extends ContestDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ContestDefaultArgs<ExtArgs>>): Prisma__ContestClient<$Result.GetResult<Prisma.$ContestPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     participant<T extends ContestAchievement$participantArgs<ExtArgs> = {}>(args?: Subset<T, ContestAchievement$participantArgs<ExtArgs>>): Prisma__ContestParticipantClient<$Result.GetResult<Prisma.$ContestParticipantPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -23490,6 +23542,7 @@ export namespace Prisma {
     isMoneyContest: 'isMoneyContest',
     maxPrize: 'maxPrize',
     minPrize: 'minPrize',
+    level_requirements: 'level_requirements',
     startDate: 'startDate',
     endDate: 'endDate',
     creatorId: 'creatorId',
@@ -23988,6 +24041,7 @@ export namespace Prisma {
     isMoneyContest?: BoolFilter<"Contest"> | boolean
     maxPrize?: IntNullableFilter<"Contest"> | number | null
     minPrize?: IntNullableFilter<"Contest"> | number | null
+    level_requirements?: IntNullableListFilter<"Contest">
     startDate?: DateTimeFilter<"Contest"> | Date | string
     endDate?: DateTimeFilter<"Contest"> | Date | string
     creatorId?: StringFilter<"Contest"> | string
@@ -23999,6 +24053,7 @@ export namespace Prisma {
     contestRules?: ContestRuleListRelationFilter
     contestPrizes?: ContestPrizeListRelationFilter
     recurringData?: XOR<RecurringContestDataNullableScalarRelationFilter, RecurringContestDataWhereInput> | null
+    achievements?: ContestAchievementListRelationFilter
   }
 
   export type ContestOrderByWithRelationInput = {
@@ -24011,6 +24066,7 @@ export namespace Prisma {
     isMoneyContest?: SortOrder
     maxPrize?: SortOrder
     minPrize?: SortOrder
+    level_requirements?: SortOrder
     startDate?: SortOrder
     endDate?: SortOrder
     creatorId?: SortOrder
@@ -24022,6 +24078,7 @@ export namespace Prisma {
     contestRules?: ContestRuleOrderByRelationAggregateInput
     contestPrizes?: ContestPrizeOrderByRelationAggregateInput
     recurringData?: RecurringContestDataOrderByWithRelationInput
+    achievements?: ContestAchievementOrderByRelationAggregateInput
   }
 
   export type ContestWhereUniqueInput = Prisma.AtLeast<{
@@ -24037,6 +24094,7 @@ export namespace Prisma {
     isMoneyContest?: BoolFilter<"Contest"> | boolean
     maxPrize?: IntNullableFilter<"Contest"> | number | null
     minPrize?: IntNullableFilter<"Contest"> | number | null
+    level_requirements?: IntNullableListFilter<"Contest">
     startDate?: DateTimeFilter<"Contest"> | Date | string
     endDate?: DateTimeFilter<"Contest"> | Date | string
     creatorId?: StringFilter<"Contest"> | string
@@ -24048,6 +24106,7 @@ export namespace Prisma {
     contestRules?: ContestRuleListRelationFilter
     contestPrizes?: ContestPrizeListRelationFilter
     recurringData?: XOR<RecurringContestDataNullableScalarRelationFilter, RecurringContestDataWhereInput> | null
+    achievements?: ContestAchievementListRelationFilter
   }, "id">
 
   export type ContestOrderByWithAggregationInput = {
@@ -24060,6 +24119,7 @@ export namespace Prisma {
     isMoneyContest?: SortOrder
     maxPrize?: SortOrder
     minPrize?: SortOrder
+    level_requirements?: SortOrder
     startDate?: SortOrder
     endDate?: SortOrder
     creatorId?: SortOrder
@@ -24085,6 +24145,7 @@ export namespace Prisma {
     isMoneyContest?: BoolWithAggregatesFilter<"Contest"> | boolean
     maxPrize?: IntNullableWithAggregatesFilter<"Contest"> | number | null
     minPrize?: IntNullableWithAggregatesFilter<"Contest"> | number | null
+    level_requirements?: IntNullableListFilter<"Contest">
     startDate?: DateTimeWithAggregatesFilter<"Contest"> | Date | string
     endDate?: DateTimeWithAggregatesFilter<"Contest"> | Date | string
     creatorId?: StringWithAggregatesFilter<"Contest"> | string
@@ -24608,6 +24669,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"ContestAchievement"> | Date | string
     updatedAt?: DateTimeFilter<"ContestAchievement"> | Date | string
     photo?: XOR<ContestPhotoNullableScalarRelationFilter, ContestPhotoWhereInput> | null
+    contest?: XOR<ContestScalarRelationFilter, ContestWhereInput>
     participant?: XOR<ContestParticipantNullableScalarRelationFilter, ContestParticipantWhereInput> | null
   }
 
@@ -24620,6 +24682,7 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrder
     photo?: ContestPhotoOrderByWithRelationInput
+    contest?: ContestOrderByWithRelationInput
     participant?: ContestParticipantOrderByWithRelationInput
   }
 
@@ -24635,6 +24698,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"ContestAchievement"> | Date | string
     updatedAt?: DateTimeFilter<"ContestAchievement"> | Date | string
     photo?: XOR<ContestPhotoNullableScalarRelationFilter, ContestPhotoWhereInput> | null
+    contest?: XOR<ContestScalarRelationFilter, ContestWhereInput>
     participant?: XOR<ContestParticipantNullableScalarRelationFilter, ContestParticipantWhereInput> | null
   }, "id">
 
@@ -25453,6 +25517,7 @@ export namespace Prisma {
     isMoneyContest?: boolean
     maxPrize?: number | null
     minPrize?: number | null
+    level_requirements?: ContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
     createdAt?: Date | string
@@ -25463,6 +25528,7 @@ export namespace Prisma {
     contestRules?: ContestRuleCreateNestedManyWithoutContestInput
     contestPrizes?: ContestPrizeCreateNestedManyWithoutContestInput
     recurringData?: RecurringContestDataCreateNestedOneWithoutContestInput
+    achievements?: ContestAchievementCreateNestedManyWithoutContestInput
   }
 
   export type ContestUncheckedCreateInput = {
@@ -25475,6 +25541,7 @@ export namespace Prisma {
     isMoneyContest?: boolean
     maxPrize?: number | null
     minPrize?: number | null
+    level_requirements?: ContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
     creatorId: string
@@ -25485,6 +25552,7 @@ export namespace Prisma {
     contestRules?: ContestRuleUncheckedCreateNestedManyWithoutContestInput
     contestPrizes?: ContestPrizeUncheckedCreateNestedManyWithoutContestInput
     recurringData?: RecurringContestDataUncheckedCreateNestedOneWithoutContestInput
+    achievements?: ContestAchievementUncheckedCreateNestedManyWithoutContestInput
   }
 
   export type ContestUpdateInput = {
@@ -25496,6 +25564,7 @@ export namespace Prisma {
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
+    level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -25506,6 +25575,7 @@ export namespace Prisma {
     contestRules?: ContestRuleUpdateManyWithoutContestNestedInput
     contestPrizes?: ContestPrizeUpdateManyWithoutContestNestedInput
     recurringData?: RecurringContestDataUpdateOneWithoutContestNestedInput
+    achievements?: ContestAchievementUpdateManyWithoutContestNestedInput
   }
 
   export type ContestUncheckedUpdateInput = {
@@ -25517,6 +25587,7 @@ export namespace Prisma {
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
+    level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     creatorId?: StringFieldUpdateOperationsInput | string
@@ -25527,6 +25598,7 @@ export namespace Prisma {
     contestRules?: ContestRuleUncheckedUpdateManyWithoutContestNestedInput
     contestPrizes?: ContestPrizeUncheckedUpdateManyWithoutContestNestedInput
     recurringData?: RecurringContestDataUncheckedUpdateOneWithoutContestNestedInput
+    achievements?: ContestAchievementUncheckedUpdateManyWithoutContestNestedInput
   }
 
   export type ContestCreateManyInput = {
@@ -25539,6 +25611,7 @@ export namespace Prisma {
     isMoneyContest?: boolean
     maxPrize?: number | null
     minPrize?: number | null
+    level_requirements?: ContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
     creatorId: string
@@ -25555,6 +25628,7 @@ export namespace Prisma {
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
+    level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -25570,6 +25644,7 @@ export namespace Prisma {
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
+    level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     creatorId?: StringFieldUpdateOperationsInput | string
@@ -26082,10 +26157,10 @@ export namespace Prisma {
   export type ContestAchievementCreateInput = {
     id?: string
     category: $Enums.PrizeType
-    contestId: string
     createdAt?: Date | string
     updatedAt?: Date | string
     photo?: ContestPhotoCreateNestedOneWithoutAchievementsInput
+    contest: ContestCreateNestedOneWithoutAchievementsInput
     participant?: ContestParticipantCreateNestedOneWithoutContestAchievementInput
   }
 
@@ -26101,10 +26176,10 @@ export namespace Prisma {
 
   export type ContestAchievementUpdateInput = {
     category?: EnumPrizeTypeFieldUpdateOperationsInput | $Enums.PrizeType
-    contestId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     photo?: ContestPhotoUpdateOneWithoutAchievementsNestedInput
+    contest?: ContestUpdateOneRequiredWithoutAchievementsNestedInput
     participant?: ContestParticipantUpdateOneWithoutContestAchievementNestedInput
   }
 
@@ -26129,7 +26204,6 @@ export namespace Prisma {
 
   export type ContestAchievementUpdateManyMutationInput = {
     category?: EnumPrizeTypeFieldUpdateOperationsInput | $Enums.PrizeType
-    contestId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -26994,6 +27068,14 @@ export namespace Prisma {
     not?: NestedBoolFilter<$PrismaModel> | boolean
   }
 
+  export type IntNullableListFilter<$PrismaModel = never> = {
+    equals?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    has?: number | IntFieldRefInput<$PrismaModel> | null
+    hasEvery?: number[] | ListIntFieldRefInput<$PrismaModel>
+    hasSome?: number[] | ListIntFieldRefInput<$PrismaModel>
+    isEmpty?: boolean
+  }
+
   export type DateTimeFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
@@ -27039,6 +27121,12 @@ export namespace Prisma {
     isNot?: RecurringContestDataWhereInput | null
   }
 
+  export type ContestAchievementListRelationFilter = {
+    every?: ContestAchievementWhereInput
+    some?: ContestAchievementWhereInput
+    none?: ContestAchievementWhereInput
+  }
+
   export type ContestParticipantOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
@@ -27055,6 +27143,10 @@ export namespace Prisma {
     _count?: SortOrder
   }
 
+  export type ContestAchievementOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
   export type ContestCountOrderByAggregateInput = {
     id?: SortOrder
     title?: SortOrder
@@ -27065,6 +27157,7 @@ export namespace Prisma {
     isMoneyContest?: SortOrder
     maxPrize?: SortOrder
     minPrize?: SortOrder
+    level_requirements?: SortOrder
     startDate?: SortOrder
     endDate?: SortOrder
     creatorId?: SortOrder
@@ -27076,6 +27169,7 @@ export namespace Prisma {
     maxUploads?: SortOrder
     maxPrize?: SortOrder
     minPrize?: SortOrder
+    level_requirements?: SortOrder
   }
 
   export type ContestMaxOrderByAggregateInput = {
@@ -27116,6 +27210,7 @@ export namespace Prisma {
     maxUploads?: SortOrder
     maxPrize?: SortOrder
     minPrize?: SortOrder
+    level_requirements?: SortOrder
   }
 
   export type StringWithAggregatesFilter<$PrismaModel = never> = {
@@ -27370,12 +27465,6 @@ export namespace Prisma {
     none?: CommentWhereInput
   }
 
-  export type ContestAchievementListRelationFilter = {
-    every?: ContestAchievementWhereInput
-    some?: ContestAchievementWhereInput
-    none?: ContestAchievementWhereInput
-  }
-
   export type ContestWinnerListRelationFilter = {
     every?: ContestWinnerWhereInput
     some?: ContestWinnerWhereInput
@@ -27383,10 +27472,6 @@ export namespace Prisma {
   }
 
   export type CommentOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
-  export type ContestAchievementOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -28245,6 +28330,10 @@ export namespace Prisma {
     updatedAt?: SortOrder
   }
 
+  export type ContestCreatelevel_requirementsInput = {
+    set: number[]
+  }
+
   export type UserCreateNestedOneWithoutCreatedContestsInput = {
     create?: XOR<UserCreateWithoutCreatedContestsInput, UserUncheckedCreateWithoutCreatedContestsInput>
     connectOrCreate?: UserCreateOrConnectWithoutCreatedContestsInput
@@ -28285,6 +28374,13 @@ export namespace Prisma {
     connect?: RecurringContestDataWhereUniqueInput
   }
 
+  export type ContestAchievementCreateNestedManyWithoutContestInput = {
+    create?: XOR<ContestAchievementCreateWithoutContestInput, ContestAchievementUncheckedCreateWithoutContestInput> | ContestAchievementCreateWithoutContestInput[] | ContestAchievementUncheckedCreateWithoutContestInput[]
+    connectOrCreate?: ContestAchievementCreateOrConnectWithoutContestInput | ContestAchievementCreateOrConnectWithoutContestInput[]
+    createMany?: ContestAchievementCreateManyContestInputEnvelope
+    connect?: ContestAchievementWhereUniqueInput | ContestAchievementWhereUniqueInput[]
+  }
+
   export type ContestParticipantUncheckedCreateNestedManyWithoutContestInput = {
     create?: XOR<ContestParticipantCreateWithoutContestInput, ContestParticipantUncheckedCreateWithoutContestInput> | ContestParticipantCreateWithoutContestInput[] | ContestParticipantUncheckedCreateWithoutContestInput[]
     connectOrCreate?: ContestParticipantCreateOrConnectWithoutContestInput | ContestParticipantCreateOrConnectWithoutContestInput[]
@@ -28319,6 +28415,13 @@ export namespace Prisma {
     connect?: RecurringContestDataWhereUniqueInput
   }
 
+  export type ContestAchievementUncheckedCreateNestedManyWithoutContestInput = {
+    create?: XOR<ContestAchievementCreateWithoutContestInput, ContestAchievementUncheckedCreateWithoutContestInput> | ContestAchievementCreateWithoutContestInput[] | ContestAchievementUncheckedCreateWithoutContestInput[]
+    connectOrCreate?: ContestAchievementCreateOrConnectWithoutContestInput | ContestAchievementCreateOrConnectWithoutContestInput[]
+    createMany?: ContestAchievementCreateManyContestInputEnvelope
+    connect?: ContestAchievementWhereUniqueInput | ContestAchievementWhereUniqueInput[]
+  }
+
   export type StringFieldUpdateOperationsInput = {
     set?: string
   }
@@ -28343,6 +28446,11 @@ export namespace Prisma {
 
   export type BoolFieldUpdateOperationsInput = {
     set?: boolean
+  }
+
+  export type ContestUpdatelevel_requirementsInput = {
+    set?: number[]
+    push?: number | number[]
   }
 
   export type DateTimeFieldUpdateOperationsInput = {
@@ -28423,6 +28531,20 @@ export namespace Prisma {
     update?: XOR<XOR<RecurringContestDataUpdateToOneWithWhereWithoutContestInput, RecurringContestDataUpdateWithoutContestInput>, RecurringContestDataUncheckedUpdateWithoutContestInput>
   }
 
+  export type ContestAchievementUpdateManyWithoutContestNestedInput = {
+    create?: XOR<ContestAchievementCreateWithoutContestInput, ContestAchievementUncheckedCreateWithoutContestInput> | ContestAchievementCreateWithoutContestInput[] | ContestAchievementUncheckedCreateWithoutContestInput[]
+    connectOrCreate?: ContestAchievementCreateOrConnectWithoutContestInput | ContestAchievementCreateOrConnectWithoutContestInput[]
+    upsert?: ContestAchievementUpsertWithWhereUniqueWithoutContestInput | ContestAchievementUpsertWithWhereUniqueWithoutContestInput[]
+    createMany?: ContestAchievementCreateManyContestInputEnvelope
+    set?: ContestAchievementWhereUniqueInput | ContestAchievementWhereUniqueInput[]
+    disconnect?: ContestAchievementWhereUniqueInput | ContestAchievementWhereUniqueInput[]
+    delete?: ContestAchievementWhereUniqueInput | ContestAchievementWhereUniqueInput[]
+    connect?: ContestAchievementWhereUniqueInput | ContestAchievementWhereUniqueInput[]
+    update?: ContestAchievementUpdateWithWhereUniqueWithoutContestInput | ContestAchievementUpdateWithWhereUniqueWithoutContestInput[]
+    updateMany?: ContestAchievementUpdateManyWithWhereWithoutContestInput | ContestAchievementUpdateManyWithWhereWithoutContestInput[]
+    deleteMany?: ContestAchievementScalarWhereInput | ContestAchievementScalarWhereInput[]
+  }
+
   export type ContestParticipantUncheckedUpdateManyWithoutContestNestedInput = {
     create?: XOR<ContestParticipantCreateWithoutContestInput, ContestParticipantUncheckedCreateWithoutContestInput> | ContestParticipantCreateWithoutContestInput[] | ContestParticipantUncheckedCreateWithoutContestInput[]
     connectOrCreate?: ContestParticipantCreateOrConnectWithoutContestInput | ContestParticipantCreateOrConnectWithoutContestInput[]
@@ -28487,6 +28609,20 @@ export namespace Prisma {
     delete?: RecurringContestDataWhereInput | boolean
     connect?: RecurringContestDataWhereUniqueInput
     update?: XOR<XOR<RecurringContestDataUpdateToOneWithWhereWithoutContestInput, RecurringContestDataUpdateWithoutContestInput>, RecurringContestDataUncheckedUpdateWithoutContestInput>
+  }
+
+  export type ContestAchievementUncheckedUpdateManyWithoutContestNestedInput = {
+    create?: XOR<ContestAchievementCreateWithoutContestInput, ContestAchievementUncheckedCreateWithoutContestInput> | ContestAchievementCreateWithoutContestInput[] | ContestAchievementUncheckedCreateWithoutContestInput[]
+    connectOrCreate?: ContestAchievementCreateOrConnectWithoutContestInput | ContestAchievementCreateOrConnectWithoutContestInput[]
+    upsert?: ContestAchievementUpsertWithWhereUniqueWithoutContestInput | ContestAchievementUpsertWithWhereUniqueWithoutContestInput[]
+    createMany?: ContestAchievementCreateManyContestInputEnvelope
+    set?: ContestAchievementWhereUniqueInput | ContestAchievementWhereUniqueInput[]
+    disconnect?: ContestAchievementWhereUniqueInput | ContestAchievementWhereUniqueInput[]
+    delete?: ContestAchievementWhereUniqueInput | ContestAchievementWhereUniqueInput[]
+    connect?: ContestAchievementWhereUniqueInput | ContestAchievementWhereUniqueInput[]
+    update?: ContestAchievementUpdateWithWhereUniqueWithoutContestInput | ContestAchievementUpdateWithWhereUniqueWithoutContestInput[]
+    updateMany?: ContestAchievementUpdateManyWithWhereWithoutContestInput | ContestAchievementUpdateManyWithWhereWithoutContestInput[]
+    deleteMany?: ContestAchievementScalarWhereInput | ContestAchievementScalarWhereInput[]
   }
 
   export type ContestCreateNestedOneWithoutContestRulesInput = {
@@ -28955,6 +29091,12 @@ export namespace Prisma {
     connect?: ContestPhotoWhereUniqueInput
   }
 
+  export type ContestCreateNestedOneWithoutAchievementsInput = {
+    create?: XOR<ContestCreateWithoutAchievementsInput, ContestUncheckedCreateWithoutAchievementsInput>
+    connectOrCreate?: ContestCreateOrConnectWithoutAchievementsInput
+    connect?: ContestWhereUniqueInput
+  }
+
   export type ContestParticipantCreateNestedOneWithoutContestAchievementInput = {
     create?: XOR<ContestParticipantCreateWithoutContestAchievementInput, ContestParticipantUncheckedCreateWithoutContestAchievementInput>
     connectOrCreate?: ContestParticipantCreateOrConnectWithoutContestAchievementInput
@@ -28969,6 +29111,14 @@ export namespace Prisma {
     delete?: ContestPhotoWhereInput | boolean
     connect?: ContestPhotoWhereUniqueInput
     update?: XOR<XOR<ContestPhotoUpdateToOneWithWhereWithoutAchievementsInput, ContestPhotoUpdateWithoutAchievementsInput>, ContestPhotoUncheckedUpdateWithoutAchievementsInput>
+  }
+
+  export type ContestUpdateOneRequiredWithoutAchievementsNestedInput = {
+    create?: XOR<ContestCreateWithoutAchievementsInput, ContestUncheckedCreateWithoutAchievementsInput>
+    connectOrCreate?: ContestCreateOrConnectWithoutAchievementsInput
+    upsert?: ContestUpsertWithoutAchievementsInput
+    connect?: ContestWhereUniqueInput
+    update?: XOR<XOR<ContestUpdateToOneWithWhereWithoutAchievementsInput, ContestUpdateWithoutAchievementsInput>, ContestUncheckedUpdateWithoutAchievementsInput>
   }
 
   export type ContestParticipantUpdateOneWithoutContestAchievementNestedInput = {
@@ -30413,6 +30563,33 @@ export namespace Prisma {
     create: XOR<RecurringContestDataCreateWithoutContestInput, RecurringContestDataUncheckedCreateWithoutContestInput>
   }
 
+  export type ContestAchievementCreateWithoutContestInput = {
+    id?: string
+    category: $Enums.PrizeType
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    photo?: ContestPhotoCreateNestedOneWithoutAchievementsInput
+    participant?: ContestParticipantCreateNestedOneWithoutContestAchievementInput
+  }
+
+  export type ContestAchievementUncheckedCreateWithoutContestInput = {
+    id?: string
+    category: $Enums.PrizeType
+    photoId?: string | null
+    participantId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ContestAchievementCreateOrConnectWithoutContestInput = {
+    where: ContestAchievementWhereUniqueInput
+    create: XOR<ContestAchievementCreateWithoutContestInput, ContestAchievementUncheckedCreateWithoutContestInput>
+  }
+
+  export type ContestAchievementCreateManyContestInputEnvelope = {
+    data: ContestAchievementCreateManyContestInput | ContestAchievementCreateManyContestInput[]
+  }
+
   export type UserUpsertWithoutCreatedContestsInput = {
     update: XOR<UserUpdateWithoutCreatedContestsInput, UserUncheckedUpdateWithoutCreatedContestsInput>
     create: XOR<UserCreateWithoutCreatedContestsInput, UserUncheckedCreateWithoutCreatedContestsInput>
@@ -30624,6 +30801,35 @@ export namespace Prisma {
     nextRunAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type ContestAchievementUpsertWithWhereUniqueWithoutContestInput = {
+    where: ContestAchievementWhereUniqueInput
+    update: XOR<ContestAchievementUpdateWithoutContestInput, ContestAchievementUncheckedUpdateWithoutContestInput>
+    create: XOR<ContestAchievementCreateWithoutContestInput, ContestAchievementUncheckedCreateWithoutContestInput>
+  }
+
+  export type ContestAchievementUpdateWithWhereUniqueWithoutContestInput = {
+    where: ContestAchievementWhereUniqueInput
+    data: XOR<ContestAchievementUpdateWithoutContestInput, ContestAchievementUncheckedUpdateWithoutContestInput>
+  }
+
+  export type ContestAchievementUpdateManyWithWhereWithoutContestInput = {
+    where: ContestAchievementScalarWhereInput
+    data: XOR<ContestAchievementUpdateManyMutationInput, ContestAchievementUncheckedUpdateManyWithoutContestInput>
+  }
+
+  export type ContestAchievementScalarWhereInput = {
+    AND?: ContestAchievementScalarWhereInput | ContestAchievementScalarWhereInput[]
+    OR?: ContestAchievementScalarWhereInput[]
+    NOT?: ContestAchievementScalarWhereInput | ContestAchievementScalarWhereInput[]
+    id?: StringFilter<"ContestAchievement"> | string
+    category?: EnumPrizeTypeFilter<"ContestAchievement"> | $Enums.PrizeType
+    photoId?: StringNullableFilter<"ContestAchievement"> | string | null
+    participantId?: StringNullableFilter<"ContestAchievement"> | string | null
+    contestId?: StringFilter<"ContestAchievement"> | string
+    createdAt?: DateTimeFilter<"ContestAchievement"> | Date | string
+    updatedAt?: DateTimeFilter<"ContestAchievement"> | Date | string
+  }
+
   export type ContestCreateWithoutContestRulesInput = {
     id?: string
     title: string
@@ -30634,6 +30840,7 @@ export namespace Prisma {
     isMoneyContest?: boolean
     maxPrize?: number | null
     minPrize?: number | null
+    level_requirements?: ContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
     createdAt?: Date | string
@@ -30643,6 +30850,7 @@ export namespace Prisma {
     votes?: VoteCreateNestedManyWithoutContestInput
     contestPrizes?: ContestPrizeCreateNestedManyWithoutContestInput
     recurringData?: RecurringContestDataCreateNestedOneWithoutContestInput
+    achievements?: ContestAchievementCreateNestedManyWithoutContestInput
   }
 
   export type ContestUncheckedCreateWithoutContestRulesInput = {
@@ -30655,6 +30863,7 @@ export namespace Prisma {
     isMoneyContest?: boolean
     maxPrize?: number | null
     minPrize?: number | null
+    level_requirements?: ContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
     creatorId: string
@@ -30664,6 +30873,7 @@ export namespace Prisma {
     votes?: VoteUncheckedCreateNestedManyWithoutContestInput
     contestPrizes?: ContestPrizeUncheckedCreateNestedManyWithoutContestInput
     recurringData?: RecurringContestDataUncheckedCreateNestedOneWithoutContestInput
+    achievements?: ContestAchievementUncheckedCreateNestedManyWithoutContestInput
   }
 
   export type ContestCreateOrConnectWithoutContestRulesInput = {
@@ -30691,6 +30901,7 @@ export namespace Prisma {
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
+    level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -30700,6 +30911,7 @@ export namespace Prisma {
     votes?: VoteUpdateManyWithoutContestNestedInput
     contestPrizes?: ContestPrizeUpdateManyWithoutContestNestedInput
     recurringData?: RecurringContestDataUpdateOneWithoutContestNestedInput
+    achievements?: ContestAchievementUpdateManyWithoutContestNestedInput
   }
 
   export type ContestUncheckedUpdateWithoutContestRulesInput = {
@@ -30711,6 +30923,7 @@ export namespace Prisma {
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
+    level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     creatorId?: StringFieldUpdateOperationsInput | string
@@ -30720,6 +30933,7 @@ export namespace Prisma {
     votes?: VoteUncheckedUpdateManyWithoutContestNestedInput
     contestPrizes?: ContestPrizeUncheckedUpdateManyWithoutContestNestedInput
     recurringData?: RecurringContestDataUncheckedUpdateOneWithoutContestNestedInput
+    achievements?: ContestAchievementUncheckedUpdateManyWithoutContestNestedInput
   }
 
   export type ContestCreateWithoutRecurringDataInput = {
@@ -30732,6 +30946,7 @@ export namespace Prisma {
     isMoneyContest?: boolean
     maxPrize?: number | null
     minPrize?: number | null
+    level_requirements?: ContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
     createdAt?: Date | string
@@ -30741,6 +30956,7 @@ export namespace Prisma {
     votes?: VoteCreateNestedManyWithoutContestInput
     contestRules?: ContestRuleCreateNestedManyWithoutContestInput
     contestPrizes?: ContestPrizeCreateNestedManyWithoutContestInput
+    achievements?: ContestAchievementCreateNestedManyWithoutContestInput
   }
 
   export type ContestUncheckedCreateWithoutRecurringDataInput = {
@@ -30753,6 +30969,7 @@ export namespace Prisma {
     isMoneyContest?: boolean
     maxPrize?: number | null
     minPrize?: number | null
+    level_requirements?: ContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
     creatorId: string
@@ -30762,6 +30979,7 @@ export namespace Prisma {
     votes?: VoteUncheckedCreateNestedManyWithoutContestInput
     contestRules?: ContestRuleUncheckedCreateNestedManyWithoutContestInput
     contestPrizes?: ContestPrizeUncheckedCreateNestedManyWithoutContestInput
+    achievements?: ContestAchievementUncheckedCreateNestedManyWithoutContestInput
   }
 
   export type ContestCreateOrConnectWithoutRecurringDataInput = {
@@ -30789,6 +31007,7 @@ export namespace Prisma {
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
+    level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -30798,6 +31017,7 @@ export namespace Prisma {
     votes?: VoteUpdateManyWithoutContestNestedInput
     contestRules?: ContestRuleUpdateManyWithoutContestNestedInput
     contestPrizes?: ContestPrizeUpdateManyWithoutContestNestedInput
+    achievements?: ContestAchievementUpdateManyWithoutContestNestedInput
   }
 
   export type ContestUncheckedUpdateWithoutRecurringDataInput = {
@@ -30809,6 +31029,7 @@ export namespace Prisma {
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
+    level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     creatorId?: StringFieldUpdateOperationsInput | string
@@ -30818,6 +31039,7 @@ export namespace Prisma {
     votes?: VoteUncheckedUpdateManyWithoutContestNestedInput
     contestRules?: ContestRuleUncheckedUpdateManyWithoutContestNestedInput
     contestPrizes?: ContestPrizeUncheckedUpdateManyWithoutContestNestedInput
+    achievements?: ContestAchievementUncheckedUpdateManyWithoutContestNestedInput
   }
 
   export type RecurringDataUpdateInput = {
@@ -30946,9 +31168,9 @@ export namespace Prisma {
   export type ContestAchievementCreateWithoutPhotoInput = {
     id?: string
     category: $Enums.PrizeType
-    contestId: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    contest: ContestCreateNestedOneWithoutAchievementsInput
     participant?: ContestParticipantCreateNestedOneWithoutContestAchievementInput
   }
 
@@ -31129,19 +31351,6 @@ export namespace Prisma {
     data: XOR<ContestAchievementUpdateManyMutationInput, ContestAchievementUncheckedUpdateManyWithoutPhotoInput>
   }
 
-  export type ContestAchievementScalarWhereInput = {
-    AND?: ContestAchievementScalarWhereInput | ContestAchievementScalarWhereInput[]
-    OR?: ContestAchievementScalarWhereInput[]
-    NOT?: ContestAchievementScalarWhereInput | ContestAchievementScalarWhereInput[]
-    id?: StringFilter<"ContestAchievement"> | string
-    category?: EnumPrizeTypeFilter<"ContestAchievement"> | $Enums.PrizeType
-    photoId?: StringNullableFilter<"ContestAchievement"> | string | null
-    participantId?: StringNullableFilter<"ContestAchievement"> | string | null
-    contestId?: StringFilter<"ContestAchievement"> | string
-    createdAt?: DateTimeFilter<"ContestAchievement"> | Date | string
-    updatedAt?: DateTimeFilter<"ContestAchievement"> | Date | string
-  }
-
   export type ContestWinnerUpsertWithWhereUniqueWithoutPhotoInput = {
     where: ContestWinnerWhereUniqueInput
     update: XOR<ContestWinnerUpdateWithoutPhotoInput, ContestWinnerUncheckedUpdateWithoutPhotoInput>
@@ -31316,6 +31525,7 @@ export namespace Prisma {
     isMoneyContest?: boolean
     maxPrize?: number | null
     minPrize?: number | null
+    level_requirements?: ContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
     createdAt?: Date | string
@@ -31325,6 +31535,7 @@ export namespace Prisma {
     contestRules?: ContestRuleCreateNestedManyWithoutContestInput
     contestPrizes?: ContestPrizeCreateNestedManyWithoutContestInput
     recurringData?: RecurringContestDataCreateNestedOneWithoutContestInput
+    achievements?: ContestAchievementCreateNestedManyWithoutContestInput
   }
 
   export type ContestUncheckedCreateWithoutParticipantsInput = {
@@ -31337,6 +31548,7 @@ export namespace Prisma {
     isMoneyContest?: boolean
     maxPrize?: number | null
     minPrize?: number | null
+    level_requirements?: ContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
     creatorId: string
@@ -31346,6 +31558,7 @@ export namespace Prisma {
     contestRules?: ContestRuleUncheckedCreateNestedManyWithoutContestInput
     contestPrizes?: ContestPrizeUncheckedCreateNestedManyWithoutContestInput
     recurringData?: RecurringContestDataUncheckedCreateNestedOneWithoutContestInput
+    achievements?: ContestAchievementUncheckedCreateNestedManyWithoutContestInput
   }
 
   export type ContestCreateOrConnectWithoutParticipantsInput = {
@@ -31487,10 +31700,10 @@ export namespace Prisma {
   export type ContestAchievementCreateWithoutParticipantInput = {
     id?: string
     category: $Enums.PrizeType
-    contestId: string
     createdAt?: Date | string
     updatedAt?: Date | string
     photo?: ContestPhotoCreateNestedOneWithoutAchievementsInput
+    contest: ContestCreateNestedOneWithoutAchievementsInput
   }
 
   export type ContestAchievementUncheckedCreateWithoutParticipantInput = {
@@ -31531,6 +31744,7 @@ export namespace Prisma {
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
+    level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -31540,6 +31754,7 @@ export namespace Prisma {
     contestRules?: ContestRuleUpdateManyWithoutContestNestedInput
     contestPrizes?: ContestPrizeUpdateManyWithoutContestNestedInput
     recurringData?: RecurringContestDataUpdateOneWithoutContestNestedInput
+    achievements?: ContestAchievementUpdateManyWithoutContestNestedInput
   }
 
   export type ContestUncheckedUpdateWithoutParticipantsInput = {
@@ -31551,6 +31766,7 @@ export namespace Prisma {
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
+    level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     creatorId?: StringFieldUpdateOperationsInput | string
@@ -31560,6 +31776,7 @@ export namespace Prisma {
     contestRules?: ContestRuleUncheckedUpdateManyWithoutContestNestedInput
     contestPrizes?: ContestPrizeUncheckedUpdateManyWithoutContestNestedInput
     recurringData?: RecurringContestDataUncheckedUpdateOneWithoutContestNestedInput
+    achievements?: ContestAchievementUncheckedUpdateManyWithoutContestNestedInput
   }
 
   export type UserUpsertWithoutContestParticipantInput = {
@@ -31707,6 +31924,7 @@ export namespace Prisma {
     isMoneyContest?: boolean
     maxPrize?: number | null
     minPrize?: number | null
+    level_requirements?: ContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
     createdAt?: Date | string
@@ -31716,6 +31934,7 @@ export namespace Prisma {
     votes?: VoteCreateNestedManyWithoutContestInput
     contestRules?: ContestRuleCreateNestedManyWithoutContestInput
     recurringData?: RecurringContestDataCreateNestedOneWithoutContestInput
+    achievements?: ContestAchievementCreateNestedManyWithoutContestInput
   }
 
   export type ContestUncheckedCreateWithoutContestPrizesInput = {
@@ -31728,6 +31947,7 @@ export namespace Prisma {
     isMoneyContest?: boolean
     maxPrize?: number | null
     minPrize?: number | null
+    level_requirements?: ContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
     creatorId: string
@@ -31737,6 +31957,7 @@ export namespace Prisma {
     votes?: VoteUncheckedCreateNestedManyWithoutContestInput
     contestRules?: ContestRuleUncheckedCreateNestedManyWithoutContestInput
     recurringData?: RecurringContestDataUncheckedCreateNestedOneWithoutContestInput
+    achievements?: ContestAchievementUncheckedCreateNestedManyWithoutContestInput
   }
 
   export type ContestCreateOrConnectWithoutContestPrizesInput = {
@@ -31764,6 +31985,7 @@ export namespace Prisma {
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
+    level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -31773,6 +31995,7 @@ export namespace Prisma {
     votes?: VoteUpdateManyWithoutContestNestedInput
     contestRules?: ContestRuleUpdateManyWithoutContestNestedInput
     recurringData?: RecurringContestDataUpdateOneWithoutContestNestedInput
+    achievements?: ContestAchievementUpdateManyWithoutContestNestedInput
   }
 
   export type ContestUncheckedUpdateWithoutContestPrizesInput = {
@@ -31784,6 +32007,7 @@ export namespace Prisma {
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
+    level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     creatorId?: StringFieldUpdateOperationsInput | string
@@ -31793,6 +32017,7 @@ export namespace Prisma {
     votes?: VoteUncheckedUpdateManyWithoutContestNestedInput
     contestRules?: ContestRuleUncheckedUpdateManyWithoutContestNestedInput
     recurringData?: RecurringContestDataUncheckedUpdateOneWithoutContestNestedInput
+    achievements?: ContestAchievementUncheckedUpdateManyWithoutContestNestedInput
   }
 
   export type ContestPhotoCreateWithoutAchievementsInput = {
@@ -31826,6 +32051,57 @@ export namespace Prisma {
   export type ContestPhotoCreateOrConnectWithoutAchievementsInput = {
     where: ContestPhotoWhereUniqueInput
     create: XOR<ContestPhotoCreateWithoutAchievementsInput, ContestPhotoUncheckedCreateWithoutAchievementsInput>
+  }
+
+  export type ContestCreateWithoutAchievementsInput = {
+    id?: string
+    title: string
+    description: string
+    banner?: string | null
+    status?: $Enums.ContestStatus
+    maxUploads?: number | null
+    isMoneyContest?: boolean
+    maxPrize?: number | null
+    minPrize?: number | null
+    level_requirements?: ContestCreatelevel_requirementsInput | number[]
+    startDate: Date | string
+    endDate: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    creator: UserCreateNestedOneWithoutCreatedContestsInput
+    participants?: ContestParticipantCreateNestedManyWithoutContestInput
+    votes?: VoteCreateNestedManyWithoutContestInput
+    contestRules?: ContestRuleCreateNestedManyWithoutContestInput
+    contestPrizes?: ContestPrizeCreateNestedManyWithoutContestInput
+    recurringData?: RecurringContestDataCreateNestedOneWithoutContestInput
+  }
+
+  export type ContestUncheckedCreateWithoutAchievementsInput = {
+    id?: string
+    title: string
+    description: string
+    banner?: string | null
+    status?: $Enums.ContestStatus
+    maxUploads?: number | null
+    isMoneyContest?: boolean
+    maxPrize?: number | null
+    minPrize?: number | null
+    level_requirements?: ContestCreatelevel_requirementsInput | number[]
+    startDate: Date | string
+    endDate: Date | string
+    creatorId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    participants?: ContestParticipantUncheckedCreateNestedManyWithoutContestInput
+    votes?: VoteUncheckedCreateNestedManyWithoutContestInput
+    contestRules?: ContestRuleUncheckedCreateNestedManyWithoutContestInput
+    contestPrizes?: ContestPrizeUncheckedCreateNestedManyWithoutContestInput
+    recurringData?: RecurringContestDataUncheckedCreateNestedOneWithoutContestInput
+  }
+
+  export type ContestCreateOrConnectWithoutAchievementsInput = {
+    where: ContestWhereUniqueInput
+    create: XOR<ContestCreateWithoutAchievementsInput, ContestUncheckedCreateWithoutAchievementsInput>
   }
 
   export type ContestParticipantCreateWithoutContestAchievementInput = {
@@ -31894,6 +32170,61 @@ export namespace Prisma {
     votes?: VoteUncheckedUpdateManyWithoutPhotoNestedInput
     comments?: CommentUncheckedUpdateManyWithoutReceiverNestedInput
     ContestWinner?: ContestWinnerUncheckedUpdateManyWithoutPhotoNestedInput
+  }
+
+  export type ContestUpsertWithoutAchievementsInput = {
+    update: XOR<ContestUpdateWithoutAchievementsInput, ContestUncheckedUpdateWithoutAchievementsInput>
+    create: XOR<ContestCreateWithoutAchievementsInput, ContestUncheckedCreateWithoutAchievementsInput>
+    where?: ContestWhereInput
+  }
+
+  export type ContestUpdateToOneWithWhereWithoutAchievementsInput = {
+    where?: ContestWhereInput
+    data: XOR<ContestUpdateWithoutAchievementsInput, ContestUncheckedUpdateWithoutAchievementsInput>
+  }
+
+  export type ContestUpdateWithoutAchievementsInput = {
+    title?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    banner?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumContestStatusFieldUpdateOperationsInput | $Enums.ContestStatus
+    maxUploads?: NullableIntFieldUpdateOperationsInput | number | null
+    isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
+    maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
+    minPrize?: NullableIntFieldUpdateOperationsInput | number | null
+    level_requirements?: ContestUpdatelevel_requirementsInput | number[]
+    startDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    endDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    creator?: UserUpdateOneRequiredWithoutCreatedContestsNestedInput
+    participants?: ContestParticipantUpdateManyWithoutContestNestedInput
+    votes?: VoteUpdateManyWithoutContestNestedInput
+    contestRules?: ContestRuleUpdateManyWithoutContestNestedInput
+    contestPrizes?: ContestPrizeUpdateManyWithoutContestNestedInput
+    recurringData?: RecurringContestDataUpdateOneWithoutContestNestedInput
+  }
+
+  export type ContestUncheckedUpdateWithoutAchievementsInput = {
+    title?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    banner?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumContestStatusFieldUpdateOperationsInput | $Enums.ContestStatus
+    maxUploads?: NullableIntFieldUpdateOperationsInput | number | null
+    isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
+    maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
+    minPrize?: NullableIntFieldUpdateOperationsInput | number | null
+    level_requirements?: ContestUpdatelevel_requirementsInput | number[]
+    startDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    endDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    creatorId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    participants?: ContestParticipantUncheckedUpdateManyWithoutContestNestedInput
+    votes?: VoteUncheckedUpdateManyWithoutContestNestedInput
+    contestRules?: ContestRuleUncheckedUpdateManyWithoutContestNestedInput
+    contestPrizes?: ContestPrizeUncheckedUpdateManyWithoutContestNestedInput
+    recurringData?: RecurringContestDataUncheckedUpdateOneWithoutContestNestedInput
   }
 
   export type ContestParticipantUpsertWithoutContestAchievementInput = {
@@ -32454,6 +32785,7 @@ export namespace Prisma {
     isMoneyContest?: boolean
     maxPrize?: number | null
     minPrize?: number | null
+    level_requirements?: ContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
     createdAt?: Date | string
@@ -32463,6 +32795,7 @@ export namespace Prisma {
     contestRules?: ContestRuleCreateNestedManyWithoutContestInput
     contestPrizes?: ContestPrizeCreateNestedManyWithoutContestInput
     recurringData?: RecurringContestDataCreateNestedOneWithoutContestInput
+    achievements?: ContestAchievementCreateNestedManyWithoutContestInput
   }
 
   export type ContestUncheckedCreateWithoutCreatorInput = {
@@ -32475,6 +32808,7 @@ export namespace Prisma {
     isMoneyContest?: boolean
     maxPrize?: number | null
     minPrize?: number | null
+    level_requirements?: ContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
     createdAt?: Date | string
@@ -32484,6 +32818,7 @@ export namespace Prisma {
     contestRules?: ContestRuleUncheckedCreateNestedManyWithoutContestInput
     contestPrizes?: ContestPrizeUncheckedCreateNestedManyWithoutContestInput
     recurringData?: RecurringContestDataUncheckedCreateNestedOneWithoutContestInput
+    achievements?: ContestAchievementUncheckedCreateNestedManyWithoutContestInput
   }
 
   export type ContestCreateOrConnectWithoutCreatorInput = {
@@ -32831,6 +33166,7 @@ export namespace Prisma {
     isMoneyContest?: BoolFilter<"Contest"> | boolean
     maxPrize?: IntNullableFilter<"Contest"> | number | null
     minPrize?: IntNullableFilter<"Contest"> | number | null
+    level_requirements?: IntNullableListFilter<"Contest">
     startDate?: DateTimeFilter<"Contest"> | Date | string
     endDate?: DateTimeFilter<"Contest"> | Date | string
     creatorId?: StringFilter<"Contest"> | string
@@ -34335,6 +34671,7 @@ export namespace Prisma {
     isMoneyContest?: boolean
     maxPrize?: number | null
     minPrize?: number | null
+    level_requirements?: ContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
     createdAt?: Date | string
@@ -34344,6 +34681,7 @@ export namespace Prisma {
     contestRules?: ContestRuleCreateNestedManyWithoutContestInput
     contestPrizes?: ContestPrizeCreateNestedManyWithoutContestInput
     recurringData?: RecurringContestDataCreateNestedOneWithoutContestInput
+    achievements?: ContestAchievementCreateNestedManyWithoutContestInput
   }
 
   export type ContestUncheckedCreateWithoutVotesInput = {
@@ -34356,6 +34694,7 @@ export namespace Prisma {
     isMoneyContest?: boolean
     maxPrize?: number | null
     minPrize?: number | null
+    level_requirements?: ContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
     creatorId: string
@@ -34365,6 +34704,7 @@ export namespace Prisma {
     contestRules?: ContestRuleUncheckedCreateNestedManyWithoutContestInput
     contestPrizes?: ContestPrizeUncheckedCreateNestedManyWithoutContestInput
     recurringData?: RecurringContestDataUncheckedCreateNestedOneWithoutContestInput
+    achievements?: ContestAchievementUncheckedCreateNestedManyWithoutContestInput
   }
 
   export type ContestCreateOrConnectWithoutVotesInput = {
@@ -34502,6 +34842,7 @@ export namespace Prisma {
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
+    level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -34511,6 +34852,7 @@ export namespace Prisma {
     contestRules?: ContestRuleUpdateManyWithoutContestNestedInput
     contestPrizes?: ContestPrizeUpdateManyWithoutContestNestedInput
     recurringData?: RecurringContestDataUpdateOneWithoutContestNestedInput
+    achievements?: ContestAchievementUpdateManyWithoutContestNestedInput
   }
 
   export type ContestUncheckedUpdateWithoutVotesInput = {
@@ -34522,6 +34864,7 @@ export namespace Prisma {
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
+    level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     creatorId?: StringFieldUpdateOperationsInput | string
@@ -34531,6 +34874,7 @@ export namespace Prisma {
     contestRules?: ContestRuleUncheckedUpdateManyWithoutContestNestedInput
     contestPrizes?: ContestPrizeUncheckedUpdateManyWithoutContestNestedInput
     recurringData?: RecurringContestDataUncheckedUpdateOneWithoutContestNestedInput
+    achievements?: ContestAchievementUncheckedUpdateManyWithoutContestNestedInput
   }
 
   export type ContestParticipantCreateManyContestInput = {
@@ -34566,6 +34910,15 @@ export namespace Prisma {
     trades?: number
     charges?: number
     keys?: number
+  }
+
+  export type ContestAchievementCreateManyContestInput = {
+    id?: string
+    category: $Enums.PrizeType
+    photoId?: string | null
+    participantId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type ContestParticipantUpdateWithoutContestInput = {
@@ -34667,6 +35020,30 @@ export namespace Prisma {
     keys?: IntFieldUpdateOperationsInput | number
   }
 
+  export type ContestAchievementUpdateWithoutContestInput = {
+    category?: EnumPrizeTypeFieldUpdateOperationsInput | $Enums.PrizeType
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    photo?: ContestPhotoUpdateOneWithoutAchievementsNestedInput
+    participant?: ContestParticipantUpdateOneWithoutContestAchievementNestedInput
+  }
+
+  export type ContestAchievementUncheckedUpdateWithoutContestInput = {
+    category?: EnumPrizeTypeFieldUpdateOperationsInput | $Enums.PrizeType
+    photoId?: NullableStringFieldUpdateOperationsInput | string | null
+    participantId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ContestAchievementUncheckedUpdateManyWithoutContestInput = {
+    category?: EnumPrizeTypeFieldUpdateOperationsInput | $Enums.PrizeType
+    photoId?: NullableStringFieldUpdateOperationsInput | string | null
+    participantId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type VoteCreateManyPhotoInput = {
     id?: string
     providerId: string
@@ -34744,9 +35121,9 @@ export namespace Prisma {
 
   export type ContestAchievementUpdateWithoutPhotoInput = {
     category?: EnumPrizeTypeFieldUpdateOperationsInput | $Enums.PrizeType
-    contestId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    contest?: ContestUpdateOneRequiredWithoutAchievementsNestedInput
     participant?: ContestParticipantUpdateOneWithoutContestAchievementNestedInput
   }
 
@@ -34872,10 +35249,10 @@ export namespace Prisma {
 
   export type ContestAchievementUpdateWithoutParticipantInput = {
     category?: EnumPrizeTypeFieldUpdateOperationsInput | $Enums.PrizeType
-    contestId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     photo?: ContestPhotoUpdateOneWithoutAchievementsNestedInput
+    contest?: ContestUpdateOneRequiredWithoutAchievementsNestedInput
   }
 
   export type ContestAchievementUncheckedUpdateWithoutParticipantInput = {
@@ -34946,6 +35323,7 @@ export namespace Prisma {
     isMoneyContest?: boolean
     maxPrize?: number | null
     minPrize?: number | null
+    level_requirements?: ContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
     createdAt?: Date | string
@@ -35059,6 +35437,7 @@ export namespace Prisma {
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
+    level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -35068,6 +35447,7 @@ export namespace Prisma {
     contestRules?: ContestRuleUpdateManyWithoutContestNestedInput
     contestPrizes?: ContestPrizeUpdateManyWithoutContestNestedInput
     recurringData?: RecurringContestDataUpdateOneWithoutContestNestedInput
+    achievements?: ContestAchievementUpdateManyWithoutContestNestedInput
   }
 
   export type ContestUncheckedUpdateWithoutCreatorInput = {
@@ -35079,6 +35459,7 @@ export namespace Prisma {
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
+    level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -35088,6 +35469,7 @@ export namespace Prisma {
     contestRules?: ContestRuleUncheckedUpdateManyWithoutContestNestedInput
     contestPrizes?: ContestPrizeUncheckedUpdateManyWithoutContestNestedInput
     recurringData?: RecurringContestDataUncheckedUpdateOneWithoutContestNestedInput
+    achievements?: ContestAchievementUncheckedUpdateManyWithoutContestNestedInput
   }
 
   export type ContestUncheckedUpdateManyWithoutCreatorInput = {
@@ -35099,6 +35481,7 @@ export namespace Prisma {
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
+    level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string

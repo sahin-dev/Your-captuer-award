@@ -1,26 +1,35 @@
-import { AchievementsType } from "@prisma/client";
+import ApiError from "../../../errors/ApiError";
+import { PrizeType } from "../../../prismaClient";
 import prisma from "../../../shared/prisma";
+import httpStatus from 'http-status'
 
 
-export const addAchievement = async (userId:string,contestId:string, type:AchievementsType, awardedId:string)=>{
-    let achievement;
+//Add achievements to the user
 
-    if (type === AchievementsType.TOP_PHOTOGRAPHER){
-        achievement = await prisma.contestAchievement.create({data:{participantId:awardedId,contestId,type}})
-        return achievement
+export const addAchievement = async (userId:string,contestId:string, category:PrizeType, photoId:string)=>{
+
+    const participant = await prisma.contestParticipant.findUnique({where:{contestId_userId:{contestId,userId}}})
+    if(!participant){
+        throw new ApiError(httpStatus.NOT_FOUND, "user does not exist in this contest")
     }
-
-     achievement = await prisma.contestAchievement.create({data:{photoId:awardedId, contestId, type}})
+     const achievement = await prisma.contestAchievement.create({data:{photoId:photoId, contestId, category}})
 
      return achievement
+}
 
+//get the contest achievements for a specific user
+export const getContestAchievementsByUser = async (userId:string, contestId:string)=>{
+    const achievements = await prisma.contestAchievement.findMany({where:{contestId, participant:{userId}}})
+    return achievements
 }
 
 
-const getTotalAchievements = async (userId:string)=>{
+export const getContestAchievements = async (contestId:string)=>{
+    const achievememnts = await prisma.contestAchievement.findMany({where:{contestId}})
 
-    
+    return achievememnts
 }
+
 
 export const getAchievements = async (contestId:string)=>{
     const achievements = await prisma.contestAchievement.findMany({where:{contestId}})
@@ -28,8 +37,9 @@ export const getAchievements = async (contestId:string)=>{
     return achievements
 }
 
-const getAchievementCount = async (userId:string)=>{
-    let count = await prisma.contestAchievement.count({where:{OR:[{participantId:userId}, {photo:{participantId:userId}}]}})
+export const getAchievementCount = async (userId:string)=>{
+    let top_photo_award_count = await prisma.contestAchievement.count({where:{participant:{userId},category:PrizeType.TOP_PHOTO}})
+    let top_photographer_count = await prisma.contestAchievement.count({where:{participant:{userId},category:PrizeType.TOP_PHOTOGRAPHER}})
 
-    return count
+    return {top_photo:top_photo_award_count,top_photographer:top_photographer_count}
 }

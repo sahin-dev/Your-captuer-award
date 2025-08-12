@@ -24,10 +24,12 @@ model Contest {
   contestRules ContestRule[] 
   contestPrizes ContestPrize[]
   recurringData   RecurringContestData?
+  achievements ContestAchievement[]
   createdAt    DateTime             @default(now())
   updatedAt    DateTime             @updatedAt
 
   @@map("contests")
+
 
 }
 
@@ -99,11 +101,12 @@ model ContestPhoto {
   photo        UserPhoto            @relation(fields: [photoId], references: [id], onDelete: Cascade)
   comments     Comment[]
   achievements ContestAchievement[]
+  ContestWinner ContestWinner[]
   createdAt    DateTime             @default(now())
   updatedAt    DateTime             @updatedAt
 
   @@map("contest_photos")
-  ContestWinner ContestWinner[]
+
 }
 
 
@@ -163,6 +166,7 @@ model ContestAchievement {
   contestId     String           @db.ObjectId
 
   photo       ContestPhoto?       @relation(fields: [photoId], references: [id])
+  contest     Contest             @relation(fields: [contestId], references: [id])
 
   participant ContestParticipant? @relation(fields: [participantId], references: [id])
 

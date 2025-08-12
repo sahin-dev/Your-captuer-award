@@ -123,6 +123,7 @@ exports.Prisma.ContestScalarFieldEnum = {
   isMoneyContest: 'isMoneyContest',
   maxPrize: 'maxPrize',
   minPrize: 'minPrize',
+  level_requirements: 'level_requirements',
   startDate: 'startDate',
   endDate: 'endDate',
   creatorId: 'creatorId',
