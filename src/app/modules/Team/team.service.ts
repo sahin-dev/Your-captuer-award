@@ -3,7 +3,7 @@ import ApiError from '../../../errors/ApiError';
 import httpstatus from 'http-status';
 import { fileUploader } from '../../../helpers/fileUploader';
 import { ITeam } from './team.interface';
-import { TeamAccessibility } from '@prisma/client';
+import { TeamAccessibility } from '../../../prismaClient';
 
 
 //create a team

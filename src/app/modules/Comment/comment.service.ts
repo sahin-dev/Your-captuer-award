@@ -1,6 +1,13 @@
 import prisma from '../../../shared/prisma';
 
-export const handlePostComment = async (providerId: string, receiverId: string, text: string) => {
+export const handlePostComment = async (providerId: string, receiverId: string, text: string, replyTo?:string ) => {
+
+    if(replyTo){
+        const comment = await prisma.comment.create({
+            data: { providerId, receiverId, text,parentId:replyTo}
+        });
+        return comment
+    }
     const comment = await prisma.comment.create({
         data: { providerId, receiverId, text }
     });
@@ -11,7 +18,7 @@ export const handlePostComment = async (providerId: string, receiverId: string, 
 export const handleGetUserComments = async (userId: string) => {
     const comments = await prisma.comment.findMany({
         where: { receiverId: userId },
-        include: { provider: true }
+        include: { provider: true ,CommentReplies:true}
     });
     
 

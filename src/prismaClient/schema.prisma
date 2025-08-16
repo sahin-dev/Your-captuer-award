@@ -380,13 +380,16 @@ model Otp {
 }
 
 model Comment {
-  id         String @id @default(auto()) @map("_id") @db.ObjectId
+  id         String  @id @default(auto()) @map("_id") @db.ObjectId
   text       String
-  providerId String @db.ObjectId
-  receiverId String @db.ObjectId
+  providerId String  @db.ObjectId
+  receiverId String  @db.ObjectId
+  parentId   String? @db.ObjectId
 
-  provider User         @relation(name: "provider", fields: [providerId], references: [id])
-  receiver ContestPhoto @relation(fields: [receiverId], references: [id])
+  provider       User         @relation(name: "provider", fields: [providerId], references: [id])
+  receiver       ContestPhoto @relation(fields: [receiverId], references: [id])
+  parent         Comment?     @relation(name: "replies", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  CommentReplies Comment[]    @relation("replies")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

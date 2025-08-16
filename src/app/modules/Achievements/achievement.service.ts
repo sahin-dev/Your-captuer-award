@@ -5,8 +5,7 @@ import httpStatus from 'http-status'
 
 
 //Add achievements to the user
-
-export const addAchievement = async (userId:string,contestId:string, category:PrizeType, photoId:string)=>{
+const addAchievement = async (userId:string,contestId:string, category:PrizeType, photoId:string)=>{
 
     const participant = await prisma.contestParticipant.findUnique({where:{contestId_userId:{contestId,userId}}})
     if(!participant){
@@ -18,28 +17,36 @@ export const addAchievement = async (userId:string,contestId:string, category:Pr
 }
 
 //get the contest achievements for a specific user
-export const getContestAchievementsByUser = async (userId:string, contestId:string)=>{
-    const achievements = await prisma.contestAchievement.findMany({where:{contestId, participant:{userId}}})
+const getContestAchievementsByUser = async (userId:string, contestId:string)=>{
+    const achievements = await prisma.contestAchievement.findMany({where:{contestId, participant:{userId}}, include:{contest:true}})
     return achievements
 }
 
 
-export const getContestAchievements = async (contestId:string)=>{
+const getContestAchievements = async (contestId:string)=>{
     const achievememnts = await prisma.contestAchievement.findMany({where:{contestId}})
 
     return achievememnts
 }
 
 
-export const getAchievements = async (contestId:string)=>{
+const getAchievements = async (contestId:string)=>{
     const achievements = await prisma.contestAchievement.findMany({where:{contestId}})
 
     return achievements
 }
 
-export const getAchievementCount = async (userId:string)=>{
+const getAchievementCount = async (userId:string)=>{
     let top_photo_award_count = await prisma.contestAchievement.count({where:{participant:{userId},category:PrizeType.TOP_PHOTO}})
     let top_photographer_count = await prisma.contestAchievement.count({where:{participant:{userId},category:PrizeType.TOP_PHOTOGRAPHER}})
 
     return {top_photo:top_photo_award_count,top_photographer:top_photographer_count}
+}
+
+export const achievementService = {
+    addAchievement,
+    getContestAchievementsByUser,
+    getContestAchievements,
+    getAchievements,
+    getAchievementCount
 }
