@@ -1,4 +1,4 @@
-import { TeamAccessibility } from '@prisma/client';
+import { TeamAccessibility } from '../../../prismaClient';
 import { z } from 'zod';
 
 export const createTeamValidationSchema = z.object({

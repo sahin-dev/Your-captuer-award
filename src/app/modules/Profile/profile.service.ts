@@ -1,4 +1,5 @@
 import ApiError from "../../../errors/ApiError"
+import { fileUploader } from "../../../helpers/fileUploader"
 import prisma from "../../../shared/prisma"
 import httpStatus from 'http-status'
 
@@ -9,6 +10,19 @@ export const handleGetUserUploads = async (userId:string)=>{
 
     return uploads
 } 
+
+//Upload photo to cloud and then add to user profile
+
+export const uploadUserPhoto = async (userId:string, file:Express.Multer.File)=>{
+    if(!file){
+        throw new ApiError(httpStatus.BAD_REQUEST, "Sorry, file is required")
+    }
+    const uploadedFile = await fileUploader.uploadToDigitalOcean(file)
+
+  const addedPhoto =   await handleAddUpload(userId, uploadedFile.Location)
+
+    return addedPhoto
+}
 
 export const handleAddUpload = async (userId:string, photoUrl:string)=>{
 
@@ -42,4 +56,9 @@ export const getPhotos = async (userId:string)=>{
     const photos = await prisma.userPhoto.findMany({where:{userId}})
 
     return photos
+}
+
+
+export const profileService = {
+    uploadUserPhoto
 }

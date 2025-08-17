@@ -23,6 +23,18 @@ const getContestAchievementsByUser = async (userId:string, contestId:string)=>{
 }
 
 
+//get all the achievements for a specific photo
+const getPhotoAchievements = async (photoId:string)=>{
+
+    if(!photoId){
+        throw new ApiError(httpStatus.BAD_REQUEST, "photo id is not valid")
+    }
+    const achievements = await prisma.contestAchievement.findMany({where:{photoId}})
+
+    return achievements
+}
+
+
 const getContestAchievements = async (contestId:string)=>{
     const achievememnts = await prisma.contestAchievement.findMany({where:{contestId}})
 
@@ -37,6 +49,7 @@ const getAchievements = async (contestId:string)=>{
 }
 
 const getAchievementCount = async (userId:string)=>{
+
     let top_photo_award_count = await prisma.contestAchievement.count({where:{participant:{userId},category:PrizeType.TOP_PHOTO}})
     let top_photographer_count = await prisma.contestAchievement.count({where:{participant:{userId},category:PrizeType.TOP_PHOTOGRAPHER}})
 
@@ -48,5 +61,6 @@ export const achievementService = {
     getContestAchievementsByUser,
     getContestAchievements,
     getAchievements,
-    getAchievementCount
+    getAchievementCount,
+    getPhotoAchievements
 }

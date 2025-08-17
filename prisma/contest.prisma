@@ -7,7 +7,7 @@ model Contest {
   description    String
   banner         String?       @default("https://images.unsplash.com/photo-1689539137236-b68e436248de?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D")
   status         ContestStatus @default(UPCOMING)
-  maxUploads     Int?          @default(1)
+  maxUploads     Int          @default(1)
   isMoneyContest Boolean       @default(false)
   maxPrize       Int?          @default(0)
   minPrize       Int?          @default(0)
@@ -34,19 +34,13 @@ model Contest {
 }
 
 
-type Rules {
-  name    String
-  icon    String
-  description   String
-}
-
 model ContestRule {
   id    String  @id @default(auto())  @map("_id")  @db.ObjectId
   icon  String?
   name    String
   description     String
   contestId    String  @db.ObjectId
-
+  requirements  Int[]
   contest  Contest  @relation(fields: [contestId], references: [id], onDelete: Cascade)
 
   createdAt    DateTime @default(now())
@@ -176,6 +170,14 @@ model ContestAchievement {
   @@map("contest_achievements")
 }
 
+
+
+
+type Rules {
+  name    String
+  icon    String
+  description   String
+}
 
 
 type RecurringData {

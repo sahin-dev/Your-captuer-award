@@ -9,6 +9,7 @@ import { contestRuleService } from './ContestRules/contestRules.service';
 import { addContestPrizes } from './ContestPrizes/contestPrize.service';
 import { ContestRule } from './ContestRules/conetstRules.type';
 import { ContestPrizeData } from './ContestPrizes/contestPrize.type';
+import { profileService } from '../Profile/profile.service';
 
 
 
@@ -398,19 +399,47 @@ export const getContestUploads = async (contestId:string)=>{
     return contestUploads
 }   
 
-//Upload photo to a contest
 
-export const uploadPhotoToContest = async (contestId:string,userId:string, photoId:string)=>{
-    const contestParticipant = prisma.contest.findFirst({where:{id:contestId, participants:{some:{id:userId}}}})
+//Upload photo to a contest, user can upload photo from pforile or can upload directly from computer
 
-    if(!contestParticipant){
+export const uploadPhotoToContest = async (contestId:string,userId:string, photoId:string, file:Express.Multer.File)=>{
+
+    const contestParticipant = await prisma.contestParticipant.findFirst({where:{id:contestId, userId:userId},include:{contest:true, _count:{select:{photos:true}}}})
+
+     if(!contestParticipant){
         throw new ApiError(httpstatus.NOT_FOUND, "Sorry, You are not allowed to upload photo in this contest")
     }
-    const uploadImage = prisma.contestPhoto.create({data:{contestId,participantId:userId,photoId}})
+
+    if (contestParticipant._count.photos>= contestParticipant.contest.maxUploads ){
+        throw new ApiError(httpstatus.BAD_REQUEST, "maximum photo upload limit has reached!")
+    }
+
+    let uploadImage = null;
+
+    if(file){
+
+        let uploadedPhoto = await profileService.uploadUserPhoto(userId, file)
+
+        uploadImage = await prisma.contestPhoto.create({data:{contestId,participantId:userId,photoId:uploadedPhoto.id}})
+    }else{
+        uploadImage = await prisma.contestPhoto.create({data:{contestId,participantId:userId,photoId}})
+    }
+   
+    
 
     return uploadImage
 }
 
+
+export const uploadPhotoFromComputer = async (contestId:string, userId:string, file:Express.Multer.File)=>{
+    if(!file){
+        throw new ApiError(httpstatus.BAD_REQUEST, "file is required to upload")
+    }
+
+    const uploadedUserPhoto = await profileService.uploadUserPhoto(userId,file)
+
+    return uploadedUserPhoto
+}
 
 const getContestDetails = async (contestId:string)=>{
     

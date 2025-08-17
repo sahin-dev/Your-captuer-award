@@ -3398,7 +3398,7 @@ export namespace Prisma {
     description: string
     banner: string | null
     status: $Enums.ContestStatus
-    maxUploads: number | null
+    maxUploads: number
     isMoneyContest: boolean
     maxPrize: number | null
     minPrize: number | null
@@ -3504,7 +3504,7 @@ export namespace Prisma {
       description: string
       banner: string | null
       status: $Enums.ContestStatus
-      maxUploads: number | null
+      maxUploads: number
       isMoneyContest: boolean
       maxPrize: number | null
       minPrize: number | null
@@ -4461,8 +4461,18 @@ export namespace Prisma {
 
   export type AggregateContestRule = {
     _count: ContestRuleCountAggregateOutputType | null
+    _avg: ContestRuleAvgAggregateOutputType | null
+    _sum: ContestRuleSumAggregateOutputType | null
     _min: ContestRuleMinAggregateOutputType | null
     _max: ContestRuleMaxAggregateOutputType | null
+  }
+
+  export type ContestRuleAvgAggregateOutputType = {
+    requirements: number | null
+  }
+
+  export type ContestRuleSumAggregateOutputType = {
+    requirements: number[]
   }
 
   export type ContestRuleMinAggregateOutputType = {
@@ -4491,11 +4501,20 @@ export namespace Prisma {
     name: number
     description: number
     contestId: number
+    requirements: number
     createdAt: number
     updatedAt: number
     _all: number
   }
 
+
+  export type ContestRuleAvgAggregateInputType = {
+    requirements?: true
+  }
+
+  export type ContestRuleSumAggregateInputType = {
+    requirements?: true
+  }
 
   export type ContestRuleMinAggregateInputType = {
     id?: true
@@ -4523,6 +4542,7 @@ export namespace Prisma {
     name?: true
     description?: true
     contestId?: true
+    requirements?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -4566,6 +4586,18 @@ export namespace Prisma {
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
+     * Select which fields to average
+    **/
+    _avg?: ContestRuleAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: ContestRuleSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
      * Select which fields to find the minimum value
     **/
     _min?: ContestRuleMinAggregateInputType
@@ -4596,6 +4628,8 @@ export namespace Prisma {
     take?: number
     skip?: number
     _count?: ContestRuleCountAggregateInputType | true
+    _avg?: ContestRuleAvgAggregateInputType
+    _sum?: ContestRuleSumAggregateInputType
     _min?: ContestRuleMinAggregateInputType
     _max?: ContestRuleMaxAggregateInputType
   }
@@ -4606,9 +4640,12 @@ export namespace Prisma {
     name: string
     description: string
     contestId: string
+    requirements: number[]
     createdAt: Date
     updatedAt: Date
     _count: ContestRuleCountAggregateOutputType | null
+    _avg: ContestRuleAvgAggregateOutputType | null
+    _sum: ContestRuleSumAggregateOutputType | null
     _min: ContestRuleMinAggregateOutputType | null
     _max: ContestRuleMaxAggregateOutputType | null
   }
@@ -4633,6 +4670,7 @@ export namespace Prisma {
     name?: boolean
     description?: boolean
     contestId?: boolean
+    requirements?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     contest?: boolean | ContestDefaultArgs<ExtArgs>
@@ -4646,11 +4684,12 @@ export namespace Prisma {
     name?: boolean
     description?: boolean
     contestId?: boolean
+    requirements?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type ContestRuleOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "icon" | "name" | "description" | "contestId" | "createdAt" | "updatedAt", ExtArgs["result"]["contestRule"]>
+  export type ContestRuleOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "icon" | "name" | "description" | "contestId" | "requirements" | "createdAt" | "updatedAt", ExtArgs["result"]["contestRule"]>
   export type ContestRuleInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     contest?: boolean | ContestDefaultArgs<ExtArgs>
   }
@@ -4666,6 +4705,7 @@ export namespace Prisma {
       name: string
       description: string
       contestId: string
+      requirements: number[]
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["contestRule"]>
@@ -5066,6 +5106,7 @@ export namespace Prisma {
     readonly name: FieldRef<"ContestRule", 'String'>
     readonly description: FieldRef<"ContestRule", 'String'>
     readonly contestId: FieldRef<"ContestRule", 'String'>
+    readonly requirements: FieldRef<"ContestRule", 'Int[]'>
     readonly createdAt: FieldRef<"ContestRule", 'DateTime'>
     readonly updatedAt: FieldRef<"ContestRule", 'DateTime'>
   }
@@ -23654,6 +23695,7 @@ export namespace Prisma {
     name: 'name',
     description: 'description',
     contestId: 'contestId',
+    requirements: 'requirements',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -24133,7 +24175,7 @@ export namespace Prisma {
     description?: StringFilter<"Contest"> | string
     banner?: StringNullableFilter<"Contest"> | string | null
     status?: EnumContestStatusFilter<"Contest"> | $Enums.ContestStatus
-    maxUploads?: IntNullableFilter<"Contest"> | number | null
+    maxUploads?: IntFilter<"Contest"> | number
     isMoneyContest?: BoolFilter<"Contest"> | boolean
     maxPrize?: IntNullableFilter<"Contest"> | number | null
     minPrize?: IntNullableFilter<"Contest"> | number | null
@@ -24186,7 +24228,7 @@ export namespace Prisma {
     description?: StringFilter<"Contest"> | string
     banner?: StringNullableFilter<"Contest"> | string | null
     status?: EnumContestStatusFilter<"Contest"> | $Enums.ContestStatus
-    maxUploads?: IntNullableFilter<"Contest"> | number | null
+    maxUploads?: IntFilter<"Contest"> | number
     isMoneyContest?: BoolFilter<"Contest"> | boolean
     maxPrize?: IntNullableFilter<"Contest"> | number | null
     minPrize?: IntNullableFilter<"Contest"> | number | null
@@ -24237,7 +24279,7 @@ export namespace Prisma {
     description?: StringWithAggregatesFilter<"Contest"> | string
     banner?: StringNullableWithAggregatesFilter<"Contest"> | string | null
     status?: EnumContestStatusWithAggregatesFilter<"Contest"> | $Enums.ContestStatus
-    maxUploads?: IntNullableWithAggregatesFilter<"Contest"> | number | null
+    maxUploads?: IntWithAggregatesFilter<"Contest"> | number
     isMoneyContest?: BoolWithAggregatesFilter<"Contest"> | boolean
     maxPrize?: IntNullableWithAggregatesFilter<"Contest"> | number | null
     minPrize?: IntNullableWithAggregatesFilter<"Contest"> | number | null
@@ -24258,6 +24300,7 @@ export namespace Prisma {
     name?: StringFilter<"ContestRule"> | string
     description?: StringFilter<"ContestRule"> | string
     contestId?: StringFilter<"ContestRule"> | string
+    requirements?: IntNullableListFilter<"ContestRule">
     createdAt?: DateTimeFilter<"ContestRule"> | Date | string
     updatedAt?: DateTimeFilter<"ContestRule"> | Date | string
     contest?: XOR<ContestScalarRelationFilter, ContestWhereInput>
@@ -24269,6 +24312,7 @@ export namespace Prisma {
     name?: SortOrder
     description?: SortOrder
     contestId?: SortOrder
+    requirements?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     contest?: ContestOrderByWithRelationInput
@@ -24283,6 +24327,7 @@ export namespace Prisma {
     name?: StringFilter<"ContestRule"> | string
     description?: StringFilter<"ContestRule"> | string
     contestId?: StringFilter<"ContestRule"> | string
+    requirements?: IntNullableListFilter<"ContestRule">
     createdAt?: DateTimeFilter<"ContestRule"> | Date | string
     updatedAt?: DateTimeFilter<"ContestRule"> | Date | string
     contest?: XOR<ContestScalarRelationFilter, ContestWhereInput>
@@ -24294,11 +24339,14 @@ export namespace Prisma {
     name?: SortOrder
     description?: SortOrder
     contestId?: SortOrder
+    requirements?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: ContestRuleCountOrderByAggregateInput
+    _avg?: ContestRuleAvgOrderByAggregateInput
     _max?: ContestRuleMaxOrderByAggregateInput
     _min?: ContestRuleMinOrderByAggregateInput
+    _sum?: ContestRuleSumOrderByAggregateInput
   }
 
   export type ContestRuleScalarWhereWithAggregatesInput = {
@@ -24310,6 +24358,7 @@ export namespace Prisma {
     name?: StringWithAggregatesFilter<"ContestRule"> | string
     description?: StringWithAggregatesFilter<"ContestRule"> | string
     contestId?: StringWithAggregatesFilter<"ContestRule"> | string
+    requirements?: IntNullableListFilter<"ContestRule">
     createdAt?: DateTimeWithAggregatesFilter<"ContestRule"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"ContestRule"> | Date | string
   }
@@ -25620,7 +25669,7 @@ export namespace Prisma {
     description: string
     banner?: string | null
     status?: $Enums.ContestStatus
-    maxUploads?: number | null
+    maxUploads?: number
     isMoneyContest?: boolean
     maxPrize?: number | null
     minPrize?: number | null
@@ -25644,7 +25693,7 @@ export namespace Prisma {
     description: string
     banner?: string | null
     status?: $Enums.ContestStatus
-    maxUploads?: number | null
+    maxUploads?: number
     isMoneyContest?: boolean
     maxPrize?: number | null
     minPrize?: number | null
@@ -25667,7 +25716,7 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     banner?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumContestStatusFieldUpdateOperationsInput | $Enums.ContestStatus
-    maxUploads?: NullableIntFieldUpdateOperationsInput | number | null
+    maxUploads?: IntFieldUpdateOperationsInput | number
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
@@ -25690,7 +25739,7 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     banner?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumContestStatusFieldUpdateOperationsInput | $Enums.ContestStatus
-    maxUploads?: NullableIntFieldUpdateOperationsInput | number | null
+    maxUploads?: IntFieldUpdateOperationsInput | number
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
@@ -25714,7 +25763,7 @@ export namespace Prisma {
     description: string
     banner?: string | null
     status?: $Enums.ContestStatus
-    maxUploads?: number | null
+    maxUploads?: number
     isMoneyContest?: boolean
     maxPrize?: number | null
     minPrize?: number | null
@@ -25731,7 +25780,7 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     banner?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumContestStatusFieldUpdateOperationsInput | $Enums.ContestStatus
-    maxUploads?: NullableIntFieldUpdateOperationsInput | number | null
+    maxUploads?: IntFieldUpdateOperationsInput | number
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
@@ -25747,7 +25796,7 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     banner?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumContestStatusFieldUpdateOperationsInput | $Enums.ContestStatus
-    maxUploads?: NullableIntFieldUpdateOperationsInput | number | null
+    maxUploads?: IntFieldUpdateOperationsInput | number
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
@@ -25764,6 +25813,7 @@ export namespace Prisma {
     icon?: string | null
     name: string
     description: string
+    requirements?: ContestRuleCreaterequirementsInput | number[]
     createdAt?: Date | string
     updatedAt?: Date | string
     contest: ContestCreateNestedOneWithoutContestRulesInput
@@ -25775,6 +25825,7 @@ export namespace Prisma {
     name: string
     description: string
     contestId: string
+    requirements?: ContestRuleCreaterequirementsInput | number[]
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -25783,6 +25834,7 @@ export namespace Prisma {
     icon?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
+    requirements?: ContestRuleUpdaterequirementsInput | number[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     contest?: ContestUpdateOneRequiredWithoutContestRulesNestedInput
@@ -25793,6 +25845,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
     contestId?: StringFieldUpdateOperationsInput | string
+    requirements?: ContestRuleUpdaterequirementsInput | number[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -25803,6 +25856,7 @@ export namespace Prisma {
     name: string
     description: string
     contestId: string
+    requirements?: ContestRuleCreaterequirementsInput | number[]
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -25811,6 +25865,7 @@ export namespace Prisma {
     icon?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
+    requirements?: ContestRuleUpdaterequirementsInput | number[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -25820,6 +25875,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
     contestId?: StringFieldUpdateOperationsInput | string
+    requirements?: ContestRuleUpdaterequirementsInput | number[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -27168,6 +27224,22 @@ export namespace Prisma {
     not?: NestedEnumContestStatusFilter<$PrismaModel> | $Enums.ContestStatus
   }
 
+  export type IntFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntFilter<$PrismaModel> | number
+  }
+
+  export type BoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
   export type IntNullableFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel> | null
     in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
@@ -27178,11 +27250,6 @@ export namespace Prisma {
     gte?: number | IntFieldRefInput<$PrismaModel>
     not?: NestedIntNullableFilter<$PrismaModel> | number | null
     isSet?: boolean
-  }
-
-  export type BoolFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolFilter<$PrismaModel> | boolean
   }
 
   export type IntNullableListFilter<$PrismaModel = never> = {
@@ -27377,6 +27444,30 @@ export namespace Prisma {
     _max?: NestedEnumContestStatusFilter<$PrismaModel>
   }
 
+  export type IntWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedIntFilter<$PrismaModel>
+    _min?: NestedIntFilter<$PrismaModel>
+    _max?: NestedIntFilter<$PrismaModel>
+  }
+
+  export type BoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
+  }
+
   export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel> | null
     in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
@@ -27392,14 +27483,6 @@ export namespace Prisma {
     _min?: NestedIntNullableFilter<$PrismaModel>
     _max?: NestedIntNullableFilter<$PrismaModel>
     isSet?: boolean
-  }
-
-  export type BoolWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedBoolFilter<$PrismaModel>
-    _max?: NestedBoolFilter<$PrismaModel>
   }
 
   export type DateTimeWithAggregatesFilter<$PrismaModel = never> = {
@@ -27427,8 +27510,13 @@ export namespace Prisma {
     name?: SortOrder
     description?: SortOrder
     contestId?: SortOrder
+    requirements?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+  }
+
+  export type ContestRuleAvgOrderByAggregateInput = {
+    requirements?: SortOrder
   }
 
   export type ContestRuleMaxOrderByAggregateInput = {
@@ -27449,6 +27537,10 @@ export namespace Prisma {
     contestId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+  }
+
+  export type ContestRuleSumOrderByAggregateInput = {
+    requirements?: SortOrder
   }
 
   export type EnumRecurringTypeFilter<$PrismaModel = never> = {
@@ -27766,17 +27858,6 @@ export namespace Prisma {
     not?: NestedEnumPrizeTypeFilter<$PrismaModel> | $Enums.PrizeType
   }
 
-  export type IntFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel>
-    in?: number[] | ListIntFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntFilter<$PrismaModel> | number
-  }
-
   export type ContestPrizeCountOrderByAggregateInput = {
     id?: SortOrder
     category?: SortOrder
@@ -27824,22 +27905,6 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumPrizeTypeFilter<$PrismaModel>
     _max?: NestedEnumPrizeTypeFilter<$PrismaModel>
-  }
-
-  export type IntWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel>
-    in?: number[] | ListIntFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
-    _count?: NestedIntFilter<$PrismaModel>
-    _avg?: NestedFloatFilter<$PrismaModel>
-    _sum?: NestedIntFilter<$PrismaModel>
-    _min?: NestedIntFilter<$PrismaModel>
-    _max?: NestedIntFilter<$PrismaModel>
   }
 
   export type ContestPhotoNullableScalarRelationFilter = {
@@ -28560,6 +28625,18 @@ export namespace Prisma {
     set?: $Enums.ContestStatus
   }
 
+  export type IntFieldUpdateOperationsInput = {
+    set?: number
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
+  }
+
+  export type BoolFieldUpdateOperationsInput = {
+    set?: boolean
+  }
+
   export type NullableIntFieldUpdateOperationsInput = {
     set?: number | null
     increment?: number
@@ -28567,10 +28644,6 @@ export namespace Prisma {
     multiply?: number
     divide?: number
     unset?: boolean
-  }
-
-  export type BoolFieldUpdateOperationsInput = {
-    set?: boolean
   }
 
   export type ContestUpdatelevel_requirementsInput = {
@@ -28750,10 +28823,19 @@ export namespace Prisma {
     deleteMany?: ContestAchievementScalarWhereInput | ContestAchievementScalarWhereInput[]
   }
 
+  export type ContestRuleCreaterequirementsInput = {
+    set: number[]
+  }
+
   export type ContestCreateNestedOneWithoutContestRulesInput = {
     create?: XOR<ContestCreateWithoutContestRulesInput, ContestUncheckedCreateWithoutContestRulesInput>
     connectOrCreate?: ContestCreateOrConnectWithoutContestRulesInput
     connect?: ContestWhereUniqueInput
+  }
+
+  export type ContestRuleUpdaterequirementsInput = {
+    set?: number[]
+    push?: number | number[]
   }
 
   export type ContestUpdateOneRequiredWithoutContestRulesNestedInput = {
@@ -29192,14 +29274,6 @@ export namespace Prisma {
 
   export type EnumPrizeTypeFieldUpdateOperationsInput = {
     set?: $Enums.PrizeType
-  }
-
-  export type IntFieldUpdateOperationsInput = {
-    set?: number
-    increment?: number
-    decrement?: number
-    multiply?: number
-    divide?: number
   }
 
   export type ContestUpdateOneRequiredWithoutContestPrizesNestedInput = {
@@ -30209,6 +30283,22 @@ export namespace Prisma {
     not?: NestedEnumContestStatusFilter<$PrismaModel> | $Enums.ContestStatus
   }
 
+  export type NestedIntFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntFilter<$PrismaModel> | number
+  }
+
+  export type NestedBoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
   export type NestedIntNullableFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel> | null
     in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
@@ -30219,11 +30309,6 @@ export namespace Prisma {
     gte?: number | IntFieldRefInput<$PrismaModel>
     not?: NestedIntNullableFilter<$PrismaModel> | number | null
     isSet?: boolean
-  }
-
-  export type NestedBoolFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolFilter<$PrismaModel> | boolean
   }
 
   export type NestedDateTimeFilter<$PrismaModel = never> = {
@@ -30254,17 +30339,6 @@ export namespace Prisma {
     _max?: NestedStringFilter<$PrismaModel>
   }
 
-  export type NestedIntFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel>
-    in?: number[] | ListIntFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntFilter<$PrismaModel> | number
-  }
-
   export type NestedStringNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel> | null
     in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
@@ -30291,6 +30365,41 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumContestStatusFilter<$PrismaModel>
     _max?: NestedEnumContestStatusFilter<$PrismaModel>
+  }
+
+  export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedIntFilter<$PrismaModel>
+    _min?: NestedIntFilter<$PrismaModel>
+    _max?: NestedIntFilter<$PrismaModel>
+  }
+
+  export type NestedFloatFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel>
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatFilter<$PrismaModel> | number
+  }
+
+  export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
   }
 
   export type NestedIntNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -30320,14 +30429,6 @@ export namespace Prisma {
     gte?: number | FloatFieldRefInput<$PrismaModel>
     not?: NestedFloatNullableFilter<$PrismaModel> | number | null
     isSet?: boolean
-  }
-
-  export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedBoolFilter<$PrismaModel>
-    _max?: NestedBoolFilter<$PrismaModel>
   }
 
   export type NestedDateTimeWithAggregatesFilter<$PrismaModel = never> = {
@@ -30420,33 +30521,6 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumPrizeTypeFilter<$PrismaModel>
     _max?: NestedEnumPrizeTypeFilter<$PrismaModel>
-  }
-
-  export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel>
-    in?: number[] | ListIntFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
-    _count?: NestedIntFilter<$PrismaModel>
-    _avg?: NestedFloatFilter<$PrismaModel>
-    _sum?: NestedIntFilter<$PrismaModel>
-    _min?: NestedIntFilter<$PrismaModel>
-    _max?: NestedIntFilter<$PrismaModel>
-  }
-
-  export type NestedFloatFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel>
-    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatFilter<$PrismaModel> | number
   }
 
   export type NestedEnumTeamAccessibilityFilter<$PrismaModel = never> = {
@@ -30680,6 +30754,7 @@ export namespace Prisma {
     icon?: string | null
     name: string
     description: string
+    requirements?: ContestRuleCreaterequirementsInput | number[]
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -30689,6 +30764,7 @@ export namespace Prisma {
     icon?: string | null
     name: string
     description: string
+    requirements?: ContestRuleCreaterequirementsInput | number[]
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -30929,6 +31005,7 @@ export namespace Prisma {
     name?: StringFilter<"ContestRule"> | string
     description?: StringFilter<"ContestRule"> | string
     contestId?: StringFilter<"ContestRule"> | string
+    requirements?: IntNullableListFilter<"ContestRule">
     createdAt?: DateTimeFilter<"ContestRule"> | Date | string
     updatedAt?: DateTimeFilter<"ContestRule"> | Date | string
   }
@@ -31019,7 +31096,7 @@ export namespace Prisma {
     description: string
     banner?: string | null
     status?: $Enums.ContestStatus
-    maxUploads?: number | null
+    maxUploads?: number
     isMoneyContest?: boolean
     maxPrize?: number | null
     minPrize?: number | null
@@ -31042,7 +31119,7 @@ export namespace Prisma {
     description: string
     banner?: string | null
     status?: $Enums.ContestStatus
-    maxUploads?: number | null
+    maxUploads?: number
     isMoneyContest?: boolean
     maxPrize?: number | null
     minPrize?: number | null
@@ -31080,7 +31157,7 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     banner?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumContestStatusFieldUpdateOperationsInput | $Enums.ContestStatus
-    maxUploads?: NullableIntFieldUpdateOperationsInput | number | null
+    maxUploads?: IntFieldUpdateOperationsInput | number
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
@@ -31102,7 +31179,7 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     banner?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumContestStatusFieldUpdateOperationsInput | $Enums.ContestStatus
-    maxUploads?: NullableIntFieldUpdateOperationsInput | number | null
+    maxUploads?: IntFieldUpdateOperationsInput | number
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
@@ -31125,7 +31202,7 @@ export namespace Prisma {
     description: string
     banner?: string | null
     status?: $Enums.ContestStatus
-    maxUploads?: number | null
+    maxUploads?: number
     isMoneyContest?: boolean
     maxPrize?: number | null
     minPrize?: number | null
@@ -31148,7 +31225,7 @@ export namespace Prisma {
     description: string
     banner?: string | null
     status?: $Enums.ContestStatus
-    maxUploads?: number | null
+    maxUploads?: number
     isMoneyContest?: boolean
     maxPrize?: number | null
     minPrize?: number | null
@@ -31186,7 +31263,7 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     banner?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumContestStatusFieldUpdateOperationsInput | $Enums.ContestStatus
-    maxUploads?: NullableIntFieldUpdateOperationsInput | number | null
+    maxUploads?: IntFieldUpdateOperationsInput | number
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
@@ -31208,7 +31285,7 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     banner?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumContestStatusFieldUpdateOperationsInput | $Enums.ContestStatus
-    maxUploads?: NullableIntFieldUpdateOperationsInput | number | null
+    maxUploads?: IntFieldUpdateOperationsInput | number
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
@@ -31709,7 +31786,7 @@ export namespace Prisma {
     description: string
     banner?: string | null
     status?: $Enums.ContestStatus
-    maxUploads?: number | null
+    maxUploads?: number
     isMoneyContest?: boolean
     maxPrize?: number | null
     minPrize?: number | null
@@ -31732,7 +31809,7 @@ export namespace Prisma {
     description: string
     banner?: string | null
     status?: $Enums.ContestStatus
-    maxUploads?: number | null
+    maxUploads?: number
     isMoneyContest?: boolean
     maxPrize?: number | null
     minPrize?: number | null
@@ -31928,7 +32005,7 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     banner?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumContestStatusFieldUpdateOperationsInput | $Enums.ContestStatus
-    maxUploads?: NullableIntFieldUpdateOperationsInput | number | null
+    maxUploads?: IntFieldUpdateOperationsInput | number
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
@@ -31950,7 +32027,7 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     banner?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumContestStatusFieldUpdateOperationsInput | $Enums.ContestStatus
-    maxUploads?: NullableIntFieldUpdateOperationsInput | number | null
+    maxUploads?: IntFieldUpdateOperationsInput | number
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
@@ -32108,7 +32185,7 @@ export namespace Prisma {
     description: string
     banner?: string | null
     status?: $Enums.ContestStatus
-    maxUploads?: number | null
+    maxUploads?: number
     isMoneyContest?: boolean
     maxPrize?: number | null
     minPrize?: number | null
@@ -32131,7 +32208,7 @@ export namespace Prisma {
     description: string
     banner?: string | null
     status?: $Enums.ContestStatus
-    maxUploads?: number | null
+    maxUploads?: number
     isMoneyContest?: boolean
     maxPrize?: number | null
     minPrize?: number | null
@@ -32169,7 +32246,7 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     banner?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumContestStatusFieldUpdateOperationsInput | $Enums.ContestStatus
-    maxUploads?: NullableIntFieldUpdateOperationsInput | number | null
+    maxUploads?: IntFieldUpdateOperationsInput | number
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
@@ -32191,7 +32268,7 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     banner?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumContestStatusFieldUpdateOperationsInput | $Enums.ContestStatus
-    maxUploads?: NullableIntFieldUpdateOperationsInput | number | null
+    maxUploads?: IntFieldUpdateOperationsInput | number
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
@@ -32247,7 +32324,7 @@ export namespace Prisma {
     description: string
     banner?: string | null
     status?: $Enums.ContestStatus
-    maxUploads?: number | null
+    maxUploads?: number
     isMoneyContest?: boolean
     maxPrize?: number | null
     minPrize?: number | null
@@ -32270,7 +32347,7 @@ export namespace Prisma {
     description: string
     banner?: string | null
     status?: $Enums.ContestStatus
-    maxUploads?: number | null
+    maxUploads?: number
     isMoneyContest?: boolean
     maxPrize?: number | null
     minPrize?: number | null
@@ -32376,7 +32453,7 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     banner?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumContestStatusFieldUpdateOperationsInput | $Enums.ContestStatus
-    maxUploads?: NullableIntFieldUpdateOperationsInput | number | null
+    maxUploads?: IntFieldUpdateOperationsInput | number
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
@@ -32398,7 +32475,7 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     banner?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumContestStatusFieldUpdateOperationsInput | $Enums.ContestStatus
-    maxUploads?: NullableIntFieldUpdateOperationsInput | number | null
+    maxUploads?: IntFieldUpdateOperationsInput | number
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
@@ -32969,7 +33046,7 @@ export namespace Prisma {
     description: string
     banner?: string | null
     status?: $Enums.ContestStatus
-    maxUploads?: number | null
+    maxUploads?: number
     isMoneyContest?: boolean
     maxPrize?: number | null
     minPrize?: number | null
@@ -32992,7 +33069,7 @@ export namespace Prisma {
     description: string
     banner?: string | null
     status?: $Enums.ContestStatus
-    maxUploads?: number | null
+    maxUploads?: number
     isMoneyContest?: boolean
     maxPrize?: number | null
     minPrize?: number | null
@@ -33354,7 +33431,7 @@ export namespace Prisma {
     description?: StringFilter<"Contest"> | string
     banner?: StringNullableFilter<"Contest"> | string | null
     status?: EnumContestStatusFilter<"Contest"> | $Enums.ContestStatus
-    maxUploads?: IntNullableFilter<"Contest"> | number | null
+    maxUploads?: IntFilter<"Contest"> | number
     isMoneyContest?: BoolFilter<"Contest"> | boolean
     maxPrize?: IntNullableFilter<"Contest"> | number | null
     minPrize?: IntNullableFilter<"Contest"> | number | null
@@ -34958,7 +35035,7 @@ export namespace Prisma {
     description: string
     banner?: string | null
     status?: $Enums.ContestStatus
-    maxUploads?: number | null
+    maxUploads?: number
     isMoneyContest?: boolean
     maxPrize?: number | null
     minPrize?: number | null
@@ -34981,7 +35058,7 @@ export namespace Prisma {
     description: string
     banner?: string | null
     status?: $Enums.ContestStatus
-    maxUploads?: number | null
+    maxUploads?: number
     isMoneyContest?: boolean
     maxPrize?: number | null
     minPrize?: number | null
@@ -35129,7 +35206,7 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     banner?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumContestStatusFieldUpdateOperationsInput | $Enums.ContestStatus
-    maxUploads?: NullableIntFieldUpdateOperationsInput | number | null
+    maxUploads?: IntFieldUpdateOperationsInput | number
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
@@ -35151,7 +35228,7 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     banner?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumContestStatusFieldUpdateOperationsInput | $Enums.ContestStatus
-    maxUploads?: NullableIntFieldUpdateOperationsInput | number | null
+    maxUploads?: IntFieldUpdateOperationsInput | number
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
@@ -35191,6 +35268,7 @@ export namespace Prisma {
     icon?: string | null
     name: string
     description: string
+    requirements?: ContestRuleCreaterequirementsInput | number[]
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -35270,6 +35348,7 @@ export namespace Prisma {
     icon?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
+    requirements?: ContestRuleUpdaterequirementsInput | number[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -35278,6 +35357,7 @@ export namespace Prisma {
     icon?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
+    requirements?: ContestRuleUpdaterequirementsInput | number[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -35286,6 +35366,7 @@ export namespace Prisma {
     icon?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
+    requirements?: ContestRuleUpdaterequirementsInput | number[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -35616,7 +35697,7 @@ export namespace Prisma {
     description: string
     banner?: string | null
     status?: $Enums.ContestStatus
-    maxUploads?: number | null
+    maxUploads?: number
     isMoneyContest?: boolean
     maxPrize?: number | null
     minPrize?: number | null
@@ -35731,7 +35812,7 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     banner?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumContestStatusFieldUpdateOperationsInput | $Enums.ContestStatus
-    maxUploads?: NullableIntFieldUpdateOperationsInput | number | null
+    maxUploads?: IntFieldUpdateOperationsInput | number
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
@@ -35753,7 +35834,7 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     banner?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumContestStatusFieldUpdateOperationsInput | $Enums.ContestStatus
-    maxUploads?: NullableIntFieldUpdateOperationsInput | number | null
+    maxUploads?: IntFieldUpdateOperationsInput | number
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
@@ -35775,7 +35856,7 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     banner?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumContestStatusFieldUpdateOperationsInput | $Enums.ContestStatus
-    maxUploads?: NullableIntFieldUpdateOperationsInput | number | null
+    maxUploads?: IntFieldUpdateOperationsInput | number
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null

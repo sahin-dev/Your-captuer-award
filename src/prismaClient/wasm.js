@@ -137,6 +137,7 @@ exports.Prisma.ContestRuleScalarFieldEnum = {
   name: 'name',
   description: 'description',
   contestId: 'contestId',
+  requirements: 'requirements',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };

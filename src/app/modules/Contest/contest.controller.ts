@@ -4,6 +4,7 @@ import {contestService} from "./contest.service";
 import { IContest } from "./contest.interface";
 import catchAsync from "../../../shared/catchAsync";
 import { contestData } from "./contest.type";
+import { profileService } from "../Profile/profile.service";
 
 
 
@@ -12,7 +13,7 @@ export const createContest = catchAsync( async (req: any, res: Response) => {
     const creatorId = req.user.id; // Assuming user ID is stored in req.user
     const banner = req.file
     const body:contestData = req.body; // Parse the JSON data from the request body
-    const contest = await contestService.createContest(creatorId, body, req.file);
+    const contest = await contestService.createContest(creatorId, body, banner);
     
     sendResponse(res, {
         statusCode: 201,    
@@ -89,16 +90,18 @@ const getUploadedPhotos =  catchAsync(async  (req:any, res: Response)=>{
 
 
 const uploadPhoto = catchAsync(async (req:any, res:Response)=>{
-    const userId =req.user.identifyWinner
+    const user = req.user
     const {contestId, photoId} = req.body
 
-    const uploadedPhotoData = await contestService.uploadPhotoToContest(contestId, userId, photoId)
+    const file = req.file as Express.Multer.File
+
+    const uploadedPhoto = await contestService.uploadPhotoToContest(contestId, user.id, photoId, file)
 
      sendResponse(res, {
         statusCode:200,
         success:true,
         message:"photo submit to contest successfully",
-        data:uploadedPhotoData
+        data:uploadedPhoto
     })
 })
 
