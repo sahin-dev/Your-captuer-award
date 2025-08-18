@@ -1,5 +1,4 @@
 import { Router } from "express";
-import path from "path";
 import { userRoutes } from "../modules/User/user.routes";
 import { authRoutes } from "../modules/Auth/auth.route";
 import { contestRoutes } from "../modules/Contest/contest.route";
@@ -9,6 +8,7 @@ import { commentRoutes } from "../modules/Comment/comment.route";
 import { teamRoutes } from "../modules/Team/team.route";
 import { achievementRoutes } from "../modules/Achievements/achievement.route";
 import { voteRouter } from "../modules/Vote/vote.route";
+import { profileRoutes } from "../modules/Profile/profile.route";
 
 
 
@@ -23,6 +23,7 @@ const moduleRoutes = [
     {path:"/follows", route:followRoutes},
     {path:"/comments", route:commentRoutes},
     {path:"/teams", route:teamRoutes},
+    {path:"profiles", route:profileRoutes},
     {path:"/achievements", route:achievementRoutes},
     {path:"/votes", route:voteRouter}
 
