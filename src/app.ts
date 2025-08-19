@@ -58,6 +58,13 @@ app.use(express.static("public"));
 // Route handler for root endpoint
 
 
+app.get("/", (req: Request, res: Response) => {
+  res.status(httpStatus.OK).json({
+    success: true,
+    message: "Welcome to Your Capture Award API",
+  });
+});
+
 
 // Router setup
 app.use("/api/v1", router);
