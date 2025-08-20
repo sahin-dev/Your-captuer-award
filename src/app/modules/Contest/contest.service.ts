@@ -10,6 +10,8 @@ import { addContestPrizes } from './ContestPrizes/contestPrize.service';
 import { ContestRule } from './ContestRules/conetstRules.type';
 import { ContestPrizeData } from './ContestPrizes/contestPrize.type';
 import { profileService } from '../Profile/profile.service';
+import agenda from '../Agenda';
+import { UserStoreService } from '../User/UserStore/userStore.service';
 
 
 
@@ -491,6 +493,77 @@ const getParticipantRank = async (contestId:string, participantId:string)=>{
     const partipantsVoteCount = await prisma.contestParticipant
 }
 
+
+const promoteContestPhoto = async (contestId:string, photoId:string, userId:string)=>{
+    const contestPhoto = await prisma.contestPhoto.findUnique({where:{id:photoId}})
+    
+    if(!contestPhoto){
+        throw new ApiError(httpstatus.NOT_FOUND, "Contest photo not found")
+    }
+
+    if (contestPhoto.promoted){
+        throw new ApiError(httpstatus.BAD_REQUEST, "Contest photo is already promoted")
+    }
+
+    const contest = await prisma.contest.findUnique({where:{id:contestId, status:ContestStatus.ACTIVE}})
+
+    if (!contest){
+        throw new ApiError(httpstatus.NOT_FOUND, "Contest not found")
+    }
+
+    if (contest.creatorId !== userId){
+        throw new ApiError(httpstatus.FORBIDDEN, "You are not allowed to promote this contest photo")
+    }
+
+    const promotionExpiresAt = new Date(Date.now() + 30 * 60 * 1000) //30 minutes from now
+
+    const userStore = await UserStoreService.getStoreData(userId)
+    if ( !userStore || userStore.promotes <= 0){
+        throw new ApiError(httpstatus.BAD_REQUEST, "You don't have enough promotes")
+    }
+    await prisma.$transaction(async (tx) => {
+        // Decrement the user's promotes count
+        await tx.userStore.update({
+            where: { userId },
+            data: { promotes: { decrement: 1 } }
+        });
+
+        // Update the contest photo to mark it as promoted
+        await tx.contestPhoto.update({
+            where: { id: photoId },
+            data: { promoted: true, promotionExpiresAt }
+        });
+    });
+
+
+    // Shcedule a job to remove promotion after 30 minutes
+    agenda.schedule('in 30 minutes', 'promotion:remove', {
+        photoId: photoId
+    });
+
+    console.log(`Contest photo with ID ${photoId} has been promoted until ${promotionExpiresAt}`);
+
+    return { message: `Contest photo with ID ${photoId} has been promoted until ${promotionExpiresAt}` };
+}
+
+const getContestPhotoToVote = async (contestId:string)=>{
+    const contestPhoto = await prisma.contestPhoto.findMany({where:{contestId}})
+
+    let start = 0;
+    let length = contestPhoto.length;
+    let idx = 1
+
+    while(idx < length){
+
+        let photo = contestPhoto[idx]
+        if (photo.promoted && photo.promotionExpiresAt && photo.promotionExpiresAt > new Date()){
+            continue
+        }
+        idx++;
+    }
+
+}
+
 export const contestService = {
     createContest,
     updateContest,
@@ -505,5 +578,6 @@ export const contestService = {
     getContestUploads,
     uploadPhotoToContest,
     deleteContestByContestId,
-    getContestUploadsByUserId
+    getContestUploadsByUserId,
+    promoteContestPhoto,
 }

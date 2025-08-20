@@ -7873,6 +7873,8 @@ export namespace Prisma {
     participantId: string | null
     photoId: string | null
     rank: number | null
+    promoted: boolean | null
+    promotionExpiresAt: Date | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -7884,6 +7886,8 @@ export namespace Prisma {
     participantId: string | null
     photoId: string | null
     rank: number | null
+    promoted: boolean | null
+    promotionExpiresAt: Date | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -7895,6 +7899,8 @@ export namespace Prisma {
     participantId: number
     photoId: number
     rank: number
+    promoted: number
+    promotionExpiresAt: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -7916,6 +7922,8 @@ export namespace Prisma {
     participantId?: true
     photoId?: true
     rank?: true
+    promoted?: true
+    promotionExpiresAt?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -7927,6 +7935,8 @@ export namespace Prisma {
     participantId?: true
     photoId?: true
     rank?: true
+    promoted?: true
+    promotionExpiresAt?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -7938,6 +7948,8 @@ export namespace Prisma {
     participantId?: true
     photoId?: true
     rank?: true
+    promoted?: true
+    promotionExpiresAt?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -8036,6 +8048,8 @@ export namespace Prisma {
     participantId: string
     photoId: string
     rank: number | null
+    promoted: boolean
+    promotionExpiresAt: Date | null
     createdAt: Date
     updatedAt: Date
     _count: ContestPhotoCountAggregateOutputType | null
@@ -8066,6 +8080,8 @@ export namespace Prisma {
     participantId?: boolean
     photoId?: boolean
     rank?: boolean
+    promoted?: boolean
+    promotionExpiresAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     participant?: boolean | ContestParticipantDefaultArgs<ExtArgs>
@@ -8086,11 +8102,13 @@ export namespace Prisma {
     participantId?: boolean
     photoId?: boolean
     rank?: boolean
+    promoted?: boolean
+    promotionExpiresAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type ContestPhotoOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "contestId" | "participantId" | "photoId" | "rank" | "createdAt" | "updatedAt", ExtArgs["result"]["contestPhoto"]>
+  export type ContestPhotoOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "contestId" | "participantId" | "photoId" | "rank" | "promoted" | "promotionExpiresAt" | "createdAt" | "updatedAt", ExtArgs["result"]["contestPhoto"]>
   export type ContestPhotoInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     participant?: boolean | ContestParticipantDefaultArgs<ExtArgs>
     votes?: boolean | ContestPhoto$votesArgs<ExtArgs>
@@ -8118,6 +8136,8 @@ export namespace Prisma {
       participantId: string
       photoId: string
       rank: number | null
+      promoted: boolean
+      promotionExpiresAt: Date | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["contestPhoto"]>
@@ -8524,6 +8544,8 @@ export namespace Prisma {
     readonly participantId: FieldRef<"ContestPhoto", 'String'>
     readonly photoId: FieldRef<"ContestPhoto", 'String'>
     readonly rank: FieldRef<"ContestPhoto", 'Int'>
+    readonly promoted: FieldRef<"ContestPhoto", 'Boolean'>
+    readonly promotionExpiresAt: FieldRef<"ContestPhoto", 'DateTime'>
     readonly createdAt: FieldRef<"ContestPhoto", 'DateTime'>
     readonly updatedAt: FieldRef<"ContestPhoto", 'DateTime'>
   }
@@ -26798,6 +26820,8 @@ export namespace Prisma {
     participantId: 'participantId',
     photoId: 'photoId',
     rank: 'rank',
+    promoted: 'promoted',
+    promotionExpiresAt: 'promotionExpiresAt',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -27620,6 +27644,8 @@ export namespace Prisma {
     participantId?: StringFilter<"ContestPhoto"> | string
     photoId?: StringFilter<"ContestPhoto"> | string
     rank?: IntNullableFilter<"ContestPhoto"> | number | null
+    promoted?: BoolFilter<"ContestPhoto"> | boolean
+    promotionExpiresAt?: DateTimeNullableFilter<"ContestPhoto"> | Date | string | null
     createdAt?: DateTimeFilter<"ContestPhoto"> | Date | string
     updatedAt?: DateTimeFilter<"ContestPhoto"> | Date | string
     participant?: XOR<ContestParticipantScalarRelationFilter, ContestParticipantWhereInput>
@@ -27637,6 +27663,8 @@ export namespace Prisma {
     participantId?: SortOrder
     photoId?: SortOrder
     rank?: SortOrder
+    promoted?: SortOrder
+    promotionExpiresAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     participant?: ContestParticipantOrderByWithRelationInput
@@ -27657,6 +27685,8 @@ export namespace Prisma {
     participantId?: StringFilter<"ContestPhoto"> | string
     photoId?: StringFilter<"ContestPhoto"> | string
     rank?: IntNullableFilter<"ContestPhoto"> | number | null
+    promoted?: BoolFilter<"ContestPhoto"> | boolean
+    promotionExpiresAt?: DateTimeNullableFilter<"ContestPhoto"> | Date | string | null
     createdAt?: DateTimeFilter<"ContestPhoto"> | Date | string
     updatedAt?: DateTimeFilter<"ContestPhoto"> | Date | string
     participant?: XOR<ContestParticipantScalarRelationFilter, ContestParticipantWhereInput>
@@ -27674,6 +27704,8 @@ export namespace Prisma {
     participantId?: SortOrder
     photoId?: SortOrder
     rank?: SortOrder
+    promoted?: SortOrder
+    promotionExpiresAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: ContestPhotoCountOrderByAggregateInput
@@ -27693,6 +27725,8 @@ export namespace Prisma {
     participantId?: StringWithAggregatesFilter<"ContestPhoto"> | string
     photoId?: StringWithAggregatesFilter<"ContestPhoto"> | string
     rank?: IntNullableWithAggregatesFilter<"ContestPhoto"> | number | null
+    promoted?: BoolWithAggregatesFilter<"ContestPhoto"> | boolean
+    promotionExpiresAt?: DateTimeNullableWithAggregatesFilter<"ContestPhoto"> | Date | string | null
     createdAt?: DateTimeWithAggregatesFilter<"ContestPhoto"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"ContestPhoto"> | Date | string
   }
@@ -29288,6 +29322,8 @@ export namespace Prisma {
     title?: string | null
     contestId: string
     rank?: number | null
+    promoted?: boolean
+    promotionExpiresAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     participant: ContestParticipantCreateNestedOneWithoutPhotosInput
@@ -29305,6 +29341,8 @@ export namespace Prisma {
     participantId: string
     photoId: string
     rank?: number | null
+    promoted?: boolean
+    promotionExpiresAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     votes?: VoteUncheckedCreateNestedManyWithoutPhotoInput
@@ -29317,6 +29355,8 @@ export namespace Prisma {
     title?: NullableStringFieldUpdateOperationsInput | string | null
     contestId?: StringFieldUpdateOperationsInput | string
     rank?: NullableIntFieldUpdateOperationsInput | number | null
+    promoted?: BoolFieldUpdateOperationsInput | boolean
+    promotionExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     participant?: ContestParticipantUpdateOneRequiredWithoutPhotosNestedInput
@@ -29333,6 +29373,8 @@ export namespace Prisma {
     participantId?: StringFieldUpdateOperationsInput | string
     photoId?: StringFieldUpdateOperationsInput | string
     rank?: NullableIntFieldUpdateOperationsInput | number | null
+    promoted?: BoolFieldUpdateOperationsInput | boolean
+    promotionExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     votes?: VoteUncheckedUpdateManyWithoutPhotoNestedInput
@@ -29348,6 +29390,8 @@ export namespace Prisma {
     participantId: string
     photoId: string
     rank?: number | null
+    promoted?: boolean
+    promotionExpiresAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -29356,6 +29400,8 @@ export namespace Prisma {
     title?: NullableStringFieldUpdateOperationsInput | string | null
     contestId?: StringFieldUpdateOperationsInput | string
     rank?: NullableIntFieldUpdateOperationsInput | number | null
+    promoted?: BoolFieldUpdateOperationsInput | boolean
+    promotionExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -29366,6 +29412,8 @@ export namespace Prisma {
     participantId?: StringFieldUpdateOperationsInput | string
     photoId?: StringFieldUpdateOperationsInput | string
     rank?: NullableIntFieldUpdateOperationsInput | number | null
+    promoted?: BoolFieldUpdateOperationsInput | boolean
+    promotionExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -31055,6 +31103,18 @@ export namespace Prisma {
     minPrize?: SortOrder
   }
 
+  export type DateTimeNullableFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
+    isSet?: boolean
+  }
+
   export type ContestParticipantScalarRelationFilter = {
     is?: ContestParticipantWhereInput
     isNot?: ContestParticipantWhereInput
@@ -31092,6 +31152,8 @@ export namespace Prisma {
     participantId?: SortOrder
     photoId?: SortOrder
     rank?: SortOrder
+    promoted?: SortOrder
+    promotionExpiresAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -31107,6 +31169,8 @@ export namespace Prisma {
     participantId?: SortOrder
     photoId?: SortOrder
     rank?: SortOrder
+    promoted?: SortOrder
+    promotionExpiresAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -31118,12 +31182,29 @@ export namespace Prisma {
     participantId?: SortOrder
     photoId?: SortOrder
     rank?: SortOrder
+    promoted?: SortOrder
+    promotionExpiresAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
 
   export type ContestPhotoSumOrderByAggregateInput = {
     rank?: SortOrder
+  }
+
+  export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedDateTimeNullableFilter<$PrismaModel>
+    _max?: NestedDateTimeNullableFilter<$PrismaModel>
+    isSet?: boolean
   }
 
   export type ContestPhotoScalarRelationFilter = {
@@ -32426,6 +32507,11 @@ export namespace Prisma {
     connectOrCreate?: ContestWinnerCreateOrConnectWithoutPhotoInput | ContestWinnerCreateOrConnectWithoutPhotoInput[]
     createMany?: ContestWinnerCreateManyPhotoInputEnvelope
     connect?: ContestWinnerWhereUniqueInput | ContestWinnerWhereUniqueInput[]
+  }
+
+  export type NullableDateTimeFieldUpdateOperationsInput = {
+    set?: Date | string | null
+    unset?: boolean
   }
 
   export type ContestParticipantUpdateOneRequiredWithoutPhotosNestedInput = {
@@ -33956,6 +34042,33 @@ export namespace Prisma {
     duration?: IntFilter<"RecurringData"> | number
   }
 
+  export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
+    isSet?: boolean
+  }
+
+  export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedDateTimeNullableFilter<$PrismaModel>
+    _max?: NestedDateTimeNullableFilter<$PrismaModel>
+    isSet?: boolean
+  }
+
   export type NestedEnumContestParticipantStatusFilter<$PrismaModel = never> = {
     equals?: $Enums.ContestParticipantStatus | EnumContestParticipantStatusFieldRefInput<$PrismaModel>
     in?: $Enums.ContestParticipantStatus[] | ListEnumContestParticipantStatusFieldRefInput<$PrismaModel>
@@ -35181,6 +35294,8 @@ export namespace Prisma {
     title?: string | null
     contestId: string
     rank?: number | null
+    promoted?: boolean
+    promotionExpiresAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     participant: ContestParticipantCreateNestedOneWithoutPhotosInput
@@ -35197,6 +35312,8 @@ export namespace Prisma {
     participantId: string
     photoId: string
     rank?: number | null
+    promoted?: boolean
+    promotionExpiresAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     votes?: VoteUncheckedCreateNestedManyWithoutPhotoInput
@@ -35259,6 +35376,8 @@ export namespace Prisma {
     title?: NullableStringFieldUpdateOperationsInput | string | null
     contestId?: StringFieldUpdateOperationsInput | string
     rank?: NullableIntFieldUpdateOperationsInput | number | null
+    promoted?: BoolFieldUpdateOperationsInput | boolean
+    promotionExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     participant?: ContestParticipantUpdateOneRequiredWithoutPhotosNestedInput
@@ -35274,6 +35393,8 @@ export namespace Prisma {
     participantId?: StringFieldUpdateOperationsInput | string
     photoId?: StringFieldUpdateOperationsInput | string
     rank?: NullableIntFieldUpdateOperationsInput | number | null
+    promoted?: BoolFieldUpdateOperationsInput | boolean
+    promotionExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     votes?: VoteUncheckedUpdateManyWithoutPhotoNestedInput
@@ -35406,6 +35527,8 @@ export namespace Prisma {
     title?: string | null
     contestId: string
     rank?: number | null
+    promoted?: boolean
+    promotionExpiresAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     votes?: VoteCreateNestedManyWithoutPhotoInput
@@ -35421,6 +35544,8 @@ export namespace Prisma {
     contestId: string
     photoId: string
     rank?: number | null
+    promoted?: boolean
+    promotionExpiresAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     votes?: VoteUncheckedCreateNestedManyWithoutPhotoInput
@@ -35644,6 +35769,8 @@ export namespace Prisma {
     participantId?: StringFilter<"ContestPhoto"> | string
     photoId?: StringFilter<"ContestPhoto"> | string
     rank?: IntNullableFilter<"ContestPhoto"> | number | null
+    promoted?: BoolFilter<"ContestPhoto"> | boolean
+    promotionExpiresAt?: DateTimeNullableFilter<"ContestPhoto"> | Date | string | null
     createdAt?: DateTimeFilter<"ContestPhoto"> | Date | string
     updatedAt?: DateTimeFilter<"ContestPhoto"> | Date | string
   }
@@ -35791,6 +35918,8 @@ export namespace Prisma {
     title?: string | null
     contestId: string
     rank?: number | null
+    promoted?: boolean
+    promotionExpiresAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     participant: ContestParticipantCreateNestedOneWithoutPhotosInput
@@ -35807,6 +35936,8 @@ export namespace Prisma {
     participantId: string
     photoId: string
     rank?: number | null
+    promoted?: boolean
+    promotionExpiresAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     votes?: VoteUncheckedCreateNestedManyWithoutPhotoInput
@@ -35916,6 +36047,8 @@ export namespace Prisma {
     title?: NullableStringFieldUpdateOperationsInput | string | null
     contestId?: StringFieldUpdateOperationsInput | string
     rank?: NullableIntFieldUpdateOperationsInput | number | null
+    promoted?: BoolFieldUpdateOperationsInput | boolean
+    promotionExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     participant?: ContestParticipantUpdateOneRequiredWithoutPhotosNestedInput
@@ -35931,6 +36064,8 @@ export namespace Prisma {
     participantId?: StringFieldUpdateOperationsInput | string
     photoId?: StringFieldUpdateOperationsInput | string
     rank?: NullableIntFieldUpdateOperationsInput | number | null
+    promoted?: BoolFieldUpdateOperationsInput | boolean
+    promotionExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     votes?: VoteUncheckedUpdateManyWithoutPhotoNestedInput
@@ -37310,6 +37445,8 @@ export namespace Prisma {
     title?: string | null
     contestId: string
     rank?: number | null
+    promoted?: boolean
+    promotionExpiresAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     participant: ContestParticipantCreateNestedOneWithoutPhotosInput
@@ -37325,6 +37462,8 @@ export namespace Prisma {
     contestId: string
     participantId: string
     rank?: number | null
+    promoted?: boolean
+    promotionExpiresAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     votes?: VoteUncheckedCreateNestedManyWithoutPhotoInput
@@ -37907,6 +38046,8 @@ export namespace Prisma {
     title?: string | null
     contestId: string
     rank?: number | null
+    promoted?: boolean
+    promotionExpiresAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     participant: ContestParticipantCreateNestedOneWithoutPhotosInput
@@ -37923,6 +38064,8 @@ export namespace Prisma {
     participantId: string
     photoId: string
     rank?: number | null
+    promoted?: boolean
+    promotionExpiresAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     votes?: VoteUncheckedCreateNestedManyWithoutPhotoInput
@@ -38077,6 +38220,8 @@ export namespace Prisma {
     title?: NullableStringFieldUpdateOperationsInput | string | null
     contestId?: StringFieldUpdateOperationsInput | string
     rank?: NullableIntFieldUpdateOperationsInput | number | null
+    promoted?: BoolFieldUpdateOperationsInput | boolean
+    promotionExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     participant?: ContestParticipantUpdateOneRequiredWithoutPhotosNestedInput
@@ -38092,6 +38237,8 @@ export namespace Prisma {
     participantId?: StringFieldUpdateOperationsInput | string
     photoId?: StringFieldUpdateOperationsInput | string
     rank?: NullableIntFieldUpdateOperationsInput | number | null
+    promoted?: BoolFieldUpdateOperationsInput | boolean
+    promotionExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     votes?: VoteUncheckedUpdateManyWithoutPhotoNestedInput
@@ -38502,6 +38649,8 @@ export namespace Prisma {
     title?: string | null
     contestId: string
     rank?: number | null
+    promoted?: boolean
+    promotionExpiresAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     participant: ContestParticipantCreateNestedOneWithoutPhotosInput
@@ -38518,6 +38667,8 @@ export namespace Prisma {
     participantId: string
     photoId: string
     rank?: number | null
+    promoted?: boolean
+    promotionExpiresAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     comments?: CommentUncheckedCreateNestedManyWithoutReceiverInput
@@ -38669,6 +38820,8 @@ export namespace Prisma {
     title?: NullableStringFieldUpdateOperationsInput | string | null
     contestId?: StringFieldUpdateOperationsInput | string
     rank?: NullableIntFieldUpdateOperationsInput | number | null
+    promoted?: BoolFieldUpdateOperationsInput | boolean
+    promotionExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     participant?: ContestParticipantUpdateOneRequiredWithoutPhotosNestedInput
@@ -38684,6 +38837,8 @@ export namespace Prisma {
     participantId?: StringFieldUpdateOperationsInput | string
     photoId?: StringFieldUpdateOperationsInput | string
     rank?: NullableIntFieldUpdateOperationsInput | number | null
+    promoted?: BoolFieldUpdateOperationsInput | boolean
+    promotionExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     comments?: CommentUncheckedUpdateManyWithoutReceiverNestedInput
@@ -39049,6 +39204,8 @@ export namespace Prisma {
     contestId: string
     photoId: string
     rank?: number | null
+    promoted?: boolean
+    promotionExpiresAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -39074,6 +39231,8 @@ export namespace Prisma {
     title?: NullableStringFieldUpdateOperationsInput | string | null
     contestId?: StringFieldUpdateOperationsInput | string
     rank?: NullableIntFieldUpdateOperationsInput | number | null
+    promoted?: BoolFieldUpdateOperationsInput | boolean
+    promotionExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     votes?: VoteUpdateManyWithoutPhotoNestedInput
@@ -39088,6 +39247,8 @@ export namespace Prisma {
     contestId?: StringFieldUpdateOperationsInput | string
     photoId?: StringFieldUpdateOperationsInput | string
     rank?: NullableIntFieldUpdateOperationsInput | number | null
+    promoted?: BoolFieldUpdateOperationsInput | boolean
+    promotionExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     votes?: VoteUncheckedUpdateManyWithoutPhotoNestedInput
@@ -39101,6 +39262,8 @@ export namespace Prisma {
     contestId?: StringFieldUpdateOperationsInput | string
     photoId?: StringFieldUpdateOperationsInput | string
     rank?: NullableIntFieldUpdateOperationsInput | number | null
+    promoted?: BoolFieldUpdateOperationsInput | boolean
+    promotionExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -39548,6 +39711,8 @@ export namespace Prisma {
     contestId: string
     participantId: string
     rank?: number | null
+    promoted?: boolean
+    promotionExpiresAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -39570,6 +39735,8 @@ export namespace Prisma {
     title?: NullableStringFieldUpdateOperationsInput | string | null
     contestId?: StringFieldUpdateOperationsInput | string
     rank?: NullableIntFieldUpdateOperationsInput | number | null
+    promoted?: BoolFieldUpdateOperationsInput | boolean
+    promotionExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     participant?: ContestParticipantUpdateOneRequiredWithoutPhotosNestedInput
@@ -39584,6 +39751,8 @@ export namespace Prisma {
     contestId?: StringFieldUpdateOperationsInput | string
     participantId?: StringFieldUpdateOperationsInput | string
     rank?: NullableIntFieldUpdateOperationsInput | number | null
+    promoted?: BoolFieldUpdateOperationsInput | boolean
+    promotionExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     votes?: VoteUncheckedUpdateManyWithoutPhotoNestedInput
@@ -39597,6 +39766,8 @@ export namespace Prisma {
     contestId?: StringFieldUpdateOperationsInput | string
     participantId?: StringFieldUpdateOperationsInput | string
     rank?: NullableIntFieldUpdateOperationsInput | number | null
+    promoted?: BoolFieldUpdateOperationsInput | boolean
+    promotionExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

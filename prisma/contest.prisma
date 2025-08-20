@@ -88,7 +88,8 @@ model ContestPhoto {
   participantId String  @db.ObjectId
   photoId       String  @db.ObjectId
   rank          Int?    @default(0)
-
+  promoted     Boolean @default(false)
+  promotionExpiresAt DateTime?  
   // contest   Contest @relation(fields: [contestId],references: [id])
   participant  ContestParticipant   @relation(fields: [participantId], references: [id], onDelete: Cascade)
   votes        Vote[]
@@ -196,11 +197,11 @@ enum PrizeType {
 
 
 enum ContestStatus {
-  NEW
-  UPCOMING
-  ACTIVE
-  OPEN
-  CLOSED
+  NEW // Just created, not started yet
+  UPCOMING // Contest is upcoming, not started yet
+  ACTIVE // Contest is currently active
+  COMPLETED // Contest has ended and winners are announced
+  CLOSED // Contest is closed for new participants
 }
 
 enum ContestType {

@@ -76,22 +76,23 @@ model RecurringContest {
 }
 
 model ContestPhoto {
-  id            String  @id @default(auto()) @map("_id") @db.ObjectId
-  title         String?
-  contestId     String  @db.ObjectId
-  participantId String  @db.ObjectId
-  photoId       String  @db.ObjectId
-  rank          Int?    @default(0)
-
+  id                 String               @id @default(auto()) @map("_id") @db.ObjectId
+  title              String?
+  contestId          String               @db.ObjectId
+  participantId      String               @db.ObjectId
+  photoId            String               @db.ObjectId
+  rank               Int?                 @default(0)
+  promoted           Boolean              @default(false)
+  promotionExpiresAt DateTime?
   // contest   Contest @relation(fields: [contestId],references: [id])
-  participant   ContestParticipant   @relation(fields: [participantId], references: [id], onDelete: Cascade)
-  votes         Vote[]
-  photo         UserPhoto            @relation(fields: [photoId], references: [id], onDelete: Cascade)
-  comments      Comment[]
-  achievements  ContestAchievement[]
-  ContestWinner ContestWinner[]
-  createdAt     DateTime             @default(now())
-  updatedAt     DateTime             @updatedAt
+  participant        ContestParticipant   @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  votes              Vote[]
+  photo              UserPhoto            @relation(fields: [photoId], references: [id], onDelete: Cascade)
+  comments           Comment[]
+  achievements       ContestAchievement[]
+  ContestWinner      ContestWinner[]
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
 
   @@map("contest_photos")
 }

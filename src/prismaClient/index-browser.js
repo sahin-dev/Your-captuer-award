@@ -171,6 +171,8 @@ exports.Prisma.ContestPhotoScalarFieldEnum = {
   participantId: 'participantId',
   photoId: 'photoId',
   rank: 'rank',
+  promoted: 'promoted',
+  promotionExpiresAt: 'promotionExpiresAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };

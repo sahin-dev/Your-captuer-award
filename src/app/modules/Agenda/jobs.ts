@@ -1,4 +1,4 @@
-import { Contest, ContestStatus, ContestType, RecurringContest, RecurringData, RecurringType } from '../../../prismaClient';
+import { ContestStatus, RecurringContest, RecurringType } from '../../../prismaClient';
 import { Job } from "agenda";
 import prisma from '../../../shared/prisma';
 import agenda from "./init";
@@ -22,7 +22,7 @@ agenda.define('contest:checkUpcoming', async () => {
     contests.forEach(async(contest)=>{
         const startDate = contest.startDate
         const currentDate = new Date()
-
+        
         if (startDate <= currentDate){
             const updatedContest = await prisma.contest.update({where:{id:contest.id}, data:{status:ContestStatus.ACTIVE}})
             console.log(`Contest with id: ${contest.id} has started`)
@@ -154,6 +154,20 @@ agenda.define("contest:watcher", async (job: Job) => {
 
        
 
+    });
+
+    agenda.define("promotion:remove", async (job: Job) => {
+        const { photoId } = job.attrs.data as { photoId: string };  
+        const contestPhoto = await prisma.contestPhoto.findUnique({ where: { id: photoId } });
+        if (contestPhoto) {
+            await prisma.contestPhoto.update({
+                where: { id: photoId },
+                data: { promoted: false, promotionExpiresAt: null }
+            });
+            console.log(`Promotion removed for photo ID: ${photoId}`);
+        } else {
+            console.log(`No contest photo found with ID: ${photoId}`);
+        }
     });
 
 
