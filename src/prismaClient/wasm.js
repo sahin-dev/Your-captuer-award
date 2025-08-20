@@ -283,7 +283,7 @@ exports.Prisma.UserScalarFieldEnum = {
 exports.Prisma.UserStoreScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
-  keys: 'keys',
+  promotes: 'promotes',
   trades: 'trades',
   charges: 'charges',
   createdAt: 'createdAt',

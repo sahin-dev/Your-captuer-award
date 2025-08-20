@@ -108,7 +108,7 @@ const updateProfile = async (userId:string,userData:userUpdateData)=>{
 
 const getUserDetails = async (userId:string)=>{
 
-    const user = await prisma.user.findUnique({where:{id:userId}, omit:{password:true, createdAt:true, updatedAt:true,accessToken:true}})
+    const user = await prisma.user.findUnique({where:{id:userId},include:{store:{select:{trades:true, promotes:true, charges:true}}}, omit:{password:true, createdAt:true, updatedAt:true,accessToken:true}})
     if(!user){
         throw new ApiError(httpstatus.NOT_FOUND, "User not found")
     }

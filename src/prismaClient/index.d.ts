@@ -19516,13 +19516,13 @@ export namespace Prisma {
   }
 
   export type UserStoreAvgAggregateOutputType = {
-    keys: number | null
+    promotes: number | null
     trades: number | null
     charges: number | null
   }
 
   export type UserStoreSumAggregateOutputType = {
-    keys: number | null
+    promotes: number | null
     trades: number | null
     charges: number | null
   }
@@ -19530,7 +19530,7 @@ export namespace Prisma {
   export type UserStoreMinAggregateOutputType = {
     id: string | null
     userId: string | null
-    keys: number | null
+    promotes: number | null
     trades: number | null
     charges: number | null
     createdAt: Date | null
@@ -19540,7 +19540,7 @@ export namespace Prisma {
   export type UserStoreMaxAggregateOutputType = {
     id: string | null
     userId: string | null
-    keys: number | null
+    promotes: number | null
     trades: number | null
     charges: number | null
     createdAt: Date | null
@@ -19550,7 +19550,7 @@ export namespace Prisma {
   export type UserStoreCountAggregateOutputType = {
     id: number
     userId: number
-    keys: number
+    promotes: number
     trades: number
     charges: number
     createdAt: number
@@ -19560,13 +19560,13 @@ export namespace Prisma {
 
 
   export type UserStoreAvgAggregateInputType = {
-    keys?: true
+    promotes?: true
     trades?: true
     charges?: true
   }
 
   export type UserStoreSumAggregateInputType = {
-    keys?: true
+    promotes?: true
     trades?: true
     charges?: true
   }
@@ -19574,7 +19574,7 @@ export namespace Prisma {
   export type UserStoreMinAggregateInputType = {
     id?: true
     userId?: true
-    keys?: true
+    promotes?: true
     trades?: true
     charges?: true
     createdAt?: true
@@ -19584,7 +19584,7 @@ export namespace Prisma {
   export type UserStoreMaxAggregateInputType = {
     id?: true
     userId?: true
-    keys?: true
+    promotes?: true
     trades?: true
     charges?: true
     createdAt?: true
@@ -19594,7 +19594,7 @@ export namespace Prisma {
   export type UserStoreCountAggregateInputType = {
     id?: true
     userId?: true
-    keys?: true
+    promotes?: true
     trades?: true
     charges?: true
     createdAt?: true
@@ -19691,7 +19691,7 @@ export namespace Prisma {
   export type UserStoreGroupByOutputType = {
     id: string
     userId: string
-    keys: number
+    promotes: number
     trades: number
     charges: number
     createdAt: Date
@@ -19720,7 +19720,7 @@ export namespace Prisma {
   export type UserStoreSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     userId?: boolean
-    keys?: boolean
+    promotes?: boolean
     trades?: boolean
     charges?: boolean
     createdAt?: boolean
@@ -19733,14 +19733,14 @@ export namespace Prisma {
   export type UserStoreSelectScalar = {
     id?: boolean
     userId?: boolean
-    keys?: boolean
+    promotes?: boolean
     trades?: boolean
     charges?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type UserStoreOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "keys" | "trades" | "charges" | "createdAt" | "updatedAt", ExtArgs["result"]["userStore"]>
+  export type UserStoreOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "promotes" | "trades" | "charges" | "createdAt" | "updatedAt", ExtArgs["result"]["userStore"]>
   export type UserStoreInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserStore$userArgs<ExtArgs>
   }
@@ -19753,7 +19753,7 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       id: string
       userId: string
-      keys: number
+      promotes: number
       trades: number
       charges: number
       createdAt: Date
@@ -20153,7 +20153,7 @@ export namespace Prisma {
   interface UserStoreFieldRefs {
     readonly id: FieldRef<"UserStore", 'String'>
     readonly userId: FieldRef<"UserStore", 'String'>
-    readonly keys: FieldRef<"UserStore", 'Int'>
+    readonly promotes: FieldRef<"UserStore", 'Int'>
     readonly trades: FieldRef<"UserStore", 'Int'>
     readonly charges: FieldRef<"UserStore", 'Int'>
     readonly createdAt: FieldRef<"UserStore", 'DateTime'>
@@ -26943,7 +26943,7 @@ export namespace Prisma {
   export const UserStoreScalarFieldEnum: {
     id: 'id',
     userId: 'userId',
-    keys: 'keys',
+    promotes: 'promotes',
     trades: 'trades',
     charges: 'charges',
     createdAt: 'createdAt',
@@ -28434,7 +28434,7 @@ export namespace Prisma {
     NOT?: UserStoreWhereInput | UserStoreWhereInput[]
     id?: StringFilter<"UserStore"> | string
     userId?: StringFilter<"UserStore"> | string
-    keys?: IntFilter<"UserStore"> | number
+    promotes?: IntFilter<"UserStore"> | number
     trades?: IntFilter<"UserStore"> | number
     charges?: IntFilter<"UserStore"> | number
     createdAt?: DateTimeFilter<"UserStore"> | Date | string
@@ -28445,7 +28445,7 @@ export namespace Prisma {
   export type UserStoreOrderByWithRelationInput = {
     id?: SortOrder
     userId?: SortOrder
-    keys?: SortOrder
+    promotes?: SortOrder
     trades?: SortOrder
     charges?: SortOrder
     createdAt?: SortOrder
@@ -28459,7 +28459,7 @@ export namespace Prisma {
     AND?: UserStoreWhereInput | UserStoreWhereInput[]
     OR?: UserStoreWhereInput[]
     NOT?: UserStoreWhereInput | UserStoreWhereInput[]
-    keys?: IntFilter<"UserStore"> | number
+    promotes?: IntFilter<"UserStore"> | number
     trades?: IntFilter<"UserStore"> | number
     charges?: IntFilter<"UserStore"> | number
     createdAt?: DateTimeFilter<"UserStore"> | Date | string
@@ -28470,7 +28470,7 @@ export namespace Prisma {
   export type UserStoreOrderByWithAggregationInput = {
     id?: SortOrder
     userId?: SortOrder
-    keys?: SortOrder
+    promotes?: SortOrder
     trades?: SortOrder
     charges?: SortOrder
     createdAt?: SortOrder
@@ -28488,7 +28488,7 @@ export namespace Prisma {
     NOT?: UserStoreScalarWhereWithAggregatesInput | UserStoreScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"UserStore"> | string
     userId?: StringWithAggregatesFilter<"UserStore"> | string
-    keys?: IntWithAggregatesFilter<"UserStore"> | number
+    promotes?: IntWithAggregatesFilter<"UserStore"> | number
     trades?: IntWithAggregatesFilter<"UserStore"> | number
     charges?: IntWithAggregatesFilter<"UserStore"> | number
     createdAt?: DateTimeWithAggregatesFilter<"UserStore"> | Date | string
@@ -30124,7 +30124,7 @@ export namespace Prisma {
 
   export type UserStoreCreateInput = {
     id?: string
-    keys?: number
+    promotes?: number
     trades?: number
     charges?: number
     createdAt?: Date | string
@@ -30135,7 +30135,7 @@ export namespace Prisma {
   export type UserStoreUncheckedCreateInput = {
     id?: string
     userId: string
-    keys?: number
+    promotes?: number
     trades?: number
     charges?: number
     createdAt?: Date | string
@@ -30143,7 +30143,7 @@ export namespace Prisma {
   }
 
   export type UserStoreUpdateInput = {
-    keys?: IntFieldUpdateOperationsInput | number
+    promotes?: IntFieldUpdateOperationsInput | number
     trades?: IntFieldUpdateOperationsInput | number
     charges?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -30153,7 +30153,7 @@ export namespace Prisma {
 
   export type UserStoreUncheckedUpdateInput = {
     userId?: StringFieldUpdateOperationsInput | string
-    keys?: IntFieldUpdateOperationsInput | number
+    promotes?: IntFieldUpdateOperationsInput | number
     trades?: IntFieldUpdateOperationsInput | number
     charges?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -30163,7 +30163,7 @@ export namespace Prisma {
   export type UserStoreCreateManyInput = {
     id?: string
     userId: string
-    keys?: number
+    promotes?: number
     trades?: number
     charges?: number
     createdAt?: Date | string
@@ -30171,7 +30171,7 @@ export namespace Prisma {
   }
 
   export type UserStoreUpdateManyMutationInput = {
-    keys?: IntFieldUpdateOperationsInput | number
+    promotes?: IntFieldUpdateOperationsInput | number
     trades?: IntFieldUpdateOperationsInput | number
     charges?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -30180,7 +30180,7 @@ export namespace Prisma {
 
   export type UserStoreUncheckedUpdateManyInput = {
     userId?: StringFieldUpdateOperationsInput | string
-    keys?: IntFieldUpdateOperationsInput | number
+    promotes?: IntFieldUpdateOperationsInput | number
     trades?: IntFieldUpdateOperationsInput | number
     charges?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -31717,7 +31717,7 @@ export namespace Prisma {
   export type UserStoreCountOrderByAggregateInput = {
     id?: SortOrder
     userId?: SortOrder
-    keys?: SortOrder
+    promotes?: SortOrder
     trades?: SortOrder
     charges?: SortOrder
     createdAt?: SortOrder
@@ -31725,7 +31725,7 @@ export namespace Prisma {
   }
 
   export type UserStoreAvgOrderByAggregateInput = {
-    keys?: SortOrder
+    promotes?: SortOrder
     trades?: SortOrder
     charges?: SortOrder
   }
@@ -31733,7 +31733,7 @@ export namespace Prisma {
   export type UserStoreMaxOrderByAggregateInput = {
     id?: SortOrder
     userId?: SortOrder
-    keys?: SortOrder
+    promotes?: SortOrder
     trades?: SortOrder
     charges?: SortOrder
     createdAt?: SortOrder
@@ -31743,7 +31743,7 @@ export namespace Prisma {
   export type UserStoreMinOrderByAggregateInput = {
     id?: SortOrder
     userId?: SortOrder
-    keys?: SortOrder
+    promotes?: SortOrder
     trades?: SortOrder
     charges?: SortOrder
     createdAt?: SortOrder
@@ -31751,7 +31751,7 @@ export namespace Prisma {
   }
 
   export type UserStoreSumOrderByAggregateInput = {
-    keys?: SortOrder
+    promotes?: SortOrder
     trades?: SortOrder
     charges?: SortOrder
   }
@@ -36462,7 +36462,7 @@ export namespace Prisma {
 
   export type UserStoreCreateWithoutUserInput = {
     id?: string
-    keys?: number
+    promotes?: number
     trades?: number
     charges?: number
     createdAt?: Date | string
@@ -36471,7 +36471,7 @@ export namespace Prisma {
 
   export type UserStoreUncheckedCreateWithoutUserInput = {
     id?: string
-    keys?: number
+    promotes?: number
     trades?: number
     charges?: number
     createdAt?: Date | string
@@ -36834,7 +36834,7 @@ export namespace Prisma {
   }
 
   export type UserStoreUpdateWithoutUserInput = {
-    keys?: IntFieldUpdateOperationsInput | number
+    promotes?: IntFieldUpdateOperationsInput | number
     trades?: IntFieldUpdateOperationsInput | number
     charges?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -36842,7 +36842,7 @@ export namespace Prisma {
   }
 
   export type UserStoreUncheckedUpdateWithoutUserInput = {
-    keys?: IntFieldUpdateOperationsInput | number
+    promotes?: IntFieldUpdateOperationsInput | number
     trades?: IntFieldUpdateOperationsInput | number
     charges?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string

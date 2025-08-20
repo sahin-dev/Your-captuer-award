@@ -57,6 +57,7 @@ app.use(express.static("public"));
 
 
 app.get("/", (req: Request, res: Response) => {
+  
   res.status(httpStatus.OK).json({
     success: true,
     message: "Welcome to Your Capture Awards API",

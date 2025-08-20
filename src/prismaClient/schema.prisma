@@ -222,11 +222,12 @@ enum ContestParticipantStatus {
 }
 
 model SitePolicy {
-  id        String         @id @default(auto()) @map("_id") @db.ObjectId
-  type      SitePolicyType
-  content   String
-  createdAt DateTime       @default(now())
-  updatedAt DateTime       @updatedAt
+  id      String         @id @default(auto()) @map("_id") @db.ObjectId
+  type    SitePolicyType
+  content String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("site_policies")
 }
@@ -347,11 +348,11 @@ model User {
 }
 
 model UserStore {
-  id      String @id @default(auto()) @map("_id") @db.ObjectId
-  userId  String @unique @db.ObjectId
-  keys    Int    @default(0)
-  trades  Int    @default(0)
-  charges Int    @default(0)
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  userId   String @unique @db.ObjectId
+  promotes Int    @default(0)
+  trades   Int    @default(0)
+  charges  Int    @default(0)
 
   user User? @relation(fields: [userId], references: [id])
 

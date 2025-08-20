@@ -1,6 +1,5 @@
 import ApiError from "../../../errors/ApiError"
 import prisma from "../../../shared/prisma"
-import { UserSignIn } from "./auth.interface"
 import httpstatus from "http-status"
 import bcrypt from "bcryptjs"
 import { jwtHelpers } from "../../../helpers/jwt"
@@ -11,6 +10,8 @@ import { IUser } from "../User/user.interface"
 import globalEventHandler from "../../event/eventEmitter"
 import Events from "../../event/events.constant"
 import { UserRegistrationData, UserSignInData } from "./auth.types"
+import { UserStoreService } from "../User/UserStore/userStore.service"
+
 
 
 export const handleRegister = async (body:UserRegistrationData)=>{
@@ -51,7 +52,7 @@ export const handleRegister = async (body:UserRegistrationData)=>{
     //     }
     
     //create user store for every user register
-    await attachStoreToUser(createdUser.id)
+    await UserStoreService.addStoreData(createdUser.id, {trades:0, promotes:0, charges:0})
 
     return {user:UserDto(createdUser), token}
 }
