@@ -10,8 +10,6 @@ import router from "./app/routes";
 import ErrorHandler from "./app/middlewares/error.middleware";
 import { User } from "./prismaClient";
 import './app/event'
-import prisma from "./shared/prisma";
-import bodyParser from "body-parser";
 
 
 
@@ -61,7 +59,7 @@ app.use(express.static("public"));
 app.get("/", (req: Request, res: Response) => {
   res.status(httpStatus.OK).json({
     success: true,
-    message: "Welcome to Your Capture Award API",
+    message: "Welcome to Your Capture Awards API",
   });
 });
 

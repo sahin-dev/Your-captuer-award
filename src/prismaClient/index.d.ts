@@ -69,6 +69,21 @@ export type ContestPrize = $Result.DefaultSelection<Prisma.$ContestPrizePayload>
  */
 export type ContestAchievement = $Result.DefaultSelection<Prisma.$ContestAchievementPayload>
 /**
+ * Model SitePolicy
+ * 
+ */
+export type SitePolicy = $Result.DefaultSelection<Prisma.$SitePolicyPayload>
+/**
+ * Model Room
+ * 
+ */
+export type Room = $Result.DefaultSelection<Prisma.$RoomPayload>
+/**
+ * Model Chat
+ * 
+ */
+export type Chat = $Result.DefaultSelection<Prisma.$ChatPayload>
+/**
  * Model Team
  * 
  */
@@ -190,6 +205,15 @@ export const ContestParticipantStatus: {
 export type ContestParticipantStatus = (typeof ContestParticipantStatus)[keyof typeof ContestParticipantStatus]
 
 
+export const SitePolicyType: {
+  TERMS: 'TERMS',
+  POLICY: 'POLICY',
+  ABOUT: 'ABOUT'
+};
+
+export type SitePolicyType = (typeof SitePolicyType)[keyof typeof SitePolicyType]
+
+
 export const TeamAccessibility: {
   PUBLIC: 'PUBLIC',
   PRIVATE: 'PRIVATE'
@@ -266,6 +290,10 @@ export const YCLevel: typeof $Enums.YCLevel
 export type ContestParticipantStatus = $Enums.ContestParticipantStatus
 
 export const ContestParticipantStatus: typeof $Enums.ContestParticipantStatus
+
+export type SitePolicyType = $Enums.SitePolicyType
+
+export const SitePolicyType: typeof $Enums.SitePolicyType
 
 export type TeamAccessibility = $Enums.TeamAccessibility
 
@@ -468,6 +496,36 @@ export class PrismaClient<
     * ```
     */
   get contestAchievement(): Prisma.ContestAchievementDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.sitePolicy`: Exposes CRUD operations for the **SitePolicy** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more SitePolicies
+    * const sitePolicies = await prisma.sitePolicy.findMany()
+    * ```
+    */
+  get sitePolicy(): Prisma.SitePolicyDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.room`: Exposes CRUD operations for the **Room** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Rooms
+    * const rooms = await prisma.room.findMany()
+    * ```
+    */
+  get room(): Prisma.RoomDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.chat`: Exposes CRUD operations for the **Chat** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Chats
+    * const chats = await prisma.chat.findMany()
+    * ```
+    */
+  get chat(): Prisma.ChatDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.team`: Exposes CRUD operations for the **Team** model.
@@ -1017,6 +1075,9 @@ export namespace Prisma {
     ContestParticipant: 'ContestParticipant',
     ContestPrize: 'ContestPrize',
     ContestAchievement: 'ContestAchievement',
+    SitePolicy: 'SitePolicy',
+    Room: 'Room',
+    Chat: 'Chat',
     Team: 'Team',
     TeamMember: 'TeamMember',
     User: 'User',
@@ -1045,7 +1106,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "contest" | "contestRule" | "recurringContestData" | "recurringContest" | "contestPhoto" | "contestWinner" | "contestParticipant" | "contestPrize" | "contestAchievement" | "team" | "teamMember" | "user" | "userStore" | "userPhoto" | "like" | "otp" | "comment" | "follow" | "vote"
+      modelProps: "contest" | "contestRule" | "recurringContestData" | "recurringContest" | "contestPhoto" | "contestWinner" | "contestParticipant" | "contestPrize" | "contestAchievement" | "sitePolicy" | "room" | "chat" | "team" | "teamMember" | "user" | "userStore" | "userPhoto" | "like" | "otp" | "comment" | "follow" | "vote"
       txIsolationLevel: never
     }
     model: {
@@ -1712,6 +1773,228 @@ export namespace Prisma {
           count: {
             args: Prisma.ContestAchievementCountArgs<ExtArgs>
             result: $Utils.Optional<ContestAchievementCountAggregateOutputType> | number
+          }
+        }
+      }
+      SitePolicy: {
+        payload: Prisma.$SitePolicyPayload<ExtArgs>
+        fields: Prisma.SitePolicyFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.SitePolicyFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SitePolicyPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.SitePolicyFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SitePolicyPayload>
+          }
+          findFirst: {
+            args: Prisma.SitePolicyFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SitePolicyPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.SitePolicyFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SitePolicyPayload>
+          }
+          findMany: {
+            args: Prisma.SitePolicyFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SitePolicyPayload>[]
+          }
+          create: {
+            args: Prisma.SitePolicyCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SitePolicyPayload>
+          }
+          createMany: {
+            args: Prisma.SitePolicyCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.SitePolicyDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SitePolicyPayload>
+          }
+          update: {
+            args: Prisma.SitePolicyUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SitePolicyPayload>
+          }
+          deleteMany: {
+            args: Prisma.SitePolicyDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.SitePolicyUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.SitePolicyUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SitePolicyPayload>
+          }
+          aggregate: {
+            args: Prisma.SitePolicyAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateSitePolicy>
+          }
+          groupBy: {
+            args: Prisma.SitePolicyGroupByArgs<ExtArgs>
+            result: $Utils.Optional<SitePolicyGroupByOutputType>[]
+          }
+          findRaw: {
+            args: Prisma.SitePolicyFindRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          aggregateRaw: {
+            args: Prisma.SitePolicyAggregateRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          count: {
+            args: Prisma.SitePolicyCountArgs<ExtArgs>
+            result: $Utils.Optional<SitePolicyCountAggregateOutputType> | number
+          }
+        }
+      }
+      Room: {
+        payload: Prisma.$RoomPayload<ExtArgs>
+        fields: Prisma.RoomFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.RoomFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RoomPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.RoomFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RoomPayload>
+          }
+          findFirst: {
+            args: Prisma.RoomFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RoomPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.RoomFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RoomPayload>
+          }
+          findMany: {
+            args: Prisma.RoomFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RoomPayload>[]
+          }
+          create: {
+            args: Prisma.RoomCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RoomPayload>
+          }
+          createMany: {
+            args: Prisma.RoomCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.RoomDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RoomPayload>
+          }
+          update: {
+            args: Prisma.RoomUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RoomPayload>
+          }
+          deleteMany: {
+            args: Prisma.RoomDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.RoomUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.RoomUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RoomPayload>
+          }
+          aggregate: {
+            args: Prisma.RoomAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateRoom>
+          }
+          groupBy: {
+            args: Prisma.RoomGroupByArgs<ExtArgs>
+            result: $Utils.Optional<RoomGroupByOutputType>[]
+          }
+          findRaw: {
+            args: Prisma.RoomFindRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          aggregateRaw: {
+            args: Prisma.RoomAggregateRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          count: {
+            args: Prisma.RoomCountArgs<ExtArgs>
+            result: $Utils.Optional<RoomCountAggregateOutputType> | number
+          }
+        }
+      }
+      Chat: {
+        payload: Prisma.$ChatPayload<ExtArgs>
+        fields: Prisma.ChatFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.ChatFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChatPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.ChatFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChatPayload>
+          }
+          findFirst: {
+            args: Prisma.ChatFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChatPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.ChatFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChatPayload>
+          }
+          findMany: {
+            args: Prisma.ChatFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChatPayload>[]
+          }
+          create: {
+            args: Prisma.ChatCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChatPayload>
+          }
+          createMany: {
+            args: Prisma.ChatCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.ChatDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChatPayload>
+          }
+          update: {
+            args: Prisma.ChatUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChatPayload>
+          }
+          deleteMany: {
+            args: Prisma.ChatDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.ChatUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.ChatUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChatPayload>
+          }
+          aggregate: {
+            args: Prisma.ChatAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateChat>
+          }
+          groupBy: {
+            args: Prisma.ChatGroupByArgs<ExtArgs>
+            result: $Utils.Optional<ChatGroupByOutputType>[]
+          }
+          findRaw: {
+            args: Prisma.ChatFindRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          aggregateRaw: {
+            args: Prisma.ChatAggregateRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          count: {
+            args: Prisma.ChatCountArgs<ExtArgs>
+            result: $Utils.Optional<ChatCountAggregateOutputType> | number
           }
         }
       }
@@ -2535,6 +2818,9 @@ export namespace Prisma {
     contestParticipant?: ContestParticipantOmit
     contestPrize?: ContestPrizeOmit
     contestAchievement?: ContestAchievementOmit
+    sitePolicy?: SitePolicyOmit
+    room?: RoomOmit
+    chat?: ChatOmit
     team?: TeamOmit
     teamMember?: TeamMemberOmit
     user?: UserOmit
@@ -12930,6 +13216,2780 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: ContestAchievementInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model SitePolicy
+   */
+
+  export type AggregateSitePolicy = {
+    _count: SitePolicyCountAggregateOutputType | null
+    _min: SitePolicyMinAggregateOutputType | null
+    _max: SitePolicyMaxAggregateOutputType | null
+  }
+
+  export type SitePolicyMinAggregateOutputType = {
+    id: string | null
+    type: $Enums.SitePolicyType | null
+    content: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type SitePolicyMaxAggregateOutputType = {
+    id: string | null
+    type: $Enums.SitePolicyType | null
+    content: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type SitePolicyCountAggregateOutputType = {
+    id: number
+    type: number
+    content: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type SitePolicyMinAggregateInputType = {
+    id?: true
+    type?: true
+    content?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type SitePolicyMaxAggregateInputType = {
+    id?: true
+    type?: true
+    content?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type SitePolicyCountAggregateInputType = {
+    id?: true
+    type?: true
+    content?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type SitePolicyAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which SitePolicy to aggregate.
+     */
+    where?: SitePolicyWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of SitePolicies to fetch.
+     */
+    orderBy?: SitePolicyOrderByWithRelationInput | SitePolicyOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: SitePolicyWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` SitePolicies from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` SitePolicies.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned SitePolicies
+    **/
+    _count?: true | SitePolicyCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: SitePolicyMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: SitePolicyMaxAggregateInputType
+  }
+
+  export type GetSitePolicyAggregateType<T extends SitePolicyAggregateArgs> = {
+        [P in keyof T & keyof AggregateSitePolicy]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateSitePolicy[P]>
+      : GetScalarType<T[P], AggregateSitePolicy[P]>
+  }
+
+
+
+
+  export type SitePolicyGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: SitePolicyWhereInput
+    orderBy?: SitePolicyOrderByWithAggregationInput | SitePolicyOrderByWithAggregationInput[]
+    by: SitePolicyScalarFieldEnum[] | SitePolicyScalarFieldEnum
+    having?: SitePolicyScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: SitePolicyCountAggregateInputType | true
+    _min?: SitePolicyMinAggregateInputType
+    _max?: SitePolicyMaxAggregateInputType
+  }
+
+  export type SitePolicyGroupByOutputType = {
+    id: string
+    type: $Enums.SitePolicyType
+    content: string
+    createdAt: Date
+    updatedAt: Date
+    _count: SitePolicyCountAggregateOutputType | null
+    _min: SitePolicyMinAggregateOutputType | null
+    _max: SitePolicyMaxAggregateOutputType | null
+  }
+
+  type GetSitePolicyGroupByPayload<T extends SitePolicyGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<SitePolicyGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof SitePolicyGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], SitePolicyGroupByOutputType[P]>
+            : GetScalarType<T[P], SitePolicyGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type SitePolicySelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    type?: boolean
+    content?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["sitePolicy"]>
+
+
+
+  export type SitePolicySelectScalar = {
+    id?: boolean
+    type?: boolean
+    content?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type SitePolicyOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "type" | "content" | "createdAt" | "updatedAt", ExtArgs["result"]["sitePolicy"]>
+
+  export type $SitePolicyPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "SitePolicy"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      type: $Enums.SitePolicyType
+      content: string
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["sitePolicy"]>
+    composites: {}
+  }
+
+  type SitePolicyGetPayload<S extends boolean | null | undefined | SitePolicyDefaultArgs> = $Result.GetResult<Prisma.$SitePolicyPayload, S>
+
+  type SitePolicyCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<SitePolicyFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: SitePolicyCountAggregateInputType | true
+    }
+
+  export interface SitePolicyDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['SitePolicy'], meta: { name: 'SitePolicy' } }
+    /**
+     * Find zero or one SitePolicy that matches the filter.
+     * @param {SitePolicyFindUniqueArgs} args - Arguments to find a SitePolicy
+     * @example
+     * // Get one SitePolicy
+     * const sitePolicy = await prisma.sitePolicy.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends SitePolicyFindUniqueArgs>(args: SelectSubset<T, SitePolicyFindUniqueArgs<ExtArgs>>): Prisma__SitePolicyClient<$Result.GetResult<Prisma.$SitePolicyPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one SitePolicy that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {SitePolicyFindUniqueOrThrowArgs} args - Arguments to find a SitePolicy
+     * @example
+     * // Get one SitePolicy
+     * const sitePolicy = await prisma.sitePolicy.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends SitePolicyFindUniqueOrThrowArgs>(args: SelectSubset<T, SitePolicyFindUniqueOrThrowArgs<ExtArgs>>): Prisma__SitePolicyClient<$Result.GetResult<Prisma.$SitePolicyPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first SitePolicy that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SitePolicyFindFirstArgs} args - Arguments to find a SitePolicy
+     * @example
+     * // Get one SitePolicy
+     * const sitePolicy = await prisma.sitePolicy.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends SitePolicyFindFirstArgs>(args?: SelectSubset<T, SitePolicyFindFirstArgs<ExtArgs>>): Prisma__SitePolicyClient<$Result.GetResult<Prisma.$SitePolicyPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first SitePolicy that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SitePolicyFindFirstOrThrowArgs} args - Arguments to find a SitePolicy
+     * @example
+     * // Get one SitePolicy
+     * const sitePolicy = await prisma.sitePolicy.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends SitePolicyFindFirstOrThrowArgs>(args?: SelectSubset<T, SitePolicyFindFirstOrThrowArgs<ExtArgs>>): Prisma__SitePolicyClient<$Result.GetResult<Prisma.$SitePolicyPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more SitePolicies that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SitePolicyFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all SitePolicies
+     * const sitePolicies = await prisma.sitePolicy.findMany()
+     * 
+     * // Get first 10 SitePolicies
+     * const sitePolicies = await prisma.sitePolicy.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const sitePolicyWithIdOnly = await prisma.sitePolicy.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends SitePolicyFindManyArgs>(args?: SelectSubset<T, SitePolicyFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SitePolicyPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a SitePolicy.
+     * @param {SitePolicyCreateArgs} args - Arguments to create a SitePolicy.
+     * @example
+     * // Create one SitePolicy
+     * const SitePolicy = await prisma.sitePolicy.create({
+     *   data: {
+     *     // ... data to create a SitePolicy
+     *   }
+     * })
+     * 
+     */
+    create<T extends SitePolicyCreateArgs>(args: SelectSubset<T, SitePolicyCreateArgs<ExtArgs>>): Prisma__SitePolicyClient<$Result.GetResult<Prisma.$SitePolicyPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many SitePolicies.
+     * @param {SitePolicyCreateManyArgs} args - Arguments to create many SitePolicies.
+     * @example
+     * // Create many SitePolicies
+     * const sitePolicy = await prisma.sitePolicy.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends SitePolicyCreateManyArgs>(args?: SelectSubset<T, SitePolicyCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a SitePolicy.
+     * @param {SitePolicyDeleteArgs} args - Arguments to delete one SitePolicy.
+     * @example
+     * // Delete one SitePolicy
+     * const SitePolicy = await prisma.sitePolicy.delete({
+     *   where: {
+     *     // ... filter to delete one SitePolicy
+     *   }
+     * })
+     * 
+     */
+    delete<T extends SitePolicyDeleteArgs>(args: SelectSubset<T, SitePolicyDeleteArgs<ExtArgs>>): Prisma__SitePolicyClient<$Result.GetResult<Prisma.$SitePolicyPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one SitePolicy.
+     * @param {SitePolicyUpdateArgs} args - Arguments to update one SitePolicy.
+     * @example
+     * // Update one SitePolicy
+     * const sitePolicy = await prisma.sitePolicy.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends SitePolicyUpdateArgs>(args: SelectSubset<T, SitePolicyUpdateArgs<ExtArgs>>): Prisma__SitePolicyClient<$Result.GetResult<Prisma.$SitePolicyPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more SitePolicies.
+     * @param {SitePolicyDeleteManyArgs} args - Arguments to filter SitePolicies to delete.
+     * @example
+     * // Delete a few SitePolicies
+     * const { count } = await prisma.sitePolicy.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends SitePolicyDeleteManyArgs>(args?: SelectSubset<T, SitePolicyDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more SitePolicies.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SitePolicyUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many SitePolicies
+     * const sitePolicy = await prisma.sitePolicy.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends SitePolicyUpdateManyArgs>(args: SelectSubset<T, SitePolicyUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one SitePolicy.
+     * @param {SitePolicyUpsertArgs} args - Arguments to update or create a SitePolicy.
+     * @example
+     * // Update or create a SitePolicy
+     * const sitePolicy = await prisma.sitePolicy.upsert({
+     *   create: {
+     *     // ... data to create a SitePolicy
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the SitePolicy we want to update
+     *   }
+     * })
+     */
+    upsert<T extends SitePolicyUpsertArgs>(args: SelectSubset<T, SitePolicyUpsertArgs<ExtArgs>>): Prisma__SitePolicyClient<$Result.GetResult<Prisma.$SitePolicyPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more SitePolicies that matches the filter.
+     * @param {SitePolicyFindRawArgs} args - Select which filters you would like to apply.
+     * @example
+     * const sitePolicy = await prisma.sitePolicy.findRaw({
+     *   filter: { age: { $gt: 25 } }
+     * })
+     */
+    findRaw(args?: SitePolicyFindRawArgs): Prisma.PrismaPromise<JsonObject>
+
+    /**
+     * Perform aggregation operations on a SitePolicy.
+     * @param {SitePolicyAggregateRawArgs} args - Select which aggregations you would like to apply.
+     * @example
+     * const sitePolicy = await prisma.sitePolicy.aggregateRaw({
+     *   pipeline: [
+     *     { $match: { status: "registered" } },
+     *     { $group: { _id: "$country", total: { $sum: 1 } } }
+     *   ]
+     * })
+     */
+    aggregateRaw(args?: SitePolicyAggregateRawArgs): Prisma.PrismaPromise<JsonObject>
+
+
+    /**
+     * Count the number of SitePolicies.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SitePolicyCountArgs} args - Arguments to filter SitePolicies to count.
+     * @example
+     * // Count the number of SitePolicies
+     * const count = await prisma.sitePolicy.count({
+     *   where: {
+     *     // ... the filter for the SitePolicies we want to count
+     *   }
+     * })
+    **/
+    count<T extends SitePolicyCountArgs>(
+      args?: Subset<T, SitePolicyCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], SitePolicyCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a SitePolicy.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SitePolicyAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends SitePolicyAggregateArgs>(args: Subset<T, SitePolicyAggregateArgs>): Prisma.PrismaPromise<GetSitePolicyAggregateType<T>>
+
+    /**
+     * Group by SitePolicy.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SitePolicyGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends SitePolicyGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: SitePolicyGroupByArgs['orderBy'] }
+        : { orderBy?: SitePolicyGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, SitePolicyGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetSitePolicyGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the SitePolicy model
+   */
+  readonly fields: SitePolicyFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for SitePolicy.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__SitePolicyClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the SitePolicy model
+   */
+  interface SitePolicyFieldRefs {
+    readonly id: FieldRef<"SitePolicy", 'String'>
+    readonly type: FieldRef<"SitePolicy", 'SitePolicyType'>
+    readonly content: FieldRef<"SitePolicy", 'String'>
+    readonly createdAt: FieldRef<"SitePolicy", 'DateTime'>
+    readonly updatedAt: FieldRef<"SitePolicy", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * SitePolicy findUnique
+   */
+  export type SitePolicyFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SitePolicy
+     */
+    select?: SitePolicySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SitePolicy
+     */
+    omit?: SitePolicyOmit<ExtArgs> | null
+    /**
+     * Filter, which SitePolicy to fetch.
+     */
+    where: SitePolicyWhereUniqueInput
+  }
+
+  /**
+   * SitePolicy findUniqueOrThrow
+   */
+  export type SitePolicyFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SitePolicy
+     */
+    select?: SitePolicySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SitePolicy
+     */
+    omit?: SitePolicyOmit<ExtArgs> | null
+    /**
+     * Filter, which SitePolicy to fetch.
+     */
+    where: SitePolicyWhereUniqueInput
+  }
+
+  /**
+   * SitePolicy findFirst
+   */
+  export type SitePolicyFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SitePolicy
+     */
+    select?: SitePolicySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SitePolicy
+     */
+    omit?: SitePolicyOmit<ExtArgs> | null
+    /**
+     * Filter, which SitePolicy to fetch.
+     */
+    where?: SitePolicyWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of SitePolicies to fetch.
+     */
+    orderBy?: SitePolicyOrderByWithRelationInput | SitePolicyOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for SitePolicies.
+     */
+    cursor?: SitePolicyWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` SitePolicies from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` SitePolicies.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of SitePolicies.
+     */
+    distinct?: SitePolicyScalarFieldEnum | SitePolicyScalarFieldEnum[]
+  }
+
+  /**
+   * SitePolicy findFirstOrThrow
+   */
+  export type SitePolicyFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SitePolicy
+     */
+    select?: SitePolicySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SitePolicy
+     */
+    omit?: SitePolicyOmit<ExtArgs> | null
+    /**
+     * Filter, which SitePolicy to fetch.
+     */
+    where?: SitePolicyWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of SitePolicies to fetch.
+     */
+    orderBy?: SitePolicyOrderByWithRelationInput | SitePolicyOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for SitePolicies.
+     */
+    cursor?: SitePolicyWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` SitePolicies from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` SitePolicies.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of SitePolicies.
+     */
+    distinct?: SitePolicyScalarFieldEnum | SitePolicyScalarFieldEnum[]
+  }
+
+  /**
+   * SitePolicy findMany
+   */
+  export type SitePolicyFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SitePolicy
+     */
+    select?: SitePolicySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SitePolicy
+     */
+    omit?: SitePolicyOmit<ExtArgs> | null
+    /**
+     * Filter, which SitePolicies to fetch.
+     */
+    where?: SitePolicyWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of SitePolicies to fetch.
+     */
+    orderBy?: SitePolicyOrderByWithRelationInput | SitePolicyOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing SitePolicies.
+     */
+    cursor?: SitePolicyWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` SitePolicies from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` SitePolicies.
+     */
+    skip?: number
+    distinct?: SitePolicyScalarFieldEnum | SitePolicyScalarFieldEnum[]
+  }
+
+  /**
+   * SitePolicy create
+   */
+  export type SitePolicyCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SitePolicy
+     */
+    select?: SitePolicySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SitePolicy
+     */
+    omit?: SitePolicyOmit<ExtArgs> | null
+    /**
+     * The data needed to create a SitePolicy.
+     */
+    data: XOR<SitePolicyCreateInput, SitePolicyUncheckedCreateInput>
+  }
+
+  /**
+   * SitePolicy createMany
+   */
+  export type SitePolicyCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many SitePolicies.
+     */
+    data: SitePolicyCreateManyInput | SitePolicyCreateManyInput[]
+  }
+
+  /**
+   * SitePolicy update
+   */
+  export type SitePolicyUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SitePolicy
+     */
+    select?: SitePolicySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SitePolicy
+     */
+    omit?: SitePolicyOmit<ExtArgs> | null
+    /**
+     * The data needed to update a SitePolicy.
+     */
+    data: XOR<SitePolicyUpdateInput, SitePolicyUncheckedUpdateInput>
+    /**
+     * Choose, which SitePolicy to update.
+     */
+    where: SitePolicyWhereUniqueInput
+  }
+
+  /**
+   * SitePolicy updateMany
+   */
+  export type SitePolicyUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update SitePolicies.
+     */
+    data: XOR<SitePolicyUpdateManyMutationInput, SitePolicyUncheckedUpdateManyInput>
+    /**
+     * Filter which SitePolicies to update
+     */
+    where?: SitePolicyWhereInput
+    /**
+     * Limit how many SitePolicies to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * SitePolicy upsert
+   */
+  export type SitePolicyUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SitePolicy
+     */
+    select?: SitePolicySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SitePolicy
+     */
+    omit?: SitePolicyOmit<ExtArgs> | null
+    /**
+     * The filter to search for the SitePolicy to update in case it exists.
+     */
+    where: SitePolicyWhereUniqueInput
+    /**
+     * In case the SitePolicy found by the `where` argument doesn't exist, create a new SitePolicy with this data.
+     */
+    create: XOR<SitePolicyCreateInput, SitePolicyUncheckedCreateInput>
+    /**
+     * In case the SitePolicy was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<SitePolicyUpdateInput, SitePolicyUncheckedUpdateInput>
+  }
+
+  /**
+   * SitePolicy delete
+   */
+  export type SitePolicyDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SitePolicy
+     */
+    select?: SitePolicySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SitePolicy
+     */
+    omit?: SitePolicyOmit<ExtArgs> | null
+    /**
+     * Filter which SitePolicy to delete.
+     */
+    where: SitePolicyWhereUniqueInput
+  }
+
+  /**
+   * SitePolicy deleteMany
+   */
+  export type SitePolicyDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which SitePolicies to delete
+     */
+    where?: SitePolicyWhereInput
+    /**
+     * Limit how many SitePolicies to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * SitePolicy findRaw
+   */
+  export type SitePolicyFindRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The query predicate filter. If unspecified, then all documents in the collection will match the predicate. ${@link https://docs.mongodb.com/manual/reference/operator/query MongoDB Docs}.
+     */
+    filter?: InputJsonValue
+    /**
+     * Additional options to pass to the `find` command ${@link https://docs.mongodb.com/manual/reference/command/find/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * SitePolicy aggregateRaw
+   */
+  export type SitePolicyAggregateRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * An array of aggregation stages to process and transform the document stream via the aggregation pipeline. ${@link https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline MongoDB Docs}.
+     */
+    pipeline?: InputJsonValue[]
+    /**
+     * Additional options to pass to the `aggregate` command ${@link https://docs.mongodb.com/manual/reference/command/aggregate/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * SitePolicy without action
+   */
+  export type SitePolicyDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SitePolicy
+     */
+    select?: SitePolicySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SitePolicy
+     */
+    omit?: SitePolicyOmit<ExtArgs> | null
+  }
+
+
+  /**
+   * Model Room
+   */
+
+  export type AggregateRoom = {
+    _count: RoomCountAggregateOutputType | null
+    _min: RoomMinAggregateOutputType | null
+    _max: RoomMaxAggregateOutputType | null
+  }
+
+  export type RoomMinAggregateOutputType = {
+    id: string | null
+  }
+
+  export type RoomMaxAggregateOutputType = {
+    id: string | null
+  }
+
+  export type RoomCountAggregateOutputType = {
+    id: number
+    _all: number
+  }
+
+
+  export type RoomMinAggregateInputType = {
+    id?: true
+  }
+
+  export type RoomMaxAggregateInputType = {
+    id?: true
+  }
+
+  export type RoomCountAggregateInputType = {
+    id?: true
+    _all?: true
+  }
+
+  export type RoomAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Room to aggregate.
+     */
+    where?: RoomWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Rooms to fetch.
+     */
+    orderBy?: RoomOrderByWithRelationInput | RoomOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: RoomWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Rooms from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Rooms.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned Rooms
+    **/
+    _count?: true | RoomCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: RoomMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: RoomMaxAggregateInputType
+  }
+
+  export type GetRoomAggregateType<T extends RoomAggregateArgs> = {
+        [P in keyof T & keyof AggregateRoom]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateRoom[P]>
+      : GetScalarType<T[P], AggregateRoom[P]>
+  }
+
+
+
+
+  export type RoomGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: RoomWhereInput
+    orderBy?: RoomOrderByWithAggregationInput | RoomOrderByWithAggregationInput[]
+    by: RoomScalarFieldEnum[] | RoomScalarFieldEnum
+    having?: RoomScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: RoomCountAggregateInputType | true
+    _min?: RoomMinAggregateInputType
+    _max?: RoomMaxAggregateInputType
+  }
+
+  export type RoomGroupByOutputType = {
+    id: string
+    _count: RoomCountAggregateOutputType | null
+    _min: RoomMinAggregateOutputType | null
+    _max: RoomMaxAggregateOutputType | null
+  }
+
+  type GetRoomGroupByPayload<T extends RoomGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<RoomGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof RoomGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], RoomGroupByOutputType[P]>
+            : GetScalarType<T[P], RoomGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type RoomSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+  }, ExtArgs["result"]["room"]>
+
+
+
+  export type RoomSelectScalar = {
+    id?: boolean
+  }
+
+  export type RoomOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id", ExtArgs["result"]["room"]>
+
+  export type $RoomPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Room"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+    }, ExtArgs["result"]["room"]>
+    composites: {}
+  }
+
+  type RoomGetPayload<S extends boolean | null | undefined | RoomDefaultArgs> = $Result.GetResult<Prisma.$RoomPayload, S>
+
+  type RoomCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<RoomFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: RoomCountAggregateInputType | true
+    }
+
+  export interface RoomDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Room'], meta: { name: 'Room' } }
+    /**
+     * Find zero or one Room that matches the filter.
+     * @param {RoomFindUniqueArgs} args - Arguments to find a Room
+     * @example
+     * // Get one Room
+     * const room = await prisma.room.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends RoomFindUniqueArgs>(args: SelectSubset<T, RoomFindUniqueArgs<ExtArgs>>): Prisma__RoomClient<$Result.GetResult<Prisma.$RoomPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one Room that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {RoomFindUniqueOrThrowArgs} args - Arguments to find a Room
+     * @example
+     * // Get one Room
+     * const room = await prisma.room.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends RoomFindUniqueOrThrowArgs>(args: SelectSubset<T, RoomFindUniqueOrThrowArgs<ExtArgs>>): Prisma__RoomClient<$Result.GetResult<Prisma.$RoomPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Room that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RoomFindFirstArgs} args - Arguments to find a Room
+     * @example
+     * // Get one Room
+     * const room = await prisma.room.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends RoomFindFirstArgs>(args?: SelectSubset<T, RoomFindFirstArgs<ExtArgs>>): Prisma__RoomClient<$Result.GetResult<Prisma.$RoomPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Room that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RoomFindFirstOrThrowArgs} args - Arguments to find a Room
+     * @example
+     * // Get one Room
+     * const room = await prisma.room.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends RoomFindFirstOrThrowArgs>(args?: SelectSubset<T, RoomFindFirstOrThrowArgs<ExtArgs>>): Prisma__RoomClient<$Result.GetResult<Prisma.$RoomPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Rooms that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RoomFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Rooms
+     * const rooms = await prisma.room.findMany()
+     * 
+     * // Get first 10 Rooms
+     * const rooms = await prisma.room.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const roomWithIdOnly = await prisma.room.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends RoomFindManyArgs>(args?: SelectSubset<T, RoomFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RoomPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a Room.
+     * @param {RoomCreateArgs} args - Arguments to create a Room.
+     * @example
+     * // Create one Room
+     * const Room = await prisma.room.create({
+     *   data: {
+     *     // ... data to create a Room
+     *   }
+     * })
+     * 
+     */
+    create<T extends RoomCreateArgs>(args: SelectSubset<T, RoomCreateArgs<ExtArgs>>): Prisma__RoomClient<$Result.GetResult<Prisma.$RoomPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many Rooms.
+     * @param {RoomCreateManyArgs} args - Arguments to create many Rooms.
+     * @example
+     * // Create many Rooms
+     * const room = await prisma.room.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends RoomCreateManyArgs>(args?: SelectSubset<T, RoomCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a Room.
+     * @param {RoomDeleteArgs} args - Arguments to delete one Room.
+     * @example
+     * // Delete one Room
+     * const Room = await prisma.room.delete({
+     *   where: {
+     *     // ... filter to delete one Room
+     *   }
+     * })
+     * 
+     */
+    delete<T extends RoomDeleteArgs>(args: SelectSubset<T, RoomDeleteArgs<ExtArgs>>): Prisma__RoomClient<$Result.GetResult<Prisma.$RoomPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one Room.
+     * @param {RoomUpdateArgs} args - Arguments to update one Room.
+     * @example
+     * // Update one Room
+     * const room = await prisma.room.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends RoomUpdateArgs>(args: SelectSubset<T, RoomUpdateArgs<ExtArgs>>): Prisma__RoomClient<$Result.GetResult<Prisma.$RoomPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more Rooms.
+     * @param {RoomDeleteManyArgs} args - Arguments to filter Rooms to delete.
+     * @example
+     * // Delete a few Rooms
+     * const { count } = await prisma.room.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends RoomDeleteManyArgs>(args?: SelectSubset<T, RoomDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Rooms.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RoomUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Rooms
+     * const room = await prisma.room.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends RoomUpdateManyArgs>(args: SelectSubset<T, RoomUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one Room.
+     * @param {RoomUpsertArgs} args - Arguments to update or create a Room.
+     * @example
+     * // Update or create a Room
+     * const room = await prisma.room.upsert({
+     *   create: {
+     *     // ... data to create a Room
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Room we want to update
+     *   }
+     * })
+     */
+    upsert<T extends RoomUpsertArgs>(args: SelectSubset<T, RoomUpsertArgs<ExtArgs>>): Prisma__RoomClient<$Result.GetResult<Prisma.$RoomPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Rooms that matches the filter.
+     * @param {RoomFindRawArgs} args - Select which filters you would like to apply.
+     * @example
+     * const room = await prisma.room.findRaw({
+     *   filter: { age: { $gt: 25 } }
+     * })
+     */
+    findRaw(args?: RoomFindRawArgs): Prisma.PrismaPromise<JsonObject>
+
+    /**
+     * Perform aggregation operations on a Room.
+     * @param {RoomAggregateRawArgs} args - Select which aggregations you would like to apply.
+     * @example
+     * const room = await prisma.room.aggregateRaw({
+     *   pipeline: [
+     *     { $match: { status: "registered" } },
+     *     { $group: { _id: "$country", total: { $sum: 1 } } }
+     *   ]
+     * })
+     */
+    aggregateRaw(args?: RoomAggregateRawArgs): Prisma.PrismaPromise<JsonObject>
+
+
+    /**
+     * Count the number of Rooms.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RoomCountArgs} args - Arguments to filter Rooms to count.
+     * @example
+     * // Count the number of Rooms
+     * const count = await prisma.room.count({
+     *   where: {
+     *     // ... the filter for the Rooms we want to count
+     *   }
+     * })
+    **/
+    count<T extends RoomCountArgs>(
+      args?: Subset<T, RoomCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], RoomCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Room.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RoomAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends RoomAggregateArgs>(args: Subset<T, RoomAggregateArgs>): Prisma.PrismaPromise<GetRoomAggregateType<T>>
+
+    /**
+     * Group by Room.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RoomGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends RoomGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: RoomGroupByArgs['orderBy'] }
+        : { orderBy?: RoomGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, RoomGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetRoomGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the Room model
+   */
+  readonly fields: RoomFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Room.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__RoomClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the Room model
+   */
+  interface RoomFieldRefs {
+    readonly id: FieldRef<"Room", 'String'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * Room findUnique
+   */
+  export type RoomFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Room
+     */
+    select?: RoomSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Room
+     */
+    omit?: RoomOmit<ExtArgs> | null
+    /**
+     * Filter, which Room to fetch.
+     */
+    where: RoomWhereUniqueInput
+  }
+
+  /**
+   * Room findUniqueOrThrow
+   */
+  export type RoomFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Room
+     */
+    select?: RoomSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Room
+     */
+    omit?: RoomOmit<ExtArgs> | null
+    /**
+     * Filter, which Room to fetch.
+     */
+    where: RoomWhereUniqueInput
+  }
+
+  /**
+   * Room findFirst
+   */
+  export type RoomFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Room
+     */
+    select?: RoomSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Room
+     */
+    omit?: RoomOmit<ExtArgs> | null
+    /**
+     * Filter, which Room to fetch.
+     */
+    where?: RoomWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Rooms to fetch.
+     */
+    orderBy?: RoomOrderByWithRelationInput | RoomOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Rooms.
+     */
+    cursor?: RoomWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Rooms from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Rooms.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Rooms.
+     */
+    distinct?: RoomScalarFieldEnum | RoomScalarFieldEnum[]
+  }
+
+  /**
+   * Room findFirstOrThrow
+   */
+  export type RoomFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Room
+     */
+    select?: RoomSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Room
+     */
+    omit?: RoomOmit<ExtArgs> | null
+    /**
+     * Filter, which Room to fetch.
+     */
+    where?: RoomWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Rooms to fetch.
+     */
+    orderBy?: RoomOrderByWithRelationInput | RoomOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Rooms.
+     */
+    cursor?: RoomWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Rooms from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Rooms.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Rooms.
+     */
+    distinct?: RoomScalarFieldEnum | RoomScalarFieldEnum[]
+  }
+
+  /**
+   * Room findMany
+   */
+  export type RoomFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Room
+     */
+    select?: RoomSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Room
+     */
+    omit?: RoomOmit<ExtArgs> | null
+    /**
+     * Filter, which Rooms to fetch.
+     */
+    where?: RoomWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Rooms to fetch.
+     */
+    orderBy?: RoomOrderByWithRelationInput | RoomOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing Rooms.
+     */
+    cursor?: RoomWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Rooms from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Rooms.
+     */
+    skip?: number
+    distinct?: RoomScalarFieldEnum | RoomScalarFieldEnum[]
+  }
+
+  /**
+   * Room create
+   */
+  export type RoomCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Room
+     */
+    select?: RoomSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Room
+     */
+    omit?: RoomOmit<ExtArgs> | null
+    /**
+     * The data needed to create a Room.
+     */
+    data?: XOR<RoomCreateInput, RoomUncheckedCreateInput>
+  }
+
+  /**
+   * Room createMany
+   */
+  export type RoomCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many Rooms.
+     */
+    data: RoomCreateManyInput | RoomCreateManyInput[]
+  }
+
+  /**
+   * Room update
+   */
+  export type RoomUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Room
+     */
+    select?: RoomSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Room
+     */
+    omit?: RoomOmit<ExtArgs> | null
+    /**
+     * The data needed to update a Room.
+     */
+    data: XOR<RoomUpdateInput, RoomUncheckedUpdateInput>
+    /**
+     * Choose, which Room to update.
+     */
+    where: RoomWhereUniqueInput
+  }
+
+  /**
+   * Room updateMany
+   */
+  export type RoomUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update Rooms.
+     */
+    data: XOR<RoomUpdateManyMutationInput, RoomUncheckedUpdateManyInput>
+    /**
+     * Filter which Rooms to update
+     */
+    where?: RoomWhereInput
+    /**
+     * Limit how many Rooms to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * Room upsert
+   */
+  export type RoomUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Room
+     */
+    select?: RoomSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Room
+     */
+    omit?: RoomOmit<ExtArgs> | null
+    /**
+     * The filter to search for the Room to update in case it exists.
+     */
+    where: RoomWhereUniqueInput
+    /**
+     * In case the Room found by the `where` argument doesn't exist, create a new Room with this data.
+     */
+    create: XOR<RoomCreateInput, RoomUncheckedCreateInput>
+    /**
+     * In case the Room was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<RoomUpdateInput, RoomUncheckedUpdateInput>
+  }
+
+  /**
+   * Room delete
+   */
+  export type RoomDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Room
+     */
+    select?: RoomSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Room
+     */
+    omit?: RoomOmit<ExtArgs> | null
+    /**
+     * Filter which Room to delete.
+     */
+    where: RoomWhereUniqueInput
+  }
+
+  /**
+   * Room deleteMany
+   */
+  export type RoomDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Rooms to delete
+     */
+    where?: RoomWhereInput
+    /**
+     * Limit how many Rooms to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * Room findRaw
+   */
+  export type RoomFindRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The query predicate filter. If unspecified, then all documents in the collection will match the predicate. ${@link https://docs.mongodb.com/manual/reference/operator/query MongoDB Docs}.
+     */
+    filter?: InputJsonValue
+    /**
+     * Additional options to pass to the `find` command ${@link https://docs.mongodb.com/manual/reference/command/find/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * Room aggregateRaw
+   */
+  export type RoomAggregateRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * An array of aggregation stages to process and transform the document stream via the aggregation pipeline. ${@link https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline MongoDB Docs}.
+     */
+    pipeline?: InputJsonValue[]
+    /**
+     * Additional options to pass to the `aggregate` command ${@link https://docs.mongodb.com/manual/reference/command/aggregate/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * Room without action
+   */
+  export type RoomDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Room
+     */
+    select?: RoomSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Room
+     */
+    omit?: RoomOmit<ExtArgs> | null
+  }
+
+
+  /**
+   * Model Chat
+   */
+
+  export type AggregateChat = {
+    _count: ChatCountAggregateOutputType | null
+    _min: ChatMinAggregateOutputType | null
+    _max: ChatMaxAggregateOutputType | null
+  }
+
+  export type ChatMinAggregateOutputType = {
+    id: string | null
+    roomId: string | null
+    senderId: string | null
+    receiverId: string | null
+    message: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type ChatMaxAggregateOutputType = {
+    id: string | null
+    roomId: string | null
+    senderId: string | null
+    receiverId: string | null
+    message: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type ChatCountAggregateOutputType = {
+    id: number
+    roomId: number
+    senderId: number
+    receiverId: number
+    message: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type ChatMinAggregateInputType = {
+    id?: true
+    roomId?: true
+    senderId?: true
+    receiverId?: true
+    message?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type ChatMaxAggregateInputType = {
+    id?: true
+    roomId?: true
+    senderId?: true
+    receiverId?: true
+    message?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type ChatCountAggregateInputType = {
+    id?: true
+    roomId?: true
+    senderId?: true
+    receiverId?: true
+    message?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type ChatAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Chat to aggregate.
+     */
+    where?: ChatWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Chats to fetch.
+     */
+    orderBy?: ChatOrderByWithRelationInput | ChatOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: ChatWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Chats from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Chats.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned Chats
+    **/
+    _count?: true | ChatCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: ChatMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: ChatMaxAggregateInputType
+  }
+
+  export type GetChatAggregateType<T extends ChatAggregateArgs> = {
+        [P in keyof T & keyof AggregateChat]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateChat[P]>
+      : GetScalarType<T[P], AggregateChat[P]>
+  }
+
+
+
+
+  export type ChatGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ChatWhereInput
+    orderBy?: ChatOrderByWithAggregationInput | ChatOrderByWithAggregationInput[]
+    by: ChatScalarFieldEnum[] | ChatScalarFieldEnum
+    having?: ChatScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: ChatCountAggregateInputType | true
+    _min?: ChatMinAggregateInputType
+    _max?: ChatMaxAggregateInputType
+  }
+
+  export type ChatGroupByOutputType = {
+    id: string
+    roomId: string
+    senderId: string
+    receiverId: string
+    message: string
+    createdAt: Date
+    updatedAt: Date
+    _count: ChatCountAggregateOutputType | null
+    _min: ChatMinAggregateOutputType | null
+    _max: ChatMaxAggregateOutputType | null
+  }
+
+  type GetChatGroupByPayload<T extends ChatGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<ChatGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof ChatGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], ChatGroupByOutputType[P]>
+            : GetScalarType<T[P], ChatGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type ChatSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    roomId?: boolean
+    senderId?: boolean
+    receiverId?: boolean
+    message?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["chat"]>
+
+
+
+  export type ChatSelectScalar = {
+    id?: boolean
+    roomId?: boolean
+    senderId?: boolean
+    receiverId?: boolean
+    message?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type ChatOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "roomId" | "senderId" | "receiverId" | "message" | "createdAt" | "updatedAt", ExtArgs["result"]["chat"]>
+
+  export type $ChatPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Chat"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      roomId: string
+      senderId: string
+      receiverId: string
+      message: string
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["chat"]>
+    composites: {}
+  }
+
+  type ChatGetPayload<S extends boolean | null | undefined | ChatDefaultArgs> = $Result.GetResult<Prisma.$ChatPayload, S>
+
+  type ChatCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<ChatFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: ChatCountAggregateInputType | true
+    }
+
+  export interface ChatDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Chat'], meta: { name: 'Chat' } }
+    /**
+     * Find zero or one Chat that matches the filter.
+     * @param {ChatFindUniqueArgs} args - Arguments to find a Chat
+     * @example
+     * // Get one Chat
+     * const chat = await prisma.chat.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends ChatFindUniqueArgs>(args: SelectSubset<T, ChatFindUniqueArgs<ExtArgs>>): Prisma__ChatClient<$Result.GetResult<Prisma.$ChatPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one Chat that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {ChatFindUniqueOrThrowArgs} args - Arguments to find a Chat
+     * @example
+     * // Get one Chat
+     * const chat = await prisma.chat.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends ChatFindUniqueOrThrowArgs>(args: SelectSubset<T, ChatFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ChatClient<$Result.GetResult<Prisma.$ChatPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Chat that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ChatFindFirstArgs} args - Arguments to find a Chat
+     * @example
+     * // Get one Chat
+     * const chat = await prisma.chat.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends ChatFindFirstArgs>(args?: SelectSubset<T, ChatFindFirstArgs<ExtArgs>>): Prisma__ChatClient<$Result.GetResult<Prisma.$ChatPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Chat that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ChatFindFirstOrThrowArgs} args - Arguments to find a Chat
+     * @example
+     * // Get one Chat
+     * const chat = await prisma.chat.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends ChatFindFirstOrThrowArgs>(args?: SelectSubset<T, ChatFindFirstOrThrowArgs<ExtArgs>>): Prisma__ChatClient<$Result.GetResult<Prisma.$ChatPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Chats that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ChatFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Chats
+     * const chats = await prisma.chat.findMany()
+     * 
+     * // Get first 10 Chats
+     * const chats = await prisma.chat.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const chatWithIdOnly = await prisma.chat.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends ChatFindManyArgs>(args?: SelectSubset<T, ChatFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ChatPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a Chat.
+     * @param {ChatCreateArgs} args - Arguments to create a Chat.
+     * @example
+     * // Create one Chat
+     * const Chat = await prisma.chat.create({
+     *   data: {
+     *     // ... data to create a Chat
+     *   }
+     * })
+     * 
+     */
+    create<T extends ChatCreateArgs>(args: SelectSubset<T, ChatCreateArgs<ExtArgs>>): Prisma__ChatClient<$Result.GetResult<Prisma.$ChatPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many Chats.
+     * @param {ChatCreateManyArgs} args - Arguments to create many Chats.
+     * @example
+     * // Create many Chats
+     * const chat = await prisma.chat.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends ChatCreateManyArgs>(args?: SelectSubset<T, ChatCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a Chat.
+     * @param {ChatDeleteArgs} args - Arguments to delete one Chat.
+     * @example
+     * // Delete one Chat
+     * const Chat = await prisma.chat.delete({
+     *   where: {
+     *     // ... filter to delete one Chat
+     *   }
+     * })
+     * 
+     */
+    delete<T extends ChatDeleteArgs>(args: SelectSubset<T, ChatDeleteArgs<ExtArgs>>): Prisma__ChatClient<$Result.GetResult<Prisma.$ChatPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one Chat.
+     * @param {ChatUpdateArgs} args - Arguments to update one Chat.
+     * @example
+     * // Update one Chat
+     * const chat = await prisma.chat.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends ChatUpdateArgs>(args: SelectSubset<T, ChatUpdateArgs<ExtArgs>>): Prisma__ChatClient<$Result.GetResult<Prisma.$ChatPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more Chats.
+     * @param {ChatDeleteManyArgs} args - Arguments to filter Chats to delete.
+     * @example
+     * // Delete a few Chats
+     * const { count } = await prisma.chat.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends ChatDeleteManyArgs>(args?: SelectSubset<T, ChatDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Chats.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ChatUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Chats
+     * const chat = await prisma.chat.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends ChatUpdateManyArgs>(args: SelectSubset<T, ChatUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one Chat.
+     * @param {ChatUpsertArgs} args - Arguments to update or create a Chat.
+     * @example
+     * // Update or create a Chat
+     * const chat = await prisma.chat.upsert({
+     *   create: {
+     *     // ... data to create a Chat
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Chat we want to update
+     *   }
+     * })
+     */
+    upsert<T extends ChatUpsertArgs>(args: SelectSubset<T, ChatUpsertArgs<ExtArgs>>): Prisma__ChatClient<$Result.GetResult<Prisma.$ChatPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Chats that matches the filter.
+     * @param {ChatFindRawArgs} args - Select which filters you would like to apply.
+     * @example
+     * const chat = await prisma.chat.findRaw({
+     *   filter: { age: { $gt: 25 } }
+     * })
+     */
+    findRaw(args?: ChatFindRawArgs): Prisma.PrismaPromise<JsonObject>
+
+    /**
+     * Perform aggregation operations on a Chat.
+     * @param {ChatAggregateRawArgs} args - Select which aggregations you would like to apply.
+     * @example
+     * const chat = await prisma.chat.aggregateRaw({
+     *   pipeline: [
+     *     { $match: { status: "registered" } },
+     *     { $group: { _id: "$country", total: { $sum: 1 } } }
+     *   ]
+     * })
+     */
+    aggregateRaw(args?: ChatAggregateRawArgs): Prisma.PrismaPromise<JsonObject>
+
+
+    /**
+     * Count the number of Chats.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ChatCountArgs} args - Arguments to filter Chats to count.
+     * @example
+     * // Count the number of Chats
+     * const count = await prisma.chat.count({
+     *   where: {
+     *     // ... the filter for the Chats we want to count
+     *   }
+     * })
+    **/
+    count<T extends ChatCountArgs>(
+      args?: Subset<T, ChatCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], ChatCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Chat.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ChatAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends ChatAggregateArgs>(args: Subset<T, ChatAggregateArgs>): Prisma.PrismaPromise<GetChatAggregateType<T>>
+
+    /**
+     * Group by Chat.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ChatGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends ChatGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: ChatGroupByArgs['orderBy'] }
+        : { orderBy?: ChatGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, ChatGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetChatGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the Chat model
+   */
+  readonly fields: ChatFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Chat.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__ChatClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the Chat model
+   */
+  interface ChatFieldRefs {
+    readonly id: FieldRef<"Chat", 'String'>
+    readonly roomId: FieldRef<"Chat", 'String'>
+    readonly senderId: FieldRef<"Chat", 'String'>
+    readonly receiverId: FieldRef<"Chat", 'String'>
+    readonly message: FieldRef<"Chat", 'String'>
+    readonly createdAt: FieldRef<"Chat", 'DateTime'>
+    readonly updatedAt: FieldRef<"Chat", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * Chat findUnique
+   */
+  export type ChatFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Chat
+     */
+    select?: ChatSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Chat
+     */
+    omit?: ChatOmit<ExtArgs> | null
+    /**
+     * Filter, which Chat to fetch.
+     */
+    where: ChatWhereUniqueInput
+  }
+
+  /**
+   * Chat findUniqueOrThrow
+   */
+  export type ChatFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Chat
+     */
+    select?: ChatSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Chat
+     */
+    omit?: ChatOmit<ExtArgs> | null
+    /**
+     * Filter, which Chat to fetch.
+     */
+    where: ChatWhereUniqueInput
+  }
+
+  /**
+   * Chat findFirst
+   */
+  export type ChatFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Chat
+     */
+    select?: ChatSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Chat
+     */
+    omit?: ChatOmit<ExtArgs> | null
+    /**
+     * Filter, which Chat to fetch.
+     */
+    where?: ChatWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Chats to fetch.
+     */
+    orderBy?: ChatOrderByWithRelationInput | ChatOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Chats.
+     */
+    cursor?: ChatWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Chats from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Chats.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Chats.
+     */
+    distinct?: ChatScalarFieldEnum | ChatScalarFieldEnum[]
+  }
+
+  /**
+   * Chat findFirstOrThrow
+   */
+  export type ChatFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Chat
+     */
+    select?: ChatSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Chat
+     */
+    omit?: ChatOmit<ExtArgs> | null
+    /**
+     * Filter, which Chat to fetch.
+     */
+    where?: ChatWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Chats to fetch.
+     */
+    orderBy?: ChatOrderByWithRelationInput | ChatOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Chats.
+     */
+    cursor?: ChatWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Chats from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Chats.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Chats.
+     */
+    distinct?: ChatScalarFieldEnum | ChatScalarFieldEnum[]
+  }
+
+  /**
+   * Chat findMany
+   */
+  export type ChatFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Chat
+     */
+    select?: ChatSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Chat
+     */
+    omit?: ChatOmit<ExtArgs> | null
+    /**
+     * Filter, which Chats to fetch.
+     */
+    where?: ChatWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Chats to fetch.
+     */
+    orderBy?: ChatOrderByWithRelationInput | ChatOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing Chats.
+     */
+    cursor?: ChatWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Chats from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Chats.
+     */
+    skip?: number
+    distinct?: ChatScalarFieldEnum | ChatScalarFieldEnum[]
+  }
+
+  /**
+   * Chat create
+   */
+  export type ChatCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Chat
+     */
+    select?: ChatSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Chat
+     */
+    omit?: ChatOmit<ExtArgs> | null
+    /**
+     * The data needed to create a Chat.
+     */
+    data: XOR<ChatCreateInput, ChatUncheckedCreateInput>
+  }
+
+  /**
+   * Chat createMany
+   */
+  export type ChatCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many Chats.
+     */
+    data: ChatCreateManyInput | ChatCreateManyInput[]
+  }
+
+  /**
+   * Chat update
+   */
+  export type ChatUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Chat
+     */
+    select?: ChatSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Chat
+     */
+    omit?: ChatOmit<ExtArgs> | null
+    /**
+     * The data needed to update a Chat.
+     */
+    data: XOR<ChatUpdateInput, ChatUncheckedUpdateInput>
+    /**
+     * Choose, which Chat to update.
+     */
+    where: ChatWhereUniqueInput
+  }
+
+  /**
+   * Chat updateMany
+   */
+  export type ChatUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update Chats.
+     */
+    data: XOR<ChatUpdateManyMutationInput, ChatUncheckedUpdateManyInput>
+    /**
+     * Filter which Chats to update
+     */
+    where?: ChatWhereInput
+    /**
+     * Limit how many Chats to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * Chat upsert
+   */
+  export type ChatUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Chat
+     */
+    select?: ChatSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Chat
+     */
+    omit?: ChatOmit<ExtArgs> | null
+    /**
+     * The filter to search for the Chat to update in case it exists.
+     */
+    where: ChatWhereUniqueInput
+    /**
+     * In case the Chat found by the `where` argument doesn't exist, create a new Chat with this data.
+     */
+    create: XOR<ChatCreateInput, ChatUncheckedCreateInput>
+    /**
+     * In case the Chat was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<ChatUpdateInput, ChatUncheckedUpdateInput>
+  }
+
+  /**
+   * Chat delete
+   */
+  export type ChatDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Chat
+     */
+    select?: ChatSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Chat
+     */
+    omit?: ChatOmit<ExtArgs> | null
+    /**
+     * Filter which Chat to delete.
+     */
+    where: ChatWhereUniqueInput
+  }
+
+  /**
+   * Chat deleteMany
+   */
+  export type ChatDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Chats to delete
+     */
+    where?: ChatWhereInput
+    /**
+     * Limit how many Chats to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * Chat findRaw
+   */
+  export type ChatFindRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The query predicate filter. If unspecified, then all documents in the collection will match the predicate. ${@link https://docs.mongodb.com/manual/reference/operator/query MongoDB Docs}.
+     */
+    filter?: InputJsonValue
+    /**
+     * Additional options to pass to the `find` command ${@link https://docs.mongodb.com/manual/reference/command/find/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * Chat aggregateRaw
+   */
+  export type ChatAggregateRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * An array of aggregation stages to process and transform the document stream via the aggregation pipeline. ${@link https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline MongoDB Docs}.
+     */
+    pipeline?: InputJsonValue[]
+    /**
+     * Additional options to pass to the `aggregate` command ${@link https://docs.mongodb.com/manual/reference/command/aggregate/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * Chat without action
+   */
+  export type ChatDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Chat
+     */
+    select?: ChatSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Chat
+     */
+    omit?: ChatOmit<ExtArgs> | null
   }
 
 
@@ -23796,6 +26856,37 @@ export namespace Prisma {
   export type ContestAchievementScalarFieldEnum = (typeof ContestAchievementScalarFieldEnum)[keyof typeof ContestAchievementScalarFieldEnum]
 
 
+  export const SitePolicyScalarFieldEnum: {
+    id: 'id',
+    type: 'type',
+    content: 'content',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type SitePolicyScalarFieldEnum = (typeof SitePolicyScalarFieldEnum)[keyof typeof SitePolicyScalarFieldEnum]
+
+
+  export const RoomScalarFieldEnum: {
+    id: 'id'
+  };
+
+  export type RoomScalarFieldEnum = (typeof RoomScalarFieldEnum)[keyof typeof RoomScalarFieldEnum]
+
+
+  export const ChatScalarFieldEnum: {
+    id: 'id',
+    roomId: 'roomId',
+    senderId: 'senderId',
+    receiverId: 'receiverId',
+    message: 'message',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type ChatScalarFieldEnum = (typeof ChatScalarFieldEnum)[keyof typeof ChatScalarFieldEnum]
+
+
   export const TeamScalarFieldEnum: {
     id: 'id',
     name: 'name',
@@ -24076,6 +27167,20 @@ export namespace Prisma {
    * Reference to a field of type 'PrizeType[]'
    */
   export type ListEnumPrizeTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PrizeType[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'SitePolicyType'
+   */
+  export type EnumSitePolicyTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SitePolicyType'>
+    
+
+
+  /**
+   * Reference to a field of type 'SitePolicyType[]'
+   */
+  export type ListEnumSitePolicyTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SitePolicyType[]'>
     
 
 
@@ -24871,6 +27976,152 @@ export namespace Prisma {
     contestId?: StringWithAggregatesFilter<"ContestAchievement"> | string
     createdAt?: DateTimeWithAggregatesFilter<"ContestAchievement"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"ContestAchievement"> | Date | string
+  }
+
+  export type SitePolicyWhereInput = {
+    AND?: SitePolicyWhereInput | SitePolicyWhereInput[]
+    OR?: SitePolicyWhereInput[]
+    NOT?: SitePolicyWhereInput | SitePolicyWhereInput[]
+    id?: StringFilter<"SitePolicy"> | string
+    type?: EnumSitePolicyTypeFilter<"SitePolicy"> | $Enums.SitePolicyType
+    content?: StringFilter<"SitePolicy"> | string
+    createdAt?: DateTimeFilter<"SitePolicy"> | Date | string
+    updatedAt?: DateTimeFilter<"SitePolicy"> | Date | string
+  }
+
+  export type SitePolicyOrderByWithRelationInput = {
+    id?: SortOrder
+    type?: SortOrder
+    content?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type SitePolicyWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: SitePolicyWhereInput | SitePolicyWhereInput[]
+    OR?: SitePolicyWhereInput[]
+    NOT?: SitePolicyWhereInput | SitePolicyWhereInput[]
+    type?: EnumSitePolicyTypeFilter<"SitePolicy"> | $Enums.SitePolicyType
+    content?: StringFilter<"SitePolicy"> | string
+    createdAt?: DateTimeFilter<"SitePolicy"> | Date | string
+    updatedAt?: DateTimeFilter<"SitePolicy"> | Date | string
+  }, "id">
+
+  export type SitePolicyOrderByWithAggregationInput = {
+    id?: SortOrder
+    type?: SortOrder
+    content?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: SitePolicyCountOrderByAggregateInput
+    _max?: SitePolicyMaxOrderByAggregateInput
+    _min?: SitePolicyMinOrderByAggregateInput
+  }
+
+  export type SitePolicyScalarWhereWithAggregatesInput = {
+    AND?: SitePolicyScalarWhereWithAggregatesInput | SitePolicyScalarWhereWithAggregatesInput[]
+    OR?: SitePolicyScalarWhereWithAggregatesInput[]
+    NOT?: SitePolicyScalarWhereWithAggregatesInput | SitePolicyScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"SitePolicy"> | string
+    type?: EnumSitePolicyTypeWithAggregatesFilter<"SitePolicy"> | $Enums.SitePolicyType
+    content?: StringWithAggregatesFilter<"SitePolicy"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"SitePolicy"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"SitePolicy"> | Date | string
+  }
+
+  export type RoomWhereInput = {
+    AND?: RoomWhereInput | RoomWhereInput[]
+    OR?: RoomWhereInput[]
+    NOT?: RoomWhereInput | RoomWhereInput[]
+    id?: StringFilter<"Room"> | string
+  }
+
+  export type RoomOrderByWithRelationInput = {
+    id?: SortOrder
+  }
+
+  export type RoomWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: RoomWhereInput | RoomWhereInput[]
+    OR?: RoomWhereInput[]
+    NOT?: RoomWhereInput | RoomWhereInput[]
+  }, "id">
+
+  export type RoomOrderByWithAggregationInput = {
+    id?: SortOrder
+    _count?: RoomCountOrderByAggregateInput
+    _max?: RoomMaxOrderByAggregateInput
+    _min?: RoomMinOrderByAggregateInput
+  }
+
+  export type RoomScalarWhereWithAggregatesInput = {
+    AND?: RoomScalarWhereWithAggregatesInput | RoomScalarWhereWithAggregatesInput[]
+    OR?: RoomScalarWhereWithAggregatesInput[]
+    NOT?: RoomScalarWhereWithAggregatesInput | RoomScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"Room"> | string
+  }
+
+  export type ChatWhereInput = {
+    AND?: ChatWhereInput | ChatWhereInput[]
+    OR?: ChatWhereInput[]
+    NOT?: ChatWhereInput | ChatWhereInput[]
+    id?: StringFilter<"Chat"> | string
+    roomId?: StringFilter<"Chat"> | string
+    senderId?: StringFilter<"Chat"> | string
+    receiverId?: StringFilter<"Chat"> | string
+    message?: StringFilter<"Chat"> | string
+    createdAt?: DateTimeFilter<"Chat"> | Date | string
+    updatedAt?: DateTimeFilter<"Chat"> | Date | string
+  }
+
+  export type ChatOrderByWithRelationInput = {
+    id?: SortOrder
+    roomId?: SortOrder
+    senderId?: SortOrder
+    receiverId?: SortOrder
+    message?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ChatWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: ChatWhereInput | ChatWhereInput[]
+    OR?: ChatWhereInput[]
+    NOT?: ChatWhereInput | ChatWhereInput[]
+    roomId?: StringFilter<"Chat"> | string
+    senderId?: StringFilter<"Chat"> | string
+    receiverId?: StringFilter<"Chat"> | string
+    message?: StringFilter<"Chat"> | string
+    createdAt?: DateTimeFilter<"Chat"> | Date | string
+    updatedAt?: DateTimeFilter<"Chat"> | Date | string
+  }, "id">
+
+  export type ChatOrderByWithAggregationInput = {
+    id?: SortOrder
+    roomId?: SortOrder
+    senderId?: SortOrder
+    receiverId?: SortOrder
+    message?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: ChatCountOrderByAggregateInput
+    _max?: ChatMaxOrderByAggregateInput
+    _min?: ChatMinOrderByAggregateInput
+  }
+
+  export type ChatScalarWhereWithAggregatesInput = {
+    AND?: ChatScalarWhereWithAggregatesInput | ChatScalarWhereWithAggregatesInput[]
+    OR?: ChatScalarWhereWithAggregatesInput[]
+    NOT?: ChatScalarWhereWithAggregatesInput | ChatScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"Chat"> | string
+    roomId?: StringWithAggregatesFilter<"Chat"> | string
+    senderId?: StringWithAggregatesFilter<"Chat"> | string
+    receiverId?: StringWithAggregatesFilter<"Chat"> | string
+    message?: StringWithAggregatesFilter<"Chat"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"Chat"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"Chat"> | Date | string
   }
 
   export type TeamWhereInput = {
@@ -26376,6 +29627,152 @@ export namespace Prisma {
     photoId?: NullableStringFieldUpdateOperationsInput | string | null
     participantId?: NullableStringFieldUpdateOperationsInput | string | null
     contestId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SitePolicyCreateInput = {
+    id?: string
+    type: $Enums.SitePolicyType
+    content: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type SitePolicyUncheckedCreateInput = {
+    id?: string
+    type: $Enums.SitePolicyType
+    content: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type SitePolicyUpdateInput = {
+    type?: EnumSitePolicyTypeFieldUpdateOperationsInput | $Enums.SitePolicyType
+    content?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SitePolicyUncheckedUpdateInput = {
+    type?: EnumSitePolicyTypeFieldUpdateOperationsInput | $Enums.SitePolicyType
+    content?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SitePolicyCreateManyInput = {
+    id?: string
+    type: $Enums.SitePolicyType
+    content: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type SitePolicyUpdateManyMutationInput = {
+    type?: EnumSitePolicyTypeFieldUpdateOperationsInput | $Enums.SitePolicyType
+    content?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SitePolicyUncheckedUpdateManyInput = {
+    type?: EnumSitePolicyTypeFieldUpdateOperationsInput | $Enums.SitePolicyType
+    content?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type RoomCreateInput = {
+    id?: string
+  }
+
+  export type RoomUncheckedCreateInput = {
+    id?: string
+  }
+
+  export type RoomUpdateInput = {
+
+  }
+
+  export type RoomUncheckedUpdateInput = {
+
+  }
+
+  export type RoomCreateManyInput = {
+    id?: string
+  }
+
+  export type RoomUpdateManyMutationInput = {
+
+  }
+
+  export type RoomUncheckedUpdateManyInput = {
+
+  }
+
+  export type ChatCreateInput = {
+    id?: string
+    roomId: string
+    senderId: string
+    receiverId: string
+    message: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ChatUncheckedCreateInput = {
+    id?: string
+    roomId: string
+    senderId: string
+    receiverId: string
+    message: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ChatUpdateInput = {
+    roomId?: StringFieldUpdateOperationsInput | string
+    senderId?: StringFieldUpdateOperationsInput | string
+    receiverId?: StringFieldUpdateOperationsInput | string
+    message?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ChatUncheckedUpdateInput = {
+    roomId?: StringFieldUpdateOperationsInput | string
+    senderId?: StringFieldUpdateOperationsInput | string
+    receiverId?: StringFieldUpdateOperationsInput | string
+    message?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ChatCreateManyInput = {
+    id?: string
+    roomId: string
+    senderId: string
+    receiverId: string
+    message: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ChatUpdateManyMutationInput = {
+    roomId?: StringFieldUpdateOperationsInput | string
+    senderId?: StringFieldUpdateOperationsInput | string
+    receiverId?: StringFieldUpdateOperationsInput | string
+    message?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ChatUncheckedUpdateManyInput = {
+    roomId?: StringFieldUpdateOperationsInput | string
+    senderId?: StringFieldUpdateOperationsInput | string
+    receiverId?: StringFieldUpdateOperationsInput | string
+    message?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -27947,6 +31344,89 @@ export namespace Prisma {
     updatedAt?: SortOrder
   }
 
+  export type EnumSitePolicyTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.SitePolicyType | EnumSitePolicyTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.SitePolicyType[] | ListEnumSitePolicyTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.SitePolicyType[] | ListEnumSitePolicyTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumSitePolicyTypeFilter<$PrismaModel> | $Enums.SitePolicyType
+  }
+
+  export type SitePolicyCountOrderByAggregateInput = {
+    id?: SortOrder
+    type?: SortOrder
+    content?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type SitePolicyMaxOrderByAggregateInput = {
+    id?: SortOrder
+    type?: SortOrder
+    content?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type SitePolicyMinOrderByAggregateInput = {
+    id?: SortOrder
+    type?: SortOrder
+    content?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type EnumSitePolicyTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.SitePolicyType | EnumSitePolicyTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.SitePolicyType[] | ListEnumSitePolicyTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.SitePolicyType[] | ListEnumSitePolicyTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumSitePolicyTypeWithAggregatesFilter<$PrismaModel> | $Enums.SitePolicyType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumSitePolicyTypeFilter<$PrismaModel>
+    _max?: NestedEnumSitePolicyTypeFilter<$PrismaModel>
+  }
+
+  export type RoomCountOrderByAggregateInput = {
+    id?: SortOrder
+  }
+
+  export type RoomMaxOrderByAggregateInput = {
+    id?: SortOrder
+  }
+
+  export type RoomMinOrderByAggregateInput = {
+    id?: SortOrder
+  }
+
+  export type ChatCountOrderByAggregateInput = {
+    id?: SortOrder
+    roomId?: SortOrder
+    senderId?: SortOrder
+    receiverId?: SortOrder
+    message?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ChatMaxOrderByAggregateInput = {
+    id?: SortOrder
+    roomId?: SortOrder
+    senderId?: SortOrder
+    receiverId?: SortOrder
+    message?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ChatMinOrderByAggregateInput = {
+    id?: SortOrder
+    roomId?: SortOrder
+    senderId?: SortOrder
+    receiverId?: SortOrder
+    message?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
   export type EnumTeamAccessibilityFilter<$PrismaModel = never> = {
     equals?: $Enums.TeamAccessibility | EnumTeamAccessibilityFieldRefInput<$PrismaModel>
     in?: $Enums.TeamAccessibility[] | ListEnumTeamAccessibilityFieldRefInput<$PrismaModel>
@@ -29330,6 +32810,10 @@ export namespace Prisma {
     update?: XOR<XOR<ContestParticipantUpdateToOneWithWhereWithoutContestAchievementInput, ContestParticipantUpdateWithoutContestAchievementInput>, ContestParticipantUncheckedUpdateWithoutContestAchievementInput>
   }
 
+  export type EnumSitePolicyTypeFieldUpdateOperationsInput = {
+    set?: $Enums.SitePolicyType
+  }
+
   export type UserCreateNestedOneWithoutCreatedTeamInput = {
     create?: XOR<UserCreateWithoutCreatedTeamInput, UserUncheckedCreateWithoutCreatedTeamInput>
     connectOrCreate?: UserCreateOrConnectWithoutCreatedTeamInput
@@ -30521,6 +34005,23 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumPrizeTypeFilter<$PrismaModel>
     _max?: NestedEnumPrizeTypeFilter<$PrismaModel>
+  }
+
+  export type NestedEnumSitePolicyTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.SitePolicyType | EnumSitePolicyTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.SitePolicyType[] | ListEnumSitePolicyTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.SitePolicyType[] | ListEnumSitePolicyTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumSitePolicyTypeFilter<$PrismaModel> | $Enums.SitePolicyType
+  }
+
+  export type NestedEnumSitePolicyTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.SitePolicyType | EnumSitePolicyTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.SitePolicyType[] | ListEnumSitePolicyTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.SitePolicyType[] | ListEnumSitePolicyTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumSitePolicyTypeWithAggregatesFilter<$PrismaModel> | $Enums.SitePolicyType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumSitePolicyTypeFilter<$PrismaModel>
+    _max?: NestedEnumSitePolicyTypeFilter<$PrismaModel>
   }
 
   export type NestedEnumTeamAccessibilityFilter<$PrismaModel = never> = {

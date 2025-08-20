@@ -9,6 +9,7 @@ import { teamRoutes } from "../modules/Team/team.route";
 import { achievementRoutes } from "../modules/Achievements/achievement.route";
 import { voteRouter } from "../modules/Vote/vote.route";
 import { profileRoutes } from "../modules/Profile/profile.route";
+import { sitePolicyRoutes } from "../modules/SitePolicy/sitepolicy.route";
 
 
 
@@ -25,7 +26,8 @@ const moduleRoutes = [
     {path:"/teams", route:teamRoutes},
     {path:"profiles", route:profileRoutes},
     {path:"/achievements", route:achievementRoutes},
-    {path:"/votes", route:voteRouter}
+    {path:"/votes", route:voteRouter},
+    {path:"/site-policies", route:sitePolicyRoutes},
 
 ]
 

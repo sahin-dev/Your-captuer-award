@@ -214,6 +214,28 @@ exports.Prisma.ContestAchievementScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.SitePolicyScalarFieldEnum = {
+  id: 'id',
+  type: 'type',
+  content: 'content',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.RoomScalarFieldEnum = {
+  id: 'id'
+};
+
+exports.Prisma.ChatScalarFieldEnum = {
+  id: 'id',
+  roomId: 'roomId',
+  senderId: 'senderId',
+  receiverId: 'receiverId',
+  message: 'message',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.TeamScalarFieldEnum = {
   id: 'id',
   name: 'name',
@@ -369,6 +391,12 @@ exports.PrizeType = exports.$Enums.PrizeType = {
   TOP_YC_PICK: 'TOP_YC_PICK'
 };
 
+exports.SitePolicyType = exports.$Enums.SitePolicyType = {
+  TERMS: 'TERMS',
+  POLICY: 'POLICY',
+  ABOUT: 'ABOUT'
+};
+
 exports.TeamAccessibility = exports.$Enums.TeamAccessibility = {
   PUBLIC: 'PUBLIC',
   PRIVATE: 'PRIVATE'
@@ -412,6 +440,9 @@ exports.Prisma.ModelName = {
   ContestParticipant: 'ContestParticipant',
   ContestPrize: 'ContestPrize',
   ContestAchievement: 'ContestAchievement',
+  SitePolicy: 'SitePolicy',
+  Room: 'Room',
+  Chat: 'Chat',
   Team: 'Team',
   TeamMember: 'TeamMember',
   User: 'User',

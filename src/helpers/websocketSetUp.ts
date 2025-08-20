@@ -1,8 +1,9 @@
 import { Server } from "http";
 import { WebSocket, WebSocketServer } from "ws";
 import config from "../config";
-import prisma from "../shared/prisma";
+
 import { jwtHelpers } from "./jwt";
+import prisma from "../shared/prisma";
 
 interface ExtendedWebSocket extends WebSocket {
   userId?: string;
@@ -12,6 +13,7 @@ const onlineUsers = new Set<string>();
 const userSockets = new Map<string, ExtendedWebSocket>();
 
 export function setupWebSocket(server: Server) {
+  
   const wss = new WebSocketServer({ server });
   console.log("WebSocket server is running");
 

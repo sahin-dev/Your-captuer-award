@@ -221,6 +221,40 @@ enum ContestParticipantStatus {
   BLOCKED
 }
 
+model SitePolicy {
+  id        String         @id @default(auto()) @map("_id") @db.ObjectId
+  type      SitePolicyType
+  content   String
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@map("site_policies")
+}
+
+enum SitePolicyType {
+  TERMS
+  POLICY
+  ABOUT
+}
+
+model Room {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  @@map("rooms")
+}
+
+model Chat {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  roomId     String   @db.ObjectId
+  senderId   String   @db.ObjectId
+  receiverId String   @db.ObjectId
+  message    String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("chats")
+}
+
 generator client {
   provider = "prisma-client-js"
   output   = "../src/prismaClient/"
