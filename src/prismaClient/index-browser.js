@@ -126,8 +126,6 @@ exports.Prisma.ContestScalarFieldEnum = {
   level_requirements: 'level_requirements',
   startDate: 'startDate',
   endDate: 'endDate',
-  rules: 'rules',
-  prizes: 'prizes',
   creatorId: 'creatorId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -158,7 +156,6 @@ exports.Prisma.ContestRuleScalarFieldEnum = {
   name: 'name',
   description: 'description',
   contestId: 'contestId',
-  requirements: 'requirements',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };

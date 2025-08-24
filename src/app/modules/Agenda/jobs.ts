@@ -7,6 +7,8 @@ import ApiError from '../../../errors/ApiError';
 import { contestRuleService } from '../Contest/ContestRules/contestRules.service';
 import { addContestPrizes, getContestPrizes } from '../Contest/ContestPrizes/contestPrize.service';
 import { calculateNextOccurance } from '../../../helpers/nextOccurance';
+import { ContestRule } from '../Contest/ContestRules/conetstRules.type';
+import { ContestPrize } from '../Contest/ContestPrizes/contestPrize.type';
 
 
 
@@ -104,7 +106,6 @@ agenda.define("contest:checkRecurring", async ()=>{
 
 async function scheduleContest(rContest:RecurringContest){
  
-    let next = null
 
 
     const previousOccurrence = rContest.recurring.previousOccurrence || rContest.createdAt;
@@ -136,13 +137,24 @@ async function scheduleContest(rContest:RecurringContest){
                 description: rContest.description,
                 creatorId: rContest.creatorId,
                 startDate: nextOccurrence,
-                rules: JSON.stringify(rContest.rules),
-                prizes: JSON.stringify(rContest.rules),
                 endDate: new Date(nextOccurrence.getTime() + duration),
                 status: ContestStatus.UPCOMING,
             }
         
         })
+
+        const rules = JSON.parse(rContest.rules as string) as ContestRule[]
+
+        rules.forEach(async rule => {
+            await prisma.contestRule.create({data:{contestId:newContest.id, name:rule.name, description:rule.name}})
+        })
+
+        const prizes = JSON.parse(rContest.prizes as string) as ContestPrize[]
+
+        prizes.forEach(async prize => {
+            await prisma.contestPrize.create({data:{contestId:newContest.id, category:prize.category, trades:prize.trades, keys: prize.trades, charges:prize.charges}})
+        });
+
         const next = calculateNextOccurance(newContest.startDate, rContest.recurring.recurringType)
        
         await prisma.recurringContest.update({

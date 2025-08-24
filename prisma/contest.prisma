@@ -15,8 +15,6 @@ model Contest {
   
   startDate DateTime
   endDate   DateTime
-  rules  Json
-  prizes  Json
 
   creatorId String @db.ObjectId
 
@@ -65,7 +63,6 @@ model ContestRule {
   name    String
   description     String
   contestId    String  @db.ObjectId
-  requirements  Int[]
   contest  Contest  @relation(fields: [contestId], references: [id], onDelete: Cascade)
 
   createdAt    DateTime @default(now())

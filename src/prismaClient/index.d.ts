@@ -3427,8 +3427,6 @@ export namespace Prisma {
     level_requirements: number
     startDate: number
     endDate: number
-    rules: number
-    prizes: number
     creatorId: number
     createdAt: number
     updatedAt: number
@@ -3497,8 +3495,6 @@ export namespace Prisma {
     level_requirements?: true
     startDate?: true
     endDate?: true
-    rules?: true
-    prizes?: true
     creatorId?: true
     createdAt?: true
     updatedAt?: true
@@ -3604,8 +3600,6 @@ export namespace Prisma {
     level_requirements: number[]
     startDate: Date
     endDate: Date
-    rules: JsonValue
-    prizes: JsonValue
     creatorId: string
     createdAt: Date
     updatedAt: Date
@@ -3643,8 +3637,6 @@ export namespace Prisma {
     level_requirements?: boolean
     startDate?: boolean
     endDate?: boolean
-    rules?: boolean
-    prizes?: boolean
     creatorId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -3672,14 +3664,12 @@ export namespace Prisma {
     level_requirements?: boolean
     startDate?: boolean
     endDate?: boolean
-    rules?: boolean
-    prizes?: boolean
     creatorId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type ContestOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "description" | "banner" | "status" | "maxUploads" | "isMoneyContest" | "maxPrize" | "minPrize" | "level_requirements" | "startDate" | "endDate" | "rules" | "prizes" | "creatorId" | "createdAt" | "updatedAt", ExtArgs["result"]["contest"]>
+  export type ContestOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "description" | "banner" | "status" | "maxUploads" | "isMoneyContest" | "maxPrize" | "minPrize" | "level_requirements" | "startDate" | "endDate" | "creatorId" | "createdAt" | "updatedAt", ExtArgs["result"]["contest"]>
   export type ContestInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     creator?: boolean | UserDefaultArgs<ExtArgs>
     participants?: boolean | Contest$participantsArgs<ExtArgs>
@@ -3713,8 +3703,6 @@ export namespace Prisma {
       level_requirements: number[]
       startDate: Date
       endDate: Date
-      rules: Prisma.JsonValue
-      prizes: Prisma.JsonValue
       creatorId: string
       createdAt: Date
       updatedAt: Date
@@ -4128,8 +4116,6 @@ export namespace Prisma {
     readonly level_requirements: FieldRef<"Contest", 'Int[]'>
     readonly startDate: FieldRef<"Contest", 'DateTime'>
     readonly endDate: FieldRef<"Contest", 'DateTime'>
-    readonly rules: FieldRef<"Contest", 'Json'>
-    readonly prizes: FieldRef<"Contest", 'Json'>
     readonly creatorId: FieldRef<"Contest", 'String'>
     readonly createdAt: FieldRef<"Contest", 'DateTime'>
     readonly updatedAt: FieldRef<"Contest", 'DateTime'>
@@ -5778,18 +5764,8 @@ export namespace Prisma {
 
   export type AggregateContestRule = {
     _count: ContestRuleCountAggregateOutputType | null
-    _avg: ContestRuleAvgAggregateOutputType | null
-    _sum: ContestRuleSumAggregateOutputType | null
     _min: ContestRuleMinAggregateOutputType | null
     _max: ContestRuleMaxAggregateOutputType | null
-  }
-
-  export type ContestRuleAvgAggregateOutputType = {
-    requirements: number | null
-  }
-
-  export type ContestRuleSumAggregateOutputType = {
-    requirements: number[]
   }
 
   export type ContestRuleMinAggregateOutputType = {
@@ -5818,20 +5794,11 @@ export namespace Prisma {
     name: number
     description: number
     contestId: number
-    requirements: number
     createdAt: number
     updatedAt: number
     _all: number
   }
 
-
-  export type ContestRuleAvgAggregateInputType = {
-    requirements?: true
-  }
-
-  export type ContestRuleSumAggregateInputType = {
-    requirements?: true
-  }
 
   export type ContestRuleMinAggregateInputType = {
     id?: true
@@ -5859,7 +5826,6 @@ export namespace Prisma {
     name?: true
     description?: true
     contestId?: true
-    requirements?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -5903,18 +5869,6 @@ export namespace Prisma {
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
-     * Select which fields to average
-    **/
-    _avg?: ContestRuleAvgAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to sum
-    **/
-    _sum?: ContestRuleSumAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
      * Select which fields to find the minimum value
     **/
     _min?: ContestRuleMinAggregateInputType
@@ -5945,8 +5899,6 @@ export namespace Prisma {
     take?: number
     skip?: number
     _count?: ContestRuleCountAggregateInputType | true
-    _avg?: ContestRuleAvgAggregateInputType
-    _sum?: ContestRuleSumAggregateInputType
     _min?: ContestRuleMinAggregateInputType
     _max?: ContestRuleMaxAggregateInputType
   }
@@ -5957,12 +5909,9 @@ export namespace Prisma {
     name: string
     description: string
     contestId: string
-    requirements: number[]
     createdAt: Date
     updatedAt: Date
     _count: ContestRuleCountAggregateOutputType | null
-    _avg: ContestRuleAvgAggregateOutputType | null
-    _sum: ContestRuleSumAggregateOutputType | null
     _min: ContestRuleMinAggregateOutputType | null
     _max: ContestRuleMaxAggregateOutputType | null
   }
@@ -5987,7 +5936,6 @@ export namespace Prisma {
     name?: boolean
     description?: boolean
     contestId?: boolean
-    requirements?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     contest?: boolean | ContestDefaultArgs<ExtArgs>
@@ -6001,12 +5949,11 @@ export namespace Prisma {
     name?: boolean
     description?: boolean
     contestId?: boolean
-    requirements?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type ContestRuleOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "icon" | "name" | "description" | "contestId" | "requirements" | "createdAt" | "updatedAt", ExtArgs["result"]["contestRule"]>
+  export type ContestRuleOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "icon" | "name" | "description" | "contestId" | "createdAt" | "updatedAt", ExtArgs["result"]["contestRule"]>
   export type ContestRuleInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     contest?: boolean | ContestDefaultArgs<ExtArgs>
   }
@@ -6022,7 +5969,6 @@ export namespace Prisma {
       name: string
       description: string
       contestId: string
-      requirements: number[]
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["contestRule"]>
@@ -6423,7 +6369,6 @@ export namespace Prisma {
     readonly name: FieldRef<"ContestRule", 'String'>
     readonly description: FieldRef<"ContestRule", 'String'>
     readonly contestId: FieldRef<"ContestRule", 'String'>
-    readonly requirements: FieldRef<"ContestRule", 'Int[]'>
     readonly createdAt: FieldRef<"ContestRule", 'DateTime'>
     readonly updatedAt: FieldRef<"ContestRule", 'DateTime'>
   }
@@ -25731,8 +25676,6 @@ export namespace Prisma {
     level_requirements: 'level_requirements',
     startDate: 'startDate',
     endDate: 'endDate',
-    rules: 'rules',
-    prizes: 'prizes',
     creatorId: 'creatorId',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
@@ -25769,7 +25712,6 @@ export namespace Prisma {
     name: 'name',
     description: 'description',
     contestId: 'contestId',
-    requirements: 'requirements',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -26282,8 +26224,6 @@ export namespace Prisma {
     level_requirements?: IntNullableListFilter<"Contest">
     startDate?: DateTimeFilter<"Contest"> | Date | string
     endDate?: DateTimeFilter<"Contest"> | Date | string
-    rules?: JsonFilter<"Contest">
-    prizes?: JsonFilter<"Contest">
     creatorId?: StringFilter<"Contest"> | string
     createdAt?: DateTimeFilter<"Contest"> | Date | string
     updatedAt?: DateTimeFilter<"Contest"> | Date | string
@@ -26308,8 +26248,6 @@ export namespace Prisma {
     level_requirements?: SortOrder
     startDate?: SortOrder
     endDate?: SortOrder
-    rules?: SortOrder
-    prizes?: SortOrder
     creatorId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -26337,8 +26275,6 @@ export namespace Prisma {
     level_requirements?: IntNullableListFilter<"Contest">
     startDate?: DateTimeFilter<"Contest"> | Date | string
     endDate?: DateTimeFilter<"Contest"> | Date | string
-    rules?: JsonFilter<"Contest">
-    prizes?: JsonFilter<"Contest">
     creatorId?: StringFilter<"Contest"> | string
     createdAt?: DateTimeFilter<"Contest"> | Date | string
     updatedAt?: DateTimeFilter<"Contest"> | Date | string
@@ -26363,8 +26299,6 @@ export namespace Prisma {
     level_requirements?: SortOrder
     startDate?: SortOrder
     endDate?: SortOrder
-    rules?: SortOrder
-    prizes?: SortOrder
     creatorId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -26391,8 +26325,6 @@ export namespace Prisma {
     level_requirements?: IntNullableListFilter<"Contest">
     startDate?: DateTimeWithAggregatesFilter<"Contest"> | Date | string
     endDate?: DateTimeWithAggregatesFilter<"Contest"> | Date | string
-    rules?: JsonWithAggregatesFilter<"Contest">
-    prizes?: JsonWithAggregatesFilter<"Contest">
     creatorId?: StringWithAggregatesFilter<"Contest"> | string
     createdAt?: DateTimeWithAggregatesFilter<"Contest"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Contest"> | Date | string
@@ -26519,7 +26451,6 @@ export namespace Prisma {
     name?: StringFilter<"ContestRule"> | string
     description?: StringFilter<"ContestRule"> | string
     contestId?: StringFilter<"ContestRule"> | string
-    requirements?: IntNullableListFilter<"ContestRule">
     createdAt?: DateTimeFilter<"ContestRule"> | Date | string
     updatedAt?: DateTimeFilter<"ContestRule"> | Date | string
     contest?: XOR<ContestScalarRelationFilter, ContestWhereInput>
@@ -26531,7 +26462,6 @@ export namespace Prisma {
     name?: SortOrder
     description?: SortOrder
     contestId?: SortOrder
-    requirements?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     contest?: ContestOrderByWithRelationInput
@@ -26546,7 +26476,6 @@ export namespace Prisma {
     name?: StringFilter<"ContestRule"> | string
     description?: StringFilter<"ContestRule"> | string
     contestId?: StringFilter<"ContestRule"> | string
-    requirements?: IntNullableListFilter<"ContestRule">
     createdAt?: DateTimeFilter<"ContestRule"> | Date | string
     updatedAt?: DateTimeFilter<"ContestRule"> | Date | string
     contest?: XOR<ContestScalarRelationFilter, ContestWhereInput>
@@ -26558,14 +26487,11 @@ export namespace Prisma {
     name?: SortOrder
     description?: SortOrder
     contestId?: SortOrder
-    requirements?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: ContestRuleCountOrderByAggregateInput
-    _avg?: ContestRuleAvgOrderByAggregateInput
     _max?: ContestRuleMaxOrderByAggregateInput
     _min?: ContestRuleMinOrderByAggregateInput
-    _sum?: ContestRuleSumOrderByAggregateInput
   }
 
   export type ContestRuleScalarWhereWithAggregatesInput = {
@@ -26577,7 +26503,6 @@ export namespace Prisma {
     name?: StringWithAggregatesFilter<"ContestRule"> | string
     description?: StringWithAggregatesFilter<"ContestRule"> | string
     contestId?: StringWithAggregatesFilter<"ContestRule"> | string
-    requirements?: IntNullableListFilter<"ContestRule">
     createdAt?: DateTimeWithAggregatesFilter<"ContestRule"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"ContestRule"> | Date | string
   }
@@ -27909,8 +27834,6 @@ export namespace Prisma {
     level_requirements?: ContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
-    rules: InputJsonValue
-    prizes: InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
     creator: UserCreateNestedOneWithoutCreatedContestsInput
@@ -27934,8 +27857,6 @@ export namespace Prisma {
     level_requirements?: ContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
-    rules: InputJsonValue
-    prizes: InputJsonValue
     creatorId: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -27958,8 +27879,6 @@ export namespace Prisma {
     level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    rules?: InputJsonValue | InputJsonValue
-    prizes?: InputJsonValue | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     creator?: UserUpdateOneRequiredWithoutCreatedContestsNestedInput
@@ -27982,8 +27901,6 @@ export namespace Prisma {
     level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    rules?: InputJsonValue | InputJsonValue
-    prizes?: InputJsonValue | InputJsonValue
     creatorId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -28007,8 +27924,6 @@ export namespace Prisma {
     level_requirements?: ContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
-    rules: InputJsonValue
-    prizes: InputJsonValue
     creatorId: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -28026,8 +27941,6 @@ export namespace Prisma {
     level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    rules?: InputJsonValue | InputJsonValue
-    prizes?: InputJsonValue | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -28044,8 +27957,6 @@ export namespace Prisma {
     level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    rules?: InputJsonValue | InputJsonValue
-    prizes?: InputJsonValue | InputJsonValue
     creatorId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -28192,7 +28103,6 @@ export namespace Prisma {
     icon?: string | null
     name: string
     description: string
-    requirements?: ContestRuleCreaterequirementsInput | number[]
     createdAt?: Date | string
     updatedAt?: Date | string
     contest: ContestCreateNestedOneWithoutContestRulesInput
@@ -28204,7 +28114,6 @@ export namespace Prisma {
     name: string
     description: string
     contestId: string
-    requirements?: ContestRuleCreaterequirementsInput | number[]
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -28213,7 +28122,6 @@ export namespace Prisma {
     icon?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
-    requirements?: ContestRuleUpdaterequirementsInput | number[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     contest?: ContestUpdateOneRequiredWithoutContestRulesNestedInput
@@ -28224,7 +28132,6 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
     contestId?: StringFieldUpdateOperationsInput | string
-    requirements?: ContestRuleUpdaterequirementsInput | number[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -28235,7 +28142,6 @@ export namespace Prisma {
     name: string
     description: string
     contestId: string
-    requirements?: ContestRuleCreaterequirementsInput | number[]
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -28244,7 +28150,6 @@ export namespace Prisma {
     icon?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
-    requirements?: ContestRuleUpdaterequirementsInput | number[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -28254,7 +28159,6 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
     contestId?: StringFieldUpdateOperationsInput | string
-    requirements?: ContestRuleUpdaterequirementsInput | number[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -29657,17 +29561,6 @@ export namespace Prisma {
     gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     not?: NestedDateTimeFilter<$PrismaModel> | Date | string
   }
-  export type JsonFilter<$PrismaModel = never> =
-    | PatchUndefined<
-        Either<Required<JsonFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonFilterBase<$PrismaModel>>, 'path'>>,
-        Required<JsonFilterBase<$PrismaModel>>
-      >
-    | OptionalFlat<Omit<Required<JsonFilterBase<$PrismaModel>>, 'path'>>
-
-  export type JsonFilterBase<$PrismaModel = never> = {
-    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-  }
 
   export type UserScalarRelationFilter = {
     is?: UserWhereInput
@@ -29737,8 +29630,6 @@ export namespace Prisma {
     level_requirements?: SortOrder
     startDate?: SortOrder
     endDate?: SortOrder
-    rules?: SortOrder
-    prizes?: SortOrder
     creatorId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -29893,20 +29784,6 @@ export namespace Prisma {
     _min?: NestedDateTimeFilter<$PrismaModel>
     _max?: NestedDateTimeFilter<$PrismaModel>
   }
-  export type JsonWithAggregatesFilter<$PrismaModel = never> =
-    | PatchUndefined<
-        Either<Required<JsonWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
-        Required<JsonWithAggregatesFilterBase<$PrismaModel>>
-      >
-    | OptionalFlat<Omit<Required<JsonWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
-
-  export type JsonWithAggregatesFilterBase<$PrismaModel = never> = {
-    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedJsonFilter<$PrismaModel>
-    _max?: NestedJsonFilter<$PrismaModel>
-  }
 
   export type RecurringDataCompositeFilter = {
     equals?: RecurringDataObjectEqualityInput
@@ -29919,6 +29796,17 @@ export namespace Prisma {
     previousOccurrence?: Date | string | null
     nextOccurrence: Date | string
     duration: number
+  }
+  export type JsonFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
   }
 
   export type RecurringDataOrderByInput = {
@@ -29992,6 +29880,20 @@ export namespace Prisma {
     minPrize?: SortOrder
     level_requirements?: SortOrder
   }
+  export type JsonWithAggregatesFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonWithAggregatesFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonWithAggregatesFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedJsonFilter<$PrismaModel>
+    _max?: NestedJsonFilter<$PrismaModel>
+  }
 
   export type ContestScalarRelationFilter = {
     is?: ContestWhereInput
@@ -30004,13 +29906,8 @@ export namespace Prisma {
     name?: SortOrder
     description?: SortOrder
     contestId?: SortOrder
-    requirements?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-  }
-
-  export type ContestRuleAvgOrderByAggregateInput = {
-    requirements?: SortOrder
   }
 
   export type ContestRuleMaxOrderByAggregateInput = {
@@ -30031,10 +29928,6 @@ export namespace Prisma {
     contestId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-  }
-
-  export type ContestRuleSumOrderByAggregateInput = {
-    requirements?: SortOrder
   }
 
   export type DateTimeNullableFilter<$PrismaModel = never> = {
@@ -31311,19 +31204,10 @@ export namespace Prisma {
     update?: RecurringDataUpdateInput
   }
 
-  export type ContestRuleCreaterequirementsInput = {
-    set: number[]
-  }
-
   export type ContestCreateNestedOneWithoutContestRulesInput = {
     create?: XOR<ContestCreateWithoutContestRulesInput, ContestUncheckedCreateWithoutContestRulesInput>
     connectOrCreate?: ContestCreateOrConnectWithoutContestRulesInput
     connect?: ContestWhereUniqueInput
-  }
-
-  export type ContestRuleUpdaterequirementsInput = {
-    set?: number[]
-    push?: number | number[]
   }
 
   export type ContestUpdateOneRequiredWithoutContestRulesNestedInput = {
@@ -32907,6 +32791,16 @@ export namespace Prisma {
     _min?: NestedDateTimeFilter<$PrismaModel>
     _max?: NestedDateTimeFilter<$PrismaModel>
   }
+
+  export type RecurringDataWhereInput = {
+    AND?: RecurringDataWhereInput | RecurringDataWhereInput[]
+    OR?: RecurringDataWhereInput[]
+    NOT?: RecurringDataWhereInput | RecurringDataWhereInput[]
+    recurringType?: EnumRecurringTypeFilter<"RecurringData"> | $Enums.RecurringType
+    previousOccurrence?: DateTimeNullableFilter<"RecurringData"> | Date | string | null
+    nextOccurrence?: DateTimeFilter<"RecurringData"> | Date | string
+    duration?: IntFilter<"RecurringData"> | number
+  }
   export type NestedJsonFilter<$PrismaModel = never> =
     | PatchUndefined<
         Either<Required<NestedJsonFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonFilterBase<$PrismaModel>>, 'path'>>,
@@ -32917,16 +32811,6 @@ export namespace Prisma {
   export type NestedJsonFilterBase<$PrismaModel = never> = {
     equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
     not?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-  }
-
-  export type RecurringDataWhereInput = {
-    AND?: RecurringDataWhereInput | RecurringDataWhereInput[]
-    OR?: RecurringDataWhereInput[]
-    NOT?: RecurringDataWhereInput | RecurringDataWhereInput[]
-    recurringType?: EnumRecurringTypeFilter<"RecurringData"> | $Enums.RecurringType
-    previousOccurrence?: DateTimeNullableFilter<"RecurringData"> | Date | string | null
-    nextOccurrence?: DateTimeFilter<"RecurringData"> | Date | string
-    duration?: IntFilter<"RecurringData"> | number
   }
 
   export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
@@ -33255,7 +33139,6 @@ export namespace Prisma {
     icon?: string | null
     name: string
     description: string
-    requirements?: ContestRuleCreaterequirementsInput | number[]
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -33265,7 +33148,6 @@ export namespace Prisma {
     icon?: string | null
     name: string
     description: string
-    requirements?: ContestRuleCreaterequirementsInput | number[]
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -33487,7 +33369,6 @@ export namespace Prisma {
     name?: StringFilter<"ContestRule"> | string
     description?: StringFilter<"ContestRule"> | string
     contestId?: StringFilter<"ContestRule"> | string
-    requirements?: IntNullableListFilter<"ContestRule">
     createdAt?: DateTimeFilter<"ContestRule"> | Date | string
     updatedAt?: DateTimeFilter<"ContestRule"> | Date | string
   }
@@ -33569,8 +33450,6 @@ export namespace Prisma {
     level_requirements?: ContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
-    rules: InputJsonValue
-    prizes: InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
     creator: UserCreateNestedOneWithoutCreatedContestsInput
@@ -33593,8 +33472,6 @@ export namespace Prisma {
     level_requirements?: ContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
-    rules: InputJsonValue
-    prizes: InputJsonValue
     creatorId: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -33632,8 +33509,6 @@ export namespace Prisma {
     level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    rules?: InputJsonValue | InputJsonValue
-    prizes?: InputJsonValue | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     creator?: UserUpdateOneRequiredWithoutCreatedContestsNestedInput
@@ -33655,8 +33530,6 @@ export namespace Prisma {
     level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    rules?: InputJsonValue | InputJsonValue
-    prizes?: InputJsonValue | InputJsonValue
     creatorId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -34158,8 +34031,6 @@ export namespace Prisma {
     level_requirements?: ContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
-    rules: InputJsonValue
-    prizes: InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
     creator: UserCreateNestedOneWithoutCreatedContestsInput
@@ -34182,8 +34053,6 @@ export namespace Prisma {
     level_requirements?: ContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
-    rules: InputJsonValue
-    prizes: InputJsonValue
     creatorId: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -34383,8 +34252,6 @@ export namespace Prisma {
     level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    rules?: InputJsonValue | InputJsonValue
-    prizes?: InputJsonValue | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     creator?: UserUpdateOneRequiredWithoutCreatedContestsNestedInput
@@ -34406,8 +34273,6 @@ export namespace Prisma {
     level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    rules?: InputJsonValue | InputJsonValue
-    prizes?: InputJsonValue | InputJsonValue
     creatorId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -34567,8 +34432,6 @@ export namespace Prisma {
     level_requirements?: ContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
-    rules: InputJsonValue
-    prizes: InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
     creator: UserCreateNestedOneWithoutCreatedContestsInput
@@ -34591,8 +34454,6 @@ export namespace Prisma {
     level_requirements?: ContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
-    rules: InputJsonValue
-    prizes: InputJsonValue
     creatorId: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -34630,8 +34491,6 @@ export namespace Prisma {
     level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    rules?: InputJsonValue | InputJsonValue
-    prizes?: InputJsonValue | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     creator?: UserUpdateOneRequiredWithoutCreatedContestsNestedInput
@@ -34653,8 +34512,6 @@ export namespace Prisma {
     level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    rules?: InputJsonValue | InputJsonValue
-    prizes?: InputJsonValue | InputJsonValue
     creatorId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -34714,8 +34571,6 @@ export namespace Prisma {
     level_requirements?: ContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
-    rules: InputJsonValue
-    prizes: InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
     creator: UserCreateNestedOneWithoutCreatedContestsInput
@@ -34738,8 +34593,6 @@ export namespace Prisma {
     level_requirements?: ContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
-    rules: InputJsonValue
-    prizes: InputJsonValue
     creatorId: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -34849,8 +34702,6 @@ export namespace Prisma {
     level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    rules?: InputJsonValue | InputJsonValue
-    prizes?: InputJsonValue | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     creator?: UserUpdateOneRequiredWithoutCreatedContestsNestedInput
@@ -34872,8 +34723,6 @@ export namespace Prisma {
     level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    rules?: InputJsonValue | InputJsonValue
-    prizes?: InputJsonValue | InputJsonValue
     creatorId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -35444,8 +35293,6 @@ export namespace Prisma {
     level_requirements?: ContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
-    rules: InputJsonValue
-    prizes: InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
     participants?: ContestParticipantCreateNestedManyWithoutContestInput
@@ -35468,8 +35315,6 @@ export namespace Prisma {
     level_requirements?: ContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
-    rules: InputJsonValue
-    prizes: InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
     participants?: ContestParticipantUncheckedCreateNestedManyWithoutContestInput
@@ -35831,8 +35676,6 @@ export namespace Prisma {
     level_requirements?: IntNullableListFilter<"Contest">
     startDate?: DateTimeFilter<"Contest"> | Date | string
     endDate?: DateTimeFilter<"Contest"> | Date | string
-    rules?: JsonFilter<"Contest">
-    prizes?: JsonFilter<"Contest">
     creatorId?: StringFilter<"Contest"> | string
     createdAt?: DateTimeFilter<"Contest"> | Date | string
     updatedAt?: DateTimeFilter<"Contest"> | Date | string
@@ -37453,8 +37296,6 @@ export namespace Prisma {
     level_requirements?: ContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
-    rules: InputJsonValue
-    prizes: InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
     creator: UserCreateNestedOneWithoutCreatedContestsInput
@@ -37477,8 +37318,6 @@ export namespace Prisma {
     level_requirements?: ContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
-    rules: InputJsonValue
-    prizes: InputJsonValue
     creatorId: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -37630,8 +37469,6 @@ export namespace Prisma {
     level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    rules?: InputJsonValue | InputJsonValue
-    prizes?: InputJsonValue | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     creator?: UserUpdateOneRequiredWithoutCreatedContestsNestedInput
@@ -37653,8 +37490,6 @@ export namespace Prisma {
     level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    rules?: InputJsonValue | InputJsonValue
-    prizes?: InputJsonValue | InputJsonValue
     creatorId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -37694,7 +37529,6 @@ export namespace Prisma {
     icon?: string | null
     name: string
     description: string
-    requirements?: ContestRuleCreaterequirementsInput | number[]
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -37774,7 +37608,6 @@ export namespace Prisma {
     icon?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
-    requirements?: ContestRuleUpdaterequirementsInput | number[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -37783,7 +37616,6 @@ export namespace Prisma {
     icon?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
-    requirements?: ContestRuleUpdaterequirementsInput | number[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -37792,7 +37624,6 @@ export namespace Prisma {
     icon?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
-    requirements?: ContestRuleUpdaterequirementsInput | number[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -38142,8 +37973,6 @@ export namespace Prisma {
     level_requirements?: ContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
-    rules: InputJsonValue
-    prizes: InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -38259,8 +38088,6 @@ export namespace Prisma {
     level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    rules?: InputJsonValue | InputJsonValue
-    prizes?: InputJsonValue | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     participants?: ContestParticipantUpdateManyWithoutContestNestedInput
@@ -38282,8 +38109,6 @@ export namespace Prisma {
     level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    rules?: InputJsonValue | InputJsonValue
-    prizes?: InputJsonValue | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     participants?: ContestParticipantUncheckedUpdateManyWithoutContestNestedInput
@@ -38305,8 +38130,6 @@ export namespace Prisma {
     level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    rules?: InputJsonValue | InputJsonValue
-    prizes?: InputJsonValue | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

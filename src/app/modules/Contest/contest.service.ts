@@ -8,7 +8,7 @@ import { contestData } from './contest.type';
 import { contestRuleService } from './ContestRules/contestRules.service';
 import { addContestPrizes } from './ContestPrizes/contestPrize.service';
 import { ContestRule } from './ContestRules/conetstRules.type';
-import { ContestPrizeData } from './ContestPrizes/contestPrize.type';
+import { ContestPrize } from './ContestPrizes/contestPrize.type';
 import { profileService } from '../Profile/profile.service';
 import agenda from '../Agenda';
 import { UserStoreService } from '../User/UserStore/userStore.service';
