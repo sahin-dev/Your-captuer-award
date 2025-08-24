@@ -126,7 +126,28 @@ exports.Prisma.ContestScalarFieldEnum = {
   level_requirements: 'level_requirements',
   startDate: 'startDate',
   endDate: 'endDate',
+  rules: 'rules',
+  prizes: 'prizes',
   creatorId: 'creatorId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.RecurringContestScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  description: 'description',
+  banner: 'banner',
+  maxUploads: 'maxUploads',
+  isMoneyContest: 'isMoneyContest',
+  maxPrize: 'maxPrize',
+  minPrize: 'minPrize',
+  level_requirements: 'level_requirements',
+  startDate: 'startDate',
+  endDate: 'endDate',
+  creatorId: 'creatorId',
+  rules: 'rules',
+  prizes: 'prizes',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -138,28 +159,6 @@ exports.Prisma.ContestRuleScalarFieldEnum = {
   description: 'description',
   contestId: 'contestId',
   requirements: 'requirements',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-};
-
-exports.Prisma.RecurringContestDataScalarFieldEnum = {
-  id: 'id',
-  contestId: 'contestId',
-  lastRunAt: 'lastRunAt',
-  recurringType: 'recurringType',
-  nextRunAt: 'nextRunAt'
-};
-
-exports.Prisma.RecurringContestScalarFieldEnum = {
-  id: 'id',
-  creatorId: 'creatorId',
-  title: 'title',
-  description: 'description',
-  banner: 'banner',
-  maxUploads: 'maxUploads',
-  isMoneyContest: 'isMoneyContest',
-  maxPrize: 'maxPrize',
-  minPrize: 'minPrize',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -364,14 +363,8 @@ exports.ContestStatus = exports.$Enums.ContestStatus = {
   NEW: 'NEW',
   UPCOMING: 'UPCOMING',
   ACTIVE: 'ACTIVE',
-  OPEN: 'OPEN',
+  COMPLETED: 'COMPLETED',
   CLOSED: 'CLOSED'
-};
-
-exports.RecurringType = exports.$Enums.RecurringType = {
-  DAILY: 'DAILY',
-  WEEKLY: 'WEEKLY',
-  MONTHLY: 'MONTHLY'
 };
 
 exports.ContestParticipantStatus = exports.$Enums.ContestParticipantStatus = {
@@ -432,11 +425,16 @@ exports.OtpStatus = exports.$Enums.OtpStatus = {
   VALIDATED: 'VALIDATED'
 };
 
+exports.RecurringType = exports.$Enums.RecurringType = {
+  DAILY: 'DAILY',
+  WEEKLY: 'WEEKLY',
+  MONTHLY: 'MONTHLY'
+};
+
 exports.Prisma.ModelName = {
   Contest: 'Contest',
-  ContestRule: 'ContestRule',
-  RecurringContestData: 'RecurringContestData',
   RecurringContest: 'RecurringContest',
+  ContestRule: 'ContestRule',
   ContestPhoto: 'ContestPhoto',
   ContestWinner: 'ContestWinner',
   ContestParticipant: 'ContestParticipant',

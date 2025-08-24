@@ -2,7 +2,11 @@ import { ContestStatus, RecurringContest, RecurringType } from '../../../prismaC
 import { Job } from "agenda";
 import prisma from '../../../shared/prisma';
 import agenda from "./init";
-import { awardWinners, identifyWinner } from '../Contest/contest.service';
+import {contestService, identifyWinner } from '../Contest/contest.service';
+import ApiError from '../../../errors/ApiError';
+import { contestRuleService } from '../Contest/ContestRules/contestRules.service';
+import { addContestPrizes, getContestPrizes } from '../Contest/ContestPrizes/contestPrize.service';
+import { calculateNextOccurance } from '../../../helpers/nextOccurance';
 
 
 
@@ -70,6 +74,21 @@ agenda.define('contest:checkUpcoming', async () => {
 //     }
 // });
 
+agenda.define("contest:active", async ()=>{
+    const upcomingContest = await contestService.getUpcomingContest()
+    upcomingContest.forEach(async  (contest) => {
+        let contestStartDate = new Date(contest.startDate).getTime()
+        let currentDate = new Date().getTime()
+
+        if(currentDate >= contestStartDate){
+            await prisma.contest.update({where:{id:contest.id}, data:{status:ContestStatus.ACTIVE}})
+            agenda.schedule(contest.endDate,"contest:watcher", {contestId:contest.id})
+        }
+
+        
+    })
+})
+
 
 
 agenda.define("contest:checkRecurring", async ()=>{
@@ -83,55 +102,62 @@ agenda.define("contest:checkRecurring", async ()=>{
 });
 
 
-async function scheduleContest(contest:RecurringContest){
-    const contestRecurringData = contest.recurringData;
-    let next = null;
-
-    if (contestRecurringData.recurringType === RecurringType.WEEKLY) {
-        next = new Date(contestRecurringData.nextOccurrence);
-        next.setDate(next.getDate() + 7); // Increment by one week
-    } else if (contestRecurringData.recurringType === RecurringType.MONTHLY) {
-        next = new Date(contestRecurringData.nextOccurrence);
-        next.setMonth(next.getMonth() + 1); // Increment by one month
-    } else {
-        next = new Date(contestRecurringData.nextOccurrence);
-        next.setDate(next.getDate() + 1);
-        // next.setTime(next.getTime() + 1 * 60 * 1000) // Increment by one minute
-    }
+async function scheduleContest(rContest:RecurringContest){
+ 
+    let next = null
 
 
-        const previousOccurrence = new Date(contestRecurringData.previousOccurrence);
-        const nextOccurrence = new Date(contestRecurringData.nextOccurrence);
+    const previousOccurrence = rContest.recurring.previousOccurrence || rContest.createdAt;
+    const nextOccurrence = rContest.recurring.nextOccurrence;
 
-        const totalTimeSpan = nextOccurrence.getTime() - previousOccurrence.getTime();
-        const passedTimeSpan = new Date().getTime() - previousOccurrence.getTime();
+    const totalTimeSpan = nextOccurrence.getTime() - previousOccurrence.getTime();
+    const passedTimeSpan = Math.abs(new Date().getTime() - previousOccurrence.getTime());
 
-        if (passedTimeSpan >= totalTimeSpan * 0.2) {
-                const newContest = await prisma.contest.create({
-                data: {
-               
-                    title: contest.title,
-                    description: contest.description,
-                    creatorId: contest.creatorId,
-                    startDate: nextOccurrence,
-                    endDate: new Date(nextOccurrence.getTime()+ contestRecurringData.duration),
-                    status: ContestStatus.UPCOMING,
+    let time_ratio = 0.01
+   
+
+    if (passedTimeSpan >= (totalTimeSpan * time_ratio)) {
+       
+
+        let duration = rContest.endDate.getTime() - rContest.startDate.getTime()
+
         
-                }
-                
-            })
-            await prisma.recurringContest.update({
-            where: { id: contest.id },
+
+        const newContest = await prisma.contest.create({
             data: {
-                recurringData: {
-                    ...contestRecurringData,
-                    nextOccurrence: next,
-                    previousOccurrence: nextOccurrence
+        
+                title: rContest.title,
+                banner:rContest.banner,
+                maxUploads:rContest.maxUploads,
+                isMoneyContest: rContest.isMoneyContest,
+                maxPrize:rContest.maxPrize,
+                minPrize:rContest.minPrize,
+                level_requirements:rContest.level_requirements,
+                description: rContest.description,
+                creatorId: rContest.creatorId,
+                startDate: nextOccurrence,
+                rules: JSON.stringify(rContest.rules),
+                prizes: JSON.stringify(rContest.rules),
+                endDate: new Date(nextOccurrence.getTime() + duration),
+                status: ContestStatus.UPCOMING,
+            }
+        
+        })
+        const next = calculateNextOccurance(newContest.startDate, rContest.recurring.recurringType)
+       
+        await prisma.recurringContest.update({
+            where: { id: rContest.id },
+            data: {
+                recurring: {
+                    recurringType: rContest.recurring.recurringType,
+                    previousOccurrence: newContest.startDate,
+                    nextOccurrence: next
                 }
             }
         })
-            console.log(`Updated next occurrence for recurring contest ID: ${contest.id}`);
-        }
+
+        console.log(`Updated next occurrence for recurring contest ID: ${newContest.id}`);
+    }
 
 }
 
@@ -148,11 +174,7 @@ agenda.define("contest:watcher", async (job: Job) => {
         console.log(`Contest with id: ${contestId} has ended.`)
         console.log('Identifying winner=>')
         const winners = await identifyWinner(contestId)
-        console.log("winners: ", winners)
-        await awardWinners(winners)
         console.log("Winners awarded automatically")
-
-       
 
     });
 

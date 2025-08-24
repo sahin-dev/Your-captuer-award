@@ -15,6 +15,8 @@ model Contest {
   
   startDate DateTime
   endDate   DateTime
+  rules  Json
+  prizes  Json
 
   creatorId String @db.ObjectId
 
@@ -23,14 +25,37 @@ model Contest {
   votes        Vote[]
   contestRules ContestRule[] 
   contestPrizes ContestPrize[]
-  recurringData   RecurringContestData?
   achievements ContestAchievement[]
   createdAt    DateTime             @default(now())
   updatedAt    DateTime             @updatedAt
 
   @@map("contests")
 
+}
 
+
+model RecurringContest {
+  id             String        @id @default(auto()) @map("_id") @db.ObjectId
+  title          String
+  description    String
+  banner         String?       @default("https://images.unsplash.com/photo-1689539137236-b68e436248de?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D")
+  maxUploads     Int          @default(1)
+  isMoneyContest Boolean       @default(false)
+  maxPrize       Int?          @default(0)
+  minPrize       Int?          @default(0)
+  level_requirements    Int[]
+  
+  startDate DateTime
+  endDate   DateTime
+
+  creatorId String @db.ObjectId
+  recurring RecurringData
+
+  rules Json 
+  prizes Json
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+  @@map("recurring_contests")
 }
 
 
@@ -48,37 +73,6 @@ model ContestRule {
 
   @@map("contest_rules")
 }
-
-model RecurringContestData {
-  id        String      @id  @default(auto())  @map("_id") @db.ObjectId
-  contestId    String   @db.ObjectId @unique
-  lastRunAt  DateTime
-  recurringType RecurringType
-  nextRunAt  DateTime
-  contest  Contest  @relation(fields: [contestId], references: [id], onDelete: Cascade)
-
-  @@map("recurring_contest_data")
-}
-
-model RecurringContest {
-  id             String  @id @default(auto()) @map("_id") @db.ObjectId
-  creatorId      String  @db.ObjectId
-  title          String
-  description    String
-  banner         String? @default("https://images.unsplash.com/photo-1689539137236-b68e436248de?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D")
-  maxUploads     Int?    @default(1)
-  isMoneyContest Boolean @default(false)
-  maxPrize       Int?    @default(0)
-  minPrize       Int?    @default(0)
-
-  recurringData RecurringData
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@map("recurring_contests")
-}
-
 
 
 model ContestPhoto {
@@ -183,7 +177,7 @@ type Rules {
 
 type RecurringData {
   recurringType      RecurringType
-  previousOccurrence DateTime
+  previousOccurrence DateTime?
   nextOccurrence     DateTime
   duration           Int           @default(0)
 }

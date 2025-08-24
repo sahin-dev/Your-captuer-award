@@ -29,20 +29,15 @@ export type PhotoStats = $Result.DefaultSelection<Prisma.$PhotoStatsPayload>
  */
 export type Contest = $Result.DefaultSelection<Prisma.$ContestPayload>
 /**
- * Model ContestRule
- * 
- */
-export type ContestRule = $Result.DefaultSelection<Prisma.$ContestRulePayload>
-/**
- * Model RecurringContestData
- * 
- */
-export type RecurringContestData = $Result.DefaultSelection<Prisma.$RecurringContestDataPayload>
-/**
  * Model RecurringContest
  * 
  */
 export type RecurringContest = $Result.DefaultSelection<Prisma.$RecurringContestPayload>
+/**
+ * Model ContestRule
+ * 
+ */
+export type ContestRule = $Result.DefaultSelection<Prisma.$ContestRulePayload>
 /**
  * Model ContestPhoto
  * 
@@ -151,7 +146,7 @@ export const ContestStatus: {
   NEW: 'NEW',
   UPCOMING: 'UPCOMING',
   ACTIVE: 'ACTIVE',
-  OPEN: 'OPEN',
+  COMPLETED: 'COMPLETED',
   CLOSED: 'CLOSED'
 };
 
@@ -418,26 +413,6 @@ export class PrismaClient<
   get contest(): Prisma.ContestDelegate<ExtArgs, ClientOptions>;
 
   /**
-   * `prisma.contestRule`: Exposes CRUD operations for the **ContestRule** model.
-    * Example usage:
-    * ```ts
-    * // Fetch zero or more ContestRules
-    * const contestRules = await prisma.contestRule.findMany()
-    * ```
-    */
-  get contestRule(): Prisma.ContestRuleDelegate<ExtArgs, ClientOptions>;
-
-  /**
-   * `prisma.recurringContestData`: Exposes CRUD operations for the **RecurringContestData** model.
-    * Example usage:
-    * ```ts
-    * // Fetch zero or more RecurringContestData
-    * const recurringContestData = await prisma.recurringContestData.findMany()
-    * ```
-    */
-  get recurringContestData(): Prisma.RecurringContestDataDelegate<ExtArgs, ClientOptions>;
-
-  /**
    * `prisma.recurringContest`: Exposes CRUD operations for the **RecurringContest** model.
     * Example usage:
     * ```ts
@@ -446,6 +421,16 @@ export class PrismaClient<
     * ```
     */
   get recurringContest(): Prisma.RecurringContestDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.contestRule`: Exposes CRUD operations for the **ContestRule** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more ContestRules
+    * const contestRules = await prisma.contestRule.findMany()
+    * ```
+    */
+  get contestRule(): Prisma.ContestRuleDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.contestPhoto`: Exposes CRUD operations for the **ContestPhoto** model.
@@ -1067,9 +1052,8 @@ export namespace Prisma {
 
   export const ModelName: {
     Contest: 'Contest',
-    ContestRule: 'ContestRule',
-    RecurringContestData: 'RecurringContestData',
     RecurringContest: 'RecurringContest',
+    ContestRule: 'ContestRule',
     ContestPhoto: 'ContestPhoto',
     ContestWinner: 'ContestWinner',
     ContestParticipant: 'ContestParticipant',
@@ -1106,7 +1090,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "contest" | "contestRule" | "recurringContestData" | "recurringContest" | "contestPhoto" | "contestWinner" | "contestParticipant" | "contestPrize" | "contestAchievement" | "sitePolicy" | "room" | "chat" | "team" | "teamMember" | "user" | "userStore" | "userPhoto" | "like" | "otp" | "comment" | "follow" | "vote"
+      modelProps: "contest" | "recurringContest" | "contestRule" | "contestPhoto" | "contestWinner" | "contestParticipant" | "contestPrize" | "contestAchievement" | "sitePolicy" | "room" | "chat" | "team" | "teamMember" | "user" | "userStore" | "userPhoto" | "like" | "otp" | "comment" | "follow" | "vote"
       txIsolationLevel: never
     }
     model: {
@@ -1184,154 +1168,6 @@ export namespace Prisma {
           }
         }
       }
-      ContestRule: {
-        payload: Prisma.$ContestRulePayload<ExtArgs>
-        fields: Prisma.ContestRuleFieldRefs
-        operations: {
-          findUnique: {
-            args: Prisma.ContestRuleFindUniqueArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ContestRulePayload> | null
-          }
-          findUniqueOrThrow: {
-            args: Prisma.ContestRuleFindUniqueOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ContestRulePayload>
-          }
-          findFirst: {
-            args: Prisma.ContestRuleFindFirstArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ContestRulePayload> | null
-          }
-          findFirstOrThrow: {
-            args: Prisma.ContestRuleFindFirstOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ContestRulePayload>
-          }
-          findMany: {
-            args: Prisma.ContestRuleFindManyArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ContestRulePayload>[]
-          }
-          create: {
-            args: Prisma.ContestRuleCreateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ContestRulePayload>
-          }
-          createMany: {
-            args: Prisma.ContestRuleCreateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          delete: {
-            args: Prisma.ContestRuleDeleteArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ContestRulePayload>
-          }
-          update: {
-            args: Prisma.ContestRuleUpdateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ContestRulePayload>
-          }
-          deleteMany: {
-            args: Prisma.ContestRuleDeleteManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateMany: {
-            args: Prisma.ContestRuleUpdateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          upsert: {
-            args: Prisma.ContestRuleUpsertArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ContestRulePayload>
-          }
-          aggregate: {
-            args: Prisma.ContestRuleAggregateArgs<ExtArgs>
-            result: $Utils.Optional<AggregateContestRule>
-          }
-          groupBy: {
-            args: Prisma.ContestRuleGroupByArgs<ExtArgs>
-            result: $Utils.Optional<ContestRuleGroupByOutputType>[]
-          }
-          findRaw: {
-            args: Prisma.ContestRuleFindRawArgs<ExtArgs>
-            result: JsonObject
-          }
-          aggregateRaw: {
-            args: Prisma.ContestRuleAggregateRawArgs<ExtArgs>
-            result: JsonObject
-          }
-          count: {
-            args: Prisma.ContestRuleCountArgs<ExtArgs>
-            result: $Utils.Optional<ContestRuleCountAggregateOutputType> | number
-          }
-        }
-      }
-      RecurringContestData: {
-        payload: Prisma.$RecurringContestDataPayload<ExtArgs>
-        fields: Prisma.RecurringContestDataFieldRefs
-        operations: {
-          findUnique: {
-            args: Prisma.RecurringContestDataFindUniqueArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$RecurringContestDataPayload> | null
-          }
-          findUniqueOrThrow: {
-            args: Prisma.RecurringContestDataFindUniqueOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$RecurringContestDataPayload>
-          }
-          findFirst: {
-            args: Prisma.RecurringContestDataFindFirstArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$RecurringContestDataPayload> | null
-          }
-          findFirstOrThrow: {
-            args: Prisma.RecurringContestDataFindFirstOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$RecurringContestDataPayload>
-          }
-          findMany: {
-            args: Prisma.RecurringContestDataFindManyArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$RecurringContestDataPayload>[]
-          }
-          create: {
-            args: Prisma.RecurringContestDataCreateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$RecurringContestDataPayload>
-          }
-          createMany: {
-            args: Prisma.RecurringContestDataCreateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          delete: {
-            args: Prisma.RecurringContestDataDeleteArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$RecurringContestDataPayload>
-          }
-          update: {
-            args: Prisma.RecurringContestDataUpdateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$RecurringContestDataPayload>
-          }
-          deleteMany: {
-            args: Prisma.RecurringContestDataDeleteManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateMany: {
-            args: Prisma.RecurringContestDataUpdateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          upsert: {
-            args: Prisma.RecurringContestDataUpsertArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$RecurringContestDataPayload>
-          }
-          aggregate: {
-            args: Prisma.RecurringContestDataAggregateArgs<ExtArgs>
-            result: $Utils.Optional<AggregateRecurringContestData>
-          }
-          groupBy: {
-            args: Prisma.RecurringContestDataGroupByArgs<ExtArgs>
-            result: $Utils.Optional<RecurringContestDataGroupByOutputType>[]
-          }
-          findRaw: {
-            args: Prisma.RecurringContestDataFindRawArgs<ExtArgs>
-            result: JsonObject
-          }
-          aggregateRaw: {
-            args: Prisma.RecurringContestDataAggregateRawArgs<ExtArgs>
-            result: JsonObject
-          }
-          count: {
-            args: Prisma.RecurringContestDataCountArgs<ExtArgs>
-            result: $Utils.Optional<RecurringContestDataCountAggregateOutputType> | number
-          }
-        }
-      }
       RecurringContest: {
         payload: Prisma.$RecurringContestPayload<ExtArgs>
         fields: Prisma.RecurringContestFieldRefs
@@ -1403,6 +1239,80 @@ export namespace Prisma {
           count: {
             args: Prisma.RecurringContestCountArgs<ExtArgs>
             result: $Utils.Optional<RecurringContestCountAggregateOutputType> | number
+          }
+        }
+      }
+      ContestRule: {
+        payload: Prisma.$ContestRulePayload<ExtArgs>
+        fields: Prisma.ContestRuleFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.ContestRuleFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContestRulePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.ContestRuleFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContestRulePayload>
+          }
+          findFirst: {
+            args: Prisma.ContestRuleFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContestRulePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.ContestRuleFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContestRulePayload>
+          }
+          findMany: {
+            args: Prisma.ContestRuleFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContestRulePayload>[]
+          }
+          create: {
+            args: Prisma.ContestRuleCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContestRulePayload>
+          }
+          createMany: {
+            args: Prisma.ContestRuleCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.ContestRuleDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContestRulePayload>
+          }
+          update: {
+            args: Prisma.ContestRuleUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContestRulePayload>
+          }
+          deleteMany: {
+            args: Prisma.ContestRuleDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.ContestRuleUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.ContestRuleUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContestRulePayload>
+          }
+          aggregate: {
+            args: Prisma.ContestRuleAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateContestRule>
+          }
+          groupBy: {
+            args: Prisma.ContestRuleGroupByArgs<ExtArgs>
+            result: $Utils.Optional<ContestRuleGroupByOutputType>[]
+          }
+          findRaw: {
+            args: Prisma.ContestRuleFindRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          aggregateRaw: {
+            args: Prisma.ContestRuleAggregateRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          count: {
+            args: Prisma.ContestRuleCountArgs<ExtArgs>
+            result: $Utils.Optional<ContestRuleCountAggregateOutputType> | number
           }
         }
       }
@@ -2810,9 +2720,8 @@ export namespace Prisma {
   }
   export type GlobalOmitConfig = {
     contest?: ContestOmit
-    contestRule?: ContestRuleOmit
-    recurringContestData?: RecurringContestDataOmit
     recurringContest?: RecurringContestOmit
+    contestRule?: ContestRuleOmit
     contestPhoto?: ContestPhotoOmit
     contestWinner?: ContestWinnerOmit
     contestParticipant?: ContestParticipantOmit
@@ -3334,7 +3243,7 @@ export namespace Prisma {
     objects: {}
     scalars: {
       recurringType: $Enums.RecurringType
-      previousOccurrence: Date
+      previousOccurrence: Date | null
       nextOccurrence: Date
       duration: number
     }
@@ -3518,6 +3427,8 @@ export namespace Prisma {
     level_requirements: number
     startDate: number
     endDate: number
+    rules: number
+    prizes: number
     creatorId: number
     createdAt: number
     updatedAt: number
@@ -3586,6 +3497,8 @@ export namespace Prisma {
     level_requirements?: true
     startDate?: true
     endDate?: true
+    rules?: true
+    prizes?: true
     creatorId?: true
     createdAt?: true
     updatedAt?: true
@@ -3691,6 +3604,8 @@ export namespace Prisma {
     level_requirements: number[]
     startDate: Date
     endDate: Date
+    rules: JsonValue
+    prizes: JsonValue
     creatorId: string
     createdAt: Date
     updatedAt: Date
@@ -3728,6 +3643,8 @@ export namespace Prisma {
     level_requirements?: boolean
     startDate?: boolean
     endDate?: boolean
+    rules?: boolean
+    prizes?: boolean
     creatorId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -3736,7 +3653,6 @@ export namespace Prisma {
     votes?: boolean | Contest$votesArgs<ExtArgs>
     contestRules?: boolean | Contest$contestRulesArgs<ExtArgs>
     contestPrizes?: boolean | Contest$contestPrizesArgs<ExtArgs>
-    recurringData?: boolean | Contest$recurringDataArgs<ExtArgs>
     achievements?: boolean | Contest$achievementsArgs<ExtArgs>
     _count?: boolean | ContestCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["contest"]>
@@ -3756,19 +3672,20 @@ export namespace Prisma {
     level_requirements?: boolean
     startDate?: boolean
     endDate?: boolean
+    rules?: boolean
+    prizes?: boolean
     creatorId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type ContestOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "description" | "banner" | "status" | "maxUploads" | "isMoneyContest" | "maxPrize" | "minPrize" | "level_requirements" | "startDate" | "endDate" | "creatorId" | "createdAt" | "updatedAt", ExtArgs["result"]["contest"]>
+  export type ContestOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "description" | "banner" | "status" | "maxUploads" | "isMoneyContest" | "maxPrize" | "minPrize" | "level_requirements" | "startDate" | "endDate" | "rules" | "prizes" | "creatorId" | "createdAt" | "updatedAt", ExtArgs["result"]["contest"]>
   export type ContestInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     creator?: boolean | UserDefaultArgs<ExtArgs>
     participants?: boolean | Contest$participantsArgs<ExtArgs>
     votes?: boolean | Contest$votesArgs<ExtArgs>
     contestRules?: boolean | Contest$contestRulesArgs<ExtArgs>
     contestPrizes?: boolean | Contest$contestPrizesArgs<ExtArgs>
-    recurringData?: boolean | Contest$recurringDataArgs<ExtArgs>
     achievements?: boolean | Contest$achievementsArgs<ExtArgs>
     _count?: boolean | ContestCountOutputTypeDefaultArgs<ExtArgs>
   }
@@ -3781,7 +3698,6 @@ export namespace Prisma {
       votes: Prisma.$VotePayload<ExtArgs>[]
       contestRules: Prisma.$ContestRulePayload<ExtArgs>[]
       contestPrizes: Prisma.$ContestPrizePayload<ExtArgs>[]
-      recurringData: Prisma.$RecurringContestDataPayload<ExtArgs> | null
       achievements: Prisma.$ContestAchievementPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
@@ -3797,6 +3713,8 @@ export namespace Prisma {
       level_requirements: number[]
       startDate: Date
       endDate: Date
+      rules: Prisma.JsonValue
+      prizes: Prisma.JsonValue
       creatorId: string
       createdAt: Date
       updatedAt: Date
@@ -4168,7 +4086,6 @@ export namespace Prisma {
     votes<T extends Contest$votesArgs<ExtArgs> = {}>(args?: Subset<T, Contest$votesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VotePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     contestRules<T extends Contest$contestRulesArgs<ExtArgs> = {}>(args?: Subset<T, Contest$contestRulesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ContestRulePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     contestPrizes<T extends Contest$contestPrizesArgs<ExtArgs> = {}>(args?: Subset<T, Contest$contestPrizesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ContestPrizePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    recurringData<T extends Contest$recurringDataArgs<ExtArgs> = {}>(args?: Subset<T, Contest$recurringDataArgs<ExtArgs>>): Prisma__RecurringContestDataClient<$Result.GetResult<Prisma.$RecurringContestDataPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     achievements<T extends Contest$achievementsArgs<ExtArgs> = {}>(args?: Subset<T, Contest$achievementsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ContestAchievementPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -4211,6 +4128,8 @@ export namespace Prisma {
     readonly level_requirements: FieldRef<"Contest", 'Int[]'>
     readonly startDate: FieldRef<"Contest", 'DateTime'>
     readonly endDate: FieldRef<"Contest", 'DateTime'>
+    readonly rules: FieldRef<"Contest", 'Json'>
+    readonly prizes: FieldRef<"Contest", 'Json'>
     readonly creatorId: FieldRef<"Contest", 'String'>
     readonly createdAt: FieldRef<"Contest", 'DateTime'>
     readonly updatedAt: FieldRef<"Contest", 'DateTime'>
@@ -4680,25 +4599,6 @@ export namespace Prisma {
   }
 
   /**
-   * Contest.recurringData
-   */
-  export type Contest$recurringDataArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the RecurringContestData
-     */
-    select?: RecurringContestDataSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the RecurringContestData
-     */
-    omit?: RecurringContestDataOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: RecurringContestDataInclude<ExtArgs> | null
-    where?: RecurringContestDataWhereInput
-  }
-
-  /**
    * Contest.achievements
    */
   export type Contest$achievementsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -4738,6 +4638,1137 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: ContestInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model RecurringContest
+   */
+
+  export type AggregateRecurringContest = {
+    _count: RecurringContestCountAggregateOutputType | null
+    _avg: RecurringContestAvgAggregateOutputType | null
+    _sum: RecurringContestSumAggregateOutputType | null
+    _min: RecurringContestMinAggregateOutputType | null
+    _max: RecurringContestMaxAggregateOutputType | null
+  }
+
+  export type RecurringContestAvgAggregateOutputType = {
+    maxUploads: number | null
+    maxPrize: number | null
+    minPrize: number | null
+    level_requirements: number | null
+  }
+
+  export type RecurringContestSumAggregateOutputType = {
+    maxUploads: number | null
+    maxPrize: number | null
+    minPrize: number | null
+    level_requirements: number[]
+  }
+
+  export type RecurringContestMinAggregateOutputType = {
+    id: string | null
+    title: string | null
+    description: string | null
+    banner: string | null
+    maxUploads: number | null
+    isMoneyContest: boolean | null
+    maxPrize: number | null
+    minPrize: number | null
+    startDate: Date | null
+    endDate: Date | null
+    creatorId: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type RecurringContestMaxAggregateOutputType = {
+    id: string | null
+    title: string | null
+    description: string | null
+    banner: string | null
+    maxUploads: number | null
+    isMoneyContest: boolean | null
+    maxPrize: number | null
+    minPrize: number | null
+    startDate: Date | null
+    endDate: Date | null
+    creatorId: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type RecurringContestCountAggregateOutputType = {
+    id: number
+    title: number
+    description: number
+    banner: number
+    maxUploads: number
+    isMoneyContest: number
+    maxPrize: number
+    minPrize: number
+    level_requirements: number
+    startDate: number
+    endDate: number
+    creatorId: number
+    rules: number
+    prizes: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type RecurringContestAvgAggregateInputType = {
+    maxUploads?: true
+    maxPrize?: true
+    minPrize?: true
+    level_requirements?: true
+  }
+
+  export type RecurringContestSumAggregateInputType = {
+    maxUploads?: true
+    maxPrize?: true
+    minPrize?: true
+    level_requirements?: true
+  }
+
+  export type RecurringContestMinAggregateInputType = {
+    id?: true
+    title?: true
+    description?: true
+    banner?: true
+    maxUploads?: true
+    isMoneyContest?: true
+    maxPrize?: true
+    minPrize?: true
+    startDate?: true
+    endDate?: true
+    creatorId?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type RecurringContestMaxAggregateInputType = {
+    id?: true
+    title?: true
+    description?: true
+    banner?: true
+    maxUploads?: true
+    isMoneyContest?: true
+    maxPrize?: true
+    minPrize?: true
+    startDate?: true
+    endDate?: true
+    creatorId?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type RecurringContestCountAggregateInputType = {
+    id?: true
+    title?: true
+    description?: true
+    banner?: true
+    maxUploads?: true
+    isMoneyContest?: true
+    maxPrize?: true
+    minPrize?: true
+    level_requirements?: true
+    startDate?: true
+    endDate?: true
+    creatorId?: true
+    rules?: true
+    prizes?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type RecurringContestAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which RecurringContest to aggregate.
+     */
+    where?: RecurringContestWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of RecurringContests to fetch.
+     */
+    orderBy?: RecurringContestOrderByWithRelationInput | RecurringContestOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: RecurringContestWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` RecurringContests from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` RecurringContests.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned RecurringContests
+    **/
+    _count?: true | RecurringContestCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: RecurringContestAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: RecurringContestSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: RecurringContestMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: RecurringContestMaxAggregateInputType
+  }
+
+  export type GetRecurringContestAggregateType<T extends RecurringContestAggregateArgs> = {
+        [P in keyof T & keyof AggregateRecurringContest]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateRecurringContest[P]>
+      : GetScalarType<T[P], AggregateRecurringContest[P]>
+  }
+
+
+
+
+  export type RecurringContestGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: RecurringContestWhereInput
+    orderBy?: RecurringContestOrderByWithAggregationInput | RecurringContestOrderByWithAggregationInput[]
+    by: RecurringContestScalarFieldEnum[] | RecurringContestScalarFieldEnum
+    having?: RecurringContestScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: RecurringContestCountAggregateInputType | true
+    _avg?: RecurringContestAvgAggregateInputType
+    _sum?: RecurringContestSumAggregateInputType
+    _min?: RecurringContestMinAggregateInputType
+    _max?: RecurringContestMaxAggregateInputType
+  }
+
+  export type RecurringContestGroupByOutputType = {
+    id: string
+    title: string
+    description: string
+    banner: string | null
+    maxUploads: number
+    isMoneyContest: boolean
+    maxPrize: number | null
+    minPrize: number | null
+    level_requirements: number[]
+    startDate: Date
+    endDate: Date
+    creatorId: string
+    rules: JsonValue
+    prizes: JsonValue
+    createdAt: Date
+    updatedAt: Date
+    _count: RecurringContestCountAggregateOutputType | null
+    _avg: RecurringContestAvgAggregateOutputType | null
+    _sum: RecurringContestSumAggregateOutputType | null
+    _min: RecurringContestMinAggregateOutputType | null
+    _max: RecurringContestMaxAggregateOutputType | null
+  }
+
+  type GetRecurringContestGroupByPayload<T extends RecurringContestGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<RecurringContestGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof RecurringContestGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], RecurringContestGroupByOutputType[P]>
+            : GetScalarType<T[P], RecurringContestGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type RecurringContestSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    title?: boolean
+    description?: boolean
+    banner?: boolean
+    maxUploads?: boolean
+    isMoneyContest?: boolean
+    maxPrize?: boolean
+    minPrize?: boolean
+    level_requirements?: boolean
+    startDate?: boolean
+    endDate?: boolean
+    creatorId?: boolean
+    recurring?: boolean | RecurringDataDefaultArgs<ExtArgs>
+    rules?: boolean
+    prizes?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["recurringContest"]>
+
+
+
+  export type RecurringContestSelectScalar = {
+    id?: boolean
+    title?: boolean
+    description?: boolean
+    banner?: boolean
+    maxUploads?: boolean
+    isMoneyContest?: boolean
+    maxPrize?: boolean
+    minPrize?: boolean
+    level_requirements?: boolean
+    startDate?: boolean
+    endDate?: boolean
+    creatorId?: boolean
+    rules?: boolean
+    prizes?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type RecurringContestOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "description" | "banner" | "maxUploads" | "isMoneyContest" | "maxPrize" | "minPrize" | "level_requirements" | "startDate" | "endDate" | "creatorId" | "recurring" | "rules" | "prizes" | "createdAt" | "updatedAt", ExtArgs["result"]["recurringContest"]>
+  export type RecurringContestInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+
+  export type $RecurringContestPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "RecurringContest"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      title: string
+      description: string
+      banner: string | null
+      maxUploads: number
+      isMoneyContest: boolean
+      maxPrize: number | null
+      minPrize: number | null
+      level_requirements: number[]
+      startDate: Date
+      endDate: Date
+      creatorId: string
+      rules: Prisma.JsonValue
+      prizes: Prisma.JsonValue
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["recurringContest"]>
+    composites: {
+      recurring: Prisma.$RecurringDataPayload
+    }
+  }
+
+  type RecurringContestGetPayload<S extends boolean | null | undefined | RecurringContestDefaultArgs> = $Result.GetResult<Prisma.$RecurringContestPayload, S>
+
+  type RecurringContestCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<RecurringContestFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: RecurringContestCountAggregateInputType | true
+    }
+
+  export interface RecurringContestDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['RecurringContest'], meta: { name: 'RecurringContest' } }
+    /**
+     * Find zero or one RecurringContest that matches the filter.
+     * @param {RecurringContestFindUniqueArgs} args - Arguments to find a RecurringContest
+     * @example
+     * // Get one RecurringContest
+     * const recurringContest = await prisma.recurringContest.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends RecurringContestFindUniqueArgs>(args: SelectSubset<T, RecurringContestFindUniqueArgs<ExtArgs>>): Prisma__RecurringContestClient<$Result.GetResult<Prisma.$RecurringContestPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one RecurringContest that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {RecurringContestFindUniqueOrThrowArgs} args - Arguments to find a RecurringContest
+     * @example
+     * // Get one RecurringContest
+     * const recurringContest = await prisma.recurringContest.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends RecurringContestFindUniqueOrThrowArgs>(args: SelectSubset<T, RecurringContestFindUniqueOrThrowArgs<ExtArgs>>): Prisma__RecurringContestClient<$Result.GetResult<Prisma.$RecurringContestPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first RecurringContest that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RecurringContestFindFirstArgs} args - Arguments to find a RecurringContest
+     * @example
+     * // Get one RecurringContest
+     * const recurringContest = await prisma.recurringContest.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends RecurringContestFindFirstArgs>(args?: SelectSubset<T, RecurringContestFindFirstArgs<ExtArgs>>): Prisma__RecurringContestClient<$Result.GetResult<Prisma.$RecurringContestPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first RecurringContest that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RecurringContestFindFirstOrThrowArgs} args - Arguments to find a RecurringContest
+     * @example
+     * // Get one RecurringContest
+     * const recurringContest = await prisma.recurringContest.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends RecurringContestFindFirstOrThrowArgs>(args?: SelectSubset<T, RecurringContestFindFirstOrThrowArgs<ExtArgs>>): Prisma__RecurringContestClient<$Result.GetResult<Prisma.$RecurringContestPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more RecurringContests that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RecurringContestFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all RecurringContests
+     * const recurringContests = await prisma.recurringContest.findMany()
+     * 
+     * // Get first 10 RecurringContests
+     * const recurringContests = await prisma.recurringContest.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const recurringContestWithIdOnly = await prisma.recurringContest.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends RecurringContestFindManyArgs>(args?: SelectSubset<T, RecurringContestFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RecurringContestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a RecurringContest.
+     * @param {RecurringContestCreateArgs} args - Arguments to create a RecurringContest.
+     * @example
+     * // Create one RecurringContest
+     * const RecurringContest = await prisma.recurringContest.create({
+     *   data: {
+     *     // ... data to create a RecurringContest
+     *   }
+     * })
+     * 
+     */
+    create<T extends RecurringContestCreateArgs>(args: SelectSubset<T, RecurringContestCreateArgs<ExtArgs>>): Prisma__RecurringContestClient<$Result.GetResult<Prisma.$RecurringContestPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many RecurringContests.
+     * @param {RecurringContestCreateManyArgs} args - Arguments to create many RecurringContests.
+     * @example
+     * // Create many RecurringContests
+     * const recurringContest = await prisma.recurringContest.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends RecurringContestCreateManyArgs>(args?: SelectSubset<T, RecurringContestCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a RecurringContest.
+     * @param {RecurringContestDeleteArgs} args - Arguments to delete one RecurringContest.
+     * @example
+     * // Delete one RecurringContest
+     * const RecurringContest = await prisma.recurringContest.delete({
+     *   where: {
+     *     // ... filter to delete one RecurringContest
+     *   }
+     * })
+     * 
+     */
+    delete<T extends RecurringContestDeleteArgs>(args: SelectSubset<T, RecurringContestDeleteArgs<ExtArgs>>): Prisma__RecurringContestClient<$Result.GetResult<Prisma.$RecurringContestPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one RecurringContest.
+     * @param {RecurringContestUpdateArgs} args - Arguments to update one RecurringContest.
+     * @example
+     * // Update one RecurringContest
+     * const recurringContest = await prisma.recurringContest.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends RecurringContestUpdateArgs>(args: SelectSubset<T, RecurringContestUpdateArgs<ExtArgs>>): Prisma__RecurringContestClient<$Result.GetResult<Prisma.$RecurringContestPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more RecurringContests.
+     * @param {RecurringContestDeleteManyArgs} args - Arguments to filter RecurringContests to delete.
+     * @example
+     * // Delete a few RecurringContests
+     * const { count } = await prisma.recurringContest.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends RecurringContestDeleteManyArgs>(args?: SelectSubset<T, RecurringContestDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more RecurringContests.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RecurringContestUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many RecurringContests
+     * const recurringContest = await prisma.recurringContest.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends RecurringContestUpdateManyArgs>(args: SelectSubset<T, RecurringContestUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one RecurringContest.
+     * @param {RecurringContestUpsertArgs} args - Arguments to update or create a RecurringContest.
+     * @example
+     * // Update or create a RecurringContest
+     * const recurringContest = await prisma.recurringContest.upsert({
+     *   create: {
+     *     // ... data to create a RecurringContest
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the RecurringContest we want to update
+     *   }
+     * })
+     */
+    upsert<T extends RecurringContestUpsertArgs>(args: SelectSubset<T, RecurringContestUpsertArgs<ExtArgs>>): Prisma__RecurringContestClient<$Result.GetResult<Prisma.$RecurringContestPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more RecurringContests that matches the filter.
+     * @param {RecurringContestFindRawArgs} args - Select which filters you would like to apply.
+     * @example
+     * const recurringContest = await prisma.recurringContest.findRaw({
+     *   filter: { age: { $gt: 25 } }
+     * })
+     */
+    findRaw(args?: RecurringContestFindRawArgs): Prisma.PrismaPromise<JsonObject>
+
+    /**
+     * Perform aggregation operations on a RecurringContest.
+     * @param {RecurringContestAggregateRawArgs} args - Select which aggregations you would like to apply.
+     * @example
+     * const recurringContest = await prisma.recurringContest.aggregateRaw({
+     *   pipeline: [
+     *     { $match: { status: "registered" } },
+     *     { $group: { _id: "$country", total: { $sum: 1 } } }
+     *   ]
+     * })
+     */
+    aggregateRaw(args?: RecurringContestAggregateRawArgs): Prisma.PrismaPromise<JsonObject>
+
+
+    /**
+     * Count the number of RecurringContests.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RecurringContestCountArgs} args - Arguments to filter RecurringContests to count.
+     * @example
+     * // Count the number of RecurringContests
+     * const count = await prisma.recurringContest.count({
+     *   where: {
+     *     // ... the filter for the RecurringContests we want to count
+     *   }
+     * })
+    **/
+    count<T extends RecurringContestCountArgs>(
+      args?: Subset<T, RecurringContestCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], RecurringContestCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a RecurringContest.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RecurringContestAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends RecurringContestAggregateArgs>(args: Subset<T, RecurringContestAggregateArgs>): Prisma.PrismaPromise<GetRecurringContestAggregateType<T>>
+
+    /**
+     * Group by RecurringContest.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RecurringContestGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends RecurringContestGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: RecurringContestGroupByArgs['orderBy'] }
+        : { orderBy?: RecurringContestGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, RecurringContestGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetRecurringContestGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the RecurringContest model
+   */
+  readonly fields: RecurringContestFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for RecurringContest.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__RecurringContestClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the RecurringContest model
+   */
+  interface RecurringContestFieldRefs {
+    readonly id: FieldRef<"RecurringContest", 'String'>
+    readonly title: FieldRef<"RecurringContest", 'String'>
+    readonly description: FieldRef<"RecurringContest", 'String'>
+    readonly banner: FieldRef<"RecurringContest", 'String'>
+    readonly maxUploads: FieldRef<"RecurringContest", 'Int'>
+    readonly isMoneyContest: FieldRef<"RecurringContest", 'Boolean'>
+    readonly maxPrize: FieldRef<"RecurringContest", 'Int'>
+    readonly minPrize: FieldRef<"RecurringContest", 'Int'>
+    readonly level_requirements: FieldRef<"RecurringContest", 'Int[]'>
+    readonly startDate: FieldRef<"RecurringContest", 'DateTime'>
+    readonly endDate: FieldRef<"RecurringContest", 'DateTime'>
+    readonly creatorId: FieldRef<"RecurringContest", 'String'>
+    readonly rules: FieldRef<"RecurringContest", 'Json'>
+    readonly prizes: FieldRef<"RecurringContest", 'Json'>
+    readonly createdAt: FieldRef<"RecurringContest", 'DateTime'>
+    readonly updatedAt: FieldRef<"RecurringContest", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * RecurringContest findUnique
+   */
+  export type RecurringContestFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RecurringContest
+     */
+    select?: RecurringContestSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RecurringContest
+     */
+    omit?: RecurringContestOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RecurringContestInclude<ExtArgs> | null
+    /**
+     * Filter, which RecurringContest to fetch.
+     */
+    where: RecurringContestWhereUniqueInput
+  }
+
+  /**
+   * RecurringContest findUniqueOrThrow
+   */
+  export type RecurringContestFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RecurringContest
+     */
+    select?: RecurringContestSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RecurringContest
+     */
+    omit?: RecurringContestOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RecurringContestInclude<ExtArgs> | null
+    /**
+     * Filter, which RecurringContest to fetch.
+     */
+    where: RecurringContestWhereUniqueInput
+  }
+
+  /**
+   * RecurringContest findFirst
+   */
+  export type RecurringContestFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RecurringContest
+     */
+    select?: RecurringContestSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RecurringContest
+     */
+    omit?: RecurringContestOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RecurringContestInclude<ExtArgs> | null
+    /**
+     * Filter, which RecurringContest to fetch.
+     */
+    where?: RecurringContestWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of RecurringContests to fetch.
+     */
+    orderBy?: RecurringContestOrderByWithRelationInput | RecurringContestOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for RecurringContests.
+     */
+    cursor?: RecurringContestWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` RecurringContests from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` RecurringContests.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of RecurringContests.
+     */
+    distinct?: RecurringContestScalarFieldEnum | RecurringContestScalarFieldEnum[]
+  }
+
+  /**
+   * RecurringContest findFirstOrThrow
+   */
+  export type RecurringContestFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RecurringContest
+     */
+    select?: RecurringContestSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RecurringContest
+     */
+    omit?: RecurringContestOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RecurringContestInclude<ExtArgs> | null
+    /**
+     * Filter, which RecurringContest to fetch.
+     */
+    where?: RecurringContestWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of RecurringContests to fetch.
+     */
+    orderBy?: RecurringContestOrderByWithRelationInput | RecurringContestOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for RecurringContests.
+     */
+    cursor?: RecurringContestWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` RecurringContests from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` RecurringContests.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of RecurringContests.
+     */
+    distinct?: RecurringContestScalarFieldEnum | RecurringContestScalarFieldEnum[]
+  }
+
+  /**
+   * RecurringContest findMany
+   */
+  export type RecurringContestFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RecurringContest
+     */
+    select?: RecurringContestSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RecurringContest
+     */
+    omit?: RecurringContestOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RecurringContestInclude<ExtArgs> | null
+    /**
+     * Filter, which RecurringContests to fetch.
+     */
+    where?: RecurringContestWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of RecurringContests to fetch.
+     */
+    orderBy?: RecurringContestOrderByWithRelationInput | RecurringContestOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing RecurringContests.
+     */
+    cursor?: RecurringContestWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` RecurringContests from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` RecurringContests.
+     */
+    skip?: number
+    distinct?: RecurringContestScalarFieldEnum | RecurringContestScalarFieldEnum[]
+  }
+
+  /**
+   * RecurringContest create
+   */
+  export type RecurringContestCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RecurringContest
+     */
+    select?: RecurringContestSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RecurringContest
+     */
+    omit?: RecurringContestOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RecurringContestInclude<ExtArgs> | null
+    /**
+     * The data needed to create a RecurringContest.
+     */
+    data: XOR<RecurringContestCreateInput, RecurringContestUncheckedCreateInput>
+  }
+
+  /**
+   * RecurringContest createMany
+   */
+  export type RecurringContestCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many RecurringContests.
+     */
+    data: RecurringContestCreateManyInput | RecurringContestCreateManyInput[]
+  }
+
+  /**
+   * RecurringContest update
+   */
+  export type RecurringContestUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RecurringContest
+     */
+    select?: RecurringContestSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RecurringContest
+     */
+    omit?: RecurringContestOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RecurringContestInclude<ExtArgs> | null
+    /**
+     * The data needed to update a RecurringContest.
+     */
+    data: XOR<RecurringContestUpdateInput, RecurringContestUncheckedUpdateInput>
+    /**
+     * Choose, which RecurringContest to update.
+     */
+    where: RecurringContestWhereUniqueInput
+  }
+
+  /**
+   * RecurringContest updateMany
+   */
+  export type RecurringContestUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update RecurringContests.
+     */
+    data: XOR<RecurringContestUpdateManyMutationInput, RecurringContestUncheckedUpdateManyInput>
+    /**
+     * Filter which RecurringContests to update
+     */
+    where?: RecurringContestWhereInput
+    /**
+     * Limit how many RecurringContests to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * RecurringContest upsert
+   */
+  export type RecurringContestUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RecurringContest
+     */
+    select?: RecurringContestSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RecurringContest
+     */
+    omit?: RecurringContestOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RecurringContestInclude<ExtArgs> | null
+    /**
+     * The filter to search for the RecurringContest to update in case it exists.
+     */
+    where: RecurringContestWhereUniqueInput
+    /**
+     * In case the RecurringContest found by the `where` argument doesn't exist, create a new RecurringContest with this data.
+     */
+    create: XOR<RecurringContestCreateInput, RecurringContestUncheckedCreateInput>
+    /**
+     * In case the RecurringContest was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<RecurringContestUpdateInput, RecurringContestUncheckedUpdateInput>
+  }
+
+  /**
+   * RecurringContest delete
+   */
+  export type RecurringContestDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RecurringContest
+     */
+    select?: RecurringContestSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RecurringContest
+     */
+    omit?: RecurringContestOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RecurringContestInclude<ExtArgs> | null
+    /**
+     * Filter which RecurringContest to delete.
+     */
+    where: RecurringContestWhereUniqueInput
+  }
+
+  /**
+   * RecurringContest deleteMany
+   */
+  export type RecurringContestDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which RecurringContests to delete
+     */
+    where?: RecurringContestWhereInput
+    /**
+     * Limit how many RecurringContests to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * RecurringContest findRaw
+   */
+  export type RecurringContestFindRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The query predicate filter. If unspecified, then all documents in the collection will match the predicate. ${@link https://docs.mongodb.com/manual/reference/operator/query MongoDB Docs}.
+     */
+    filter?: InputJsonValue
+    /**
+     * Additional options to pass to the `find` command ${@link https://docs.mongodb.com/manual/reference/command/find/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * RecurringContest aggregateRaw
+   */
+  export type RecurringContestAggregateRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * An array of aggregation stages to process and transform the document stream via the aggregation pipeline. ${@link https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline MongoDB Docs}.
+     */
+    pipeline?: InputJsonValue[]
+    /**
+     * Additional options to pass to the `aggregate` command ${@link https://docs.mongodb.com/manual/reference/command/aggregate/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * RecurringContest without action
+   */
+  export type RecurringContestDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RecurringContest
+     */
+    select?: RecurringContestSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RecurringContest
+     */
+    omit?: RecurringContestOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RecurringContestInclude<ExtArgs> | null
   }
 
 
@@ -5780,2069 +6811,6 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: ContestRuleInclude<ExtArgs> | null
-  }
-
-
-  /**
-   * Model RecurringContestData
-   */
-
-  export type AggregateRecurringContestData = {
-    _count: RecurringContestDataCountAggregateOutputType | null
-    _min: RecurringContestDataMinAggregateOutputType | null
-    _max: RecurringContestDataMaxAggregateOutputType | null
-  }
-
-  export type RecurringContestDataMinAggregateOutputType = {
-    id: string | null
-    contestId: string | null
-    lastRunAt: Date | null
-    recurringType: $Enums.RecurringType | null
-    nextRunAt: Date | null
-  }
-
-  export type RecurringContestDataMaxAggregateOutputType = {
-    id: string | null
-    contestId: string | null
-    lastRunAt: Date | null
-    recurringType: $Enums.RecurringType | null
-    nextRunAt: Date | null
-  }
-
-  export type RecurringContestDataCountAggregateOutputType = {
-    id: number
-    contestId: number
-    lastRunAt: number
-    recurringType: number
-    nextRunAt: number
-    _all: number
-  }
-
-
-  export type RecurringContestDataMinAggregateInputType = {
-    id?: true
-    contestId?: true
-    lastRunAt?: true
-    recurringType?: true
-    nextRunAt?: true
-  }
-
-  export type RecurringContestDataMaxAggregateInputType = {
-    id?: true
-    contestId?: true
-    lastRunAt?: true
-    recurringType?: true
-    nextRunAt?: true
-  }
-
-  export type RecurringContestDataCountAggregateInputType = {
-    id?: true
-    contestId?: true
-    lastRunAt?: true
-    recurringType?: true
-    nextRunAt?: true
-    _all?: true
-  }
-
-  export type RecurringContestDataAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which RecurringContestData to aggregate.
-     */
-    where?: RecurringContestDataWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of RecurringContestData to fetch.
-     */
-    orderBy?: RecurringContestDataOrderByWithRelationInput | RecurringContestDataOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the start position
-     */
-    cursor?: RecurringContestDataWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` RecurringContestData from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` RecurringContestData.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Count returned RecurringContestData
-    **/
-    _count?: true | RecurringContestDataCountAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the minimum value
-    **/
-    _min?: RecurringContestDataMinAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the maximum value
-    **/
-    _max?: RecurringContestDataMaxAggregateInputType
-  }
-
-  export type GetRecurringContestDataAggregateType<T extends RecurringContestDataAggregateArgs> = {
-        [P in keyof T & keyof AggregateRecurringContestData]: P extends '_count' | 'count'
-      ? T[P] extends true
-        ? number
-        : GetScalarType<T[P], AggregateRecurringContestData[P]>
-      : GetScalarType<T[P], AggregateRecurringContestData[P]>
-  }
-
-
-
-
-  export type RecurringContestDataGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: RecurringContestDataWhereInput
-    orderBy?: RecurringContestDataOrderByWithAggregationInput | RecurringContestDataOrderByWithAggregationInput[]
-    by: RecurringContestDataScalarFieldEnum[] | RecurringContestDataScalarFieldEnum
-    having?: RecurringContestDataScalarWhereWithAggregatesInput
-    take?: number
-    skip?: number
-    _count?: RecurringContestDataCountAggregateInputType | true
-    _min?: RecurringContestDataMinAggregateInputType
-    _max?: RecurringContestDataMaxAggregateInputType
-  }
-
-  export type RecurringContestDataGroupByOutputType = {
-    id: string
-    contestId: string
-    lastRunAt: Date
-    recurringType: $Enums.RecurringType
-    nextRunAt: Date
-    _count: RecurringContestDataCountAggregateOutputType | null
-    _min: RecurringContestDataMinAggregateOutputType | null
-    _max: RecurringContestDataMaxAggregateOutputType | null
-  }
-
-  type GetRecurringContestDataGroupByPayload<T extends RecurringContestDataGroupByArgs> = Prisma.PrismaPromise<
-    Array<
-      PickEnumerable<RecurringContestDataGroupByOutputType, T['by']> &
-        {
-          [P in ((keyof T) & (keyof RecurringContestDataGroupByOutputType))]: P extends '_count'
-            ? T[P] extends boolean
-              ? number
-              : GetScalarType<T[P], RecurringContestDataGroupByOutputType[P]>
-            : GetScalarType<T[P], RecurringContestDataGroupByOutputType[P]>
-        }
-      >
-    >
-
-
-  export type RecurringContestDataSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    contestId?: boolean
-    lastRunAt?: boolean
-    recurringType?: boolean
-    nextRunAt?: boolean
-    contest?: boolean | ContestDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["recurringContestData"]>
-
-
-
-  export type RecurringContestDataSelectScalar = {
-    id?: boolean
-    contestId?: boolean
-    lastRunAt?: boolean
-    recurringType?: boolean
-    nextRunAt?: boolean
-  }
-
-  export type RecurringContestDataOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "contestId" | "lastRunAt" | "recurringType" | "nextRunAt", ExtArgs["result"]["recurringContestData"]>
-  export type RecurringContestDataInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    contest?: boolean | ContestDefaultArgs<ExtArgs>
-  }
-
-  export type $RecurringContestDataPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    name: "RecurringContestData"
-    objects: {
-      contest: Prisma.$ContestPayload<ExtArgs>
-    }
-    scalars: $Extensions.GetPayloadResult<{
-      id: string
-      contestId: string
-      lastRunAt: Date
-      recurringType: $Enums.RecurringType
-      nextRunAt: Date
-    }, ExtArgs["result"]["recurringContestData"]>
-    composites: {}
-  }
-
-  type RecurringContestDataGetPayload<S extends boolean | null | undefined | RecurringContestDataDefaultArgs> = $Result.GetResult<Prisma.$RecurringContestDataPayload, S>
-
-  type RecurringContestDataCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    Omit<RecurringContestDataFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
-      select?: RecurringContestDataCountAggregateInputType | true
-    }
-
-  export interface RecurringContestDataDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['RecurringContestData'], meta: { name: 'RecurringContestData' } }
-    /**
-     * Find zero or one RecurringContestData that matches the filter.
-     * @param {RecurringContestDataFindUniqueArgs} args - Arguments to find a RecurringContestData
-     * @example
-     * // Get one RecurringContestData
-     * const recurringContestData = await prisma.recurringContestData.findUnique({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUnique<T extends RecurringContestDataFindUniqueArgs>(args: SelectSubset<T, RecurringContestDataFindUniqueArgs<ExtArgs>>): Prisma__RecurringContestDataClient<$Result.GetResult<Prisma.$RecurringContestDataPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find one RecurringContestData that matches the filter or throw an error with `error.code='P2025'`
-     * if no matches were found.
-     * @param {RecurringContestDataFindUniqueOrThrowArgs} args - Arguments to find a RecurringContestData
-     * @example
-     * // Get one RecurringContestData
-     * const recurringContestData = await prisma.recurringContestData.findUniqueOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUniqueOrThrow<T extends RecurringContestDataFindUniqueOrThrowArgs>(args: SelectSubset<T, RecurringContestDataFindUniqueOrThrowArgs<ExtArgs>>): Prisma__RecurringContestDataClient<$Result.GetResult<Prisma.$RecurringContestDataPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first RecurringContestData that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {RecurringContestDataFindFirstArgs} args - Arguments to find a RecurringContestData
-     * @example
-     * // Get one RecurringContestData
-     * const recurringContestData = await prisma.recurringContestData.findFirst({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirst<T extends RecurringContestDataFindFirstArgs>(args?: SelectSubset<T, RecurringContestDataFindFirstArgs<ExtArgs>>): Prisma__RecurringContestDataClient<$Result.GetResult<Prisma.$RecurringContestDataPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first RecurringContestData that matches the filter or
-     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {RecurringContestDataFindFirstOrThrowArgs} args - Arguments to find a RecurringContestData
-     * @example
-     * // Get one RecurringContestData
-     * const recurringContestData = await prisma.recurringContestData.findFirstOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirstOrThrow<T extends RecurringContestDataFindFirstOrThrowArgs>(args?: SelectSubset<T, RecurringContestDataFindFirstOrThrowArgs<ExtArgs>>): Prisma__RecurringContestDataClient<$Result.GetResult<Prisma.$RecurringContestDataPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find zero or more RecurringContestData that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {RecurringContestDataFindManyArgs} args - Arguments to filter and select certain fields only.
-     * @example
-     * // Get all RecurringContestData
-     * const recurringContestData = await prisma.recurringContestData.findMany()
-     * 
-     * // Get first 10 RecurringContestData
-     * const recurringContestData = await prisma.recurringContestData.findMany({ take: 10 })
-     * 
-     * // Only select the `id`
-     * const recurringContestDataWithIdOnly = await prisma.recurringContestData.findMany({ select: { id: true } })
-     * 
-     */
-    findMany<T extends RecurringContestDataFindManyArgs>(args?: SelectSubset<T, RecurringContestDataFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RecurringContestDataPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
-
-    /**
-     * Create a RecurringContestData.
-     * @param {RecurringContestDataCreateArgs} args - Arguments to create a RecurringContestData.
-     * @example
-     * // Create one RecurringContestData
-     * const RecurringContestData = await prisma.recurringContestData.create({
-     *   data: {
-     *     // ... data to create a RecurringContestData
-     *   }
-     * })
-     * 
-     */
-    create<T extends RecurringContestDataCreateArgs>(args: SelectSubset<T, RecurringContestDataCreateArgs<ExtArgs>>): Prisma__RecurringContestDataClient<$Result.GetResult<Prisma.$RecurringContestDataPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Create many RecurringContestData.
-     * @param {RecurringContestDataCreateManyArgs} args - Arguments to create many RecurringContestData.
-     * @example
-     * // Create many RecurringContestData
-     * const recurringContestData = await prisma.recurringContestData.createMany({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     *     
-     */
-    createMany<T extends RecurringContestDataCreateManyArgs>(args?: SelectSubset<T, RecurringContestDataCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Delete a RecurringContestData.
-     * @param {RecurringContestDataDeleteArgs} args - Arguments to delete one RecurringContestData.
-     * @example
-     * // Delete one RecurringContestData
-     * const RecurringContestData = await prisma.recurringContestData.delete({
-     *   where: {
-     *     // ... filter to delete one RecurringContestData
-     *   }
-     * })
-     * 
-     */
-    delete<T extends RecurringContestDataDeleteArgs>(args: SelectSubset<T, RecurringContestDataDeleteArgs<ExtArgs>>): Prisma__RecurringContestDataClient<$Result.GetResult<Prisma.$RecurringContestDataPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Update one RecurringContestData.
-     * @param {RecurringContestDataUpdateArgs} args - Arguments to update one RecurringContestData.
-     * @example
-     * // Update one RecurringContestData
-     * const recurringContestData = await prisma.recurringContestData.update({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    update<T extends RecurringContestDataUpdateArgs>(args: SelectSubset<T, RecurringContestDataUpdateArgs<ExtArgs>>): Prisma__RecurringContestDataClient<$Result.GetResult<Prisma.$RecurringContestDataPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Delete zero or more RecurringContestData.
-     * @param {RecurringContestDataDeleteManyArgs} args - Arguments to filter RecurringContestData to delete.
-     * @example
-     * // Delete a few RecurringContestData
-     * const { count } = await prisma.recurringContestData.deleteMany({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     * 
-     */
-    deleteMany<T extends RecurringContestDataDeleteManyArgs>(args?: SelectSubset<T, RecurringContestDataDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more RecurringContestData.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {RecurringContestDataUpdateManyArgs} args - Arguments to update one or more rows.
-     * @example
-     * // Update many RecurringContestData
-     * const recurringContestData = await prisma.recurringContestData.updateMany({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    updateMany<T extends RecurringContestDataUpdateManyArgs>(args: SelectSubset<T, RecurringContestDataUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Create or update one RecurringContestData.
-     * @param {RecurringContestDataUpsertArgs} args - Arguments to update or create a RecurringContestData.
-     * @example
-     * // Update or create a RecurringContestData
-     * const recurringContestData = await prisma.recurringContestData.upsert({
-     *   create: {
-     *     // ... data to create a RecurringContestData
-     *   },
-     *   update: {
-     *     // ... in case it already exists, update
-     *   },
-     *   where: {
-     *     // ... the filter for the RecurringContestData we want to update
-     *   }
-     * })
-     */
-    upsert<T extends RecurringContestDataUpsertArgs>(args: SelectSubset<T, RecurringContestDataUpsertArgs<ExtArgs>>): Prisma__RecurringContestDataClient<$Result.GetResult<Prisma.$RecurringContestDataPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find zero or more RecurringContestData that matches the filter.
-     * @param {RecurringContestDataFindRawArgs} args - Select which filters you would like to apply.
-     * @example
-     * const recurringContestData = await prisma.recurringContestData.findRaw({
-     *   filter: { age: { $gt: 25 } }
-     * })
-     */
-    findRaw(args?: RecurringContestDataFindRawArgs): Prisma.PrismaPromise<JsonObject>
-
-    /**
-     * Perform aggregation operations on a RecurringContestData.
-     * @param {RecurringContestDataAggregateRawArgs} args - Select which aggregations you would like to apply.
-     * @example
-     * const recurringContestData = await prisma.recurringContestData.aggregateRaw({
-     *   pipeline: [
-     *     { $match: { status: "registered" } },
-     *     { $group: { _id: "$country", total: { $sum: 1 } } }
-     *   ]
-     * })
-     */
-    aggregateRaw(args?: RecurringContestDataAggregateRawArgs): Prisma.PrismaPromise<JsonObject>
-
-
-    /**
-     * Count the number of RecurringContestData.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {RecurringContestDataCountArgs} args - Arguments to filter RecurringContestData to count.
-     * @example
-     * // Count the number of RecurringContestData
-     * const count = await prisma.recurringContestData.count({
-     *   where: {
-     *     // ... the filter for the RecurringContestData we want to count
-     *   }
-     * })
-    **/
-    count<T extends RecurringContestDataCountArgs>(
-      args?: Subset<T, RecurringContestDataCountArgs>,
-    ): Prisma.PrismaPromise<
-      T extends $Utils.Record<'select', any>
-        ? T['select'] extends true
-          ? number
-          : GetScalarType<T['select'], RecurringContestDataCountAggregateOutputType>
-        : number
-    >
-
-    /**
-     * Allows you to perform aggregations operations on a RecurringContestData.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {RecurringContestDataAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
-     * @example
-     * // Ordered by age ascending
-     * // Where email contains prisma.io
-     * // Limited to the 10 users
-     * const aggregations = await prisma.user.aggregate({
-     *   _avg: {
-     *     age: true,
-     *   },
-     *   where: {
-     *     email: {
-     *       contains: "prisma.io",
-     *     },
-     *   },
-     *   orderBy: {
-     *     age: "asc",
-     *   },
-     *   take: 10,
-     * })
-    **/
-    aggregate<T extends RecurringContestDataAggregateArgs>(args: Subset<T, RecurringContestDataAggregateArgs>): Prisma.PrismaPromise<GetRecurringContestDataAggregateType<T>>
-
-    /**
-     * Group by RecurringContestData.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {RecurringContestDataGroupByArgs} args - Group by arguments.
-     * @example
-     * // Group by city, order by createdAt, get count
-     * const result = await prisma.user.groupBy({
-     *   by: ['city', 'createdAt'],
-     *   orderBy: {
-     *     createdAt: true
-     *   },
-     *   _count: {
-     *     _all: true
-     *   },
-     * })
-     * 
-    **/
-    groupBy<
-      T extends RecurringContestDataGroupByArgs,
-      HasSelectOrTake extends Or<
-        Extends<'skip', Keys<T>>,
-        Extends<'take', Keys<T>>
-      >,
-      OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: RecurringContestDataGroupByArgs['orderBy'] }
-        : { orderBy?: RecurringContestDataGroupByArgs['orderBy'] },
-      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
-      ByFields extends MaybeTupleToUnion<T['by']>,
-      ByValid extends Has<ByFields, OrderFields>,
-      HavingFields extends GetHavingFields<T['having']>,
-      HavingValid extends Has<ByFields, HavingFields>,
-      ByEmpty extends T['by'] extends never[] ? True : False,
-      InputErrors extends ByEmpty extends True
-      ? `Error: "by" must not be empty.`
-      : HavingValid extends False
-      ? {
-          [P in HavingFields]: P extends ByFields
-            ? never
-            : P extends string
-            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
-            : [
-                Error,
-                'Field ',
-                P,
-                ` in "having" needs to be provided in "by"`,
-              ]
-        }[HavingFields]
-      : 'take' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "take", you also need to provide "orderBy"'
-      : 'skip' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "skip", you also need to provide "orderBy"'
-      : ByValid extends True
-      ? {}
-      : {
-          [P in OrderFields]: P extends ByFields
-            ? never
-            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-        }[OrderFields]
-    >(args: SubsetIntersection<T, RecurringContestDataGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetRecurringContestDataGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
-  /**
-   * Fields of the RecurringContestData model
-   */
-  readonly fields: RecurringContestDataFieldRefs;
-  }
-
-  /**
-   * The delegate class that acts as a "Promise-like" for RecurringContestData.
-   * Why is this prefixed with `Prisma__`?
-   * Because we want to prevent naming conflicts as mentioned in
-   * https://github.com/prisma/prisma-client-js/issues/707
-   */
-  export interface Prisma__RecurringContestDataClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
-    readonly [Symbol.toStringTag]: "PrismaPromise"
-    contest<T extends ContestDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ContestDefaultArgs<ExtArgs>>): Prisma__ContestClient<$Result.GetResult<Prisma.$ContestPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    /**
-     * Attaches callbacks for the resolution and/or rejection of the Promise.
-     * @param onfulfilled The callback to execute when the Promise is resolved.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of which ever callback is executed.
-     */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
-    /**
-     * Attaches a callback for only the rejection of the Promise.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of the callback.
-     */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
-    /**
-     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
-     * resolved value cannot be modified from the callback.
-     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
-     * @returns A Promise for the completion of the callback.
-     */
-    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
-  }
-
-
-
-
-  /**
-   * Fields of the RecurringContestData model
-   */
-  interface RecurringContestDataFieldRefs {
-    readonly id: FieldRef<"RecurringContestData", 'String'>
-    readonly contestId: FieldRef<"RecurringContestData", 'String'>
-    readonly lastRunAt: FieldRef<"RecurringContestData", 'DateTime'>
-    readonly recurringType: FieldRef<"RecurringContestData", 'RecurringType'>
-    readonly nextRunAt: FieldRef<"RecurringContestData", 'DateTime'>
-  }
-    
-
-  // Custom InputTypes
-  /**
-   * RecurringContestData findUnique
-   */
-  export type RecurringContestDataFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the RecurringContestData
-     */
-    select?: RecurringContestDataSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the RecurringContestData
-     */
-    omit?: RecurringContestDataOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: RecurringContestDataInclude<ExtArgs> | null
-    /**
-     * Filter, which RecurringContestData to fetch.
-     */
-    where: RecurringContestDataWhereUniqueInput
-  }
-
-  /**
-   * RecurringContestData findUniqueOrThrow
-   */
-  export type RecurringContestDataFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the RecurringContestData
-     */
-    select?: RecurringContestDataSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the RecurringContestData
-     */
-    omit?: RecurringContestDataOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: RecurringContestDataInclude<ExtArgs> | null
-    /**
-     * Filter, which RecurringContestData to fetch.
-     */
-    where: RecurringContestDataWhereUniqueInput
-  }
-
-  /**
-   * RecurringContestData findFirst
-   */
-  export type RecurringContestDataFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the RecurringContestData
-     */
-    select?: RecurringContestDataSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the RecurringContestData
-     */
-    omit?: RecurringContestDataOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: RecurringContestDataInclude<ExtArgs> | null
-    /**
-     * Filter, which RecurringContestData to fetch.
-     */
-    where?: RecurringContestDataWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of RecurringContestData to fetch.
-     */
-    orderBy?: RecurringContestDataOrderByWithRelationInput | RecurringContestDataOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for RecurringContestData.
-     */
-    cursor?: RecurringContestDataWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` RecurringContestData from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` RecurringContestData.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of RecurringContestData.
-     */
-    distinct?: RecurringContestDataScalarFieldEnum | RecurringContestDataScalarFieldEnum[]
-  }
-
-  /**
-   * RecurringContestData findFirstOrThrow
-   */
-  export type RecurringContestDataFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the RecurringContestData
-     */
-    select?: RecurringContestDataSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the RecurringContestData
-     */
-    omit?: RecurringContestDataOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: RecurringContestDataInclude<ExtArgs> | null
-    /**
-     * Filter, which RecurringContestData to fetch.
-     */
-    where?: RecurringContestDataWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of RecurringContestData to fetch.
-     */
-    orderBy?: RecurringContestDataOrderByWithRelationInput | RecurringContestDataOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for RecurringContestData.
-     */
-    cursor?: RecurringContestDataWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` RecurringContestData from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` RecurringContestData.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of RecurringContestData.
-     */
-    distinct?: RecurringContestDataScalarFieldEnum | RecurringContestDataScalarFieldEnum[]
-  }
-
-  /**
-   * RecurringContestData findMany
-   */
-  export type RecurringContestDataFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the RecurringContestData
-     */
-    select?: RecurringContestDataSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the RecurringContestData
-     */
-    omit?: RecurringContestDataOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: RecurringContestDataInclude<ExtArgs> | null
-    /**
-     * Filter, which RecurringContestData to fetch.
-     */
-    where?: RecurringContestDataWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of RecurringContestData to fetch.
-     */
-    orderBy?: RecurringContestDataOrderByWithRelationInput | RecurringContestDataOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for listing RecurringContestData.
-     */
-    cursor?: RecurringContestDataWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` RecurringContestData from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` RecurringContestData.
-     */
-    skip?: number
-    distinct?: RecurringContestDataScalarFieldEnum | RecurringContestDataScalarFieldEnum[]
-  }
-
-  /**
-   * RecurringContestData create
-   */
-  export type RecurringContestDataCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the RecurringContestData
-     */
-    select?: RecurringContestDataSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the RecurringContestData
-     */
-    omit?: RecurringContestDataOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: RecurringContestDataInclude<ExtArgs> | null
-    /**
-     * The data needed to create a RecurringContestData.
-     */
-    data: XOR<RecurringContestDataCreateInput, RecurringContestDataUncheckedCreateInput>
-  }
-
-  /**
-   * RecurringContestData createMany
-   */
-  export type RecurringContestDataCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to create many RecurringContestData.
-     */
-    data: RecurringContestDataCreateManyInput | RecurringContestDataCreateManyInput[]
-  }
-
-  /**
-   * RecurringContestData update
-   */
-  export type RecurringContestDataUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the RecurringContestData
-     */
-    select?: RecurringContestDataSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the RecurringContestData
-     */
-    omit?: RecurringContestDataOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: RecurringContestDataInclude<ExtArgs> | null
-    /**
-     * The data needed to update a RecurringContestData.
-     */
-    data: XOR<RecurringContestDataUpdateInput, RecurringContestDataUncheckedUpdateInput>
-    /**
-     * Choose, which RecurringContestData to update.
-     */
-    where: RecurringContestDataWhereUniqueInput
-  }
-
-  /**
-   * RecurringContestData updateMany
-   */
-  export type RecurringContestDataUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to update RecurringContestData.
-     */
-    data: XOR<RecurringContestDataUpdateManyMutationInput, RecurringContestDataUncheckedUpdateManyInput>
-    /**
-     * Filter which RecurringContestData to update
-     */
-    where?: RecurringContestDataWhereInput
-    /**
-     * Limit how many RecurringContestData to update.
-     */
-    limit?: number
-  }
-
-  /**
-   * RecurringContestData upsert
-   */
-  export type RecurringContestDataUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the RecurringContestData
-     */
-    select?: RecurringContestDataSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the RecurringContestData
-     */
-    omit?: RecurringContestDataOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: RecurringContestDataInclude<ExtArgs> | null
-    /**
-     * The filter to search for the RecurringContestData to update in case it exists.
-     */
-    where: RecurringContestDataWhereUniqueInput
-    /**
-     * In case the RecurringContestData found by the `where` argument doesn't exist, create a new RecurringContestData with this data.
-     */
-    create: XOR<RecurringContestDataCreateInput, RecurringContestDataUncheckedCreateInput>
-    /**
-     * In case the RecurringContestData was found with the provided `where` argument, update it with this data.
-     */
-    update: XOR<RecurringContestDataUpdateInput, RecurringContestDataUncheckedUpdateInput>
-  }
-
-  /**
-   * RecurringContestData delete
-   */
-  export type RecurringContestDataDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the RecurringContestData
-     */
-    select?: RecurringContestDataSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the RecurringContestData
-     */
-    omit?: RecurringContestDataOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: RecurringContestDataInclude<ExtArgs> | null
-    /**
-     * Filter which RecurringContestData to delete.
-     */
-    where: RecurringContestDataWhereUniqueInput
-  }
-
-  /**
-   * RecurringContestData deleteMany
-   */
-  export type RecurringContestDataDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which RecurringContestData to delete
-     */
-    where?: RecurringContestDataWhereInput
-    /**
-     * Limit how many RecurringContestData to delete.
-     */
-    limit?: number
-  }
-
-  /**
-   * RecurringContestData findRaw
-   */
-  export type RecurringContestDataFindRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The query predicate filter. If unspecified, then all documents in the collection will match the predicate. ${@link https://docs.mongodb.com/manual/reference/operator/query MongoDB Docs}.
-     */
-    filter?: InputJsonValue
-    /**
-     * Additional options to pass to the `find` command ${@link https://docs.mongodb.com/manual/reference/command/find/#command-fields MongoDB Docs}.
-     */
-    options?: InputJsonValue
-  }
-
-  /**
-   * RecurringContestData aggregateRaw
-   */
-  export type RecurringContestDataAggregateRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * An array of aggregation stages to process and transform the document stream via the aggregation pipeline. ${@link https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline MongoDB Docs}.
-     */
-    pipeline?: InputJsonValue[]
-    /**
-     * Additional options to pass to the `aggregate` command ${@link https://docs.mongodb.com/manual/reference/command/aggregate/#command-fields MongoDB Docs}.
-     */
-    options?: InputJsonValue
-  }
-
-  /**
-   * RecurringContestData without action
-   */
-  export type RecurringContestDataDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the RecurringContestData
-     */
-    select?: RecurringContestDataSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the RecurringContestData
-     */
-    omit?: RecurringContestDataOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: RecurringContestDataInclude<ExtArgs> | null
-  }
-
-
-  /**
-   * Model RecurringContest
-   */
-
-  export type AggregateRecurringContest = {
-    _count: RecurringContestCountAggregateOutputType | null
-    _avg: RecurringContestAvgAggregateOutputType | null
-    _sum: RecurringContestSumAggregateOutputType | null
-    _min: RecurringContestMinAggregateOutputType | null
-    _max: RecurringContestMaxAggregateOutputType | null
-  }
-
-  export type RecurringContestAvgAggregateOutputType = {
-    maxUploads: number | null
-    maxPrize: number | null
-    minPrize: number | null
-  }
-
-  export type RecurringContestSumAggregateOutputType = {
-    maxUploads: number | null
-    maxPrize: number | null
-    minPrize: number | null
-  }
-
-  export type RecurringContestMinAggregateOutputType = {
-    id: string | null
-    creatorId: string | null
-    title: string | null
-    description: string | null
-    banner: string | null
-    maxUploads: number | null
-    isMoneyContest: boolean | null
-    maxPrize: number | null
-    minPrize: number | null
-    createdAt: Date | null
-    updatedAt: Date | null
-  }
-
-  export type RecurringContestMaxAggregateOutputType = {
-    id: string | null
-    creatorId: string | null
-    title: string | null
-    description: string | null
-    banner: string | null
-    maxUploads: number | null
-    isMoneyContest: boolean | null
-    maxPrize: number | null
-    minPrize: number | null
-    createdAt: Date | null
-    updatedAt: Date | null
-  }
-
-  export type RecurringContestCountAggregateOutputType = {
-    id: number
-    creatorId: number
-    title: number
-    description: number
-    banner: number
-    maxUploads: number
-    isMoneyContest: number
-    maxPrize: number
-    minPrize: number
-    createdAt: number
-    updatedAt: number
-    _all: number
-  }
-
-
-  export type RecurringContestAvgAggregateInputType = {
-    maxUploads?: true
-    maxPrize?: true
-    minPrize?: true
-  }
-
-  export type RecurringContestSumAggregateInputType = {
-    maxUploads?: true
-    maxPrize?: true
-    minPrize?: true
-  }
-
-  export type RecurringContestMinAggregateInputType = {
-    id?: true
-    creatorId?: true
-    title?: true
-    description?: true
-    banner?: true
-    maxUploads?: true
-    isMoneyContest?: true
-    maxPrize?: true
-    minPrize?: true
-    createdAt?: true
-    updatedAt?: true
-  }
-
-  export type RecurringContestMaxAggregateInputType = {
-    id?: true
-    creatorId?: true
-    title?: true
-    description?: true
-    banner?: true
-    maxUploads?: true
-    isMoneyContest?: true
-    maxPrize?: true
-    minPrize?: true
-    createdAt?: true
-    updatedAt?: true
-  }
-
-  export type RecurringContestCountAggregateInputType = {
-    id?: true
-    creatorId?: true
-    title?: true
-    description?: true
-    banner?: true
-    maxUploads?: true
-    isMoneyContest?: true
-    maxPrize?: true
-    minPrize?: true
-    createdAt?: true
-    updatedAt?: true
-    _all?: true
-  }
-
-  export type RecurringContestAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which RecurringContest to aggregate.
-     */
-    where?: RecurringContestWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of RecurringContests to fetch.
-     */
-    orderBy?: RecurringContestOrderByWithRelationInput | RecurringContestOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the start position
-     */
-    cursor?: RecurringContestWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` RecurringContests from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` RecurringContests.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Count returned RecurringContests
-    **/
-    _count?: true | RecurringContestCountAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to average
-    **/
-    _avg?: RecurringContestAvgAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to sum
-    **/
-    _sum?: RecurringContestSumAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the minimum value
-    **/
-    _min?: RecurringContestMinAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the maximum value
-    **/
-    _max?: RecurringContestMaxAggregateInputType
-  }
-
-  export type GetRecurringContestAggregateType<T extends RecurringContestAggregateArgs> = {
-        [P in keyof T & keyof AggregateRecurringContest]: P extends '_count' | 'count'
-      ? T[P] extends true
-        ? number
-        : GetScalarType<T[P], AggregateRecurringContest[P]>
-      : GetScalarType<T[P], AggregateRecurringContest[P]>
-  }
-
-
-
-
-  export type RecurringContestGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: RecurringContestWhereInput
-    orderBy?: RecurringContestOrderByWithAggregationInput | RecurringContestOrderByWithAggregationInput[]
-    by: RecurringContestScalarFieldEnum[] | RecurringContestScalarFieldEnum
-    having?: RecurringContestScalarWhereWithAggregatesInput
-    take?: number
-    skip?: number
-    _count?: RecurringContestCountAggregateInputType | true
-    _avg?: RecurringContestAvgAggregateInputType
-    _sum?: RecurringContestSumAggregateInputType
-    _min?: RecurringContestMinAggregateInputType
-    _max?: RecurringContestMaxAggregateInputType
-  }
-
-  export type RecurringContestGroupByOutputType = {
-    id: string
-    creatorId: string
-    title: string
-    description: string
-    banner: string | null
-    maxUploads: number | null
-    isMoneyContest: boolean
-    maxPrize: number | null
-    minPrize: number | null
-    createdAt: Date
-    updatedAt: Date
-    _count: RecurringContestCountAggregateOutputType | null
-    _avg: RecurringContestAvgAggregateOutputType | null
-    _sum: RecurringContestSumAggregateOutputType | null
-    _min: RecurringContestMinAggregateOutputType | null
-    _max: RecurringContestMaxAggregateOutputType | null
-  }
-
-  type GetRecurringContestGroupByPayload<T extends RecurringContestGroupByArgs> = Prisma.PrismaPromise<
-    Array<
-      PickEnumerable<RecurringContestGroupByOutputType, T['by']> &
-        {
-          [P in ((keyof T) & (keyof RecurringContestGroupByOutputType))]: P extends '_count'
-            ? T[P] extends boolean
-              ? number
-              : GetScalarType<T[P], RecurringContestGroupByOutputType[P]>
-            : GetScalarType<T[P], RecurringContestGroupByOutputType[P]>
-        }
-      >
-    >
-
-
-  export type RecurringContestSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    creatorId?: boolean
-    title?: boolean
-    description?: boolean
-    banner?: boolean
-    maxUploads?: boolean
-    isMoneyContest?: boolean
-    maxPrize?: boolean
-    minPrize?: boolean
-    recurringData?: boolean | RecurringDataDefaultArgs<ExtArgs>
-    createdAt?: boolean
-    updatedAt?: boolean
-  }, ExtArgs["result"]["recurringContest"]>
-
-
-
-  export type RecurringContestSelectScalar = {
-    id?: boolean
-    creatorId?: boolean
-    title?: boolean
-    description?: boolean
-    banner?: boolean
-    maxUploads?: boolean
-    isMoneyContest?: boolean
-    maxPrize?: boolean
-    minPrize?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-  }
-
-  export type RecurringContestOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "creatorId" | "title" | "description" | "banner" | "maxUploads" | "isMoneyContest" | "maxPrize" | "minPrize" | "recurringData" | "createdAt" | "updatedAt", ExtArgs["result"]["recurringContest"]>
-  export type RecurringContestInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
-
-  export type $RecurringContestPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    name: "RecurringContest"
-    objects: {}
-    scalars: $Extensions.GetPayloadResult<{
-      id: string
-      creatorId: string
-      title: string
-      description: string
-      banner: string | null
-      maxUploads: number | null
-      isMoneyContest: boolean
-      maxPrize: number | null
-      minPrize: number | null
-      createdAt: Date
-      updatedAt: Date
-    }, ExtArgs["result"]["recurringContest"]>
-    composites: {
-      recurringData: Prisma.$RecurringDataPayload
-    }
-  }
-
-  type RecurringContestGetPayload<S extends boolean | null | undefined | RecurringContestDefaultArgs> = $Result.GetResult<Prisma.$RecurringContestPayload, S>
-
-  type RecurringContestCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    Omit<RecurringContestFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
-      select?: RecurringContestCountAggregateInputType | true
-    }
-
-  export interface RecurringContestDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['RecurringContest'], meta: { name: 'RecurringContest' } }
-    /**
-     * Find zero or one RecurringContest that matches the filter.
-     * @param {RecurringContestFindUniqueArgs} args - Arguments to find a RecurringContest
-     * @example
-     * // Get one RecurringContest
-     * const recurringContest = await prisma.recurringContest.findUnique({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUnique<T extends RecurringContestFindUniqueArgs>(args: SelectSubset<T, RecurringContestFindUniqueArgs<ExtArgs>>): Prisma__RecurringContestClient<$Result.GetResult<Prisma.$RecurringContestPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find one RecurringContest that matches the filter or throw an error with `error.code='P2025'`
-     * if no matches were found.
-     * @param {RecurringContestFindUniqueOrThrowArgs} args - Arguments to find a RecurringContest
-     * @example
-     * // Get one RecurringContest
-     * const recurringContest = await prisma.recurringContest.findUniqueOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUniqueOrThrow<T extends RecurringContestFindUniqueOrThrowArgs>(args: SelectSubset<T, RecurringContestFindUniqueOrThrowArgs<ExtArgs>>): Prisma__RecurringContestClient<$Result.GetResult<Prisma.$RecurringContestPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first RecurringContest that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {RecurringContestFindFirstArgs} args - Arguments to find a RecurringContest
-     * @example
-     * // Get one RecurringContest
-     * const recurringContest = await prisma.recurringContest.findFirst({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirst<T extends RecurringContestFindFirstArgs>(args?: SelectSubset<T, RecurringContestFindFirstArgs<ExtArgs>>): Prisma__RecurringContestClient<$Result.GetResult<Prisma.$RecurringContestPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first RecurringContest that matches the filter or
-     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {RecurringContestFindFirstOrThrowArgs} args - Arguments to find a RecurringContest
-     * @example
-     * // Get one RecurringContest
-     * const recurringContest = await prisma.recurringContest.findFirstOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirstOrThrow<T extends RecurringContestFindFirstOrThrowArgs>(args?: SelectSubset<T, RecurringContestFindFirstOrThrowArgs<ExtArgs>>): Prisma__RecurringContestClient<$Result.GetResult<Prisma.$RecurringContestPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find zero or more RecurringContests that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {RecurringContestFindManyArgs} args - Arguments to filter and select certain fields only.
-     * @example
-     * // Get all RecurringContests
-     * const recurringContests = await prisma.recurringContest.findMany()
-     * 
-     * // Get first 10 RecurringContests
-     * const recurringContests = await prisma.recurringContest.findMany({ take: 10 })
-     * 
-     * // Only select the `id`
-     * const recurringContestWithIdOnly = await prisma.recurringContest.findMany({ select: { id: true } })
-     * 
-     */
-    findMany<T extends RecurringContestFindManyArgs>(args?: SelectSubset<T, RecurringContestFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RecurringContestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
-
-    /**
-     * Create a RecurringContest.
-     * @param {RecurringContestCreateArgs} args - Arguments to create a RecurringContest.
-     * @example
-     * // Create one RecurringContest
-     * const RecurringContest = await prisma.recurringContest.create({
-     *   data: {
-     *     // ... data to create a RecurringContest
-     *   }
-     * })
-     * 
-     */
-    create<T extends RecurringContestCreateArgs>(args: SelectSubset<T, RecurringContestCreateArgs<ExtArgs>>): Prisma__RecurringContestClient<$Result.GetResult<Prisma.$RecurringContestPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Create many RecurringContests.
-     * @param {RecurringContestCreateManyArgs} args - Arguments to create many RecurringContests.
-     * @example
-     * // Create many RecurringContests
-     * const recurringContest = await prisma.recurringContest.createMany({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     *     
-     */
-    createMany<T extends RecurringContestCreateManyArgs>(args?: SelectSubset<T, RecurringContestCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Delete a RecurringContest.
-     * @param {RecurringContestDeleteArgs} args - Arguments to delete one RecurringContest.
-     * @example
-     * // Delete one RecurringContest
-     * const RecurringContest = await prisma.recurringContest.delete({
-     *   where: {
-     *     // ... filter to delete one RecurringContest
-     *   }
-     * })
-     * 
-     */
-    delete<T extends RecurringContestDeleteArgs>(args: SelectSubset<T, RecurringContestDeleteArgs<ExtArgs>>): Prisma__RecurringContestClient<$Result.GetResult<Prisma.$RecurringContestPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Update one RecurringContest.
-     * @param {RecurringContestUpdateArgs} args - Arguments to update one RecurringContest.
-     * @example
-     * // Update one RecurringContest
-     * const recurringContest = await prisma.recurringContest.update({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    update<T extends RecurringContestUpdateArgs>(args: SelectSubset<T, RecurringContestUpdateArgs<ExtArgs>>): Prisma__RecurringContestClient<$Result.GetResult<Prisma.$RecurringContestPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Delete zero or more RecurringContests.
-     * @param {RecurringContestDeleteManyArgs} args - Arguments to filter RecurringContests to delete.
-     * @example
-     * // Delete a few RecurringContests
-     * const { count } = await prisma.recurringContest.deleteMany({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     * 
-     */
-    deleteMany<T extends RecurringContestDeleteManyArgs>(args?: SelectSubset<T, RecurringContestDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more RecurringContests.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {RecurringContestUpdateManyArgs} args - Arguments to update one or more rows.
-     * @example
-     * // Update many RecurringContests
-     * const recurringContest = await prisma.recurringContest.updateMany({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    updateMany<T extends RecurringContestUpdateManyArgs>(args: SelectSubset<T, RecurringContestUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Create or update one RecurringContest.
-     * @param {RecurringContestUpsertArgs} args - Arguments to update or create a RecurringContest.
-     * @example
-     * // Update or create a RecurringContest
-     * const recurringContest = await prisma.recurringContest.upsert({
-     *   create: {
-     *     // ... data to create a RecurringContest
-     *   },
-     *   update: {
-     *     // ... in case it already exists, update
-     *   },
-     *   where: {
-     *     // ... the filter for the RecurringContest we want to update
-     *   }
-     * })
-     */
-    upsert<T extends RecurringContestUpsertArgs>(args: SelectSubset<T, RecurringContestUpsertArgs<ExtArgs>>): Prisma__RecurringContestClient<$Result.GetResult<Prisma.$RecurringContestPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find zero or more RecurringContests that matches the filter.
-     * @param {RecurringContestFindRawArgs} args - Select which filters you would like to apply.
-     * @example
-     * const recurringContest = await prisma.recurringContest.findRaw({
-     *   filter: { age: { $gt: 25 } }
-     * })
-     */
-    findRaw(args?: RecurringContestFindRawArgs): Prisma.PrismaPromise<JsonObject>
-
-    /**
-     * Perform aggregation operations on a RecurringContest.
-     * @param {RecurringContestAggregateRawArgs} args - Select which aggregations you would like to apply.
-     * @example
-     * const recurringContest = await prisma.recurringContest.aggregateRaw({
-     *   pipeline: [
-     *     { $match: { status: "registered" } },
-     *     { $group: { _id: "$country", total: { $sum: 1 } } }
-     *   ]
-     * })
-     */
-    aggregateRaw(args?: RecurringContestAggregateRawArgs): Prisma.PrismaPromise<JsonObject>
-
-
-    /**
-     * Count the number of RecurringContests.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {RecurringContestCountArgs} args - Arguments to filter RecurringContests to count.
-     * @example
-     * // Count the number of RecurringContests
-     * const count = await prisma.recurringContest.count({
-     *   where: {
-     *     // ... the filter for the RecurringContests we want to count
-     *   }
-     * })
-    **/
-    count<T extends RecurringContestCountArgs>(
-      args?: Subset<T, RecurringContestCountArgs>,
-    ): Prisma.PrismaPromise<
-      T extends $Utils.Record<'select', any>
-        ? T['select'] extends true
-          ? number
-          : GetScalarType<T['select'], RecurringContestCountAggregateOutputType>
-        : number
-    >
-
-    /**
-     * Allows you to perform aggregations operations on a RecurringContest.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {RecurringContestAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
-     * @example
-     * // Ordered by age ascending
-     * // Where email contains prisma.io
-     * // Limited to the 10 users
-     * const aggregations = await prisma.user.aggregate({
-     *   _avg: {
-     *     age: true,
-     *   },
-     *   where: {
-     *     email: {
-     *       contains: "prisma.io",
-     *     },
-     *   },
-     *   orderBy: {
-     *     age: "asc",
-     *   },
-     *   take: 10,
-     * })
-    **/
-    aggregate<T extends RecurringContestAggregateArgs>(args: Subset<T, RecurringContestAggregateArgs>): Prisma.PrismaPromise<GetRecurringContestAggregateType<T>>
-
-    /**
-     * Group by RecurringContest.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {RecurringContestGroupByArgs} args - Group by arguments.
-     * @example
-     * // Group by city, order by createdAt, get count
-     * const result = await prisma.user.groupBy({
-     *   by: ['city', 'createdAt'],
-     *   orderBy: {
-     *     createdAt: true
-     *   },
-     *   _count: {
-     *     _all: true
-     *   },
-     * })
-     * 
-    **/
-    groupBy<
-      T extends RecurringContestGroupByArgs,
-      HasSelectOrTake extends Or<
-        Extends<'skip', Keys<T>>,
-        Extends<'take', Keys<T>>
-      >,
-      OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: RecurringContestGroupByArgs['orderBy'] }
-        : { orderBy?: RecurringContestGroupByArgs['orderBy'] },
-      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
-      ByFields extends MaybeTupleToUnion<T['by']>,
-      ByValid extends Has<ByFields, OrderFields>,
-      HavingFields extends GetHavingFields<T['having']>,
-      HavingValid extends Has<ByFields, HavingFields>,
-      ByEmpty extends T['by'] extends never[] ? True : False,
-      InputErrors extends ByEmpty extends True
-      ? `Error: "by" must not be empty.`
-      : HavingValid extends False
-      ? {
-          [P in HavingFields]: P extends ByFields
-            ? never
-            : P extends string
-            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
-            : [
-                Error,
-                'Field ',
-                P,
-                ` in "having" needs to be provided in "by"`,
-              ]
-        }[HavingFields]
-      : 'take' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "take", you also need to provide "orderBy"'
-      : 'skip' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "skip", you also need to provide "orderBy"'
-      : ByValid extends True
-      ? {}
-      : {
-          [P in OrderFields]: P extends ByFields
-            ? never
-            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-        }[OrderFields]
-    >(args: SubsetIntersection<T, RecurringContestGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetRecurringContestGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
-  /**
-   * Fields of the RecurringContest model
-   */
-  readonly fields: RecurringContestFieldRefs;
-  }
-
-  /**
-   * The delegate class that acts as a "Promise-like" for RecurringContest.
-   * Why is this prefixed with `Prisma__`?
-   * Because we want to prevent naming conflicts as mentioned in
-   * https://github.com/prisma/prisma-client-js/issues/707
-   */
-  export interface Prisma__RecurringContestClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
-    readonly [Symbol.toStringTag]: "PrismaPromise"
-    /**
-     * Attaches callbacks for the resolution and/or rejection of the Promise.
-     * @param onfulfilled The callback to execute when the Promise is resolved.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of which ever callback is executed.
-     */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
-    /**
-     * Attaches a callback for only the rejection of the Promise.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of the callback.
-     */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
-    /**
-     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
-     * resolved value cannot be modified from the callback.
-     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
-     * @returns A Promise for the completion of the callback.
-     */
-    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
-  }
-
-
-
-
-  /**
-   * Fields of the RecurringContest model
-   */
-  interface RecurringContestFieldRefs {
-    readonly id: FieldRef<"RecurringContest", 'String'>
-    readonly creatorId: FieldRef<"RecurringContest", 'String'>
-    readonly title: FieldRef<"RecurringContest", 'String'>
-    readonly description: FieldRef<"RecurringContest", 'String'>
-    readonly banner: FieldRef<"RecurringContest", 'String'>
-    readonly maxUploads: FieldRef<"RecurringContest", 'Int'>
-    readonly isMoneyContest: FieldRef<"RecurringContest", 'Boolean'>
-    readonly maxPrize: FieldRef<"RecurringContest", 'Int'>
-    readonly minPrize: FieldRef<"RecurringContest", 'Int'>
-    readonly createdAt: FieldRef<"RecurringContest", 'DateTime'>
-    readonly updatedAt: FieldRef<"RecurringContest", 'DateTime'>
-  }
-    
-
-  // Custom InputTypes
-  /**
-   * RecurringContest findUnique
-   */
-  export type RecurringContestFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the RecurringContest
-     */
-    select?: RecurringContestSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the RecurringContest
-     */
-    omit?: RecurringContestOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: RecurringContestInclude<ExtArgs> | null
-    /**
-     * Filter, which RecurringContest to fetch.
-     */
-    where: RecurringContestWhereUniqueInput
-  }
-
-  /**
-   * RecurringContest findUniqueOrThrow
-   */
-  export type RecurringContestFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the RecurringContest
-     */
-    select?: RecurringContestSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the RecurringContest
-     */
-    omit?: RecurringContestOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: RecurringContestInclude<ExtArgs> | null
-    /**
-     * Filter, which RecurringContest to fetch.
-     */
-    where: RecurringContestWhereUniqueInput
-  }
-
-  /**
-   * RecurringContest findFirst
-   */
-  export type RecurringContestFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the RecurringContest
-     */
-    select?: RecurringContestSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the RecurringContest
-     */
-    omit?: RecurringContestOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: RecurringContestInclude<ExtArgs> | null
-    /**
-     * Filter, which RecurringContest to fetch.
-     */
-    where?: RecurringContestWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of RecurringContests to fetch.
-     */
-    orderBy?: RecurringContestOrderByWithRelationInput | RecurringContestOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for RecurringContests.
-     */
-    cursor?: RecurringContestWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` RecurringContests from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` RecurringContests.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of RecurringContests.
-     */
-    distinct?: RecurringContestScalarFieldEnum | RecurringContestScalarFieldEnum[]
-  }
-
-  /**
-   * RecurringContest findFirstOrThrow
-   */
-  export type RecurringContestFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the RecurringContest
-     */
-    select?: RecurringContestSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the RecurringContest
-     */
-    omit?: RecurringContestOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: RecurringContestInclude<ExtArgs> | null
-    /**
-     * Filter, which RecurringContest to fetch.
-     */
-    where?: RecurringContestWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of RecurringContests to fetch.
-     */
-    orderBy?: RecurringContestOrderByWithRelationInput | RecurringContestOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for RecurringContests.
-     */
-    cursor?: RecurringContestWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` RecurringContests from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` RecurringContests.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of RecurringContests.
-     */
-    distinct?: RecurringContestScalarFieldEnum | RecurringContestScalarFieldEnum[]
-  }
-
-  /**
-   * RecurringContest findMany
-   */
-  export type RecurringContestFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the RecurringContest
-     */
-    select?: RecurringContestSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the RecurringContest
-     */
-    omit?: RecurringContestOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: RecurringContestInclude<ExtArgs> | null
-    /**
-     * Filter, which RecurringContests to fetch.
-     */
-    where?: RecurringContestWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of RecurringContests to fetch.
-     */
-    orderBy?: RecurringContestOrderByWithRelationInput | RecurringContestOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for listing RecurringContests.
-     */
-    cursor?: RecurringContestWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` RecurringContests from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` RecurringContests.
-     */
-    skip?: number
-    distinct?: RecurringContestScalarFieldEnum | RecurringContestScalarFieldEnum[]
-  }
-
-  /**
-   * RecurringContest create
-   */
-  export type RecurringContestCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the RecurringContest
-     */
-    select?: RecurringContestSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the RecurringContest
-     */
-    omit?: RecurringContestOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: RecurringContestInclude<ExtArgs> | null
-    /**
-     * The data needed to create a RecurringContest.
-     */
-    data: XOR<RecurringContestCreateInput, RecurringContestUncheckedCreateInput>
-  }
-
-  /**
-   * RecurringContest createMany
-   */
-  export type RecurringContestCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to create many RecurringContests.
-     */
-    data: RecurringContestCreateManyInput | RecurringContestCreateManyInput[]
-  }
-
-  /**
-   * RecurringContest update
-   */
-  export type RecurringContestUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the RecurringContest
-     */
-    select?: RecurringContestSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the RecurringContest
-     */
-    omit?: RecurringContestOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: RecurringContestInclude<ExtArgs> | null
-    /**
-     * The data needed to update a RecurringContest.
-     */
-    data: XOR<RecurringContestUpdateInput, RecurringContestUncheckedUpdateInput>
-    /**
-     * Choose, which RecurringContest to update.
-     */
-    where: RecurringContestWhereUniqueInput
-  }
-
-  /**
-   * RecurringContest updateMany
-   */
-  export type RecurringContestUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to update RecurringContests.
-     */
-    data: XOR<RecurringContestUpdateManyMutationInput, RecurringContestUncheckedUpdateManyInput>
-    /**
-     * Filter which RecurringContests to update
-     */
-    where?: RecurringContestWhereInput
-    /**
-     * Limit how many RecurringContests to update.
-     */
-    limit?: number
-  }
-
-  /**
-   * RecurringContest upsert
-   */
-  export type RecurringContestUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the RecurringContest
-     */
-    select?: RecurringContestSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the RecurringContest
-     */
-    omit?: RecurringContestOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: RecurringContestInclude<ExtArgs> | null
-    /**
-     * The filter to search for the RecurringContest to update in case it exists.
-     */
-    where: RecurringContestWhereUniqueInput
-    /**
-     * In case the RecurringContest found by the `where` argument doesn't exist, create a new RecurringContest with this data.
-     */
-    create: XOR<RecurringContestCreateInput, RecurringContestUncheckedCreateInput>
-    /**
-     * In case the RecurringContest was found with the provided `where` argument, update it with this data.
-     */
-    update: XOR<RecurringContestUpdateInput, RecurringContestUncheckedUpdateInput>
-  }
-
-  /**
-   * RecurringContest delete
-   */
-  export type RecurringContestDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the RecurringContest
-     */
-    select?: RecurringContestSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the RecurringContest
-     */
-    omit?: RecurringContestOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: RecurringContestInclude<ExtArgs> | null
-    /**
-     * Filter which RecurringContest to delete.
-     */
-    where: RecurringContestWhereUniqueInput
-  }
-
-  /**
-   * RecurringContest deleteMany
-   */
-  export type RecurringContestDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which RecurringContests to delete
-     */
-    where?: RecurringContestWhereInput
-    /**
-     * Limit how many RecurringContests to delete.
-     */
-    limit?: number
-  }
-
-  /**
-   * RecurringContest findRaw
-   */
-  export type RecurringContestFindRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The query predicate filter. If unspecified, then all documents in the collection will match the predicate. ${@link https://docs.mongodb.com/manual/reference/operator/query MongoDB Docs}.
-     */
-    filter?: InputJsonValue
-    /**
-     * Additional options to pass to the `find` command ${@link https://docs.mongodb.com/manual/reference/command/find/#command-fields MongoDB Docs}.
-     */
-    options?: InputJsonValue
-  }
-
-  /**
-   * RecurringContest aggregateRaw
-   */
-  export type RecurringContestAggregateRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * An array of aggregation stages to process and transform the document stream via the aggregation pipeline. ${@link https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline MongoDB Docs}.
-     */
-    pipeline?: InputJsonValue[]
-    /**
-     * Additional options to pass to the `aggregate` command ${@link https://docs.mongodb.com/manual/reference/command/aggregate/#command-fields MongoDB Docs}.
-     */
-    options?: InputJsonValue
-  }
-
-  /**
-   * RecurringContest without action
-   */
-  export type RecurringContestDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the RecurringContest
-     */
-    select?: RecurringContestSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the RecurringContest
-     */
-    omit?: RecurringContestOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: RecurringContestInclude<ExtArgs> | null
   }
 
 
@@ -26763,12 +25731,36 @@ export namespace Prisma {
     level_requirements: 'level_requirements',
     startDate: 'startDate',
     endDate: 'endDate',
+    rules: 'rules',
+    prizes: 'prizes',
     creatorId: 'creatorId',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
 
   export type ContestScalarFieldEnum = (typeof ContestScalarFieldEnum)[keyof typeof ContestScalarFieldEnum]
+
+
+  export const RecurringContestScalarFieldEnum: {
+    id: 'id',
+    title: 'title',
+    description: 'description',
+    banner: 'banner',
+    maxUploads: 'maxUploads',
+    isMoneyContest: 'isMoneyContest',
+    maxPrize: 'maxPrize',
+    minPrize: 'minPrize',
+    level_requirements: 'level_requirements',
+    startDate: 'startDate',
+    endDate: 'endDate',
+    creatorId: 'creatorId',
+    rules: 'rules',
+    prizes: 'prizes',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type RecurringContestScalarFieldEnum = (typeof RecurringContestScalarFieldEnum)[keyof typeof RecurringContestScalarFieldEnum]
 
 
   export const ContestRuleScalarFieldEnum: {
@@ -26783,34 +25775,6 @@ export namespace Prisma {
   };
 
   export type ContestRuleScalarFieldEnum = (typeof ContestRuleScalarFieldEnum)[keyof typeof ContestRuleScalarFieldEnum]
-
-
-  export const RecurringContestDataScalarFieldEnum: {
-    id: 'id',
-    contestId: 'contestId',
-    lastRunAt: 'lastRunAt',
-    recurringType: 'recurringType',
-    nextRunAt: 'nextRunAt'
-  };
-
-  export type RecurringContestDataScalarFieldEnum = (typeof RecurringContestDataScalarFieldEnum)[keyof typeof RecurringContestDataScalarFieldEnum]
-
-
-  export const RecurringContestScalarFieldEnum: {
-    id: 'id',
-    creatorId: 'creatorId',
-    title: 'title',
-    description: 'description',
-    banner: 'banner',
-    maxUploads: 'maxUploads',
-    isMoneyContest: 'isMoneyContest',
-    maxPrize: 'maxPrize',
-    minPrize: 'minPrize',
-    createdAt: 'createdAt',
-    updatedAt: 'updatedAt'
-  };
-
-  export type RecurringContestScalarFieldEnum = (typeof RecurringContestScalarFieldEnum)[keyof typeof RecurringContestScalarFieldEnum]
 
 
   export const ContestPhotoScalarFieldEnum: {
@@ -27139,16 +26103,9 @@ export namespace Prisma {
 
 
   /**
-   * Reference to a field of type 'RecurringType'
+   * Reference to a field of type 'Json'
    */
-  export type EnumRecurringTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RecurringType'>
-    
-
-
-  /**
-   * Reference to a field of type 'RecurringType[]'
-   */
-  export type ListEnumRecurringTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RecurringType[]'>
+  export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
     
 
 
@@ -27290,6 +26247,20 @@ export namespace Prisma {
    */
   export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
     
+
+
+  /**
+   * Reference to a field of type 'RecurringType'
+   */
+  export type EnumRecurringTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RecurringType'>
+    
+
+
+  /**
+   * Reference to a field of type 'RecurringType[]'
+   */
+  export type ListEnumRecurringTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RecurringType[]'>
+    
   /**
    * Deep Input Types
    */
@@ -27311,6 +26282,8 @@ export namespace Prisma {
     level_requirements?: IntNullableListFilter<"Contest">
     startDate?: DateTimeFilter<"Contest"> | Date | string
     endDate?: DateTimeFilter<"Contest"> | Date | string
+    rules?: JsonFilter<"Contest">
+    prizes?: JsonFilter<"Contest">
     creatorId?: StringFilter<"Contest"> | string
     createdAt?: DateTimeFilter<"Contest"> | Date | string
     updatedAt?: DateTimeFilter<"Contest"> | Date | string
@@ -27319,7 +26292,6 @@ export namespace Prisma {
     votes?: VoteListRelationFilter
     contestRules?: ContestRuleListRelationFilter
     contestPrizes?: ContestPrizeListRelationFilter
-    recurringData?: XOR<RecurringContestDataNullableScalarRelationFilter, RecurringContestDataWhereInput> | null
     achievements?: ContestAchievementListRelationFilter
   }
 
@@ -27336,6 +26308,8 @@ export namespace Prisma {
     level_requirements?: SortOrder
     startDate?: SortOrder
     endDate?: SortOrder
+    rules?: SortOrder
+    prizes?: SortOrder
     creatorId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -27344,7 +26318,6 @@ export namespace Prisma {
     votes?: VoteOrderByRelationAggregateInput
     contestRules?: ContestRuleOrderByRelationAggregateInput
     contestPrizes?: ContestPrizeOrderByRelationAggregateInput
-    recurringData?: RecurringContestDataOrderByWithRelationInput
     achievements?: ContestAchievementOrderByRelationAggregateInput
   }
 
@@ -27364,6 +26337,8 @@ export namespace Prisma {
     level_requirements?: IntNullableListFilter<"Contest">
     startDate?: DateTimeFilter<"Contest"> | Date | string
     endDate?: DateTimeFilter<"Contest"> | Date | string
+    rules?: JsonFilter<"Contest">
+    prizes?: JsonFilter<"Contest">
     creatorId?: StringFilter<"Contest"> | string
     createdAt?: DateTimeFilter<"Contest"> | Date | string
     updatedAt?: DateTimeFilter<"Contest"> | Date | string
@@ -27372,7 +26347,6 @@ export namespace Prisma {
     votes?: VoteListRelationFilter
     contestRules?: ContestRuleListRelationFilter
     contestPrizes?: ContestPrizeListRelationFilter
-    recurringData?: XOR<RecurringContestDataNullableScalarRelationFilter, RecurringContestDataWhereInput> | null
     achievements?: ContestAchievementListRelationFilter
   }, "id">
 
@@ -27389,6 +26363,8 @@ export namespace Prisma {
     level_requirements?: SortOrder
     startDate?: SortOrder
     endDate?: SortOrder
+    rules?: SortOrder
+    prizes?: SortOrder
     creatorId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -27415,9 +26391,123 @@ export namespace Prisma {
     level_requirements?: IntNullableListFilter<"Contest">
     startDate?: DateTimeWithAggregatesFilter<"Contest"> | Date | string
     endDate?: DateTimeWithAggregatesFilter<"Contest"> | Date | string
+    rules?: JsonWithAggregatesFilter<"Contest">
+    prizes?: JsonWithAggregatesFilter<"Contest">
     creatorId?: StringWithAggregatesFilter<"Contest"> | string
     createdAt?: DateTimeWithAggregatesFilter<"Contest"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Contest"> | Date | string
+  }
+
+  export type RecurringContestWhereInput = {
+    AND?: RecurringContestWhereInput | RecurringContestWhereInput[]
+    OR?: RecurringContestWhereInput[]
+    NOT?: RecurringContestWhereInput | RecurringContestWhereInput[]
+    id?: StringFilter<"RecurringContest"> | string
+    title?: StringFilter<"RecurringContest"> | string
+    description?: StringFilter<"RecurringContest"> | string
+    banner?: StringNullableFilter<"RecurringContest"> | string | null
+    maxUploads?: IntFilter<"RecurringContest"> | number
+    isMoneyContest?: BoolFilter<"RecurringContest"> | boolean
+    maxPrize?: IntNullableFilter<"RecurringContest"> | number | null
+    minPrize?: IntNullableFilter<"RecurringContest"> | number | null
+    level_requirements?: IntNullableListFilter<"RecurringContest">
+    startDate?: DateTimeFilter<"RecurringContest"> | Date | string
+    endDate?: DateTimeFilter<"RecurringContest"> | Date | string
+    creatorId?: StringFilter<"RecurringContest"> | string
+    recurring?: XOR<RecurringDataCompositeFilter, RecurringDataObjectEqualityInput>
+    rules?: JsonFilter<"RecurringContest">
+    prizes?: JsonFilter<"RecurringContest">
+    createdAt?: DateTimeFilter<"RecurringContest"> | Date | string
+    updatedAt?: DateTimeFilter<"RecurringContest"> | Date | string
+  }
+
+  export type RecurringContestOrderByWithRelationInput = {
+    id?: SortOrder
+    title?: SortOrder
+    description?: SortOrder
+    banner?: SortOrder
+    maxUploads?: SortOrder
+    isMoneyContest?: SortOrder
+    maxPrize?: SortOrder
+    minPrize?: SortOrder
+    level_requirements?: SortOrder
+    startDate?: SortOrder
+    endDate?: SortOrder
+    creatorId?: SortOrder
+    recurring?: RecurringDataOrderByInput
+    rules?: SortOrder
+    prizes?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type RecurringContestWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: RecurringContestWhereInput | RecurringContestWhereInput[]
+    OR?: RecurringContestWhereInput[]
+    NOT?: RecurringContestWhereInput | RecurringContestWhereInput[]
+    title?: StringFilter<"RecurringContest"> | string
+    description?: StringFilter<"RecurringContest"> | string
+    banner?: StringNullableFilter<"RecurringContest"> | string | null
+    maxUploads?: IntFilter<"RecurringContest"> | number
+    isMoneyContest?: BoolFilter<"RecurringContest"> | boolean
+    maxPrize?: IntNullableFilter<"RecurringContest"> | number | null
+    minPrize?: IntNullableFilter<"RecurringContest"> | number | null
+    level_requirements?: IntNullableListFilter<"RecurringContest">
+    startDate?: DateTimeFilter<"RecurringContest"> | Date | string
+    endDate?: DateTimeFilter<"RecurringContest"> | Date | string
+    creatorId?: StringFilter<"RecurringContest"> | string
+    recurring?: XOR<RecurringDataCompositeFilter, RecurringDataObjectEqualityInput>
+    rules?: JsonFilter<"RecurringContest">
+    prizes?: JsonFilter<"RecurringContest">
+    createdAt?: DateTimeFilter<"RecurringContest"> | Date | string
+    updatedAt?: DateTimeFilter<"RecurringContest"> | Date | string
+  }, "id">
+
+  export type RecurringContestOrderByWithAggregationInput = {
+    id?: SortOrder
+    title?: SortOrder
+    description?: SortOrder
+    banner?: SortOrder
+    maxUploads?: SortOrder
+    isMoneyContest?: SortOrder
+    maxPrize?: SortOrder
+    minPrize?: SortOrder
+    level_requirements?: SortOrder
+    startDate?: SortOrder
+    endDate?: SortOrder
+    creatorId?: SortOrder
+    rules?: SortOrder
+    prizes?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: RecurringContestCountOrderByAggregateInput
+    _avg?: RecurringContestAvgOrderByAggregateInput
+    _max?: RecurringContestMaxOrderByAggregateInput
+    _min?: RecurringContestMinOrderByAggregateInput
+    _sum?: RecurringContestSumOrderByAggregateInput
+  }
+
+  export type RecurringContestScalarWhereWithAggregatesInput = {
+    AND?: RecurringContestScalarWhereWithAggregatesInput | RecurringContestScalarWhereWithAggregatesInput[]
+    OR?: RecurringContestScalarWhereWithAggregatesInput[]
+    NOT?: RecurringContestScalarWhereWithAggregatesInput | RecurringContestScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"RecurringContest"> | string
+    title?: StringWithAggregatesFilter<"RecurringContest"> | string
+    description?: StringWithAggregatesFilter<"RecurringContest"> | string
+    banner?: StringNullableWithAggregatesFilter<"RecurringContest"> | string | null
+    maxUploads?: IntWithAggregatesFilter<"RecurringContest"> | number
+    isMoneyContest?: BoolWithAggregatesFilter<"RecurringContest"> | boolean
+    maxPrize?: IntNullableWithAggregatesFilter<"RecurringContest"> | number | null
+    minPrize?: IntNullableWithAggregatesFilter<"RecurringContest"> | number | null
+    level_requirements?: IntNullableListFilter<"RecurringContest">
+    startDate?: DateTimeWithAggregatesFilter<"RecurringContest"> | Date | string
+    endDate?: DateTimeWithAggregatesFilter<"RecurringContest"> | Date | string
+    creatorId?: StringWithAggregatesFilter<"RecurringContest"> | string
+    rules?: JsonWithAggregatesFilter<"RecurringContest">
+    prizes?: JsonWithAggregatesFilter<"RecurringContest">
+    createdAt?: DateTimeWithAggregatesFilter<"RecurringContest"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"RecurringContest"> | Date | string
   }
 
   export type ContestRuleWhereInput = {
@@ -27490,148 +26580,6 @@ export namespace Prisma {
     requirements?: IntNullableListFilter<"ContestRule">
     createdAt?: DateTimeWithAggregatesFilter<"ContestRule"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"ContestRule"> | Date | string
-  }
-
-  export type RecurringContestDataWhereInput = {
-    AND?: RecurringContestDataWhereInput | RecurringContestDataWhereInput[]
-    OR?: RecurringContestDataWhereInput[]
-    NOT?: RecurringContestDataWhereInput | RecurringContestDataWhereInput[]
-    id?: StringFilter<"RecurringContestData"> | string
-    contestId?: StringFilter<"RecurringContestData"> | string
-    lastRunAt?: DateTimeFilter<"RecurringContestData"> | Date | string
-    recurringType?: EnumRecurringTypeFilter<"RecurringContestData"> | $Enums.RecurringType
-    nextRunAt?: DateTimeFilter<"RecurringContestData"> | Date | string
-    contest?: XOR<ContestScalarRelationFilter, ContestWhereInput>
-  }
-
-  export type RecurringContestDataOrderByWithRelationInput = {
-    id?: SortOrder
-    contestId?: SortOrder
-    lastRunAt?: SortOrder
-    recurringType?: SortOrder
-    nextRunAt?: SortOrder
-    contest?: ContestOrderByWithRelationInput
-  }
-
-  export type RecurringContestDataWhereUniqueInput = Prisma.AtLeast<{
-    id?: string
-    contestId?: string
-    AND?: RecurringContestDataWhereInput | RecurringContestDataWhereInput[]
-    OR?: RecurringContestDataWhereInput[]
-    NOT?: RecurringContestDataWhereInput | RecurringContestDataWhereInput[]
-    lastRunAt?: DateTimeFilter<"RecurringContestData"> | Date | string
-    recurringType?: EnumRecurringTypeFilter<"RecurringContestData"> | $Enums.RecurringType
-    nextRunAt?: DateTimeFilter<"RecurringContestData"> | Date | string
-    contest?: XOR<ContestScalarRelationFilter, ContestWhereInput>
-  }, "id" | "contestId">
-
-  export type RecurringContestDataOrderByWithAggregationInput = {
-    id?: SortOrder
-    contestId?: SortOrder
-    lastRunAt?: SortOrder
-    recurringType?: SortOrder
-    nextRunAt?: SortOrder
-    _count?: RecurringContestDataCountOrderByAggregateInput
-    _max?: RecurringContestDataMaxOrderByAggregateInput
-    _min?: RecurringContestDataMinOrderByAggregateInput
-  }
-
-  export type RecurringContestDataScalarWhereWithAggregatesInput = {
-    AND?: RecurringContestDataScalarWhereWithAggregatesInput | RecurringContestDataScalarWhereWithAggregatesInput[]
-    OR?: RecurringContestDataScalarWhereWithAggregatesInput[]
-    NOT?: RecurringContestDataScalarWhereWithAggregatesInput | RecurringContestDataScalarWhereWithAggregatesInput[]
-    id?: StringWithAggregatesFilter<"RecurringContestData"> | string
-    contestId?: StringWithAggregatesFilter<"RecurringContestData"> | string
-    lastRunAt?: DateTimeWithAggregatesFilter<"RecurringContestData"> | Date | string
-    recurringType?: EnumRecurringTypeWithAggregatesFilter<"RecurringContestData"> | $Enums.RecurringType
-    nextRunAt?: DateTimeWithAggregatesFilter<"RecurringContestData"> | Date | string
-  }
-
-  export type RecurringContestWhereInput = {
-    AND?: RecurringContestWhereInput | RecurringContestWhereInput[]
-    OR?: RecurringContestWhereInput[]
-    NOT?: RecurringContestWhereInput | RecurringContestWhereInput[]
-    id?: StringFilter<"RecurringContest"> | string
-    creatorId?: StringFilter<"RecurringContest"> | string
-    title?: StringFilter<"RecurringContest"> | string
-    description?: StringFilter<"RecurringContest"> | string
-    banner?: StringNullableFilter<"RecurringContest"> | string | null
-    maxUploads?: IntNullableFilter<"RecurringContest"> | number | null
-    isMoneyContest?: BoolFilter<"RecurringContest"> | boolean
-    maxPrize?: IntNullableFilter<"RecurringContest"> | number | null
-    minPrize?: IntNullableFilter<"RecurringContest"> | number | null
-    recurringData?: XOR<RecurringDataCompositeFilter, RecurringDataObjectEqualityInput>
-    createdAt?: DateTimeFilter<"RecurringContest"> | Date | string
-    updatedAt?: DateTimeFilter<"RecurringContest"> | Date | string
-  }
-
-  export type RecurringContestOrderByWithRelationInput = {
-    id?: SortOrder
-    creatorId?: SortOrder
-    title?: SortOrder
-    description?: SortOrder
-    banner?: SortOrder
-    maxUploads?: SortOrder
-    isMoneyContest?: SortOrder
-    maxPrize?: SortOrder
-    minPrize?: SortOrder
-    recurringData?: RecurringDataOrderByInput
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-  }
-
-  export type RecurringContestWhereUniqueInput = Prisma.AtLeast<{
-    id?: string
-    AND?: RecurringContestWhereInput | RecurringContestWhereInput[]
-    OR?: RecurringContestWhereInput[]
-    NOT?: RecurringContestWhereInput | RecurringContestWhereInput[]
-    creatorId?: StringFilter<"RecurringContest"> | string
-    title?: StringFilter<"RecurringContest"> | string
-    description?: StringFilter<"RecurringContest"> | string
-    banner?: StringNullableFilter<"RecurringContest"> | string | null
-    maxUploads?: IntNullableFilter<"RecurringContest"> | number | null
-    isMoneyContest?: BoolFilter<"RecurringContest"> | boolean
-    maxPrize?: IntNullableFilter<"RecurringContest"> | number | null
-    minPrize?: IntNullableFilter<"RecurringContest"> | number | null
-    recurringData?: XOR<RecurringDataCompositeFilter, RecurringDataObjectEqualityInput>
-    createdAt?: DateTimeFilter<"RecurringContest"> | Date | string
-    updatedAt?: DateTimeFilter<"RecurringContest"> | Date | string
-  }, "id">
-
-  export type RecurringContestOrderByWithAggregationInput = {
-    id?: SortOrder
-    creatorId?: SortOrder
-    title?: SortOrder
-    description?: SortOrder
-    banner?: SortOrder
-    maxUploads?: SortOrder
-    isMoneyContest?: SortOrder
-    maxPrize?: SortOrder
-    minPrize?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    _count?: RecurringContestCountOrderByAggregateInput
-    _avg?: RecurringContestAvgOrderByAggregateInput
-    _max?: RecurringContestMaxOrderByAggregateInput
-    _min?: RecurringContestMinOrderByAggregateInput
-    _sum?: RecurringContestSumOrderByAggregateInput
-  }
-
-  export type RecurringContestScalarWhereWithAggregatesInput = {
-    AND?: RecurringContestScalarWhereWithAggregatesInput | RecurringContestScalarWhereWithAggregatesInput[]
-    OR?: RecurringContestScalarWhereWithAggregatesInput[]
-    NOT?: RecurringContestScalarWhereWithAggregatesInput | RecurringContestScalarWhereWithAggregatesInput[]
-    id?: StringWithAggregatesFilter<"RecurringContest"> | string
-    creatorId?: StringWithAggregatesFilter<"RecurringContest"> | string
-    title?: StringWithAggregatesFilter<"RecurringContest"> | string
-    description?: StringWithAggregatesFilter<"RecurringContest"> | string
-    banner?: StringNullableWithAggregatesFilter<"RecurringContest"> | string | null
-    maxUploads?: IntNullableWithAggregatesFilter<"RecurringContest"> | number | null
-    isMoneyContest?: BoolWithAggregatesFilter<"RecurringContest"> | boolean
-    maxPrize?: IntNullableWithAggregatesFilter<"RecurringContest"> | number | null
-    minPrize?: IntNullableWithAggregatesFilter<"RecurringContest"> | number | null
-    createdAt?: DateTimeWithAggregatesFilter<"RecurringContest"> | Date | string
-    updatedAt?: DateTimeWithAggregatesFilter<"RecurringContest"> | Date | string
   }
 
   export type ContestPhotoWhereInput = {
@@ -28961,6 +27909,8 @@ export namespace Prisma {
     level_requirements?: ContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
+    rules: InputJsonValue
+    prizes: InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
     creator: UserCreateNestedOneWithoutCreatedContestsInput
@@ -28968,7 +27918,6 @@ export namespace Prisma {
     votes?: VoteCreateNestedManyWithoutContestInput
     contestRules?: ContestRuleCreateNestedManyWithoutContestInput
     contestPrizes?: ContestPrizeCreateNestedManyWithoutContestInput
-    recurringData?: RecurringContestDataCreateNestedOneWithoutContestInput
     achievements?: ContestAchievementCreateNestedManyWithoutContestInput
   }
 
@@ -28985,6 +27934,8 @@ export namespace Prisma {
     level_requirements?: ContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
+    rules: InputJsonValue
+    prizes: InputJsonValue
     creatorId: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -28992,7 +27943,6 @@ export namespace Prisma {
     votes?: VoteUncheckedCreateNestedManyWithoutContestInput
     contestRules?: ContestRuleUncheckedCreateNestedManyWithoutContestInput
     contestPrizes?: ContestPrizeUncheckedCreateNestedManyWithoutContestInput
-    recurringData?: RecurringContestDataUncheckedCreateNestedOneWithoutContestInput
     achievements?: ContestAchievementUncheckedCreateNestedManyWithoutContestInput
   }
 
@@ -29008,6 +27958,8 @@ export namespace Prisma {
     level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    rules?: InputJsonValue | InputJsonValue
+    prizes?: InputJsonValue | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     creator?: UserUpdateOneRequiredWithoutCreatedContestsNestedInput
@@ -29015,7 +27967,6 @@ export namespace Prisma {
     votes?: VoteUpdateManyWithoutContestNestedInput
     contestRules?: ContestRuleUpdateManyWithoutContestNestedInput
     contestPrizes?: ContestPrizeUpdateManyWithoutContestNestedInput
-    recurringData?: RecurringContestDataUpdateOneWithoutContestNestedInput
     achievements?: ContestAchievementUpdateManyWithoutContestNestedInput
   }
 
@@ -29031,6 +27982,8 @@ export namespace Prisma {
     level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    rules?: InputJsonValue | InputJsonValue
+    prizes?: InputJsonValue | InputJsonValue
     creatorId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -29038,7 +27991,6 @@ export namespace Prisma {
     votes?: VoteUncheckedUpdateManyWithoutContestNestedInput
     contestRules?: ContestRuleUncheckedUpdateManyWithoutContestNestedInput
     contestPrizes?: ContestPrizeUncheckedUpdateManyWithoutContestNestedInput
-    recurringData?: RecurringContestDataUncheckedUpdateOneWithoutContestNestedInput
     achievements?: ContestAchievementUncheckedUpdateManyWithoutContestNestedInput
   }
 
@@ -29055,6 +28007,8 @@ export namespace Prisma {
     level_requirements?: ContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
+    rules: InputJsonValue
+    prizes: InputJsonValue
     creatorId: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -29072,6 +28026,8 @@ export namespace Prisma {
     level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    rules?: InputJsonValue | InputJsonValue
+    prizes?: InputJsonValue | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -29088,7 +28044,145 @@ export namespace Prisma {
     level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    rules?: InputJsonValue | InputJsonValue
+    prizes?: InputJsonValue | InputJsonValue
     creatorId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type RecurringContestCreateInput = {
+    id?: string
+    title: string
+    description: string
+    banner?: string | null
+    maxUploads?: number
+    isMoneyContest?: boolean
+    maxPrize?: number | null
+    minPrize?: number | null
+    level_requirements?: RecurringContestCreatelevel_requirementsInput | number[]
+    startDate: Date | string
+    endDate: Date | string
+    creatorId: string
+    recurring: XOR<RecurringDataCreateEnvelopeInput, RecurringDataCreateInput>
+    rules: InputJsonValue
+    prizes: InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type RecurringContestUncheckedCreateInput = {
+    id?: string
+    title: string
+    description: string
+    banner?: string | null
+    maxUploads?: number
+    isMoneyContest?: boolean
+    maxPrize?: number | null
+    minPrize?: number | null
+    level_requirements?: RecurringContestCreatelevel_requirementsInput | number[]
+    startDate: Date | string
+    endDate: Date | string
+    creatorId: string
+    recurring: XOR<RecurringDataCreateEnvelopeInput, RecurringDataCreateInput>
+    rules: InputJsonValue
+    prizes: InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type RecurringContestUpdateInput = {
+    title?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    banner?: NullableStringFieldUpdateOperationsInput | string | null
+    maxUploads?: IntFieldUpdateOperationsInput | number
+    isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
+    maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
+    minPrize?: NullableIntFieldUpdateOperationsInput | number | null
+    level_requirements?: RecurringContestUpdatelevel_requirementsInput | number[]
+    startDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    endDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    creatorId?: StringFieldUpdateOperationsInput | string
+    recurring?: XOR<RecurringDataUpdateEnvelopeInput, RecurringDataCreateInput>
+    rules?: InputJsonValue | InputJsonValue
+    prizes?: InputJsonValue | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type RecurringContestUncheckedUpdateInput = {
+    title?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    banner?: NullableStringFieldUpdateOperationsInput | string | null
+    maxUploads?: IntFieldUpdateOperationsInput | number
+    isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
+    maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
+    minPrize?: NullableIntFieldUpdateOperationsInput | number | null
+    level_requirements?: RecurringContestUpdatelevel_requirementsInput | number[]
+    startDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    endDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    creatorId?: StringFieldUpdateOperationsInput | string
+    recurring?: XOR<RecurringDataUpdateEnvelopeInput, RecurringDataCreateInput>
+    rules?: InputJsonValue | InputJsonValue
+    prizes?: InputJsonValue | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type RecurringContestCreateManyInput = {
+    id?: string
+    title: string
+    description: string
+    banner?: string | null
+    maxUploads?: number
+    isMoneyContest?: boolean
+    maxPrize?: number | null
+    minPrize?: number | null
+    level_requirements?: RecurringContestCreatelevel_requirementsInput | number[]
+    startDate: Date | string
+    endDate: Date | string
+    creatorId: string
+    recurring: XOR<RecurringDataCreateEnvelopeInput, RecurringDataCreateInput>
+    rules: InputJsonValue
+    prizes: InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type RecurringContestUpdateManyMutationInput = {
+    title?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    banner?: NullableStringFieldUpdateOperationsInput | string | null
+    maxUploads?: IntFieldUpdateOperationsInput | number
+    isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
+    maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
+    minPrize?: NullableIntFieldUpdateOperationsInput | number | null
+    level_requirements?: RecurringContestUpdatelevel_requirementsInput | number[]
+    startDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    endDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    creatorId?: StringFieldUpdateOperationsInput | string
+    recurring?: XOR<RecurringDataUpdateEnvelopeInput, RecurringDataCreateInput>
+    rules?: InputJsonValue | InputJsonValue
+    prizes?: InputJsonValue | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type RecurringContestUncheckedUpdateManyInput = {
+    title?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    banner?: NullableStringFieldUpdateOperationsInput | string | null
+    maxUploads?: IntFieldUpdateOperationsInput | number
+    isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
+    maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
+    minPrize?: NullableIntFieldUpdateOperationsInput | number | null
+    level_requirements?: RecurringContestUpdatelevel_requirementsInput | number[]
+    startDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    endDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    creatorId?: StringFieldUpdateOperationsInput | string
+    recurring?: XOR<RecurringDataUpdateEnvelopeInput, RecurringDataCreateInput>
+    rules?: InputJsonValue | InputJsonValue
+    prizes?: InputJsonValue | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -29161,158 +28255,6 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     contestId?: StringFieldUpdateOperationsInput | string
     requirements?: ContestRuleUpdaterequirementsInput | number[]
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type RecurringContestDataCreateInput = {
-    id?: string
-    lastRunAt: Date | string
-    recurringType: $Enums.RecurringType
-    nextRunAt: Date | string
-    contest: ContestCreateNestedOneWithoutRecurringDataInput
-  }
-
-  export type RecurringContestDataUncheckedCreateInput = {
-    id?: string
-    contestId: string
-    lastRunAt: Date | string
-    recurringType: $Enums.RecurringType
-    nextRunAt: Date | string
-  }
-
-  export type RecurringContestDataUpdateInput = {
-    lastRunAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    recurringType?: EnumRecurringTypeFieldUpdateOperationsInput | $Enums.RecurringType
-    nextRunAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    contest?: ContestUpdateOneRequiredWithoutRecurringDataNestedInput
-  }
-
-  export type RecurringContestDataUncheckedUpdateInput = {
-    contestId?: StringFieldUpdateOperationsInput | string
-    lastRunAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    recurringType?: EnumRecurringTypeFieldUpdateOperationsInput | $Enums.RecurringType
-    nextRunAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type RecurringContestDataCreateManyInput = {
-    id?: string
-    contestId: string
-    lastRunAt: Date | string
-    recurringType: $Enums.RecurringType
-    nextRunAt: Date | string
-  }
-
-  export type RecurringContestDataUpdateManyMutationInput = {
-    lastRunAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    recurringType?: EnumRecurringTypeFieldUpdateOperationsInput | $Enums.RecurringType
-    nextRunAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type RecurringContestDataUncheckedUpdateManyInput = {
-    contestId?: StringFieldUpdateOperationsInput | string
-    lastRunAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    recurringType?: EnumRecurringTypeFieldUpdateOperationsInput | $Enums.RecurringType
-    nextRunAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type RecurringContestCreateInput = {
-    id?: string
-    creatorId: string
-    title: string
-    description: string
-    banner?: string | null
-    maxUploads?: number | null
-    isMoneyContest?: boolean
-    maxPrize?: number | null
-    minPrize?: number | null
-    recurringData: XOR<RecurringDataCreateEnvelopeInput, RecurringDataCreateInput>
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type RecurringContestUncheckedCreateInput = {
-    id?: string
-    creatorId: string
-    title: string
-    description: string
-    banner?: string | null
-    maxUploads?: number | null
-    isMoneyContest?: boolean
-    maxPrize?: number | null
-    minPrize?: number | null
-    recurringData: XOR<RecurringDataCreateEnvelopeInput, RecurringDataCreateInput>
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type RecurringContestUpdateInput = {
-    creatorId?: StringFieldUpdateOperationsInput | string
-    title?: StringFieldUpdateOperationsInput | string
-    description?: StringFieldUpdateOperationsInput | string
-    banner?: NullableStringFieldUpdateOperationsInput | string | null
-    maxUploads?: NullableIntFieldUpdateOperationsInput | number | null
-    isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
-    maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
-    minPrize?: NullableIntFieldUpdateOperationsInput | number | null
-    recurringData?: XOR<RecurringDataUpdateEnvelopeInput, RecurringDataCreateInput>
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type RecurringContestUncheckedUpdateInput = {
-    creatorId?: StringFieldUpdateOperationsInput | string
-    title?: StringFieldUpdateOperationsInput | string
-    description?: StringFieldUpdateOperationsInput | string
-    banner?: NullableStringFieldUpdateOperationsInput | string | null
-    maxUploads?: NullableIntFieldUpdateOperationsInput | number | null
-    isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
-    maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
-    minPrize?: NullableIntFieldUpdateOperationsInput | number | null
-    recurringData?: XOR<RecurringDataUpdateEnvelopeInput, RecurringDataCreateInput>
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type RecurringContestCreateManyInput = {
-    id?: string
-    creatorId: string
-    title: string
-    description: string
-    banner?: string | null
-    maxUploads?: number | null
-    isMoneyContest?: boolean
-    maxPrize?: number | null
-    minPrize?: number | null
-    recurringData: XOR<RecurringDataCreateEnvelopeInput, RecurringDataCreateInput>
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type RecurringContestUpdateManyMutationInput = {
-    creatorId?: StringFieldUpdateOperationsInput | string
-    title?: StringFieldUpdateOperationsInput | string
-    description?: StringFieldUpdateOperationsInput | string
-    banner?: NullableStringFieldUpdateOperationsInput | string | null
-    maxUploads?: NullableIntFieldUpdateOperationsInput | number | null
-    isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
-    maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
-    minPrize?: NullableIntFieldUpdateOperationsInput | number | null
-    recurringData?: XOR<RecurringDataUpdateEnvelopeInput, RecurringDataCreateInput>
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type RecurringContestUncheckedUpdateManyInput = {
-    creatorId?: StringFieldUpdateOperationsInput | string
-    title?: StringFieldUpdateOperationsInput | string
-    description?: StringFieldUpdateOperationsInput | string
-    banner?: NullableStringFieldUpdateOperationsInput | string | null
-    maxUploads?: NullableIntFieldUpdateOperationsInput | number | null
-    isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
-    maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
-    minPrize?: NullableIntFieldUpdateOperationsInput | number | null
-    recurringData?: XOR<RecurringDataUpdateEnvelopeInput, RecurringDataCreateInput>
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -30715,6 +29657,17 @@ export namespace Prisma {
     gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     not?: NestedDateTimeFilter<$PrismaModel> | Date | string
   }
+  export type JsonFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+  }
 
   export type UserScalarRelationFilter = {
     is?: UserWhereInput
@@ -30743,11 +29696,6 @@ export namespace Prisma {
     every?: ContestPrizeWhereInput
     some?: ContestPrizeWhereInput
     none?: ContestPrizeWhereInput
-  }
-
-  export type RecurringContestDataNullableScalarRelationFilter = {
-    is?: RecurringContestDataWhereInput | null
-    isNot?: RecurringContestDataWhereInput | null
   }
 
   export type ContestAchievementListRelationFilter = {
@@ -30789,6 +29737,8 @@ export namespace Prisma {
     level_requirements?: SortOrder
     startDate?: SortOrder
     endDate?: SortOrder
+    rules?: SortOrder
+    prizes?: SortOrder
     creatorId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -30943,6 +29893,105 @@ export namespace Prisma {
     _min?: NestedDateTimeFilter<$PrismaModel>
     _max?: NestedDateTimeFilter<$PrismaModel>
   }
+  export type JsonWithAggregatesFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonWithAggregatesFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonWithAggregatesFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedJsonFilter<$PrismaModel>
+    _max?: NestedJsonFilter<$PrismaModel>
+  }
+
+  export type RecurringDataCompositeFilter = {
+    equals?: RecurringDataObjectEqualityInput
+    is?: RecurringDataWhereInput
+    isNot?: RecurringDataWhereInput
+  }
+
+  export type RecurringDataObjectEqualityInput = {
+    recurringType: $Enums.RecurringType
+    previousOccurrence?: Date | string | null
+    nextOccurrence: Date | string
+    duration: number
+  }
+
+  export type RecurringDataOrderByInput = {
+    recurringType?: SortOrder
+    previousOccurrence?: SortOrder
+    nextOccurrence?: SortOrder
+    duration?: SortOrder
+  }
+
+  export type RecurringContestCountOrderByAggregateInput = {
+    id?: SortOrder
+    title?: SortOrder
+    description?: SortOrder
+    banner?: SortOrder
+    maxUploads?: SortOrder
+    isMoneyContest?: SortOrder
+    maxPrize?: SortOrder
+    minPrize?: SortOrder
+    level_requirements?: SortOrder
+    startDate?: SortOrder
+    endDate?: SortOrder
+    creatorId?: SortOrder
+    rules?: SortOrder
+    prizes?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type RecurringContestAvgOrderByAggregateInput = {
+    maxUploads?: SortOrder
+    maxPrize?: SortOrder
+    minPrize?: SortOrder
+    level_requirements?: SortOrder
+  }
+
+  export type RecurringContestMaxOrderByAggregateInput = {
+    id?: SortOrder
+    title?: SortOrder
+    description?: SortOrder
+    banner?: SortOrder
+    maxUploads?: SortOrder
+    isMoneyContest?: SortOrder
+    maxPrize?: SortOrder
+    minPrize?: SortOrder
+    startDate?: SortOrder
+    endDate?: SortOrder
+    creatorId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type RecurringContestMinOrderByAggregateInput = {
+    id?: SortOrder
+    title?: SortOrder
+    description?: SortOrder
+    banner?: SortOrder
+    maxUploads?: SortOrder
+    isMoneyContest?: SortOrder
+    maxPrize?: SortOrder
+    minPrize?: SortOrder
+    startDate?: SortOrder
+    endDate?: SortOrder
+    creatorId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type RecurringContestSumOrderByAggregateInput = {
+    maxUploads?: SortOrder
+    maxPrize?: SortOrder
+    minPrize?: SortOrder
+    level_requirements?: SortOrder
+  }
 
   export type ContestScalarRelationFilter = {
     is?: ContestWhereInput
@@ -30986,121 +30035,6 @@ export namespace Prisma {
 
   export type ContestRuleSumOrderByAggregateInput = {
     requirements?: SortOrder
-  }
-
-  export type EnumRecurringTypeFilter<$PrismaModel = never> = {
-    equals?: $Enums.RecurringType | EnumRecurringTypeFieldRefInput<$PrismaModel>
-    in?: $Enums.RecurringType[] | ListEnumRecurringTypeFieldRefInput<$PrismaModel>
-    notIn?: $Enums.RecurringType[] | ListEnumRecurringTypeFieldRefInput<$PrismaModel>
-    not?: NestedEnumRecurringTypeFilter<$PrismaModel> | $Enums.RecurringType
-  }
-
-  export type RecurringContestDataCountOrderByAggregateInput = {
-    id?: SortOrder
-    contestId?: SortOrder
-    lastRunAt?: SortOrder
-    recurringType?: SortOrder
-    nextRunAt?: SortOrder
-  }
-
-  export type RecurringContestDataMaxOrderByAggregateInput = {
-    id?: SortOrder
-    contestId?: SortOrder
-    lastRunAt?: SortOrder
-    recurringType?: SortOrder
-    nextRunAt?: SortOrder
-  }
-
-  export type RecurringContestDataMinOrderByAggregateInput = {
-    id?: SortOrder
-    contestId?: SortOrder
-    lastRunAt?: SortOrder
-    recurringType?: SortOrder
-    nextRunAt?: SortOrder
-  }
-
-  export type EnumRecurringTypeWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.RecurringType | EnumRecurringTypeFieldRefInput<$PrismaModel>
-    in?: $Enums.RecurringType[] | ListEnumRecurringTypeFieldRefInput<$PrismaModel>
-    notIn?: $Enums.RecurringType[] | ListEnumRecurringTypeFieldRefInput<$PrismaModel>
-    not?: NestedEnumRecurringTypeWithAggregatesFilter<$PrismaModel> | $Enums.RecurringType
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumRecurringTypeFilter<$PrismaModel>
-    _max?: NestedEnumRecurringTypeFilter<$PrismaModel>
-  }
-
-  export type RecurringDataCompositeFilter = {
-    equals?: RecurringDataObjectEqualityInput
-    is?: RecurringDataWhereInput
-    isNot?: RecurringDataWhereInput
-  }
-
-  export type RecurringDataObjectEqualityInput = {
-    recurringType: $Enums.RecurringType
-    previousOccurrence: Date | string
-    nextOccurrence: Date | string
-    duration: number
-  }
-
-  export type RecurringDataOrderByInput = {
-    recurringType?: SortOrder
-    previousOccurrence?: SortOrder
-    nextOccurrence?: SortOrder
-    duration?: SortOrder
-  }
-
-  export type RecurringContestCountOrderByAggregateInput = {
-    id?: SortOrder
-    creatorId?: SortOrder
-    title?: SortOrder
-    description?: SortOrder
-    banner?: SortOrder
-    maxUploads?: SortOrder
-    isMoneyContest?: SortOrder
-    maxPrize?: SortOrder
-    minPrize?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-  }
-
-  export type RecurringContestAvgOrderByAggregateInput = {
-    maxUploads?: SortOrder
-    maxPrize?: SortOrder
-    minPrize?: SortOrder
-  }
-
-  export type RecurringContestMaxOrderByAggregateInput = {
-    id?: SortOrder
-    creatorId?: SortOrder
-    title?: SortOrder
-    description?: SortOrder
-    banner?: SortOrder
-    maxUploads?: SortOrder
-    isMoneyContest?: SortOrder
-    maxPrize?: SortOrder
-    minPrize?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-  }
-
-  export type RecurringContestMinOrderByAggregateInput = {
-    id?: SortOrder
-    creatorId?: SortOrder
-    title?: SortOrder
-    description?: SortOrder
-    banner?: SortOrder
-    maxUploads?: SortOrder
-    isMoneyContest?: SortOrder
-    maxPrize?: SortOrder
-    minPrize?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-  }
-
-  export type RecurringContestSumOrderByAggregateInput = {
-    maxUploads?: SortOrder
-    maxPrize?: SortOrder
-    minPrize?: SortOrder
   }
 
   export type DateTimeNullableFilter<$PrismaModel = never> = {
@@ -32119,12 +31053,6 @@ export namespace Prisma {
     connect?: ContestPrizeWhereUniqueInput | ContestPrizeWhereUniqueInput[]
   }
 
-  export type RecurringContestDataCreateNestedOneWithoutContestInput = {
-    create?: XOR<RecurringContestDataCreateWithoutContestInput, RecurringContestDataUncheckedCreateWithoutContestInput>
-    connectOrCreate?: RecurringContestDataCreateOrConnectWithoutContestInput
-    connect?: RecurringContestDataWhereUniqueInput
-  }
-
   export type ContestAchievementCreateNestedManyWithoutContestInput = {
     create?: XOR<ContestAchievementCreateWithoutContestInput, ContestAchievementUncheckedCreateWithoutContestInput> | ContestAchievementCreateWithoutContestInput[] | ContestAchievementUncheckedCreateWithoutContestInput[]
     connectOrCreate?: ContestAchievementCreateOrConnectWithoutContestInput | ContestAchievementCreateOrConnectWithoutContestInput[]
@@ -32158,12 +31086,6 @@ export namespace Prisma {
     connectOrCreate?: ContestPrizeCreateOrConnectWithoutContestInput | ContestPrizeCreateOrConnectWithoutContestInput[]
     createMany?: ContestPrizeCreateManyContestInputEnvelope
     connect?: ContestPrizeWhereUniqueInput | ContestPrizeWhereUniqueInput[]
-  }
-
-  export type RecurringContestDataUncheckedCreateNestedOneWithoutContestInput = {
-    create?: XOR<RecurringContestDataCreateWithoutContestInput, RecurringContestDataUncheckedCreateWithoutContestInput>
-    connectOrCreate?: RecurringContestDataCreateOrConnectWithoutContestInput
-    connect?: RecurringContestDataWhereUniqueInput
   }
 
   export type ContestAchievementUncheckedCreateNestedManyWithoutContestInput = {
@@ -32280,16 +31202,6 @@ export namespace Prisma {
     deleteMany?: ContestPrizeScalarWhereInput | ContestPrizeScalarWhereInput[]
   }
 
-  export type RecurringContestDataUpdateOneWithoutContestNestedInput = {
-    create?: XOR<RecurringContestDataCreateWithoutContestInput, RecurringContestDataUncheckedCreateWithoutContestInput>
-    connectOrCreate?: RecurringContestDataCreateOrConnectWithoutContestInput
-    upsert?: RecurringContestDataUpsertWithoutContestInput
-    disconnect?: RecurringContestDataWhereInput | boolean
-    delete?: RecurringContestDataWhereInput | boolean
-    connect?: RecurringContestDataWhereUniqueInput
-    update?: XOR<XOR<RecurringContestDataUpdateToOneWithWhereWithoutContestInput, RecurringContestDataUpdateWithoutContestInput>, RecurringContestDataUncheckedUpdateWithoutContestInput>
-  }
-
   export type ContestAchievementUpdateManyWithoutContestNestedInput = {
     create?: XOR<ContestAchievementCreateWithoutContestInput, ContestAchievementUncheckedCreateWithoutContestInput> | ContestAchievementCreateWithoutContestInput[] | ContestAchievementUncheckedCreateWithoutContestInput[]
     connectOrCreate?: ContestAchievementCreateOrConnectWithoutContestInput | ContestAchievementCreateOrConnectWithoutContestInput[]
@@ -32360,16 +31272,6 @@ export namespace Prisma {
     deleteMany?: ContestPrizeScalarWhereInput | ContestPrizeScalarWhereInput[]
   }
 
-  export type RecurringContestDataUncheckedUpdateOneWithoutContestNestedInput = {
-    create?: XOR<RecurringContestDataCreateWithoutContestInput, RecurringContestDataUncheckedCreateWithoutContestInput>
-    connectOrCreate?: RecurringContestDataCreateOrConnectWithoutContestInput
-    upsert?: RecurringContestDataUpsertWithoutContestInput
-    disconnect?: RecurringContestDataWhereInput | boolean
-    delete?: RecurringContestDataWhereInput | boolean
-    connect?: RecurringContestDataWhereUniqueInput
-    update?: XOR<XOR<RecurringContestDataUpdateToOneWithWhereWithoutContestInput, RecurringContestDataUpdateWithoutContestInput>, RecurringContestDataUncheckedUpdateWithoutContestInput>
-  }
-
   export type ContestAchievementUncheckedUpdateManyWithoutContestNestedInput = {
     create?: XOR<ContestAchievementCreateWithoutContestInput, ContestAchievementUncheckedCreateWithoutContestInput> | ContestAchievementCreateWithoutContestInput[] | ContestAchievementUncheckedCreateWithoutContestInput[]
     connectOrCreate?: ContestAchievementCreateOrConnectWithoutContestInput | ContestAchievementCreateOrConnectWithoutContestInput[]
@@ -32382,6 +31284,31 @@ export namespace Prisma {
     update?: ContestAchievementUpdateWithWhereUniqueWithoutContestInput | ContestAchievementUpdateWithWhereUniqueWithoutContestInput[]
     updateMany?: ContestAchievementUpdateManyWithWhereWithoutContestInput | ContestAchievementUpdateManyWithWhereWithoutContestInput[]
     deleteMany?: ContestAchievementScalarWhereInput | ContestAchievementScalarWhereInput[]
+  }
+
+  export type RecurringContestCreatelevel_requirementsInput = {
+    set: number[]
+  }
+
+  export type RecurringDataCreateEnvelopeInput = {
+    set?: RecurringDataCreateInput
+  }
+
+  export type RecurringDataCreateInput = {
+    recurringType: $Enums.RecurringType
+    previousOccurrence?: Date | string | null
+    nextOccurrence: Date | string
+    duration?: number
+  }
+
+  export type RecurringContestUpdatelevel_requirementsInput = {
+    set?: number[]
+    push?: number | number[]
+  }
+
+  export type RecurringDataUpdateEnvelopeInput = {
+    set?: RecurringDataCreateInput
+    update?: RecurringDataUpdateInput
   }
 
   export type ContestRuleCreaterequirementsInput = {
@@ -32405,40 +31332,6 @@ export namespace Prisma {
     upsert?: ContestUpsertWithoutContestRulesInput
     connect?: ContestWhereUniqueInput
     update?: XOR<XOR<ContestUpdateToOneWithWhereWithoutContestRulesInput, ContestUpdateWithoutContestRulesInput>, ContestUncheckedUpdateWithoutContestRulesInput>
-  }
-
-  export type ContestCreateNestedOneWithoutRecurringDataInput = {
-    create?: XOR<ContestCreateWithoutRecurringDataInput, ContestUncheckedCreateWithoutRecurringDataInput>
-    connectOrCreate?: ContestCreateOrConnectWithoutRecurringDataInput
-    connect?: ContestWhereUniqueInput
-  }
-
-  export type EnumRecurringTypeFieldUpdateOperationsInput = {
-    set?: $Enums.RecurringType
-  }
-
-  export type ContestUpdateOneRequiredWithoutRecurringDataNestedInput = {
-    create?: XOR<ContestCreateWithoutRecurringDataInput, ContestUncheckedCreateWithoutRecurringDataInput>
-    connectOrCreate?: ContestCreateOrConnectWithoutRecurringDataInput
-    upsert?: ContestUpsertWithoutRecurringDataInput
-    connect?: ContestWhereUniqueInput
-    update?: XOR<XOR<ContestUpdateToOneWithWhereWithoutRecurringDataInput, ContestUpdateWithoutRecurringDataInput>, ContestUncheckedUpdateWithoutRecurringDataInput>
-  }
-
-  export type RecurringDataCreateEnvelopeInput = {
-    set?: RecurringDataCreateInput
-  }
-
-  export type RecurringDataCreateInput = {
-    recurringType: $Enums.RecurringType
-    previousOccurrence: Date | string
-    nextOccurrence: Date | string
-    duration?: number
-  }
-
-  export type RecurringDataUpdateEnvelopeInput = {
-    set?: RecurringDataCreateInput
-    update?: RecurringDataUpdateInput
   }
 
   export type ContestParticipantCreateNestedOneWithoutPhotosInput = {
@@ -34014,22 +32907,16 @@ export namespace Prisma {
     _min?: NestedDateTimeFilter<$PrismaModel>
     _max?: NestedDateTimeFilter<$PrismaModel>
   }
+  export type NestedJsonFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<NestedJsonFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonFilterBase<$PrismaModel>>, 'path'>>,
+        Required<NestedJsonFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<NestedJsonFilterBase<$PrismaModel>>, 'path'>>
 
-  export type NestedEnumRecurringTypeFilter<$PrismaModel = never> = {
-    equals?: $Enums.RecurringType | EnumRecurringTypeFieldRefInput<$PrismaModel>
-    in?: $Enums.RecurringType[] | ListEnumRecurringTypeFieldRefInput<$PrismaModel>
-    notIn?: $Enums.RecurringType[] | ListEnumRecurringTypeFieldRefInput<$PrismaModel>
-    not?: NestedEnumRecurringTypeFilter<$PrismaModel> | $Enums.RecurringType
-  }
-
-  export type NestedEnumRecurringTypeWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.RecurringType | EnumRecurringTypeFieldRefInput<$PrismaModel>
-    in?: $Enums.RecurringType[] | ListEnumRecurringTypeFieldRefInput<$PrismaModel>
-    notIn?: $Enums.RecurringType[] | ListEnumRecurringTypeFieldRefInput<$PrismaModel>
-    not?: NestedEnumRecurringTypeWithAggregatesFilter<$PrismaModel> | $Enums.RecurringType
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumRecurringTypeFilter<$PrismaModel>
-    _max?: NestedEnumRecurringTypeFilter<$PrismaModel>
+  export type NestedJsonFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
   }
 
   export type RecurringDataWhereInput = {
@@ -34037,7 +32924,7 @@ export namespace Prisma {
     OR?: RecurringDataWhereInput[]
     NOT?: RecurringDataWhereInput | RecurringDataWhereInput[]
     recurringType?: EnumRecurringTypeFilter<"RecurringData"> | $Enums.RecurringType
-    previousOccurrence?: DateTimeFilter<"RecurringData"> | Date | string
+    previousOccurrence?: DateTimeNullableFilter<"RecurringData"> | Date | string | null
     nextOccurrence?: DateTimeFilter<"RecurringData"> | Date | string
     duration?: IntFilter<"RecurringData"> | number
   }
@@ -34417,25 +33304,6 @@ export namespace Prisma {
     data: ContestPrizeCreateManyContestInput | ContestPrizeCreateManyContestInput[]
   }
 
-  export type RecurringContestDataCreateWithoutContestInput = {
-    id?: string
-    lastRunAt: Date | string
-    recurringType: $Enums.RecurringType
-    nextRunAt: Date | string
-  }
-
-  export type RecurringContestDataUncheckedCreateWithoutContestInput = {
-    id?: string
-    lastRunAt: Date | string
-    recurringType: $Enums.RecurringType
-    nextRunAt: Date | string
-  }
-
-  export type RecurringContestDataCreateOrConnectWithoutContestInput = {
-    where: RecurringContestDataWhereUniqueInput
-    create: XOR<RecurringContestDataCreateWithoutContestInput, RecurringContestDataUncheckedCreateWithoutContestInput>
-  }
-
   export type ContestAchievementCreateWithoutContestInput = {
     id?: string
     category: $Enums.PrizeType
@@ -34652,29 +33520,6 @@ export namespace Prisma {
     contestId?: StringFilter<"ContestPrize"> | string
   }
 
-  export type RecurringContestDataUpsertWithoutContestInput = {
-    update: XOR<RecurringContestDataUpdateWithoutContestInput, RecurringContestDataUncheckedUpdateWithoutContestInput>
-    create: XOR<RecurringContestDataCreateWithoutContestInput, RecurringContestDataUncheckedCreateWithoutContestInput>
-    where?: RecurringContestDataWhereInput
-  }
-
-  export type RecurringContestDataUpdateToOneWithWhereWithoutContestInput = {
-    where?: RecurringContestDataWhereInput
-    data: XOR<RecurringContestDataUpdateWithoutContestInput, RecurringContestDataUncheckedUpdateWithoutContestInput>
-  }
-
-  export type RecurringContestDataUpdateWithoutContestInput = {
-    lastRunAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    recurringType?: EnumRecurringTypeFieldUpdateOperationsInput | $Enums.RecurringType
-    nextRunAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type RecurringContestDataUncheckedUpdateWithoutContestInput = {
-    lastRunAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    recurringType?: EnumRecurringTypeFieldUpdateOperationsInput | $Enums.RecurringType
-    nextRunAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
   export type ContestAchievementUpsertWithWhereUniqueWithoutContestInput = {
     where: ContestAchievementWhereUniqueInput
     update: XOR<ContestAchievementUpdateWithoutContestInput, ContestAchievementUncheckedUpdateWithoutContestInput>
@@ -34704,6 +33549,13 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"ContestAchievement"> | Date | string
   }
 
+  export type RecurringDataUpdateInput = {
+    recurringType?: EnumRecurringTypeFieldUpdateOperationsInput | $Enums.RecurringType
+    previousOccurrence?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    nextOccurrence?: DateTimeFieldUpdateOperationsInput | Date | string
+    duration?: IntFieldUpdateOperationsInput | number
+  }
+
   export type ContestCreateWithoutContestRulesInput = {
     id?: string
     title: string
@@ -34717,13 +33569,14 @@ export namespace Prisma {
     level_requirements?: ContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
+    rules: InputJsonValue
+    prizes: InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
     creator: UserCreateNestedOneWithoutCreatedContestsInput
     participants?: ContestParticipantCreateNestedManyWithoutContestInput
     votes?: VoteCreateNestedManyWithoutContestInput
     contestPrizes?: ContestPrizeCreateNestedManyWithoutContestInput
-    recurringData?: RecurringContestDataCreateNestedOneWithoutContestInput
     achievements?: ContestAchievementCreateNestedManyWithoutContestInput
   }
 
@@ -34740,13 +33593,14 @@ export namespace Prisma {
     level_requirements?: ContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
+    rules: InputJsonValue
+    prizes: InputJsonValue
     creatorId: string
     createdAt?: Date | string
     updatedAt?: Date | string
     participants?: ContestParticipantUncheckedCreateNestedManyWithoutContestInput
     votes?: VoteUncheckedCreateNestedManyWithoutContestInput
     contestPrizes?: ContestPrizeUncheckedCreateNestedManyWithoutContestInput
-    recurringData?: RecurringContestDataUncheckedCreateNestedOneWithoutContestInput
     achievements?: ContestAchievementUncheckedCreateNestedManyWithoutContestInput
   }
 
@@ -34778,13 +33632,14 @@ export namespace Prisma {
     level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    rules?: InputJsonValue | InputJsonValue
+    prizes?: InputJsonValue | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     creator?: UserUpdateOneRequiredWithoutCreatedContestsNestedInput
     participants?: ContestParticipantUpdateManyWithoutContestNestedInput
     votes?: VoteUpdateManyWithoutContestNestedInput
     contestPrizes?: ContestPrizeUpdateManyWithoutContestNestedInput
-    recurringData?: RecurringContestDataUpdateOneWithoutContestNestedInput
     achievements?: ContestAchievementUpdateManyWithoutContestNestedInput
   }
 
@@ -34800,127 +33655,15 @@ export namespace Prisma {
     level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    rules?: InputJsonValue | InputJsonValue
+    prizes?: InputJsonValue | InputJsonValue
     creatorId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     participants?: ContestParticipantUncheckedUpdateManyWithoutContestNestedInput
     votes?: VoteUncheckedUpdateManyWithoutContestNestedInput
     contestPrizes?: ContestPrizeUncheckedUpdateManyWithoutContestNestedInput
-    recurringData?: RecurringContestDataUncheckedUpdateOneWithoutContestNestedInput
     achievements?: ContestAchievementUncheckedUpdateManyWithoutContestNestedInput
-  }
-
-  export type ContestCreateWithoutRecurringDataInput = {
-    id?: string
-    title: string
-    description: string
-    banner?: string | null
-    status?: $Enums.ContestStatus
-    maxUploads?: number
-    isMoneyContest?: boolean
-    maxPrize?: number | null
-    minPrize?: number | null
-    level_requirements?: ContestCreatelevel_requirementsInput | number[]
-    startDate: Date | string
-    endDate: Date | string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    creator: UserCreateNestedOneWithoutCreatedContestsInput
-    participants?: ContestParticipantCreateNestedManyWithoutContestInput
-    votes?: VoteCreateNestedManyWithoutContestInput
-    contestRules?: ContestRuleCreateNestedManyWithoutContestInput
-    contestPrizes?: ContestPrizeCreateNestedManyWithoutContestInput
-    achievements?: ContestAchievementCreateNestedManyWithoutContestInput
-  }
-
-  export type ContestUncheckedCreateWithoutRecurringDataInput = {
-    id?: string
-    title: string
-    description: string
-    banner?: string | null
-    status?: $Enums.ContestStatus
-    maxUploads?: number
-    isMoneyContest?: boolean
-    maxPrize?: number | null
-    minPrize?: number | null
-    level_requirements?: ContestCreatelevel_requirementsInput | number[]
-    startDate: Date | string
-    endDate: Date | string
-    creatorId: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    participants?: ContestParticipantUncheckedCreateNestedManyWithoutContestInput
-    votes?: VoteUncheckedCreateNestedManyWithoutContestInput
-    contestRules?: ContestRuleUncheckedCreateNestedManyWithoutContestInput
-    contestPrizes?: ContestPrizeUncheckedCreateNestedManyWithoutContestInput
-    achievements?: ContestAchievementUncheckedCreateNestedManyWithoutContestInput
-  }
-
-  export type ContestCreateOrConnectWithoutRecurringDataInput = {
-    where: ContestWhereUniqueInput
-    create: XOR<ContestCreateWithoutRecurringDataInput, ContestUncheckedCreateWithoutRecurringDataInput>
-  }
-
-  export type ContestUpsertWithoutRecurringDataInput = {
-    update: XOR<ContestUpdateWithoutRecurringDataInput, ContestUncheckedUpdateWithoutRecurringDataInput>
-    create: XOR<ContestCreateWithoutRecurringDataInput, ContestUncheckedCreateWithoutRecurringDataInput>
-    where?: ContestWhereInput
-  }
-
-  export type ContestUpdateToOneWithWhereWithoutRecurringDataInput = {
-    where?: ContestWhereInput
-    data: XOR<ContestUpdateWithoutRecurringDataInput, ContestUncheckedUpdateWithoutRecurringDataInput>
-  }
-
-  export type ContestUpdateWithoutRecurringDataInput = {
-    title?: StringFieldUpdateOperationsInput | string
-    description?: StringFieldUpdateOperationsInput | string
-    banner?: NullableStringFieldUpdateOperationsInput | string | null
-    status?: EnumContestStatusFieldUpdateOperationsInput | $Enums.ContestStatus
-    maxUploads?: IntFieldUpdateOperationsInput | number
-    isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
-    maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
-    minPrize?: NullableIntFieldUpdateOperationsInput | number | null
-    level_requirements?: ContestUpdatelevel_requirementsInput | number[]
-    startDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    endDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    creator?: UserUpdateOneRequiredWithoutCreatedContestsNestedInput
-    participants?: ContestParticipantUpdateManyWithoutContestNestedInput
-    votes?: VoteUpdateManyWithoutContestNestedInput
-    contestRules?: ContestRuleUpdateManyWithoutContestNestedInput
-    contestPrizes?: ContestPrizeUpdateManyWithoutContestNestedInput
-    achievements?: ContestAchievementUpdateManyWithoutContestNestedInput
-  }
-
-  export type ContestUncheckedUpdateWithoutRecurringDataInput = {
-    title?: StringFieldUpdateOperationsInput | string
-    description?: StringFieldUpdateOperationsInput | string
-    banner?: NullableStringFieldUpdateOperationsInput | string | null
-    status?: EnumContestStatusFieldUpdateOperationsInput | $Enums.ContestStatus
-    maxUploads?: IntFieldUpdateOperationsInput | number
-    isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
-    maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
-    minPrize?: NullableIntFieldUpdateOperationsInput | number | null
-    level_requirements?: ContestUpdatelevel_requirementsInput | number[]
-    startDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    endDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    creatorId?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    participants?: ContestParticipantUncheckedUpdateManyWithoutContestNestedInput
-    votes?: VoteUncheckedUpdateManyWithoutContestNestedInput
-    contestRules?: ContestRuleUncheckedUpdateManyWithoutContestNestedInput
-    contestPrizes?: ContestPrizeUncheckedUpdateManyWithoutContestNestedInput
-    achievements?: ContestAchievementUncheckedUpdateManyWithoutContestNestedInput
-  }
-
-  export type RecurringDataUpdateInput = {
-    recurringType?: EnumRecurringTypeFieldUpdateOperationsInput | $Enums.RecurringType
-    previousOccurrence?: DateTimeFieldUpdateOperationsInput | Date | string
-    nextOccurrence?: DateTimeFieldUpdateOperationsInput | Date | string
-    duration?: IntFieldUpdateOperationsInput | number
   }
 
   export type ContestParticipantCreateWithoutPhotosInput = {
@@ -35415,13 +34158,14 @@ export namespace Prisma {
     level_requirements?: ContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
+    rules: InputJsonValue
+    prizes: InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
     creator: UserCreateNestedOneWithoutCreatedContestsInput
     votes?: VoteCreateNestedManyWithoutContestInput
     contestRules?: ContestRuleCreateNestedManyWithoutContestInput
     contestPrizes?: ContestPrizeCreateNestedManyWithoutContestInput
-    recurringData?: RecurringContestDataCreateNestedOneWithoutContestInput
     achievements?: ContestAchievementCreateNestedManyWithoutContestInput
   }
 
@@ -35438,13 +34182,14 @@ export namespace Prisma {
     level_requirements?: ContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
+    rules: InputJsonValue
+    prizes: InputJsonValue
     creatorId: string
     createdAt?: Date | string
     updatedAt?: Date | string
     votes?: VoteUncheckedCreateNestedManyWithoutContestInput
     contestRules?: ContestRuleUncheckedCreateNestedManyWithoutContestInput
     contestPrizes?: ContestPrizeUncheckedCreateNestedManyWithoutContestInput
-    recurringData?: RecurringContestDataUncheckedCreateNestedOneWithoutContestInput
     achievements?: ContestAchievementUncheckedCreateNestedManyWithoutContestInput
   }
 
@@ -35638,13 +34383,14 @@ export namespace Prisma {
     level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    rules?: InputJsonValue | InputJsonValue
+    prizes?: InputJsonValue | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     creator?: UserUpdateOneRequiredWithoutCreatedContestsNestedInput
     votes?: VoteUpdateManyWithoutContestNestedInput
     contestRules?: ContestRuleUpdateManyWithoutContestNestedInput
     contestPrizes?: ContestPrizeUpdateManyWithoutContestNestedInput
-    recurringData?: RecurringContestDataUpdateOneWithoutContestNestedInput
     achievements?: ContestAchievementUpdateManyWithoutContestNestedInput
   }
 
@@ -35660,13 +34406,14 @@ export namespace Prisma {
     level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    rules?: InputJsonValue | InputJsonValue
+    prizes?: InputJsonValue | InputJsonValue
     creatorId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     votes?: VoteUncheckedUpdateManyWithoutContestNestedInput
     contestRules?: ContestRuleUncheckedUpdateManyWithoutContestNestedInput
     contestPrizes?: ContestPrizeUncheckedUpdateManyWithoutContestNestedInput
-    recurringData?: RecurringContestDataUncheckedUpdateOneWithoutContestNestedInput
     achievements?: ContestAchievementUncheckedUpdateManyWithoutContestNestedInput
   }
 
@@ -35820,13 +34567,14 @@ export namespace Prisma {
     level_requirements?: ContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
+    rules: InputJsonValue
+    prizes: InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
     creator: UserCreateNestedOneWithoutCreatedContestsInput
     participants?: ContestParticipantCreateNestedManyWithoutContestInput
     votes?: VoteCreateNestedManyWithoutContestInput
     contestRules?: ContestRuleCreateNestedManyWithoutContestInput
-    recurringData?: RecurringContestDataCreateNestedOneWithoutContestInput
     achievements?: ContestAchievementCreateNestedManyWithoutContestInput
   }
 
@@ -35843,13 +34591,14 @@ export namespace Prisma {
     level_requirements?: ContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
+    rules: InputJsonValue
+    prizes: InputJsonValue
     creatorId: string
     createdAt?: Date | string
     updatedAt?: Date | string
     participants?: ContestParticipantUncheckedCreateNestedManyWithoutContestInput
     votes?: VoteUncheckedCreateNestedManyWithoutContestInput
     contestRules?: ContestRuleUncheckedCreateNestedManyWithoutContestInput
-    recurringData?: RecurringContestDataUncheckedCreateNestedOneWithoutContestInput
     achievements?: ContestAchievementUncheckedCreateNestedManyWithoutContestInput
   }
 
@@ -35881,13 +34630,14 @@ export namespace Prisma {
     level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    rules?: InputJsonValue | InputJsonValue
+    prizes?: InputJsonValue | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     creator?: UserUpdateOneRequiredWithoutCreatedContestsNestedInput
     participants?: ContestParticipantUpdateManyWithoutContestNestedInput
     votes?: VoteUpdateManyWithoutContestNestedInput
     contestRules?: ContestRuleUpdateManyWithoutContestNestedInput
-    recurringData?: RecurringContestDataUpdateOneWithoutContestNestedInput
     achievements?: ContestAchievementUpdateManyWithoutContestNestedInput
   }
 
@@ -35903,13 +34653,14 @@ export namespace Prisma {
     level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    rules?: InputJsonValue | InputJsonValue
+    prizes?: InputJsonValue | InputJsonValue
     creatorId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     participants?: ContestParticipantUncheckedUpdateManyWithoutContestNestedInput
     votes?: VoteUncheckedUpdateManyWithoutContestNestedInput
     contestRules?: ContestRuleUncheckedUpdateManyWithoutContestNestedInput
-    recurringData?: RecurringContestDataUncheckedUpdateOneWithoutContestNestedInput
     achievements?: ContestAchievementUncheckedUpdateManyWithoutContestNestedInput
   }
 
@@ -35963,6 +34714,8 @@ export namespace Prisma {
     level_requirements?: ContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
+    rules: InputJsonValue
+    prizes: InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
     creator: UserCreateNestedOneWithoutCreatedContestsInput
@@ -35970,7 +34723,6 @@ export namespace Prisma {
     votes?: VoteCreateNestedManyWithoutContestInput
     contestRules?: ContestRuleCreateNestedManyWithoutContestInput
     contestPrizes?: ContestPrizeCreateNestedManyWithoutContestInput
-    recurringData?: RecurringContestDataCreateNestedOneWithoutContestInput
   }
 
   export type ContestUncheckedCreateWithoutAchievementsInput = {
@@ -35986,6 +34738,8 @@ export namespace Prisma {
     level_requirements?: ContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
+    rules: InputJsonValue
+    prizes: InputJsonValue
     creatorId: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -35993,7 +34747,6 @@ export namespace Prisma {
     votes?: VoteUncheckedCreateNestedManyWithoutContestInput
     contestRules?: ContestRuleUncheckedCreateNestedManyWithoutContestInput
     contestPrizes?: ContestPrizeUncheckedCreateNestedManyWithoutContestInput
-    recurringData?: RecurringContestDataUncheckedCreateNestedOneWithoutContestInput
   }
 
   export type ContestCreateOrConnectWithoutAchievementsInput = {
@@ -36096,6 +34849,8 @@ export namespace Prisma {
     level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    rules?: InputJsonValue | InputJsonValue
+    prizes?: InputJsonValue | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     creator?: UserUpdateOneRequiredWithoutCreatedContestsNestedInput
@@ -36103,7 +34858,6 @@ export namespace Prisma {
     votes?: VoteUpdateManyWithoutContestNestedInput
     contestRules?: ContestRuleUpdateManyWithoutContestNestedInput
     contestPrizes?: ContestPrizeUpdateManyWithoutContestNestedInput
-    recurringData?: RecurringContestDataUpdateOneWithoutContestNestedInput
   }
 
   export type ContestUncheckedUpdateWithoutAchievementsInput = {
@@ -36118,6 +34872,8 @@ export namespace Prisma {
     level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    rules?: InputJsonValue | InputJsonValue
+    prizes?: InputJsonValue | InputJsonValue
     creatorId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -36125,7 +34881,6 @@ export namespace Prisma {
     votes?: VoteUncheckedUpdateManyWithoutContestNestedInput
     contestRules?: ContestRuleUncheckedUpdateManyWithoutContestNestedInput
     contestPrizes?: ContestPrizeUncheckedUpdateManyWithoutContestNestedInput
-    recurringData?: RecurringContestDataUncheckedUpdateOneWithoutContestNestedInput
   }
 
   export type ContestParticipantUpsertWithoutContestAchievementInput = {
@@ -36689,13 +35444,14 @@ export namespace Prisma {
     level_requirements?: ContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
+    rules: InputJsonValue
+    prizes: InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
     participants?: ContestParticipantCreateNestedManyWithoutContestInput
     votes?: VoteCreateNestedManyWithoutContestInput
     contestRules?: ContestRuleCreateNestedManyWithoutContestInput
     contestPrizes?: ContestPrizeCreateNestedManyWithoutContestInput
-    recurringData?: RecurringContestDataCreateNestedOneWithoutContestInput
     achievements?: ContestAchievementCreateNestedManyWithoutContestInput
   }
 
@@ -36712,13 +35468,14 @@ export namespace Prisma {
     level_requirements?: ContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
+    rules: InputJsonValue
+    prizes: InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
     participants?: ContestParticipantUncheckedCreateNestedManyWithoutContestInput
     votes?: VoteUncheckedCreateNestedManyWithoutContestInput
     contestRules?: ContestRuleUncheckedCreateNestedManyWithoutContestInput
     contestPrizes?: ContestPrizeUncheckedCreateNestedManyWithoutContestInput
-    recurringData?: RecurringContestDataUncheckedCreateNestedOneWithoutContestInput
     achievements?: ContestAchievementUncheckedCreateNestedManyWithoutContestInput
   }
 
@@ -37074,6 +35831,8 @@ export namespace Prisma {
     level_requirements?: IntNullableListFilter<"Contest">
     startDate?: DateTimeFilter<"Contest"> | Date | string
     endDate?: DateTimeFilter<"Contest"> | Date | string
+    rules?: JsonFilter<"Contest">
+    prizes?: JsonFilter<"Contest">
     creatorId?: StringFilter<"Contest"> | string
     createdAt?: DateTimeFilter<"Contest"> | Date | string
     updatedAt?: DateTimeFilter<"Contest"> | Date | string
@@ -38694,13 +37453,14 @@ export namespace Prisma {
     level_requirements?: ContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
+    rules: InputJsonValue
+    prizes: InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
     creator: UserCreateNestedOneWithoutCreatedContestsInput
     participants?: ContestParticipantCreateNestedManyWithoutContestInput
     contestRules?: ContestRuleCreateNestedManyWithoutContestInput
     contestPrizes?: ContestPrizeCreateNestedManyWithoutContestInput
-    recurringData?: RecurringContestDataCreateNestedOneWithoutContestInput
     achievements?: ContestAchievementCreateNestedManyWithoutContestInput
   }
 
@@ -38717,13 +37477,14 @@ export namespace Prisma {
     level_requirements?: ContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
+    rules: InputJsonValue
+    prizes: InputJsonValue
     creatorId: string
     createdAt?: Date | string
     updatedAt?: Date | string
     participants?: ContestParticipantUncheckedCreateNestedManyWithoutContestInput
     contestRules?: ContestRuleUncheckedCreateNestedManyWithoutContestInput
     contestPrizes?: ContestPrizeUncheckedCreateNestedManyWithoutContestInput
-    recurringData?: RecurringContestDataUncheckedCreateNestedOneWithoutContestInput
     achievements?: ContestAchievementUncheckedCreateNestedManyWithoutContestInput
   }
 
@@ -38869,13 +37630,14 @@ export namespace Prisma {
     level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    rules?: InputJsonValue | InputJsonValue
+    prizes?: InputJsonValue | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     creator?: UserUpdateOneRequiredWithoutCreatedContestsNestedInput
     participants?: ContestParticipantUpdateManyWithoutContestNestedInput
     contestRules?: ContestRuleUpdateManyWithoutContestNestedInput
     contestPrizes?: ContestPrizeUpdateManyWithoutContestNestedInput
-    recurringData?: RecurringContestDataUpdateOneWithoutContestNestedInput
     achievements?: ContestAchievementUpdateManyWithoutContestNestedInput
   }
 
@@ -38891,14 +37653,22 @@ export namespace Prisma {
     level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    rules?: InputJsonValue | InputJsonValue
+    prizes?: InputJsonValue | InputJsonValue
     creatorId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     participants?: ContestParticipantUncheckedUpdateManyWithoutContestNestedInput
     contestRules?: ContestRuleUncheckedUpdateManyWithoutContestNestedInput
     contestPrizes?: ContestPrizeUncheckedUpdateManyWithoutContestNestedInput
-    recurringData?: RecurringContestDataUncheckedUpdateOneWithoutContestNestedInput
     achievements?: ContestAchievementUncheckedUpdateManyWithoutContestNestedInput
+  }
+
+  export type EnumRecurringTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.RecurringType | EnumRecurringTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.RecurringType[] | ListEnumRecurringTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.RecurringType[] | ListEnumRecurringTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumRecurringTypeFilter<$PrismaModel> | $Enums.RecurringType
   }
 
   export type ContestParticipantCreateManyContestInput = {
@@ -39070,6 +37840,10 @@ export namespace Prisma {
     participantId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type EnumRecurringTypeFieldUpdateOperationsInput = {
+    set?: $Enums.RecurringType
   }
 
   export type VoteCreateManyPhotoInput = {
@@ -39368,6 +38142,8 @@ export namespace Prisma {
     level_requirements?: ContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
+    rules: InputJsonValue
+    prizes: InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -39483,13 +38259,14 @@ export namespace Prisma {
     level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    rules?: InputJsonValue | InputJsonValue
+    prizes?: InputJsonValue | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     participants?: ContestParticipantUpdateManyWithoutContestNestedInput
     votes?: VoteUpdateManyWithoutContestNestedInput
     contestRules?: ContestRuleUpdateManyWithoutContestNestedInput
     contestPrizes?: ContestPrizeUpdateManyWithoutContestNestedInput
-    recurringData?: RecurringContestDataUpdateOneWithoutContestNestedInput
     achievements?: ContestAchievementUpdateManyWithoutContestNestedInput
   }
 
@@ -39505,13 +38282,14 @@ export namespace Prisma {
     level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    rules?: InputJsonValue | InputJsonValue
+    prizes?: InputJsonValue | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     participants?: ContestParticipantUncheckedUpdateManyWithoutContestNestedInput
     votes?: VoteUncheckedUpdateManyWithoutContestNestedInput
     contestRules?: ContestRuleUncheckedUpdateManyWithoutContestNestedInput
     contestPrizes?: ContestPrizeUncheckedUpdateManyWithoutContestNestedInput
-    recurringData?: RecurringContestDataUncheckedUpdateOneWithoutContestNestedInput
     achievements?: ContestAchievementUncheckedUpdateManyWithoutContestNestedInput
   }
 
@@ -39527,6 +38305,8 @@ export namespace Prisma {
     level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    rules?: InputJsonValue | InputJsonValue
+    prizes?: InputJsonValue | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -39823,6 +38603,13 @@ export namespace Prisma {
     receiverId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type NestedEnumRecurringTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.RecurringType | EnumRecurringTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.RecurringType[] | ListEnumRecurringTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.RecurringType[] | ListEnumRecurringTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumRecurringTypeFilter<$PrismaModel> | $Enums.RecurringType
   }
 
 

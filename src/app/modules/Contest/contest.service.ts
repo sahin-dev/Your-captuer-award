@@ -2,7 +2,7 @@ import prisma from '../../../shared/prisma';
 import ApiError from '../../../errors/ApiError';
 import httpstatus from 'http-status';
 import { fileUploader } from '../../../helpers/fileUploader';
-import { Contest, ContestParticipant, ContestStatus, RecurringData, RecurringType, Vote, YCLevel } from '../../../prismaClient';
+import { Contest, ContestParticipant, ContestPhoto, ContestStatus, PrizeType, RecurringContest, RecurringData, YCLevel } from '../../../prismaClient';
 import { IContest } from './contest.interface';
 import { contestData } from './contest.type';
 import { contestRuleService } from './ContestRules/contestRules.service';
@@ -12,6 +12,8 @@ import { ContestPrizeData } from './ContestPrizes/contestPrize.type';
 import { profileService } from '../Profile/profile.service';
 import agenda from '../Agenda';
 import { UserStoreService } from '../User/UserStore/userStore.service';
+import { validateContestDate } from '../../../helpers/validateDate';
+import { calculateNextOccurance } from '../../../helpers/nextOccurance';
 
 
 
@@ -20,91 +22,73 @@ import { UserStoreService } from '../User/UserStore/userStore.service';
 
 
 export const createContest = async (creatorId: string, body: contestData, banner:Express.Multer.File) => {
+
+    //If contest is recurring , save recurring data separately
+    if(body.recurring){
+       return createRecurringContest(creatorId, body, banner)
+    }
     let bannerUrl = null;
 
+
+    let levels = body.level_requirements.map(levels => parseInt(levels))
     
     const contestData:any = {
         creatorId,
         title: body.title,
         description: body.description,
+        status: ContestStatus.UPCOMING,
+        level_requirements:levels
     }
 
     if (banner){
         bannerUrl = (await fileUploader.uploadToDigitalOcean(banner)).Location;
         contestData.banner = bannerUrl
     }
+
     
-    // Validate start and end dates
-    const startDate = new Date(body.startDate);
-    const endDate = new Date(body.endDate);
-    const currentDate = new Date();
-    
-    //Check contest start date and end date
-         //that start date is not after end date and start date is in the future
-    if (startDate >= endDate) {
-        throw new ApiError(httpstatus.BAD_REQUEST, 'Start date must be before end date');
+    const isDateValid = validateContestDate(body.startDate, body.endDate);
+
+    if(!isDateValid){
+        throw new ApiError(httpstatus.BAD_REQUEST, "Start date cannot be after end date");
     }
-    // If start date is in the past, throw an error
-    // if (currentDate> startDate){
-    //     throw new ApiError(httpstatus.BAD_REQUEST, 'Start date must be in the future');
-    // }
 
-
-    // create separate contestData Object to pass prisma to ctreate contest
     
     // If contest is money contest, add money contest data like max prize and min prize for the paerticipants
     // If isMoneyContest is not provided, it will default to false
 
      if (body.isMoneyContest) {
-        contestData.isMoneyContest = true;   
+
+
+        if(!body.minPrize || !body.maxPrize || (body.minPrize > body.maxPrize)){
+            throw new ApiError(httpstatus.BAD_REQUEST, "Contest prize data is invalid")
+        }  
+        contestData.isMoneyContest = true; 
         contestData.maxPrize = body.maxPrize || 0;
         contestData.minPrize = body.minPrize || 0;
     }
 
     //If contest is recurring, Add recurring data to the contest object
     // By default every object is recurring false, so if conetest is not recurring, it will not have recurring data
-    contestData.startDate = startDate
-    contestData.endDate = endDate
-
-    if (body.recurring) {
-
-        const recurringData:RecurringData = {
-            recurringType: body.recurringType!,
-            previousOccurrence: new Date(),
-            nextOccurrence: new Date(body.startDate),
-            duration:new Date(body.endDate).getTime() - new Date(body.startDate).getTime()
-        }
-        contestData.recurringData = recurringData;
-
-        console.log(contestData)
-
-        let recurringContest = await prisma.recurringContest.create({
-            data: contestData
-        });
-        return recurringContest;
-    }
+    contestData.startDate = new Date(body.startDate)
+    contestData.endDate = new Date(body.endDate)
 
     // Create a normal contest entry for all type of contest
        let contest = await prisma.contest.create({
             data: contestData
         });
 
-   
-    if(body.rules){
-        const rules:ContestRule[] = JSON.parse(body.rules)
-        
-        await contestRuleService.addContestRules(contest.id, rules)
-    }
-   
-    if(body.prizes){
-         const prizes:ContestPrizeData[] = JSON.parse(body.prizes)
-        await addContestPrizes(contest.id, prizes)
-    }
+    
 
-    //If contest is recurring , save recurring data separately
-    if(body.recurring){
-        handleRecurringContest(contest.id, body)
-    }
+    // if(body.rules){
+    //     const rules:ContestRule[] = JSON.parse(body.rules)
+        
+    //     await contestRuleService.addContestRules(contest.id, rules)
+    // }
+   
+    // if(body.prizes){
+    //      const prizes:ContestPrizeData[] = JSON.parse(body.prizes)
+    //     await addContestPrizes(contest.id, prizes)
+    // }
 
     return contest;
 };
@@ -112,54 +96,72 @@ export const createContest = async (creatorId: string, body: contestData, banner
 
 //manage recurring contest separately
 
-const handleRecurringContest  =  async (contestId:string,body:contestData)=>{
-    if (body.recurring) {
+const createRecurringContest  =  async (creatorId: string, body: contestData, banner:Express.Multer.File)=>{
+    if(!body.recurring){
+        throw new Error("Contest is not a recurring contest!")
+    }
 
-        const recurringData:RecurringData = {
-            recurringType: body.recurringType!,
-            previousOccurrence: new Date(body.startDate),
-            nextOccurrence: calculateNextOccurance(body.startDate, body.recurringType),
-            duration:new Date(body.endDate).getTime() - new Date(body.startDate).getTime()
-        }
+    const isDateValid = validateContestDate(body.startDate, body.endDate);
+
+    if(!isDateValid){
+        throw new ApiError(httpstatus.BAD_REQUEST, "Start date cannot be after end date");
+    }
+    
+
+    const startDate = new Date(body.startDate)
+    const endDate = new Date(body.endDate)
+
+    let levels = body.level_requirements.map(levels => parseInt(levels))
+
+    const contestData:any = {
+        creatorId,
+        title: body.title,
+        description: body.description,
+        level_requirements: levels,
+        startDate,
+        endDate
+
+    }
+    if(!body.rules || !body.prizes){
+        throw new ApiError(httpstatus.BAD_REQUEST, "contest rules and prizes are required")
+    }
+
+    contestData.rules = body.rules
+    contestData.prizes = body.prizes
+   
+    let bannerUrl = null
+    if (banner){
+        bannerUrl = (await fileUploader.uploadToDigitalOcean(banner)).Location;
+        contestData.banner = bannerUrl
+    }
+
+    if (body.isMoneyContest) {
+        if(!body.minPrize || !body.maxPrize || (body.minPrize > body.maxPrize)){
+            throw new ApiError(httpstatus.BAD_REQUEST, "Contest prize data is invalid")
+        }  
+        contestData.isMoneyContest = true; 
+        contestData.maxPrize = body.maxPrize || 0;
+        contestData.minPrize = body.minPrize || 0;
+    }
+
+    contestData.recurring ={set: {
+        recurringType:body.recurringType,
+        previousOccurrence:null,
+        nextOccurrence:startDate,
+        duration:new Date(body.endDate).getTime() - new Date(body.startDate).getTime()
+    }
+    }
+    console.log(contestData)
+
+    const recurringContest = await prisma.recurringContest.create({data:contestData})
+
+    return recurringContest
+
       
-
-        let recurringContest = await prisma.recurringContestData.create({
-            data: {
-                lastRunAt:recurringData.previousOccurrence,
-                nextRunAt:recurringData.nextOccurrence,
-                contestId,
-                recurringType:recurringData.recurringType
-
-            }
-        });
-        return recurringContest;
-    }
 }
 
 
-//Calculate next occurance time of a recurring contest based on recurring type
-const calculateNextOccurance = (date:string, type:RecurringType = 'DAILY'):Date=>{
 
-    let result;
-    
-    switch(type){
-        case RecurringType.DAILY:
-            result = new Date(date)
-            break
-        case RecurringType.WEEKLY:
-            result = new Date(date)
-            break
-        case RecurringType.MONTHLY:
-            result = new Date(date)
-            break
-        default:
-            result = new Date(date)
-
-    }
-
-    return result
-    
-}
 
 export const updateContest = async (contestId:string, contestData:Partial<IContest>)=>{
 
@@ -190,7 +192,7 @@ const deleteContestByContestId =async (contestId:string)=>{
 export const joinContest = async (userId:string,contestId:string)=>{
     const contest = await prisma.contest.findUnique({where:{id:contestId}})
 
-    if (!contest || contest.status != ContestStatus.OPEN){
+    if (!contest || contest.status != ContestStatus.ACTIVE){
         throw new ApiError(httpstatus.NOT_FOUND, "Contest is not available to participate")
     }
 
@@ -352,13 +354,47 @@ export const getClosedContestsWithWinner = async () => {
 export const identifyWinner = async (contestId:string)=>{
     let winners:ContestParticipant[];
 
-    return winners!
+    const participants = await prisma.contestParticipant.findMany({where:{contestId}})
+
+    let participant = await Promise.all(participants.map(async participant => {
+        const uploadedPhotos = await prisma.contestPhoto.findMany({where:{contestId,participantId:participant.id}})
+        let maxVote = Number.MIN_SAFE_INTEGER
+        let maxPhoto:ContestPhoto | null = null
+
+        uploadedPhotos.forEach(async photo => {
+            const votes = await prisma.vote.count({where:{contestId,photoId:photo.id}})
+            if (votes > maxVote){
+                maxVote = votes
+                maxPhoto = photo
+            }
+
+        })
+        const totalVotes = await prisma.vote.count({where:{contestId, photo:{participantId:participant.id}}})
+        return {...participant, totalVotes, singlePhotoVote:maxVote, maxPhoto}
+    }))
+
+    let top_photographer = participant.sort((a, b) => b.totalVotes - a.totalVotes)[0]
+    await awardWinner(top_photographer, contestId, PrizeType.TOP_PHOTOGRAPHER)
+    let top_photo = participant.sort((a,b) => b.singlePhotoVote - a.singlePhotoVote)[0]
+
+    await awardWinner(top_photo, contestId, PrizeType.TOP_PHOTO)
 
 }
 
 //Award prize to the winners
 
-export const awardWinners = async (winners:ContestParticipant[])=>{
+export const awardWinner = async (winner:ContestParticipant, contestId:string, prizeType:PrizeType)=>{
+
+    const contestPrize = await prisma.contestPrize.findFirst({where:{contestId, category:prizeType}})
+
+    if(!contestPrize){
+        throw new Error("Prize is not available")
+    }
+    const winnerStore = await prisma.userStore.findFirst({where:{userId:winner.userId}})
+    if(!winnerStore){
+        throw new Error('Winner store is not available')
+    }
+    await prisma.userStore.update({where:{id:winnerStore.id}, data:{trades: winnerStore.trades + contestPrize.trades , charges: winnerStore.charges + contestPrize.charges, promotes: winnerStore.promotes + contestPrize.keys}})
 
 }
 

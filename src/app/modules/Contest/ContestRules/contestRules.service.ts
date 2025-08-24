@@ -19,7 +19,7 @@ const addContestRules = async (contestId:string,rules:ContestRule[])=>{
 }
 
 const getContestRules = async (contestId:string)=>{
-    const contestRules = await prisma.contest.findUnique({where:{id:contestId}, select:{contestRules:true}})
+    const contestRules = await prisma.contestRule.findMany({where:{contestId}, omit:{id:true, createdAt:true,updatedAt:true}})
 
     return contestRules
 }
