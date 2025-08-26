@@ -4,6 +4,7 @@ import httpstatus from 'http-status';
 import { fileUploader } from '../../../helpers/fileUploader';
 import { ITeam } from './team.interface';
 import { TeamAccessibility } from '../../../prismaClient';
+import { userService } from '../User/user.service';
 
 
 //create a team
@@ -21,6 +22,7 @@ export const createTeam = async (creatorId: string, body: ITeam, file:Express.Mu
             language: body.language,
             country: body.country,
             description: body.description,
+            min_requirement:body.min_requirement,
             accessibility: body.accessibility as TeamAccessibility,
             badge: badgeUrl.Location,
         },
@@ -68,6 +70,18 @@ export const getTeams = async () => {
     return teams;
 };
 
+
+const getTeam = async (teamId:string)=>{
+    const team = await isTeamExist(teamId)
+
+    if(!team){
+        throw new ApiError(httpstatus.NOT_FOUND, "team not found")
+    }
+
+
+
+    return team
+}
 
 //get team details
 export const getTeamDetails = async (teamId: string) => {
@@ -138,6 +152,11 @@ export const getTeamDetails = async (teamId: string) => {
 // };
 
 
+const isTeamExist = async (teamId:string)=>{
+    const team = await prisma.team.findUnique({where:{id:teamId}})
+    return team != null? team: false
+}
+
 
 //Delete a team
 export const deleteTeam = async (teamId: string) => {
@@ -152,7 +171,31 @@ export const deleteTeam = async (teamId: string) => {
     return { message: 'Team deleted successfully' };
 };
 
+const joinATeam = async (userId:string, teamId:string)=>{
+    const team = await getTeam(teamId)
+    if(!team){
+        throw new ApiError(httpstatus.NOT_FOUND, "Team not found")
+    }
+    const user = await prisma.user.findUnique({where:{id:userId}})
+    if (!user){
+        throw new ApiError(httpstatus.NOT_FOUND, 'User not found')
+    }
+
+    const existingTeam = await prisma.teamMember.findFirst({where:{memberId:userId}})
+    if(existingTeam){
+        throw new ApiError(httpstatus.BAD_REQUEST, "You are already joined a team!")
+    }
+
+    if(team.min_requirement >= (await userService.getUserCurrentLevel(userId))){
+        throw new ApiError(httpstatus.BAD_REQUEST, "Sorry, you can not join this team")
+    }
+
+    const newMemeber = await prisma.teamMember.create({data:{memberId:userId, teamId}})
+
+    return newMemeber
+}
+
 
 export const teamService = {
-    createTeam, getTeams, getTeamDetails, updateTeam, deleteTeam
+    createTeam, getTeams, getTeamDetails, updateTeam, deleteTeam, joinATeam
 }

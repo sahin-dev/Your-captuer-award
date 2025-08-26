@@ -221,14 +221,14 @@ exports.Prisma.SitePolicyScalarFieldEnum = {
 };
 
 exports.Prisma.RoomScalarFieldEnum = {
-  id: 'id'
+  id: 'id',
+  teamId: 'teamId'
 };
 
 exports.Prisma.ChatScalarFieldEnum = {
   id: 'id',
-  roomId: 'roomId',
+  teamId: 'teamId',
   senderId: 'senderId',
-  receiverId: 'receiverId',
   message: 'message',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -243,6 +243,7 @@ exports.Prisma.TeamScalarFieldEnum = {
   description: 'description',
   accessibility: 'accessibility',
   badge: 'badge',
+  min_requirement: 'min_requirement',
   creatorId: 'creatorId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -270,7 +271,6 @@ exports.Prisma.UserScalarFieldEnum = {
   phone: 'phone',
   email: 'email',
   location: 'location',
-  level: 'level',
   password: 'password',
   role: 'role',
   accessToken: 'accessToken',
@@ -343,6 +343,21 @@ exports.Prisma.VoteScalarFieldEnum = {
   providerId: 'providerId',
   photoId: 'photoId',
   contestId: 'contestId',
+  type: 'type',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.UserLevelScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  levelId: 'levelId'
+};
+
+exports.Prisma.LevelScalarFieldEnum = {
+  id: 'id',
+  level: 'level',
+  levelName: 'levelName',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -400,7 +415,22 @@ exports.TeamMemberStatus = exports.$Enums.TeamMemberStatus = {
   BLOCKED: 'BLOCKED'
 };
 
-exports.UserLevel = exports.$Enums.UserLevel = {
+exports.UserRole = exports.$Enums.UserRole = {
+  USER: 'USER',
+  ADMIN: 'ADMIN'
+};
+
+exports.OtpStatus = exports.$Enums.OtpStatus = {
+  CREATED: 'CREATED',
+  VALIDATED: 'VALIDATED'
+};
+
+exports.VoteType = exports.$Enums.VoteType = {
+  Promoted: 'Promoted',
+  Organic: 'Organic'
+};
+
+exports.LevelName = exports.$Enums.LevelName = {
   APPRENTICE: 'APPRENTICE',
   STUDENT: 'STUDENT',
   TRAINED: 'TRAINED',
@@ -410,16 +440,6 @@ exports.UserLevel = exports.$Enums.UserLevel = {
   LEADER: 'LEADER',
   AVANTGARDE: 'AVANTGARDE',
   PRO: 'PRO'
-};
-
-exports.UserRole = exports.$Enums.UserRole = {
-  USER: 'USER',
-  ADMIN: 'ADMIN'
-};
-
-exports.OtpStatus = exports.$Enums.OtpStatus = {
-  CREATED: 'CREATED',
-  VALIDATED: 'VALIDATED'
 };
 
 exports.RecurringType = exports.$Enums.RecurringType = {
@@ -449,7 +469,9 @@ exports.Prisma.ModelName = {
   Otp: 'Otp',
   Comment: 'Comment',
   Follow: 'Follow',
-  Vote: 'Vote'
+  Vote: 'Vote',
+  UserLevel: 'UserLevel',
+  Level: 'Level'
 };
 
 /**

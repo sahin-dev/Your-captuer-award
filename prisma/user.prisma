@@ -12,9 +12,8 @@ model User {
   phone              String?
   email              String               @unique
   location           String?
-  level              UserLevel?              @default(APPRENTICE)
   password           String?
-  role               UserRole             @default(USER)
+  role               UserRole             @default(USER)         
   accessToken        String?
   otps               Otp?
   store              UserStore?
@@ -141,6 +140,7 @@ model Vote {
   providerId String @db.ObjectId
   photoId    String @db.ObjectId
   contestId  String @db.ObjectId
+  type       VoteType 
 
   provider User         @relation(fields: [providerId], references: [id])
   photo    ContestPhoto @relation(fields: [photoId], references: [id], onDelete: Cascade)
@@ -150,6 +150,25 @@ model Vote {
   updatedAt DateTime @updatedAt
 
   @@map("votes")
+}
+
+model UserLevel {
+  id      String  @id  @default(auto())  @map("_id")  @db.ObjectId
+  userId   String @db.ObjectId
+  levelId   String @db.ObjectId
+  @@map("user_levels")
+}
+
+
+
+model Level {
+  id         String @id @default(auto()) @map("_id") @db.ObjectId
+  level       Int
+  levelName   LevelName
+  requirements    LevelRequirement[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // model Love {
@@ -167,7 +186,18 @@ model Vote {
 // }
 
 
-enum UserLevel {
+type LevelRequirement {
+  title    String
+  required    Int
+  badge     Badge
+}
+
+type Badge {
+  type       String
+  param      String
+}
+
+enum LevelName {
   APPRENTICE
   STUDENT
   TRAINED
@@ -177,6 +207,11 @@ enum UserLevel {
   LEADER
   AVANTGARDE
   PRO
+}
+
+enum VoteType {
+  Promoted
+  Organic
 }
 
 enum UserRole {

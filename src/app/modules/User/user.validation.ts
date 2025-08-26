@@ -1,5 +1,5 @@
 import z from "zod";
-import { UserLevel } from "../../../prismaClient";
+import { LevelName } from "../../../prismaClient";
 
 
 const updateUserSchema = z.object({
@@ -15,7 +15,7 @@ const updateUserAdminSchema = z.object({
     firstName:z.string().optional(),
     lastName:z.string().optional(),
     location: z.string().optional(),
-    level:z.nativeEnum(UserLevel).optional()
+    level:z.nativeEnum(LevelName).optional()
 })
 const forgetPasswordSchema = z.object({
     email:z.string({required_error:"Email is required"}).email({message:"Email is invalid"})

@@ -11,6 +11,7 @@ interface ExtendedWebSocket extends WebSocket {
 
 const onlineUsers = new Set<string>();
 const userSockets = new Map<string, ExtendedWebSocket>();
+const teamsChannel = new Map<string, Set<ExtendedWebSocket>>()
 
 export function setupWebSocket(server: Server) {
   
@@ -53,213 +54,114 @@ export function setupWebSocket(server: Server) {
             userSockets.set(id, ws);
 
             broadcastToAll(wss, {
-              event: "userStatus",
+              event: "user_status",
               data: { userId: id, isOnline: true },
             });
             break;
           }
 
-          case "message": {
-            const { receiverId, message, images } = parsedData;
+          case "subscribe" : {
+            const {teamId} = parsedData
 
-            if (!ws.userId || !receiverId || !message) {
+            if(!teamId){
+              ws.send("teamId is not present")
+              break
+            } 
+
+            if(!teamsChannel.has(teamId)){
+              let set = new Set<ExtendedWebSocket> ()
+              set.add(ws)
+              teamsChannel.set(teamId, set)
+            }else {
+              let memberSet = teamsChannel.get(teamId) as Set<ExtendedWebSocket>
+              memberSet.add(ws)
+            }
+
+            let room = await prisma.room.findFirst({where:{teamId}})
+            if(!room){
+              room = await prisma.room.create({data:{teamId}})
+            }
+            
+           ws.send(JSON.stringify({event:'subscribed', data:room}))
+
+          }
+
+          case "unsubscribe":{
+            const {teamId} = parsedData
+            
+            if (teamsChannel.has(teamId)){
+              let memberSet = teamsChannel.get(teamId) as Set<ExtendedWebSocket>
+              memberSet.delete(ws)
+            }
+
+            ws.send(JSON.stringify({event:'unsubscribed', data:teamId}))
+
+          }
+
+          case "message": {
+            const { teamId , message } = parsedData;
+  
+            if ( !teamId || !message) {
               console.log("Invalid message payload");
               return;
             }
-
-            let room = await prisma.room.findFirst({
-              where: {
-                OR: [
-                  { senderId: ws.userId, receiverId },
-                  { senderId: receiverId, receiverId: ws.userId },
-                ],
-              },
-            });
-
-            if (!room) {
-              room = await prisma.room.create({
-                data: { senderId: ws.userId, receiverId },
-              });
+            if(!ws.userId){
+              ws.send("User is not authenticated")
+              ws.terminate()
             }
 
-            const chat = await prisma.chat.create({
-              data: {
-                senderId: ws.userId,
-                receiverId,
-                roomId: room.id,
-                message,
-                images: { set: images || [] },
-              },
+            let chat = await prisma.chat.create({
+              data:{message,senderId:ws.userId as string,teamId}
             });
 
-            const receiverSocket = userSockets.get(receiverId);
-            if (receiverSocket) {
-              receiverSocket.send(
-                JSON.stringify({ event: "message", data: chat })
-              );
+            let memberSockets :Set<ExtendedWebSocket> | undefined
+            if(!teamsChannel.has(teamId)){
+              memberSockets = new Set<ExtendedWebSocket>()
+              memberSockets.add(ws)
+              teamsChannel.set(teamId, memberSockets)
+            }else {
+              memberSockets = teamsChannel.get(teamId)
             }
-            ws.send(JSON.stringify({ event: "message", data: chat }));
+
+
+              memberSockets?.forEach(socket => {
+                if(socket !== ws){
+                  socket.send(JSON.stringify({event:"message", data:chat}))
+                }
+              })
+           
             break;
           }
-          case "project": {
-            ws.send(JSON.stringify({ parsedData }));
-            return;
-          }
-
-          case "fetchChats": {
-            const { receiverId } = parsedData;
+  
+          case "all_chats": {
+            const { teamId } = parsedData;
             if (!ws.userId) {
               console.log("User not authenticated");
               return;
             }
 
-            const room = await prisma.room.findFirst({
-              where: {
-                OR: [
-                  { senderId: ws.userId, receiverId },
-                  { senderId: receiverId, receiverId: ws.userId },
-                ],
-              },
-            });
-
-            if (!room) {
-              ws.send(JSON.stringify({ event: "noRoomFound" }));
-              return;
-            }
-
             const chats = await prisma.chat.findMany({
-              where: { roomId: room.id },
-              orderBy: { createdAt: "asc" },
+              where: {
+               teamId
+              },
+              orderBy:{createdAt:"asc"}
             });
 
-            await prisma.chat.updateMany({
-              where: { roomId: room.id, receiverId: ws.userId },
-              data: { isRead: true },
-            });
+            
+
+           
 
             ws.send(
               JSON.stringify({
-                event: "fetchChats",
+                event: "all_chats",
                 data: chats,
               })
             );
             break;
           }
 
-          case "unReadMessages": {
-            const { receiverId } = parsedData;
-            if (!ws.userId || !receiverId) {
-              console.log("Invalid unread messages payload");
-              return;
-            }
 
-            const room = await prisma.room.findFirst({
-              where: {
-                OR: [
-                  { senderId: ws.userId, receiverId },
-                  { senderId: receiverId, receiverId: ws.userId },
-                ],
-              },
-            });
-
-            if (!room) {
-              ws.send(JSON.stringify({ event: "noUnreadMessages", data: [] }));
-              return;
-            }
-
-            const unReadMessages = await prisma.chat.findMany({
-              where: { roomId: room.id, isRead: false, receiverId: ws.userId },
-            });
-
-            const unReadCount = unReadMessages.length;
-
-            ws.send(
-              JSON.stringify({
-                event: "unReadMessages",
-                data: { messages: unReadMessages, count: unReadCount },
-              })
-            );
-            break;
-          }
-
-          case "messageList": {
-            try {
-              // Fetch all rooms where the user is involved
-              const rooms = await prisma.room.findMany({
-                where: {
-                  OR: [{ senderId: ws.userId }, { receiverId: ws.userId }],
-                },
-                include: {
-                  chat: {
-                    orderBy: {
-                      createdAt: "desc",
-                    },
-                    take: 1, // Fetch only the latest message for each room
-                  },
-                },
-              });
-
-              // Extract the relevant user IDs from the rooms
-              const userIds = rooms.map((room) => {
-                return room.senderId === ws.userId
-                  ? room.receiverId
-                  : room.senderId;
-              });
-
-              // Fetch user profiles for the corresponding user IDs
-              const userInfos = await prisma.user.findMany({
-                where: {
-                  id: {
-                    in: userIds,
-                  },
-                },
-                select: {
-                  photos: true,
-                  name: true,
-                  id: true,
-                  interests: true,
-                  favoritesFood:true,
-                  lat: true,
-                  long:true,
-                  
-                },
-              });
-
-              // Combine user info with their last message
-              const userWithLastMessages = rooms.map((room) => {
-                const otherUserId =
-                  room.senderId === ws.userId ? room.receiverId : room.senderId;
-                const userInfo = userInfos.find(
-                  (userInfo) => userInfo.id === otherUserId
-                );
-
-                return {
-                  user: userInfo || null,
-                  lastMessage: room.chat[0] || null,
-                };
-              });
-
-              // Send the result back to the requesting client
-              ws.send(
-                JSON.stringify({
-                  event: "messageList",
-                  data: userWithLastMessages,
-                })
-              );
-            } catch (error) {
-              console.error(
-                "Error fetching user list with last messages:",
-                error
-              );
-              ws.send(
-                JSON.stringify({
-                  event: "error",
-                  message: "Failed to fetch users with last messages",
-                })
-              );
-            }
-            break;
-          }
+         
 
           default:
             console.log("Unknown event type:", parsedData.event);
@@ -273,9 +175,15 @@ export function setupWebSocket(server: Server) {
       if (ws.userId) {
         onlineUsers.delete(ws.userId);
         userSockets.delete(ws.userId);
+        
+        teamsChannel.forEach( channel => {
+          if(channel.has(ws)){
+            channel.delete(ws)
+          }
+        })
 
         broadcastToAll(wss, {
-          event: "userStatus",
+          event: "user_status",
           data: { userId: ws.userId, isOnline: false },
         });
       }

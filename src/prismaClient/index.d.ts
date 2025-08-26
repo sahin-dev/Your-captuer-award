@@ -19,6 +19,16 @@ export type PrismaPromise<T> = $Public.PrismaPromise<T>
  */
 export type RecurringData = $Result.DefaultSelection<Prisma.$RecurringDataPayload>
 /**
+ * Model LevelRequirement
+ * 
+ */
+export type LevelRequirement = $Result.DefaultSelection<Prisma.$LevelRequirementPayload>
+/**
+ * Model Badge
+ * 
+ */
+export type Badge = $Result.DefaultSelection<Prisma.$BadgePayload>
+/**
  * Model PhotoStats
  * 
  */
@@ -128,6 +138,16 @@ export type Follow = $Result.DefaultSelection<Prisma.$FollowPayload>
  * 
  */
 export type Vote = $Result.DefaultSelection<Prisma.$VotePayload>
+/**
+ * Model UserLevel
+ * 
+ */
+export type UserLevel = $Result.DefaultSelection<Prisma.$UserLevelPayload>
+/**
+ * Model Level
+ * 
+ */
+export type Level = $Result.DefaultSelection<Prisma.$LevelPayload>
 
 /**
  * Enums
@@ -226,7 +246,7 @@ export const TeamMemberStatus: {
 export type TeamMemberStatus = (typeof TeamMemberStatus)[keyof typeof TeamMemberStatus]
 
 
-export const UserLevel: {
+export const LevelName: {
   APPRENTICE: 'APPRENTICE',
   STUDENT: 'STUDENT',
   TRAINED: 'TRAINED',
@@ -238,7 +258,15 @@ export const UserLevel: {
   PRO: 'PRO'
 };
 
-export type UserLevel = (typeof UserLevel)[keyof typeof UserLevel]
+export type LevelName = (typeof LevelName)[keyof typeof LevelName]
+
+
+export const VoteType: {
+  Promoted: 'Promoted',
+  Organic: 'Organic'
+};
+
+export type VoteType = (typeof VoteType)[keyof typeof VoteType]
 
 
 export const UserRole: {
@@ -298,9 +326,13 @@ export type TeamMemberStatus = $Enums.TeamMemberStatus
 
 export const TeamMemberStatus: typeof $Enums.TeamMemberStatus
 
-export type UserLevel = $Enums.UserLevel
+export type LevelName = $Enums.LevelName
 
-export const UserLevel: typeof $Enums.UserLevel
+export const LevelName: typeof $Enums.LevelName
+
+export type VoteType = $Enums.VoteType
+
+export const VoteType: typeof $Enums.VoteType
 
 export type UserRole = $Enums.UserRole
 
@@ -611,6 +643,26 @@ export class PrismaClient<
     * ```
     */
   get vote(): Prisma.VoteDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.userLevel`: Exposes CRUD operations for the **UserLevel** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more UserLevels
+    * const userLevels = await prisma.userLevel.findMany()
+    * ```
+    */
+  get userLevel(): Prisma.UserLevelDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.level`: Exposes CRUD operations for the **Level** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Levels
+    * const levels = await prisma.level.findMany()
+    * ```
+    */
+  get level(): Prisma.LevelDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -1071,7 +1123,9 @@ export namespace Prisma {
     Otp: 'Otp',
     Comment: 'Comment',
     Follow: 'Follow',
-    Vote: 'Vote'
+    Vote: 'Vote',
+    UserLevel: 'UserLevel',
+    Level: 'Level'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -1090,7 +1144,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "contest" | "recurringContest" | "contestRule" | "contestPhoto" | "contestWinner" | "contestParticipant" | "contestPrize" | "contestAchievement" | "sitePolicy" | "room" | "chat" | "team" | "teamMember" | "user" | "userStore" | "userPhoto" | "like" | "otp" | "comment" | "follow" | "vote"
+      modelProps: "contest" | "recurringContest" | "contestRule" | "contestPhoto" | "contestWinner" | "contestParticipant" | "contestPrize" | "contestAchievement" | "sitePolicy" | "room" | "chat" | "team" | "teamMember" | "user" | "userStore" | "userPhoto" | "like" | "otp" | "comment" | "follow" | "vote" | "userLevel" | "level"
       txIsolationLevel: never
     }
     model: {
@@ -2648,6 +2702,154 @@ export namespace Prisma {
           }
         }
       }
+      UserLevel: {
+        payload: Prisma.$UserLevelPayload<ExtArgs>
+        fields: Prisma.UserLevelFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.UserLevelFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserLevelPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.UserLevelFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserLevelPayload>
+          }
+          findFirst: {
+            args: Prisma.UserLevelFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserLevelPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.UserLevelFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserLevelPayload>
+          }
+          findMany: {
+            args: Prisma.UserLevelFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserLevelPayload>[]
+          }
+          create: {
+            args: Prisma.UserLevelCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserLevelPayload>
+          }
+          createMany: {
+            args: Prisma.UserLevelCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.UserLevelDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserLevelPayload>
+          }
+          update: {
+            args: Prisma.UserLevelUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserLevelPayload>
+          }
+          deleteMany: {
+            args: Prisma.UserLevelDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.UserLevelUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.UserLevelUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserLevelPayload>
+          }
+          aggregate: {
+            args: Prisma.UserLevelAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateUserLevel>
+          }
+          groupBy: {
+            args: Prisma.UserLevelGroupByArgs<ExtArgs>
+            result: $Utils.Optional<UserLevelGroupByOutputType>[]
+          }
+          findRaw: {
+            args: Prisma.UserLevelFindRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          aggregateRaw: {
+            args: Prisma.UserLevelAggregateRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          count: {
+            args: Prisma.UserLevelCountArgs<ExtArgs>
+            result: $Utils.Optional<UserLevelCountAggregateOutputType> | number
+          }
+        }
+      }
+      Level: {
+        payload: Prisma.$LevelPayload<ExtArgs>
+        fields: Prisma.LevelFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.LevelFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LevelPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.LevelFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LevelPayload>
+          }
+          findFirst: {
+            args: Prisma.LevelFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LevelPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.LevelFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LevelPayload>
+          }
+          findMany: {
+            args: Prisma.LevelFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LevelPayload>[]
+          }
+          create: {
+            args: Prisma.LevelCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LevelPayload>
+          }
+          createMany: {
+            args: Prisma.LevelCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.LevelDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LevelPayload>
+          }
+          update: {
+            args: Prisma.LevelUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LevelPayload>
+          }
+          deleteMany: {
+            args: Prisma.LevelDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.LevelUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.LevelUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LevelPayload>
+          }
+          aggregate: {
+            args: Prisma.LevelAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateLevel>
+          }
+          groupBy: {
+            args: Prisma.LevelGroupByArgs<ExtArgs>
+            result: $Utils.Optional<LevelGroupByOutputType>[]
+          }
+          findRaw: {
+            args: Prisma.LevelFindRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          aggregateRaw: {
+            args: Prisma.LevelAggregateRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          count: {
+            args: Prisma.LevelCountArgs<ExtArgs>
+            result: $Utils.Optional<LevelCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -2740,6 +2942,8 @@ export namespace Prisma {
     comment?: CommentOmit
     follow?: FollowOmit
     vote?: VoteOmit
+    userLevel?: UserLevelOmit
+    level?: LevelOmit
   }
 
   /* Types for Logging */
@@ -3009,10 +3213,12 @@ export namespace Prisma {
 
   export type TeamCountOutputType = {
     members: number
+    chat: number
   }
 
   export type TeamCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     members?: boolean | TeamCountOutputTypeCountMembersArgs
+    chat?: boolean | TeamCountOutputTypeCountChatArgs
   }
 
   // Custom InputTypes
@@ -3031,6 +3237,13 @@ export namespace Prisma {
    */
   export type TeamCountOutputTypeCountMembersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: TeamMemberWhereInput
+  }
+
+  /**
+   * TeamCountOutputType without action
+   */
+  export type TeamCountOutputTypeCountChatArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ChatWhereInput
   }
 
 
@@ -3280,6 +3493,140 @@ export namespace Prisma {
      * Omit specific fields from the RecurringData
      */
     omit?: RecurringDataOmit<ExtArgs> | null
+  }
+
+
+  /**
+   * Model LevelRequirement
+   */
+
+
+
+
+
+  export type LevelRequirementSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    title?: boolean
+    required?: boolean
+    badge?: boolean | BadgeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["levelRequirement"]>
+
+
+
+  export type LevelRequirementSelectScalar = {
+    title?: boolean
+    required?: boolean
+  }
+
+  export type LevelRequirementOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"title" | "required" | "badge", ExtArgs["result"]["levelRequirement"]>
+  export type LevelRequirementInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+
+  export type $LevelRequirementPayload = {
+    name: "LevelRequirement"
+    objects: {}
+    scalars: {
+      title: string
+      required: number
+    }
+    composites: {
+      badge: Prisma.$BadgePayload
+    }
+  }
+
+  type LevelRequirementGetPayload<S extends boolean | null | undefined | LevelRequirementDefaultArgs> = $Result.GetResult<Prisma.$LevelRequirementPayload, S>
+
+
+
+
+
+  /**
+   * Fields of the LevelRequirement model
+   */
+  interface LevelRequirementFieldRefs {
+    readonly title: FieldRef<"LevelRequirement", 'String'>
+    readonly required: FieldRef<"LevelRequirement", 'Int'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * LevelRequirement without action
+   */
+  export type LevelRequirementDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LevelRequirement
+     */
+    select?: LevelRequirementSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the LevelRequirement
+     */
+    omit?: LevelRequirementOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LevelRequirementInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model Badge
+   */
+
+
+
+
+
+  export type BadgeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    type?: boolean
+    param?: boolean
+  }, ExtArgs["result"]["badge"]>
+
+
+
+  export type BadgeSelectScalar = {
+    type?: boolean
+    param?: boolean
+  }
+
+  export type BadgeOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"type" | "param", ExtArgs["result"]["badge"]>
+
+  export type $BadgePayload = {
+    name: "Badge"
+    objects: {}
+    scalars: {
+      type: string
+      param: string
+    }
+    composites: {}
+  }
+
+  type BadgeGetPayload<S extends boolean | null | undefined | BadgeDefaultArgs> = $Result.GetResult<Prisma.$BadgePayload, S>
+
+
+
+
+
+  /**
+   * Fields of the Badge model
+   */
+  interface BadgeFieldRefs {
+    readonly type: FieldRef<"Badge", 'String'>
+    readonly param: FieldRef<"Badge", 'String'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * Badge without action
+   */
+  export type BadgeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Badge
+     */
+    select?: BadgeSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Badge
+     */
+    omit?: BadgeOmit<ExtArgs> | null
   }
 
 
@@ -13098,28 +13445,34 @@ export namespace Prisma {
 
   export type RoomMinAggregateOutputType = {
     id: string | null
+    teamId: string | null
   }
 
   export type RoomMaxAggregateOutputType = {
     id: string | null
+    teamId: string | null
   }
 
   export type RoomCountAggregateOutputType = {
     id: number
+    teamId: number
     _all: number
   }
 
 
   export type RoomMinAggregateInputType = {
     id?: true
+    teamId?: true
   }
 
   export type RoomMaxAggregateInputType = {
     id?: true
+    teamId?: true
   }
 
   export type RoomCountAggregateInputType = {
     id?: true
+    teamId?: true
     _all?: true
   }
 
@@ -13197,6 +13550,7 @@ export namespace Prisma {
 
   export type RoomGroupByOutputType = {
     id: string
+    teamId: string
     _count: RoomCountAggregateOutputType | null
     _min: RoomMinAggregateOutputType | null
     _max: RoomMaxAggregateOutputType | null
@@ -13218,21 +13572,24 @@ export namespace Prisma {
 
   export type RoomSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    teamId?: boolean
   }, ExtArgs["result"]["room"]>
 
 
 
   export type RoomSelectScalar = {
     id?: boolean
+    teamId?: boolean
   }
 
-  export type RoomOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id", ExtArgs["result"]["room"]>
+  export type RoomOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "teamId", ExtArgs["result"]["room"]>
 
   export type $RoomPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Room"
     objects: {}
     scalars: $Extensions.GetPayloadResult<{
       id: string
+      teamId: string
     }, ExtArgs["result"]["room"]>
     composites: {}
   }
@@ -13626,6 +13983,7 @@ export namespace Prisma {
    */
   interface RoomFieldRefs {
     readonly id: FieldRef<"Room", 'String'>
+    readonly teamId: FieldRef<"Room", 'String'>
   }
     
 
@@ -13820,7 +14178,7 @@ export namespace Prisma {
     /**
      * The data needed to create a Room.
      */
-    data?: XOR<RoomCreateInput, RoomUncheckedCreateInput>
+    data: XOR<RoomCreateInput, RoomUncheckedCreateInput>
   }
 
   /**
@@ -13986,9 +14344,8 @@ export namespace Prisma {
 
   export type ChatMinAggregateOutputType = {
     id: string | null
-    roomId: string | null
+    teamId: string | null
     senderId: string | null
-    receiverId: string | null
     message: string | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -13996,9 +14353,8 @@ export namespace Prisma {
 
   export type ChatMaxAggregateOutputType = {
     id: string | null
-    roomId: string | null
+    teamId: string | null
     senderId: string | null
-    receiverId: string | null
     message: string | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -14006,9 +14362,8 @@ export namespace Prisma {
 
   export type ChatCountAggregateOutputType = {
     id: number
-    roomId: number
+    teamId: number
     senderId: number
-    receiverId: number
     message: number
     createdAt: number
     updatedAt: number
@@ -14018,9 +14373,8 @@ export namespace Prisma {
 
   export type ChatMinAggregateInputType = {
     id?: true
-    roomId?: true
+    teamId?: true
     senderId?: true
-    receiverId?: true
     message?: true
     createdAt?: true
     updatedAt?: true
@@ -14028,9 +14382,8 @@ export namespace Prisma {
 
   export type ChatMaxAggregateInputType = {
     id?: true
-    roomId?: true
+    teamId?: true
     senderId?: true
-    receiverId?: true
     message?: true
     createdAt?: true
     updatedAt?: true
@@ -14038,9 +14391,8 @@ export namespace Prisma {
 
   export type ChatCountAggregateInputType = {
     id?: true
-    roomId?: true
+    teamId?: true
     senderId?: true
-    receiverId?: true
     message?: true
     createdAt?: true
     updatedAt?: true
@@ -14121,9 +14473,8 @@ export namespace Prisma {
 
   export type ChatGroupByOutputType = {
     id: string
-    roomId: string
+    teamId: string
     senderId: string
-    receiverId: string
     message: string
     createdAt: Date
     updatedAt: Date
@@ -14148,36 +14499,39 @@ export namespace Prisma {
 
   export type ChatSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
-    roomId?: boolean
+    teamId?: boolean
     senderId?: boolean
-    receiverId?: boolean
     message?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    team?: boolean | TeamDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["chat"]>
 
 
 
   export type ChatSelectScalar = {
     id?: boolean
-    roomId?: boolean
+    teamId?: boolean
     senderId?: boolean
-    receiverId?: boolean
     message?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type ChatOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "roomId" | "senderId" | "receiverId" | "message" | "createdAt" | "updatedAt", ExtArgs["result"]["chat"]>
+  export type ChatOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "teamId" | "senderId" | "message" | "createdAt" | "updatedAt", ExtArgs["result"]["chat"]>
+  export type ChatInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    team?: boolean | TeamDefaultArgs<ExtArgs>
+  }
 
   export type $ChatPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Chat"
-    objects: {}
+    objects: {
+      team: Prisma.$TeamPayload<ExtArgs>
+    }
     scalars: $Extensions.GetPayloadResult<{
       id: string
-      roomId: string
+      teamId: string
       senderId: string
-      receiverId: string
       message: string
       createdAt: Date
       updatedAt: Date
@@ -14544,6 +14898,7 @@ export namespace Prisma {
    */
   export interface Prisma__ChatClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
+    team<T extends TeamDefaultArgs<ExtArgs> = {}>(args?: Subset<T, TeamDefaultArgs<ExtArgs>>): Prisma__TeamClient<$Result.GetResult<Prisma.$TeamPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -14574,9 +14929,8 @@ export namespace Prisma {
    */
   interface ChatFieldRefs {
     readonly id: FieldRef<"Chat", 'String'>
-    readonly roomId: FieldRef<"Chat", 'String'>
+    readonly teamId: FieldRef<"Chat", 'String'>
     readonly senderId: FieldRef<"Chat", 'String'>
-    readonly receiverId: FieldRef<"Chat", 'String'>
     readonly message: FieldRef<"Chat", 'String'>
     readonly createdAt: FieldRef<"Chat", 'DateTime'>
     readonly updatedAt: FieldRef<"Chat", 'DateTime'>
@@ -14597,6 +14951,10 @@ export namespace Prisma {
      */
     omit?: ChatOmit<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChatInclude<ExtArgs> | null
+    /**
      * Filter, which Chat to fetch.
      */
     where: ChatWhereUniqueInput
@@ -14615,6 +14973,10 @@ export namespace Prisma {
      */
     omit?: ChatOmit<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChatInclude<ExtArgs> | null
+    /**
      * Filter, which Chat to fetch.
      */
     where: ChatWhereUniqueInput
@@ -14632,6 +14994,10 @@ export namespace Prisma {
      * Omit specific fields from the Chat
      */
     omit?: ChatOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChatInclude<ExtArgs> | null
     /**
      * Filter, which Chat to fetch.
      */
@@ -14681,6 +15047,10 @@ export namespace Prisma {
      */
     omit?: ChatOmit<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChatInclude<ExtArgs> | null
+    /**
      * Filter, which Chat to fetch.
      */
     where?: ChatWhereInput
@@ -14729,6 +15099,10 @@ export namespace Prisma {
      */
     omit?: ChatOmit<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChatInclude<ExtArgs> | null
+    /**
      * Filter, which Chats to fetch.
      */
     where?: ChatWhereInput
@@ -14772,6 +15146,10 @@ export namespace Prisma {
      */
     omit?: ChatOmit<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChatInclude<ExtArgs> | null
+    /**
      * The data needed to create a Chat.
      */
     data: XOR<ChatCreateInput, ChatUncheckedCreateInput>
@@ -14799,6 +15177,10 @@ export namespace Prisma {
      * Omit specific fields from the Chat
      */
     omit?: ChatOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChatInclude<ExtArgs> | null
     /**
      * The data needed to update a Chat.
      */
@@ -14840,6 +15222,10 @@ export namespace Prisma {
      */
     omit?: ChatOmit<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChatInclude<ExtArgs> | null
+    /**
      * The filter to search for the Chat to update in case it exists.
      */
     where: ChatWhereUniqueInput
@@ -14865,6 +15251,10 @@ export namespace Prisma {
      * Omit specific fields from the Chat
      */
     omit?: ChatOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChatInclude<ExtArgs> | null
     /**
      * Filter which Chat to delete.
      */
@@ -14925,6 +15315,10 @@ export namespace Prisma {
      * Omit specific fields from the Chat
      */
     omit?: ChatOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChatInclude<ExtArgs> | null
   }
 
 
@@ -14934,8 +15328,18 @@ export namespace Prisma {
 
   export type AggregateTeam = {
     _count: TeamCountAggregateOutputType | null
+    _avg: TeamAvgAggregateOutputType | null
+    _sum: TeamSumAggregateOutputType | null
     _min: TeamMinAggregateOutputType | null
     _max: TeamMaxAggregateOutputType | null
+  }
+
+  export type TeamAvgAggregateOutputType = {
+    min_requirement: number | null
+  }
+
+  export type TeamSumAggregateOutputType = {
+    min_requirement: number | null
   }
 
   export type TeamMinAggregateOutputType = {
@@ -14947,6 +15351,7 @@ export namespace Prisma {
     description: string | null
     accessibility: $Enums.TeamAccessibility | null
     badge: string | null
+    min_requirement: number | null
     creatorId: string | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -14961,6 +15366,7 @@ export namespace Prisma {
     description: string | null
     accessibility: $Enums.TeamAccessibility | null
     badge: string | null
+    min_requirement: number | null
     creatorId: string | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -14975,12 +15381,21 @@ export namespace Prisma {
     description: number
     accessibility: number
     badge: number
+    min_requirement: number
     creatorId: number
     createdAt: number
     updatedAt: number
     _all: number
   }
 
+
+  export type TeamAvgAggregateInputType = {
+    min_requirement?: true
+  }
+
+  export type TeamSumAggregateInputType = {
+    min_requirement?: true
+  }
 
   export type TeamMinAggregateInputType = {
     id?: true
@@ -14991,6 +15406,7 @@ export namespace Prisma {
     description?: true
     accessibility?: true
     badge?: true
+    min_requirement?: true
     creatorId?: true
     createdAt?: true
     updatedAt?: true
@@ -15005,6 +15421,7 @@ export namespace Prisma {
     description?: true
     accessibility?: true
     badge?: true
+    min_requirement?: true
     creatorId?: true
     createdAt?: true
     updatedAt?: true
@@ -15019,6 +15436,7 @@ export namespace Prisma {
     description?: true
     accessibility?: true
     badge?: true
+    min_requirement?: true
     creatorId?: true
     createdAt?: true
     updatedAt?: true
@@ -15063,6 +15481,18 @@ export namespace Prisma {
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
+     * Select which fields to average
+    **/
+    _avg?: TeamAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: TeamSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
      * Select which fields to find the minimum value
     **/
     _min?: TeamMinAggregateInputType
@@ -15093,6 +15523,8 @@ export namespace Prisma {
     take?: number
     skip?: number
     _count?: TeamCountAggregateInputType | true
+    _avg?: TeamAvgAggregateInputType
+    _sum?: TeamSumAggregateInputType
     _min?: TeamMinAggregateInputType
     _max?: TeamMaxAggregateInputType
   }
@@ -15106,10 +15538,13 @@ export namespace Prisma {
     description: string
     accessibility: $Enums.TeamAccessibility
     badge: string
+    min_requirement: number
     creatorId: string
     createdAt: Date
     updatedAt: Date
     _count: TeamCountAggregateOutputType | null
+    _avg: TeamAvgAggregateOutputType | null
+    _sum: TeamSumAggregateOutputType | null
     _min: TeamMinAggregateOutputType | null
     _max: TeamMaxAggregateOutputType | null
   }
@@ -15137,11 +15572,13 @@ export namespace Prisma {
     description?: boolean
     accessibility?: boolean
     badge?: boolean
+    min_requirement?: boolean
     creatorId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     creator?: boolean | UserDefaultArgs<ExtArgs>
     members?: boolean | Team$membersArgs<ExtArgs>
+    chat?: boolean | Team$chatArgs<ExtArgs>
     _count?: boolean | TeamCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["team"]>
 
@@ -15156,15 +15593,17 @@ export namespace Prisma {
     description?: boolean
     accessibility?: boolean
     badge?: boolean
+    min_requirement?: boolean
     creatorId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type TeamOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "level" | "language" | "country" | "description" | "accessibility" | "badge" | "creatorId" | "createdAt" | "updatedAt", ExtArgs["result"]["team"]>
+  export type TeamOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "level" | "language" | "country" | "description" | "accessibility" | "badge" | "min_requirement" | "creatorId" | "createdAt" | "updatedAt", ExtArgs["result"]["team"]>
   export type TeamInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     creator?: boolean | UserDefaultArgs<ExtArgs>
     members?: boolean | Team$membersArgs<ExtArgs>
+    chat?: boolean | Team$chatArgs<ExtArgs>
     _count?: boolean | TeamCountOutputTypeDefaultArgs<ExtArgs>
   }
 
@@ -15173,6 +15612,7 @@ export namespace Prisma {
     objects: {
       creator: Prisma.$UserPayload<ExtArgs>
       members: Prisma.$TeamMemberPayload<ExtArgs>[]
+      chat: Prisma.$ChatPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -15183,6 +15623,7 @@ export namespace Prisma {
       description: string
       accessibility: $Enums.TeamAccessibility
       badge: string
+      min_requirement: number
       creatorId: string
       createdAt: Date
       updatedAt: Date
@@ -15551,6 +15992,7 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     creator<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     members<T extends Team$membersArgs<ExtArgs> = {}>(args?: Subset<T, Team$membersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TeamMemberPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    chat<T extends Team$chatArgs<ExtArgs> = {}>(args?: Subset<T, Team$chatArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ChatPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -15588,6 +16030,7 @@ export namespace Prisma {
     readonly description: FieldRef<"Team", 'String'>
     readonly accessibility: FieldRef<"Team", 'TeamAccessibility'>
     readonly badge: FieldRef<"Team", 'String'>
+    readonly min_requirement: FieldRef<"Team", 'Int'>
     readonly creatorId: FieldRef<"Team", 'String'>
     readonly createdAt: FieldRef<"Team", 'DateTime'>
     readonly updatedAt: FieldRef<"Team", 'DateTime'>
@@ -15982,6 +16425,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: TeamMemberScalarFieldEnum | TeamMemberScalarFieldEnum[]
+  }
+
+  /**
+   * Team.chat
+   */
+  export type Team$chatArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Chat
+     */
+    select?: ChatSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Chat
+     */
+    omit?: ChatOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChatInclude<ExtArgs> | null
+    where?: ChatWhereInput
+    orderBy?: ChatOrderByWithRelationInput | ChatOrderByWithRelationInput[]
+    cursor?: ChatWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ChatScalarFieldEnum | ChatScalarFieldEnum[]
   }
 
   /**
@@ -17020,7 +17487,6 @@ export namespace Prisma {
     phone: string | null
     email: string | null
     location: string | null
-    level: $Enums.UserLevel | null
     password: string | null
     role: $Enums.UserRole | null
     accessToken: string | null
@@ -17041,7 +17507,6 @@ export namespace Prisma {
     phone: string | null
     email: string | null
     location: string | null
-    level: $Enums.UserLevel | null
     password: string | null
     role: $Enums.UserRole | null
     accessToken: string | null
@@ -17062,7 +17527,6 @@ export namespace Prisma {
     phone: number
     email: number
     location: number
-    level: number
     password: number
     role: number
     accessToken: number
@@ -17085,7 +17549,6 @@ export namespace Prisma {
     phone?: true
     email?: true
     location?: true
-    level?: true
     password?: true
     role?: true
     accessToken?: true
@@ -17106,7 +17569,6 @@ export namespace Prisma {
     phone?: true
     email?: true
     location?: true
-    level?: true
     password?: true
     role?: true
     accessToken?: true
@@ -17127,7 +17589,6 @@ export namespace Prisma {
     phone?: true
     email?: true
     location?: true
-    level?: true
     password?: true
     role?: true
     accessToken?: true
@@ -17221,7 +17682,6 @@ export namespace Prisma {
     phone: string | null
     email: string
     location: string | null
-    level: $Enums.UserLevel | null
     password: string | null
     role: $Enums.UserRole
     accessToken: string | null
@@ -17259,7 +17719,6 @@ export namespace Prisma {
     phone?: boolean
     email?: boolean
     location?: boolean
-    level?: boolean
     password?: boolean
     role?: boolean
     accessToken?: boolean
@@ -17295,7 +17754,6 @@ export namespace Prisma {
     phone?: boolean
     email?: boolean
     location?: boolean
-    level?: boolean
     password?: boolean
     role?: boolean
     accessToken?: boolean
@@ -17303,7 +17761,7 @@ export namespace Prisma {
     updatedAt?: boolean
   }
 
-  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "cover" | "avatar" | "socialId" | "socialProvider" | "firstName" | "lastName" | "fullName" | "username" | "phone" | "email" | "location" | "level" | "password" | "role" | "accessToken" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
+  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "cover" | "avatar" | "socialId" | "socialProvider" | "firstName" | "lastName" | "fullName" | "username" | "phone" | "email" | "location" | "password" | "role" | "accessToken" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     otps?: boolean | User$otpsArgs<ExtArgs>
     store?: boolean | User$storeArgs<ExtArgs>
@@ -17349,7 +17807,6 @@ export namespace Prisma {
       phone: string | null
       email: string
       location: string | null
-      level: $Enums.UserLevel | null
       password: string | null
       role: $Enums.UserRole
       accessToken: string | null
@@ -17771,7 +18228,6 @@ export namespace Prisma {
     readonly phone: FieldRef<"User", 'String'>
     readonly email: FieldRef<"User", 'String'>
     readonly location: FieldRef<"User", 'String'>
-    readonly level: FieldRef<"User", 'UserLevel'>
     readonly password: FieldRef<"User", 'String'>
     readonly role: FieldRef<"User", 'UserRole'>
     readonly accessToken: FieldRef<"User", 'String'>
@@ -24676,6 +25132,7 @@ export namespace Prisma {
     providerId: string | null
     photoId: string | null
     contestId: string | null
+    type: $Enums.VoteType | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -24685,6 +25142,7 @@ export namespace Prisma {
     providerId: string | null
     photoId: string | null
     contestId: string | null
+    type: $Enums.VoteType | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -24694,6 +25152,7 @@ export namespace Prisma {
     providerId: number
     photoId: number
     contestId: number
+    type: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -24705,6 +25164,7 @@ export namespace Prisma {
     providerId?: true
     photoId?: true
     contestId?: true
+    type?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -24714,6 +25174,7 @@ export namespace Prisma {
     providerId?: true
     photoId?: true
     contestId?: true
+    type?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -24723,6 +25184,7 @@ export namespace Prisma {
     providerId?: true
     photoId?: true
     contestId?: true
+    type?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -24805,6 +25267,7 @@ export namespace Prisma {
     providerId: string
     photoId: string
     contestId: string
+    type: $Enums.VoteType
     createdAt: Date
     updatedAt: Date
     _count: VoteCountAggregateOutputType | null
@@ -24831,6 +25294,7 @@ export namespace Prisma {
     providerId?: boolean
     photoId?: boolean
     contestId?: boolean
+    type?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     provider?: boolean | UserDefaultArgs<ExtArgs>
@@ -24845,11 +25309,12 @@ export namespace Prisma {
     providerId?: boolean
     photoId?: boolean
     contestId?: boolean
+    type?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type VoteOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "providerId" | "photoId" | "contestId" | "createdAt" | "updatedAt", ExtArgs["result"]["vote"]>
+  export type VoteOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "providerId" | "photoId" | "contestId" | "type" | "createdAt" | "updatedAt", ExtArgs["result"]["vote"]>
   export type VoteInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     provider?: boolean | UserDefaultArgs<ExtArgs>
     photo?: boolean | ContestPhotoDefaultArgs<ExtArgs>
@@ -24868,6 +25333,7 @@ export namespace Prisma {
       providerId: string
       photoId: string
       contestId: string
+      type: $Enums.VoteType
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["vote"]>
@@ -25269,6 +25735,7 @@ export namespace Prisma {
     readonly providerId: FieldRef<"Vote", 'String'>
     readonly photoId: FieldRef<"Vote", 'String'>
     readonly contestId: FieldRef<"Vote", 'String'>
+    readonly type: FieldRef<"Vote", 'VoteType'>
     readonly createdAt: FieldRef<"Vote", 'DateTime'>
     readonly updatedAt: FieldRef<"Vote", 'DateTime'>
   }
@@ -25660,6 +26127,1926 @@ export namespace Prisma {
 
 
   /**
+   * Model UserLevel
+   */
+
+  export type AggregateUserLevel = {
+    _count: UserLevelCountAggregateOutputType | null
+    _min: UserLevelMinAggregateOutputType | null
+    _max: UserLevelMaxAggregateOutputType | null
+  }
+
+  export type UserLevelMinAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    levelId: string | null
+  }
+
+  export type UserLevelMaxAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    levelId: string | null
+  }
+
+  export type UserLevelCountAggregateOutputType = {
+    id: number
+    userId: number
+    levelId: number
+    _all: number
+  }
+
+
+  export type UserLevelMinAggregateInputType = {
+    id?: true
+    userId?: true
+    levelId?: true
+  }
+
+  export type UserLevelMaxAggregateInputType = {
+    id?: true
+    userId?: true
+    levelId?: true
+  }
+
+  export type UserLevelCountAggregateInputType = {
+    id?: true
+    userId?: true
+    levelId?: true
+    _all?: true
+  }
+
+  export type UserLevelAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which UserLevel to aggregate.
+     */
+    where?: UserLevelWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UserLevels to fetch.
+     */
+    orderBy?: UserLevelOrderByWithRelationInput | UserLevelOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: UserLevelWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UserLevels from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UserLevels.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned UserLevels
+    **/
+    _count?: true | UserLevelCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: UserLevelMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: UserLevelMaxAggregateInputType
+  }
+
+  export type GetUserLevelAggregateType<T extends UserLevelAggregateArgs> = {
+        [P in keyof T & keyof AggregateUserLevel]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateUserLevel[P]>
+      : GetScalarType<T[P], AggregateUserLevel[P]>
+  }
+
+
+
+
+  export type UserLevelGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: UserLevelWhereInput
+    orderBy?: UserLevelOrderByWithAggregationInput | UserLevelOrderByWithAggregationInput[]
+    by: UserLevelScalarFieldEnum[] | UserLevelScalarFieldEnum
+    having?: UserLevelScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: UserLevelCountAggregateInputType | true
+    _min?: UserLevelMinAggregateInputType
+    _max?: UserLevelMaxAggregateInputType
+  }
+
+  export type UserLevelGroupByOutputType = {
+    id: string
+    userId: string
+    levelId: string
+    _count: UserLevelCountAggregateOutputType | null
+    _min: UserLevelMinAggregateOutputType | null
+    _max: UserLevelMaxAggregateOutputType | null
+  }
+
+  type GetUserLevelGroupByPayload<T extends UserLevelGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<UserLevelGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof UserLevelGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], UserLevelGroupByOutputType[P]>
+            : GetScalarType<T[P], UserLevelGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type UserLevelSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    levelId?: boolean
+  }, ExtArgs["result"]["userLevel"]>
+
+
+
+  export type UserLevelSelectScalar = {
+    id?: boolean
+    userId?: boolean
+    levelId?: boolean
+  }
+
+  export type UserLevelOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "levelId", ExtArgs["result"]["userLevel"]>
+
+  export type $UserLevelPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "UserLevel"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      userId: string
+      levelId: string
+    }, ExtArgs["result"]["userLevel"]>
+    composites: {}
+  }
+
+  type UserLevelGetPayload<S extends boolean | null | undefined | UserLevelDefaultArgs> = $Result.GetResult<Prisma.$UserLevelPayload, S>
+
+  type UserLevelCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<UserLevelFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: UserLevelCountAggregateInputType | true
+    }
+
+  export interface UserLevelDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['UserLevel'], meta: { name: 'UserLevel' } }
+    /**
+     * Find zero or one UserLevel that matches the filter.
+     * @param {UserLevelFindUniqueArgs} args - Arguments to find a UserLevel
+     * @example
+     * // Get one UserLevel
+     * const userLevel = await prisma.userLevel.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends UserLevelFindUniqueArgs>(args: SelectSubset<T, UserLevelFindUniqueArgs<ExtArgs>>): Prisma__UserLevelClient<$Result.GetResult<Prisma.$UserLevelPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one UserLevel that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {UserLevelFindUniqueOrThrowArgs} args - Arguments to find a UserLevel
+     * @example
+     * // Get one UserLevel
+     * const userLevel = await prisma.userLevel.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends UserLevelFindUniqueOrThrowArgs>(args: SelectSubset<T, UserLevelFindUniqueOrThrowArgs<ExtArgs>>): Prisma__UserLevelClient<$Result.GetResult<Prisma.$UserLevelPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first UserLevel that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserLevelFindFirstArgs} args - Arguments to find a UserLevel
+     * @example
+     * // Get one UserLevel
+     * const userLevel = await prisma.userLevel.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends UserLevelFindFirstArgs>(args?: SelectSubset<T, UserLevelFindFirstArgs<ExtArgs>>): Prisma__UserLevelClient<$Result.GetResult<Prisma.$UserLevelPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first UserLevel that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserLevelFindFirstOrThrowArgs} args - Arguments to find a UserLevel
+     * @example
+     * // Get one UserLevel
+     * const userLevel = await prisma.userLevel.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends UserLevelFindFirstOrThrowArgs>(args?: SelectSubset<T, UserLevelFindFirstOrThrowArgs<ExtArgs>>): Prisma__UserLevelClient<$Result.GetResult<Prisma.$UserLevelPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more UserLevels that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserLevelFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all UserLevels
+     * const userLevels = await prisma.userLevel.findMany()
+     * 
+     * // Get first 10 UserLevels
+     * const userLevels = await prisma.userLevel.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const userLevelWithIdOnly = await prisma.userLevel.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends UserLevelFindManyArgs>(args?: SelectSubset<T, UserLevelFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserLevelPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a UserLevel.
+     * @param {UserLevelCreateArgs} args - Arguments to create a UserLevel.
+     * @example
+     * // Create one UserLevel
+     * const UserLevel = await prisma.userLevel.create({
+     *   data: {
+     *     // ... data to create a UserLevel
+     *   }
+     * })
+     * 
+     */
+    create<T extends UserLevelCreateArgs>(args: SelectSubset<T, UserLevelCreateArgs<ExtArgs>>): Prisma__UserLevelClient<$Result.GetResult<Prisma.$UserLevelPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many UserLevels.
+     * @param {UserLevelCreateManyArgs} args - Arguments to create many UserLevels.
+     * @example
+     * // Create many UserLevels
+     * const userLevel = await prisma.userLevel.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends UserLevelCreateManyArgs>(args?: SelectSubset<T, UserLevelCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a UserLevel.
+     * @param {UserLevelDeleteArgs} args - Arguments to delete one UserLevel.
+     * @example
+     * // Delete one UserLevel
+     * const UserLevel = await prisma.userLevel.delete({
+     *   where: {
+     *     // ... filter to delete one UserLevel
+     *   }
+     * })
+     * 
+     */
+    delete<T extends UserLevelDeleteArgs>(args: SelectSubset<T, UserLevelDeleteArgs<ExtArgs>>): Prisma__UserLevelClient<$Result.GetResult<Prisma.$UserLevelPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one UserLevel.
+     * @param {UserLevelUpdateArgs} args - Arguments to update one UserLevel.
+     * @example
+     * // Update one UserLevel
+     * const userLevel = await prisma.userLevel.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends UserLevelUpdateArgs>(args: SelectSubset<T, UserLevelUpdateArgs<ExtArgs>>): Prisma__UserLevelClient<$Result.GetResult<Prisma.$UserLevelPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more UserLevels.
+     * @param {UserLevelDeleteManyArgs} args - Arguments to filter UserLevels to delete.
+     * @example
+     * // Delete a few UserLevels
+     * const { count } = await prisma.userLevel.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends UserLevelDeleteManyArgs>(args?: SelectSubset<T, UserLevelDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more UserLevels.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserLevelUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many UserLevels
+     * const userLevel = await prisma.userLevel.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends UserLevelUpdateManyArgs>(args: SelectSubset<T, UserLevelUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one UserLevel.
+     * @param {UserLevelUpsertArgs} args - Arguments to update or create a UserLevel.
+     * @example
+     * // Update or create a UserLevel
+     * const userLevel = await prisma.userLevel.upsert({
+     *   create: {
+     *     // ... data to create a UserLevel
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the UserLevel we want to update
+     *   }
+     * })
+     */
+    upsert<T extends UserLevelUpsertArgs>(args: SelectSubset<T, UserLevelUpsertArgs<ExtArgs>>): Prisma__UserLevelClient<$Result.GetResult<Prisma.$UserLevelPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more UserLevels that matches the filter.
+     * @param {UserLevelFindRawArgs} args - Select which filters you would like to apply.
+     * @example
+     * const userLevel = await prisma.userLevel.findRaw({
+     *   filter: { age: { $gt: 25 } }
+     * })
+     */
+    findRaw(args?: UserLevelFindRawArgs): Prisma.PrismaPromise<JsonObject>
+
+    /**
+     * Perform aggregation operations on a UserLevel.
+     * @param {UserLevelAggregateRawArgs} args - Select which aggregations you would like to apply.
+     * @example
+     * const userLevel = await prisma.userLevel.aggregateRaw({
+     *   pipeline: [
+     *     { $match: { status: "registered" } },
+     *     { $group: { _id: "$country", total: { $sum: 1 } } }
+     *   ]
+     * })
+     */
+    aggregateRaw(args?: UserLevelAggregateRawArgs): Prisma.PrismaPromise<JsonObject>
+
+
+    /**
+     * Count the number of UserLevels.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserLevelCountArgs} args - Arguments to filter UserLevels to count.
+     * @example
+     * // Count the number of UserLevels
+     * const count = await prisma.userLevel.count({
+     *   where: {
+     *     // ... the filter for the UserLevels we want to count
+     *   }
+     * })
+    **/
+    count<T extends UserLevelCountArgs>(
+      args?: Subset<T, UserLevelCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], UserLevelCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a UserLevel.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserLevelAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends UserLevelAggregateArgs>(args: Subset<T, UserLevelAggregateArgs>): Prisma.PrismaPromise<GetUserLevelAggregateType<T>>
+
+    /**
+     * Group by UserLevel.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserLevelGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends UserLevelGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: UserLevelGroupByArgs['orderBy'] }
+        : { orderBy?: UserLevelGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, UserLevelGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetUserLevelGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the UserLevel model
+   */
+  readonly fields: UserLevelFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for UserLevel.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__UserLevelClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the UserLevel model
+   */
+  interface UserLevelFieldRefs {
+    readonly id: FieldRef<"UserLevel", 'String'>
+    readonly userId: FieldRef<"UserLevel", 'String'>
+    readonly levelId: FieldRef<"UserLevel", 'String'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * UserLevel findUnique
+   */
+  export type UserLevelFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserLevel
+     */
+    select?: UserLevelSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserLevel
+     */
+    omit?: UserLevelOmit<ExtArgs> | null
+    /**
+     * Filter, which UserLevel to fetch.
+     */
+    where: UserLevelWhereUniqueInput
+  }
+
+  /**
+   * UserLevel findUniqueOrThrow
+   */
+  export type UserLevelFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserLevel
+     */
+    select?: UserLevelSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserLevel
+     */
+    omit?: UserLevelOmit<ExtArgs> | null
+    /**
+     * Filter, which UserLevel to fetch.
+     */
+    where: UserLevelWhereUniqueInput
+  }
+
+  /**
+   * UserLevel findFirst
+   */
+  export type UserLevelFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserLevel
+     */
+    select?: UserLevelSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserLevel
+     */
+    omit?: UserLevelOmit<ExtArgs> | null
+    /**
+     * Filter, which UserLevel to fetch.
+     */
+    where?: UserLevelWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UserLevels to fetch.
+     */
+    orderBy?: UserLevelOrderByWithRelationInput | UserLevelOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for UserLevels.
+     */
+    cursor?: UserLevelWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UserLevels from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UserLevels.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of UserLevels.
+     */
+    distinct?: UserLevelScalarFieldEnum | UserLevelScalarFieldEnum[]
+  }
+
+  /**
+   * UserLevel findFirstOrThrow
+   */
+  export type UserLevelFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserLevel
+     */
+    select?: UserLevelSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserLevel
+     */
+    omit?: UserLevelOmit<ExtArgs> | null
+    /**
+     * Filter, which UserLevel to fetch.
+     */
+    where?: UserLevelWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UserLevels to fetch.
+     */
+    orderBy?: UserLevelOrderByWithRelationInput | UserLevelOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for UserLevels.
+     */
+    cursor?: UserLevelWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UserLevels from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UserLevels.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of UserLevels.
+     */
+    distinct?: UserLevelScalarFieldEnum | UserLevelScalarFieldEnum[]
+  }
+
+  /**
+   * UserLevel findMany
+   */
+  export type UserLevelFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserLevel
+     */
+    select?: UserLevelSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserLevel
+     */
+    omit?: UserLevelOmit<ExtArgs> | null
+    /**
+     * Filter, which UserLevels to fetch.
+     */
+    where?: UserLevelWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UserLevels to fetch.
+     */
+    orderBy?: UserLevelOrderByWithRelationInput | UserLevelOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing UserLevels.
+     */
+    cursor?: UserLevelWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UserLevels from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UserLevels.
+     */
+    skip?: number
+    distinct?: UserLevelScalarFieldEnum | UserLevelScalarFieldEnum[]
+  }
+
+  /**
+   * UserLevel create
+   */
+  export type UserLevelCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserLevel
+     */
+    select?: UserLevelSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserLevel
+     */
+    omit?: UserLevelOmit<ExtArgs> | null
+    /**
+     * The data needed to create a UserLevel.
+     */
+    data: XOR<UserLevelCreateInput, UserLevelUncheckedCreateInput>
+  }
+
+  /**
+   * UserLevel createMany
+   */
+  export type UserLevelCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many UserLevels.
+     */
+    data: UserLevelCreateManyInput | UserLevelCreateManyInput[]
+  }
+
+  /**
+   * UserLevel update
+   */
+  export type UserLevelUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserLevel
+     */
+    select?: UserLevelSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserLevel
+     */
+    omit?: UserLevelOmit<ExtArgs> | null
+    /**
+     * The data needed to update a UserLevel.
+     */
+    data: XOR<UserLevelUpdateInput, UserLevelUncheckedUpdateInput>
+    /**
+     * Choose, which UserLevel to update.
+     */
+    where: UserLevelWhereUniqueInput
+  }
+
+  /**
+   * UserLevel updateMany
+   */
+  export type UserLevelUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update UserLevels.
+     */
+    data: XOR<UserLevelUpdateManyMutationInput, UserLevelUncheckedUpdateManyInput>
+    /**
+     * Filter which UserLevels to update
+     */
+    where?: UserLevelWhereInput
+    /**
+     * Limit how many UserLevels to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * UserLevel upsert
+   */
+  export type UserLevelUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserLevel
+     */
+    select?: UserLevelSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserLevel
+     */
+    omit?: UserLevelOmit<ExtArgs> | null
+    /**
+     * The filter to search for the UserLevel to update in case it exists.
+     */
+    where: UserLevelWhereUniqueInput
+    /**
+     * In case the UserLevel found by the `where` argument doesn't exist, create a new UserLevel with this data.
+     */
+    create: XOR<UserLevelCreateInput, UserLevelUncheckedCreateInput>
+    /**
+     * In case the UserLevel was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<UserLevelUpdateInput, UserLevelUncheckedUpdateInput>
+  }
+
+  /**
+   * UserLevel delete
+   */
+  export type UserLevelDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserLevel
+     */
+    select?: UserLevelSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserLevel
+     */
+    omit?: UserLevelOmit<ExtArgs> | null
+    /**
+     * Filter which UserLevel to delete.
+     */
+    where: UserLevelWhereUniqueInput
+  }
+
+  /**
+   * UserLevel deleteMany
+   */
+  export type UserLevelDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which UserLevels to delete
+     */
+    where?: UserLevelWhereInput
+    /**
+     * Limit how many UserLevels to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * UserLevel findRaw
+   */
+  export type UserLevelFindRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The query predicate filter. If unspecified, then all documents in the collection will match the predicate. ${@link https://docs.mongodb.com/manual/reference/operator/query MongoDB Docs}.
+     */
+    filter?: InputJsonValue
+    /**
+     * Additional options to pass to the `find` command ${@link https://docs.mongodb.com/manual/reference/command/find/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * UserLevel aggregateRaw
+   */
+  export type UserLevelAggregateRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * An array of aggregation stages to process and transform the document stream via the aggregation pipeline. ${@link https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline MongoDB Docs}.
+     */
+    pipeline?: InputJsonValue[]
+    /**
+     * Additional options to pass to the `aggregate` command ${@link https://docs.mongodb.com/manual/reference/command/aggregate/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * UserLevel without action
+   */
+  export type UserLevelDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserLevel
+     */
+    select?: UserLevelSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserLevel
+     */
+    omit?: UserLevelOmit<ExtArgs> | null
+  }
+
+
+  /**
+   * Model Level
+   */
+
+  export type AggregateLevel = {
+    _count: LevelCountAggregateOutputType | null
+    _avg: LevelAvgAggregateOutputType | null
+    _sum: LevelSumAggregateOutputType | null
+    _min: LevelMinAggregateOutputType | null
+    _max: LevelMaxAggregateOutputType | null
+  }
+
+  export type LevelAvgAggregateOutputType = {
+    level: number | null
+  }
+
+  export type LevelSumAggregateOutputType = {
+    level: number | null
+  }
+
+  export type LevelMinAggregateOutputType = {
+    id: string | null
+    level: number | null
+    levelName: $Enums.LevelName | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type LevelMaxAggregateOutputType = {
+    id: string | null
+    level: number | null
+    levelName: $Enums.LevelName | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type LevelCountAggregateOutputType = {
+    id: number
+    level: number
+    levelName: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type LevelAvgAggregateInputType = {
+    level?: true
+  }
+
+  export type LevelSumAggregateInputType = {
+    level?: true
+  }
+
+  export type LevelMinAggregateInputType = {
+    id?: true
+    level?: true
+    levelName?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type LevelMaxAggregateInputType = {
+    id?: true
+    level?: true
+    levelName?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type LevelCountAggregateInputType = {
+    id?: true
+    level?: true
+    levelName?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type LevelAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Level to aggregate.
+     */
+    where?: LevelWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Levels to fetch.
+     */
+    orderBy?: LevelOrderByWithRelationInput | LevelOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: LevelWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Levels from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Levels.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned Levels
+    **/
+    _count?: true | LevelCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: LevelAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: LevelSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: LevelMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: LevelMaxAggregateInputType
+  }
+
+  export type GetLevelAggregateType<T extends LevelAggregateArgs> = {
+        [P in keyof T & keyof AggregateLevel]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateLevel[P]>
+      : GetScalarType<T[P], AggregateLevel[P]>
+  }
+
+
+
+
+  export type LevelGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: LevelWhereInput
+    orderBy?: LevelOrderByWithAggregationInput | LevelOrderByWithAggregationInput[]
+    by: LevelScalarFieldEnum[] | LevelScalarFieldEnum
+    having?: LevelScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: LevelCountAggregateInputType | true
+    _avg?: LevelAvgAggregateInputType
+    _sum?: LevelSumAggregateInputType
+    _min?: LevelMinAggregateInputType
+    _max?: LevelMaxAggregateInputType
+  }
+
+  export type LevelGroupByOutputType = {
+    id: string
+    level: number
+    levelName: $Enums.LevelName
+    createdAt: Date
+    updatedAt: Date
+    _count: LevelCountAggregateOutputType | null
+    _avg: LevelAvgAggregateOutputType | null
+    _sum: LevelSumAggregateOutputType | null
+    _min: LevelMinAggregateOutputType | null
+    _max: LevelMaxAggregateOutputType | null
+  }
+
+  type GetLevelGroupByPayload<T extends LevelGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<LevelGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof LevelGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], LevelGroupByOutputType[P]>
+            : GetScalarType<T[P], LevelGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type LevelSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    level?: boolean
+    levelName?: boolean
+    requirements?: boolean | LevelRequirementDefaultArgs<ExtArgs>
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["level"]>
+
+
+
+  export type LevelSelectScalar = {
+    id?: boolean
+    level?: boolean
+    levelName?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type LevelOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "level" | "levelName" | "requirements" | "createdAt" | "updatedAt", ExtArgs["result"]["level"]>
+  export type LevelInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+
+  export type $LevelPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Level"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      level: number
+      levelName: $Enums.LevelName
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["level"]>
+    composites: {
+      requirements: Prisma.$LevelRequirementPayload[]
+    }
+  }
+
+  type LevelGetPayload<S extends boolean | null | undefined | LevelDefaultArgs> = $Result.GetResult<Prisma.$LevelPayload, S>
+
+  type LevelCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<LevelFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: LevelCountAggregateInputType | true
+    }
+
+  export interface LevelDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Level'], meta: { name: 'Level' } }
+    /**
+     * Find zero or one Level that matches the filter.
+     * @param {LevelFindUniqueArgs} args - Arguments to find a Level
+     * @example
+     * // Get one Level
+     * const level = await prisma.level.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends LevelFindUniqueArgs>(args: SelectSubset<T, LevelFindUniqueArgs<ExtArgs>>): Prisma__LevelClient<$Result.GetResult<Prisma.$LevelPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one Level that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {LevelFindUniqueOrThrowArgs} args - Arguments to find a Level
+     * @example
+     * // Get one Level
+     * const level = await prisma.level.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends LevelFindUniqueOrThrowArgs>(args: SelectSubset<T, LevelFindUniqueOrThrowArgs<ExtArgs>>): Prisma__LevelClient<$Result.GetResult<Prisma.$LevelPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Level that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LevelFindFirstArgs} args - Arguments to find a Level
+     * @example
+     * // Get one Level
+     * const level = await prisma.level.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends LevelFindFirstArgs>(args?: SelectSubset<T, LevelFindFirstArgs<ExtArgs>>): Prisma__LevelClient<$Result.GetResult<Prisma.$LevelPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Level that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LevelFindFirstOrThrowArgs} args - Arguments to find a Level
+     * @example
+     * // Get one Level
+     * const level = await prisma.level.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends LevelFindFirstOrThrowArgs>(args?: SelectSubset<T, LevelFindFirstOrThrowArgs<ExtArgs>>): Prisma__LevelClient<$Result.GetResult<Prisma.$LevelPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Levels that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LevelFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Levels
+     * const levels = await prisma.level.findMany()
+     * 
+     * // Get first 10 Levels
+     * const levels = await prisma.level.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const levelWithIdOnly = await prisma.level.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends LevelFindManyArgs>(args?: SelectSubset<T, LevelFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LevelPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a Level.
+     * @param {LevelCreateArgs} args - Arguments to create a Level.
+     * @example
+     * // Create one Level
+     * const Level = await prisma.level.create({
+     *   data: {
+     *     // ... data to create a Level
+     *   }
+     * })
+     * 
+     */
+    create<T extends LevelCreateArgs>(args: SelectSubset<T, LevelCreateArgs<ExtArgs>>): Prisma__LevelClient<$Result.GetResult<Prisma.$LevelPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many Levels.
+     * @param {LevelCreateManyArgs} args - Arguments to create many Levels.
+     * @example
+     * // Create many Levels
+     * const level = await prisma.level.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends LevelCreateManyArgs>(args?: SelectSubset<T, LevelCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a Level.
+     * @param {LevelDeleteArgs} args - Arguments to delete one Level.
+     * @example
+     * // Delete one Level
+     * const Level = await prisma.level.delete({
+     *   where: {
+     *     // ... filter to delete one Level
+     *   }
+     * })
+     * 
+     */
+    delete<T extends LevelDeleteArgs>(args: SelectSubset<T, LevelDeleteArgs<ExtArgs>>): Prisma__LevelClient<$Result.GetResult<Prisma.$LevelPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one Level.
+     * @param {LevelUpdateArgs} args - Arguments to update one Level.
+     * @example
+     * // Update one Level
+     * const level = await prisma.level.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends LevelUpdateArgs>(args: SelectSubset<T, LevelUpdateArgs<ExtArgs>>): Prisma__LevelClient<$Result.GetResult<Prisma.$LevelPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more Levels.
+     * @param {LevelDeleteManyArgs} args - Arguments to filter Levels to delete.
+     * @example
+     * // Delete a few Levels
+     * const { count } = await prisma.level.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends LevelDeleteManyArgs>(args?: SelectSubset<T, LevelDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Levels.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LevelUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Levels
+     * const level = await prisma.level.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends LevelUpdateManyArgs>(args: SelectSubset<T, LevelUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one Level.
+     * @param {LevelUpsertArgs} args - Arguments to update or create a Level.
+     * @example
+     * // Update or create a Level
+     * const level = await prisma.level.upsert({
+     *   create: {
+     *     // ... data to create a Level
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Level we want to update
+     *   }
+     * })
+     */
+    upsert<T extends LevelUpsertArgs>(args: SelectSubset<T, LevelUpsertArgs<ExtArgs>>): Prisma__LevelClient<$Result.GetResult<Prisma.$LevelPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Levels that matches the filter.
+     * @param {LevelFindRawArgs} args - Select which filters you would like to apply.
+     * @example
+     * const level = await prisma.level.findRaw({
+     *   filter: { age: { $gt: 25 } }
+     * })
+     */
+    findRaw(args?: LevelFindRawArgs): Prisma.PrismaPromise<JsonObject>
+
+    /**
+     * Perform aggregation operations on a Level.
+     * @param {LevelAggregateRawArgs} args - Select which aggregations you would like to apply.
+     * @example
+     * const level = await prisma.level.aggregateRaw({
+     *   pipeline: [
+     *     { $match: { status: "registered" } },
+     *     { $group: { _id: "$country", total: { $sum: 1 } } }
+     *   ]
+     * })
+     */
+    aggregateRaw(args?: LevelAggregateRawArgs): Prisma.PrismaPromise<JsonObject>
+
+
+    /**
+     * Count the number of Levels.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LevelCountArgs} args - Arguments to filter Levels to count.
+     * @example
+     * // Count the number of Levels
+     * const count = await prisma.level.count({
+     *   where: {
+     *     // ... the filter for the Levels we want to count
+     *   }
+     * })
+    **/
+    count<T extends LevelCountArgs>(
+      args?: Subset<T, LevelCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], LevelCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Level.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LevelAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends LevelAggregateArgs>(args: Subset<T, LevelAggregateArgs>): Prisma.PrismaPromise<GetLevelAggregateType<T>>
+
+    /**
+     * Group by Level.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LevelGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends LevelGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: LevelGroupByArgs['orderBy'] }
+        : { orderBy?: LevelGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, LevelGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetLevelGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the Level model
+   */
+  readonly fields: LevelFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Level.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__LevelClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the Level model
+   */
+  interface LevelFieldRefs {
+    readonly id: FieldRef<"Level", 'String'>
+    readonly level: FieldRef<"Level", 'Int'>
+    readonly levelName: FieldRef<"Level", 'LevelName'>
+    readonly createdAt: FieldRef<"Level", 'DateTime'>
+    readonly updatedAt: FieldRef<"Level", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * Level findUnique
+   */
+  export type LevelFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Level
+     */
+    select?: LevelSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Level
+     */
+    omit?: LevelOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LevelInclude<ExtArgs> | null
+    /**
+     * Filter, which Level to fetch.
+     */
+    where: LevelWhereUniqueInput
+  }
+
+  /**
+   * Level findUniqueOrThrow
+   */
+  export type LevelFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Level
+     */
+    select?: LevelSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Level
+     */
+    omit?: LevelOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LevelInclude<ExtArgs> | null
+    /**
+     * Filter, which Level to fetch.
+     */
+    where: LevelWhereUniqueInput
+  }
+
+  /**
+   * Level findFirst
+   */
+  export type LevelFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Level
+     */
+    select?: LevelSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Level
+     */
+    omit?: LevelOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LevelInclude<ExtArgs> | null
+    /**
+     * Filter, which Level to fetch.
+     */
+    where?: LevelWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Levels to fetch.
+     */
+    orderBy?: LevelOrderByWithRelationInput | LevelOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Levels.
+     */
+    cursor?: LevelWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Levels from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Levels.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Levels.
+     */
+    distinct?: LevelScalarFieldEnum | LevelScalarFieldEnum[]
+  }
+
+  /**
+   * Level findFirstOrThrow
+   */
+  export type LevelFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Level
+     */
+    select?: LevelSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Level
+     */
+    omit?: LevelOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LevelInclude<ExtArgs> | null
+    /**
+     * Filter, which Level to fetch.
+     */
+    where?: LevelWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Levels to fetch.
+     */
+    orderBy?: LevelOrderByWithRelationInput | LevelOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Levels.
+     */
+    cursor?: LevelWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Levels from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Levels.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Levels.
+     */
+    distinct?: LevelScalarFieldEnum | LevelScalarFieldEnum[]
+  }
+
+  /**
+   * Level findMany
+   */
+  export type LevelFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Level
+     */
+    select?: LevelSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Level
+     */
+    omit?: LevelOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LevelInclude<ExtArgs> | null
+    /**
+     * Filter, which Levels to fetch.
+     */
+    where?: LevelWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Levels to fetch.
+     */
+    orderBy?: LevelOrderByWithRelationInput | LevelOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing Levels.
+     */
+    cursor?: LevelWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Levels from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Levels.
+     */
+    skip?: number
+    distinct?: LevelScalarFieldEnum | LevelScalarFieldEnum[]
+  }
+
+  /**
+   * Level create
+   */
+  export type LevelCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Level
+     */
+    select?: LevelSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Level
+     */
+    omit?: LevelOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LevelInclude<ExtArgs> | null
+    /**
+     * The data needed to create a Level.
+     */
+    data: XOR<LevelCreateInput, LevelUncheckedCreateInput>
+  }
+
+  /**
+   * Level createMany
+   */
+  export type LevelCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many Levels.
+     */
+    data: LevelCreateManyInput | LevelCreateManyInput[]
+  }
+
+  /**
+   * Level update
+   */
+  export type LevelUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Level
+     */
+    select?: LevelSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Level
+     */
+    omit?: LevelOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LevelInclude<ExtArgs> | null
+    /**
+     * The data needed to update a Level.
+     */
+    data: XOR<LevelUpdateInput, LevelUncheckedUpdateInput>
+    /**
+     * Choose, which Level to update.
+     */
+    where: LevelWhereUniqueInput
+  }
+
+  /**
+   * Level updateMany
+   */
+  export type LevelUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update Levels.
+     */
+    data: XOR<LevelUpdateManyMutationInput, LevelUncheckedUpdateManyInput>
+    /**
+     * Filter which Levels to update
+     */
+    where?: LevelWhereInput
+    /**
+     * Limit how many Levels to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * Level upsert
+   */
+  export type LevelUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Level
+     */
+    select?: LevelSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Level
+     */
+    omit?: LevelOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LevelInclude<ExtArgs> | null
+    /**
+     * The filter to search for the Level to update in case it exists.
+     */
+    where: LevelWhereUniqueInput
+    /**
+     * In case the Level found by the `where` argument doesn't exist, create a new Level with this data.
+     */
+    create: XOR<LevelCreateInput, LevelUncheckedCreateInput>
+    /**
+     * In case the Level was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<LevelUpdateInput, LevelUncheckedUpdateInput>
+  }
+
+  /**
+   * Level delete
+   */
+  export type LevelDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Level
+     */
+    select?: LevelSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Level
+     */
+    omit?: LevelOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LevelInclude<ExtArgs> | null
+    /**
+     * Filter which Level to delete.
+     */
+    where: LevelWhereUniqueInput
+  }
+
+  /**
+   * Level deleteMany
+   */
+  export type LevelDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Levels to delete
+     */
+    where?: LevelWhereInput
+    /**
+     * Limit how many Levels to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * Level findRaw
+   */
+  export type LevelFindRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The query predicate filter. If unspecified, then all documents in the collection will match the predicate. ${@link https://docs.mongodb.com/manual/reference/operator/query MongoDB Docs}.
+     */
+    filter?: InputJsonValue
+    /**
+     * Additional options to pass to the `find` command ${@link https://docs.mongodb.com/manual/reference/command/find/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * Level aggregateRaw
+   */
+  export type LevelAggregateRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * An array of aggregation stages to process and transform the document stream via the aggregation pipeline. ${@link https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline MongoDB Docs}.
+     */
+    pipeline?: InputJsonValue[]
+    /**
+     * Additional options to pass to the `aggregate` command ${@link https://docs.mongodb.com/manual/reference/command/aggregate/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * Level without action
+   */
+  export type LevelDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Level
+     */
+    select?: LevelSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Level
+     */
+    omit?: LevelOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LevelInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -25798,7 +28185,8 @@ export namespace Prisma {
 
 
   export const RoomScalarFieldEnum: {
-    id: 'id'
+    id: 'id',
+    teamId: 'teamId'
   };
 
   export type RoomScalarFieldEnum = (typeof RoomScalarFieldEnum)[keyof typeof RoomScalarFieldEnum]
@@ -25806,9 +28194,8 @@ export namespace Prisma {
 
   export const ChatScalarFieldEnum: {
     id: 'id',
-    roomId: 'roomId',
+    teamId: 'teamId',
     senderId: 'senderId',
-    receiverId: 'receiverId',
     message: 'message',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
@@ -25826,6 +28213,7 @@ export namespace Prisma {
     description: 'description',
     accessibility: 'accessibility',
     badge: 'badge',
+    min_requirement: 'min_requirement',
     creatorId: 'creatorId',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
@@ -25859,7 +28247,6 @@ export namespace Prisma {
     phone: 'phone',
     email: 'email',
     location: 'location',
-    level: 'level',
     password: 'password',
     role: 'role',
     accessToken: 'accessToken',
@@ -25953,11 +28340,32 @@ export namespace Prisma {
     providerId: 'providerId',
     photoId: 'photoId',
     contestId: 'contestId',
+    type: 'type',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
 
   export type VoteScalarFieldEnum = (typeof VoteScalarFieldEnum)[keyof typeof VoteScalarFieldEnum]
+
+
+  export const UserLevelScalarFieldEnum: {
+    id: 'id',
+    userId: 'userId',
+    levelId: 'levelId'
+  };
+
+  export type UserLevelScalarFieldEnum = (typeof UserLevelScalarFieldEnum)[keyof typeof UserLevelScalarFieldEnum]
+
+
+  export const LevelScalarFieldEnum: {
+    id: 'id',
+    level: 'level',
+    levelName: 'levelName',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type LevelScalarFieldEnum = (typeof LevelScalarFieldEnum)[keyof typeof LevelScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -26136,20 +28544,6 @@ export namespace Prisma {
 
 
   /**
-   * Reference to a field of type 'UserLevel'
-   */
-  export type EnumUserLevelFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'UserLevel'>
-    
-
-
-  /**
-   * Reference to a field of type 'UserLevel[]'
-   */
-  export type ListEnumUserLevelFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'UserLevel[]'>
-    
-
-
-  /**
    * Reference to a field of type 'UserRole'
    */
   export type EnumUserRoleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'UserRole'>
@@ -26174,6 +28568,34 @@ export namespace Prisma {
    * Reference to a field of type 'OtpStatus[]'
    */
   export type ListEnumOtpStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'OtpStatus[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'VoteType'
+   */
+  export type EnumVoteTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'VoteType'>
+    
+
+
+  /**
+   * Reference to a field of type 'VoteType[]'
+   */
+  export type ListEnumVoteTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'VoteType[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'LevelName'
+   */
+  export type EnumLevelNameFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'LevelName'>
+    
+
+
+  /**
+   * Reference to a field of type 'LevelName[]'
+   */
+  export type ListEnumLevelNameFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'LevelName[]'>
     
 
 
@@ -26942,21 +29364,25 @@ export namespace Prisma {
     OR?: RoomWhereInput[]
     NOT?: RoomWhereInput | RoomWhereInput[]
     id?: StringFilter<"Room"> | string
+    teamId?: StringFilter<"Room"> | string
   }
 
   export type RoomOrderByWithRelationInput = {
     id?: SortOrder
+    teamId?: SortOrder
   }
 
   export type RoomWhereUniqueInput = Prisma.AtLeast<{
     id?: string
+    teamId?: string
     AND?: RoomWhereInput | RoomWhereInput[]
     OR?: RoomWhereInput[]
     NOT?: RoomWhereInput | RoomWhereInput[]
-  }, "id">
+  }, "id" | "teamId">
 
   export type RoomOrderByWithAggregationInput = {
     id?: SortOrder
+    teamId?: SortOrder
     _count?: RoomCountOrderByAggregateInput
     _max?: RoomMaxOrderByAggregateInput
     _min?: RoomMinOrderByAggregateInput
@@ -26967,6 +29393,7 @@ export namespace Prisma {
     OR?: RoomScalarWhereWithAggregatesInput[]
     NOT?: RoomScalarWhereWithAggregatesInput | RoomScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"Room"> | string
+    teamId?: StringWithAggregatesFilter<"Room"> | string
   }
 
   export type ChatWhereInput = {
@@ -26974,22 +29401,22 @@ export namespace Prisma {
     OR?: ChatWhereInput[]
     NOT?: ChatWhereInput | ChatWhereInput[]
     id?: StringFilter<"Chat"> | string
-    roomId?: StringFilter<"Chat"> | string
+    teamId?: StringFilter<"Chat"> | string
     senderId?: StringFilter<"Chat"> | string
-    receiverId?: StringFilter<"Chat"> | string
     message?: StringFilter<"Chat"> | string
     createdAt?: DateTimeFilter<"Chat"> | Date | string
     updatedAt?: DateTimeFilter<"Chat"> | Date | string
+    team?: XOR<TeamScalarRelationFilter, TeamWhereInput>
   }
 
   export type ChatOrderByWithRelationInput = {
     id?: SortOrder
-    roomId?: SortOrder
+    teamId?: SortOrder
     senderId?: SortOrder
-    receiverId?: SortOrder
     message?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    team?: TeamOrderByWithRelationInput
   }
 
   export type ChatWhereUniqueInput = Prisma.AtLeast<{
@@ -26997,19 +29424,18 @@ export namespace Prisma {
     AND?: ChatWhereInput | ChatWhereInput[]
     OR?: ChatWhereInput[]
     NOT?: ChatWhereInput | ChatWhereInput[]
-    roomId?: StringFilter<"Chat"> | string
+    teamId?: StringFilter<"Chat"> | string
     senderId?: StringFilter<"Chat"> | string
-    receiverId?: StringFilter<"Chat"> | string
     message?: StringFilter<"Chat"> | string
     createdAt?: DateTimeFilter<"Chat"> | Date | string
     updatedAt?: DateTimeFilter<"Chat"> | Date | string
+    team?: XOR<TeamScalarRelationFilter, TeamWhereInput>
   }, "id">
 
   export type ChatOrderByWithAggregationInput = {
     id?: SortOrder
-    roomId?: SortOrder
+    teamId?: SortOrder
     senderId?: SortOrder
-    receiverId?: SortOrder
     message?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -27023,9 +29449,8 @@ export namespace Prisma {
     OR?: ChatScalarWhereWithAggregatesInput[]
     NOT?: ChatScalarWhereWithAggregatesInput | ChatScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"Chat"> | string
-    roomId?: StringWithAggregatesFilter<"Chat"> | string
+    teamId?: StringWithAggregatesFilter<"Chat"> | string
     senderId?: StringWithAggregatesFilter<"Chat"> | string
-    receiverId?: StringWithAggregatesFilter<"Chat"> | string
     message?: StringWithAggregatesFilter<"Chat"> | string
     createdAt?: DateTimeWithAggregatesFilter<"Chat"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Chat"> | Date | string
@@ -27043,11 +29468,13 @@ export namespace Prisma {
     description?: StringFilter<"Team"> | string
     accessibility?: EnumTeamAccessibilityFilter<"Team"> | $Enums.TeamAccessibility
     badge?: StringFilter<"Team"> | string
+    min_requirement?: IntFilter<"Team"> | number
     creatorId?: StringFilter<"Team"> | string
     createdAt?: DateTimeFilter<"Team"> | Date | string
     updatedAt?: DateTimeFilter<"Team"> | Date | string
     creator?: XOR<UserScalarRelationFilter, UserWhereInput>
     members?: TeamMemberListRelationFilter
+    chat?: ChatListRelationFilter
   }
 
   export type TeamOrderByWithRelationInput = {
@@ -27059,11 +29486,13 @@ export namespace Prisma {
     description?: SortOrder
     accessibility?: SortOrder
     badge?: SortOrder
+    min_requirement?: SortOrder
     creatorId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     creator?: UserOrderByWithRelationInput
     members?: TeamMemberOrderByRelationAggregateInput
+    chat?: ChatOrderByRelationAggregateInput
   }
 
   export type TeamWhereUniqueInput = Prisma.AtLeast<{
@@ -27078,11 +29507,13 @@ export namespace Prisma {
     description?: StringFilter<"Team"> | string
     accessibility?: EnumTeamAccessibilityFilter<"Team"> | $Enums.TeamAccessibility
     badge?: StringFilter<"Team"> | string
+    min_requirement?: IntFilter<"Team"> | number
     creatorId?: StringFilter<"Team"> | string
     createdAt?: DateTimeFilter<"Team"> | Date | string
     updatedAt?: DateTimeFilter<"Team"> | Date | string
     creator?: XOR<UserScalarRelationFilter, UserWhereInput>
     members?: TeamMemberListRelationFilter
+    chat?: ChatListRelationFilter
   }, "id">
 
   export type TeamOrderByWithAggregationInput = {
@@ -27094,12 +29525,15 @@ export namespace Prisma {
     description?: SortOrder
     accessibility?: SortOrder
     badge?: SortOrder
+    min_requirement?: SortOrder
     creatorId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: TeamCountOrderByAggregateInput
+    _avg?: TeamAvgOrderByAggregateInput
     _max?: TeamMaxOrderByAggregateInput
     _min?: TeamMinOrderByAggregateInput
+    _sum?: TeamSumOrderByAggregateInput
   }
 
   export type TeamScalarWhereWithAggregatesInput = {
@@ -27114,6 +29548,7 @@ export namespace Prisma {
     description?: StringWithAggregatesFilter<"Team"> | string
     accessibility?: EnumTeamAccessibilityWithAggregatesFilter<"Team"> | $Enums.TeamAccessibility
     badge?: StringWithAggregatesFilter<"Team"> | string
+    min_requirement?: IntWithAggregatesFilter<"Team"> | number
     creatorId?: StringWithAggregatesFilter<"Team"> | string
     createdAt?: DateTimeWithAggregatesFilter<"Team"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Team"> | Date | string
@@ -27198,7 +29633,6 @@ export namespace Prisma {
     phone?: StringNullableFilter<"User"> | string | null
     email?: StringFilter<"User"> | string
     location?: StringNullableFilter<"User"> | string | null
-    level?: EnumUserLevelNullableFilter<"User"> | $Enums.UserLevel | null
     password?: StringNullableFilter<"User"> | string | null
     role?: EnumUserRoleFilter<"User"> | $Enums.UserRole
     accessToken?: StringNullableFilter<"User"> | string | null
@@ -27231,7 +29665,6 @@ export namespace Prisma {
     phone?: SortOrder
     email?: SortOrder
     location?: SortOrder
-    level?: SortOrder
     password?: SortOrder
     role?: SortOrder
     accessToken?: SortOrder
@@ -27267,7 +29700,6 @@ export namespace Prisma {
     username?: StringNullableFilter<"User"> | string | null
     phone?: StringNullableFilter<"User"> | string | null
     location?: StringNullableFilter<"User"> | string | null
-    level?: EnumUserLevelNullableFilter<"User"> | $Enums.UserLevel | null
     password?: StringNullableFilter<"User"> | string | null
     role?: EnumUserRoleFilter<"User"> | $Enums.UserRole
     accessToken?: StringNullableFilter<"User"> | string | null
@@ -27300,7 +29732,6 @@ export namespace Prisma {
     phone?: SortOrder
     email?: SortOrder
     location?: SortOrder
-    level?: SortOrder
     password?: SortOrder
     role?: SortOrder
     accessToken?: SortOrder
@@ -27327,7 +29758,6 @@ export namespace Prisma {
     phone?: StringNullableWithAggregatesFilter<"User"> | string | null
     email?: StringWithAggregatesFilter<"User"> | string
     location?: StringNullableWithAggregatesFilter<"User"> | string | null
-    level?: EnumUserLevelNullableWithAggregatesFilter<"User"> | $Enums.UserLevel | null
     password?: StringNullableWithAggregatesFilter<"User"> | string | null
     role?: EnumUserRoleWithAggregatesFilter<"User"> | $Enums.UserRole
     accessToken?: StringNullableWithAggregatesFilter<"User"> | string | null
@@ -27763,6 +30193,7 @@ export namespace Prisma {
     providerId?: StringFilter<"Vote"> | string
     photoId?: StringFilter<"Vote"> | string
     contestId?: StringFilter<"Vote"> | string
+    type?: EnumVoteTypeFilter<"Vote"> | $Enums.VoteType
     createdAt?: DateTimeFilter<"Vote"> | Date | string
     updatedAt?: DateTimeFilter<"Vote"> | Date | string
     provider?: XOR<UserScalarRelationFilter, UserWhereInput>
@@ -27775,6 +30206,7 @@ export namespace Prisma {
     providerId?: SortOrder
     photoId?: SortOrder
     contestId?: SortOrder
+    type?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     provider?: UserOrderByWithRelationInput
@@ -27790,6 +30222,7 @@ export namespace Prisma {
     providerId?: StringFilter<"Vote"> | string
     photoId?: StringFilter<"Vote"> | string
     contestId?: StringFilter<"Vote"> | string
+    type?: EnumVoteTypeFilter<"Vote"> | $Enums.VoteType
     createdAt?: DateTimeFilter<"Vote"> | Date | string
     updatedAt?: DateTimeFilter<"Vote"> | Date | string
     provider?: XOR<UserScalarRelationFilter, UserWhereInput>
@@ -27802,6 +30235,7 @@ export namespace Prisma {
     providerId?: SortOrder
     photoId?: SortOrder
     contestId?: SortOrder
+    type?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: VoteCountOrderByAggregateInput
@@ -27817,8 +30251,108 @@ export namespace Prisma {
     providerId?: StringWithAggregatesFilter<"Vote"> | string
     photoId?: StringWithAggregatesFilter<"Vote"> | string
     contestId?: StringWithAggregatesFilter<"Vote"> | string
+    type?: EnumVoteTypeWithAggregatesFilter<"Vote"> | $Enums.VoteType
     createdAt?: DateTimeWithAggregatesFilter<"Vote"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Vote"> | Date | string
+  }
+
+  export type UserLevelWhereInput = {
+    AND?: UserLevelWhereInput | UserLevelWhereInput[]
+    OR?: UserLevelWhereInput[]
+    NOT?: UserLevelWhereInput | UserLevelWhereInput[]
+    id?: StringFilter<"UserLevel"> | string
+    userId?: StringFilter<"UserLevel"> | string
+    levelId?: StringFilter<"UserLevel"> | string
+  }
+
+  export type UserLevelOrderByWithRelationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    levelId?: SortOrder
+  }
+
+  export type UserLevelWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: UserLevelWhereInput | UserLevelWhereInput[]
+    OR?: UserLevelWhereInput[]
+    NOT?: UserLevelWhereInput | UserLevelWhereInput[]
+    userId?: StringFilter<"UserLevel"> | string
+    levelId?: StringFilter<"UserLevel"> | string
+  }, "id">
+
+  export type UserLevelOrderByWithAggregationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    levelId?: SortOrder
+    _count?: UserLevelCountOrderByAggregateInput
+    _max?: UserLevelMaxOrderByAggregateInput
+    _min?: UserLevelMinOrderByAggregateInput
+  }
+
+  export type UserLevelScalarWhereWithAggregatesInput = {
+    AND?: UserLevelScalarWhereWithAggregatesInput | UserLevelScalarWhereWithAggregatesInput[]
+    OR?: UserLevelScalarWhereWithAggregatesInput[]
+    NOT?: UserLevelScalarWhereWithAggregatesInput | UserLevelScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"UserLevel"> | string
+    userId?: StringWithAggregatesFilter<"UserLevel"> | string
+    levelId?: StringWithAggregatesFilter<"UserLevel"> | string
+  }
+
+  export type LevelWhereInput = {
+    AND?: LevelWhereInput | LevelWhereInput[]
+    OR?: LevelWhereInput[]
+    NOT?: LevelWhereInput | LevelWhereInput[]
+    id?: StringFilter<"Level"> | string
+    level?: IntFilter<"Level"> | number
+    levelName?: EnumLevelNameFilter<"Level"> | $Enums.LevelName
+    requirements?: LevelRequirementCompositeListFilter | LevelRequirementObjectEqualityInput[]
+    createdAt?: DateTimeFilter<"Level"> | Date | string
+    updatedAt?: DateTimeFilter<"Level"> | Date | string
+  }
+
+  export type LevelOrderByWithRelationInput = {
+    id?: SortOrder
+    level?: SortOrder
+    levelName?: SortOrder
+    requirements?: LevelRequirementOrderByCompositeAggregateInput
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type LevelWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: LevelWhereInput | LevelWhereInput[]
+    OR?: LevelWhereInput[]
+    NOT?: LevelWhereInput | LevelWhereInput[]
+    level?: IntFilter<"Level"> | number
+    levelName?: EnumLevelNameFilter<"Level"> | $Enums.LevelName
+    requirements?: LevelRequirementCompositeListFilter | LevelRequirementObjectEqualityInput[]
+    createdAt?: DateTimeFilter<"Level"> | Date | string
+    updatedAt?: DateTimeFilter<"Level"> | Date | string
+  }, "id">
+
+  export type LevelOrderByWithAggregationInput = {
+    id?: SortOrder
+    level?: SortOrder
+    levelName?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: LevelCountOrderByAggregateInput
+    _avg?: LevelAvgOrderByAggregateInput
+    _max?: LevelMaxOrderByAggregateInput
+    _min?: LevelMinOrderByAggregateInput
+    _sum?: LevelSumOrderByAggregateInput
+  }
+
+  export type LevelScalarWhereWithAggregatesInput = {
+    AND?: LevelScalarWhereWithAggregatesInput | LevelScalarWhereWithAggregatesInput[]
+    OR?: LevelScalarWhereWithAggregatesInput[]
+    NOT?: LevelScalarWhereWithAggregatesInput | LevelScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"Level"> | string
+    level?: IntWithAggregatesFilter<"Level"> | number
+    levelName?: EnumLevelNameWithAggregatesFilter<"Level"> | $Enums.LevelName
+    createdAt?: DateTimeWithAggregatesFilter<"Level"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"Level"> | Date | string
   }
 
   export type ContestCreateInput = {
@@ -28579,65 +31113,64 @@ export namespace Prisma {
 
   export type RoomCreateInput = {
     id?: string
+    teamId: string
   }
 
   export type RoomUncheckedCreateInput = {
     id?: string
+    teamId: string
   }
 
   export type RoomUpdateInput = {
-
+    teamId?: StringFieldUpdateOperationsInput | string
   }
 
   export type RoomUncheckedUpdateInput = {
-
+    teamId?: StringFieldUpdateOperationsInput | string
   }
 
   export type RoomCreateManyInput = {
     id?: string
+    teamId: string
   }
 
   export type RoomUpdateManyMutationInput = {
-
+    teamId?: StringFieldUpdateOperationsInput | string
   }
 
   export type RoomUncheckedUpdateManyInput = {
-
+    teamId?: StringFieldUpdateOperationsInput | string
   }
 
   export type ChatCreateInput = {
     id?: string
-    roomId: string
     senderId: string
-    receiverId: string
     message: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    team: TeamCreateNestedOneWithoutChatInput
   }
 
   export type ChatUncheckedCreateInput = {
     id?: string
-    roomId: string
+    teamId: string
     senderId: string
-    receiverId: string
     message: string
     createdAt?: Date | string
     updatedAt?: Date | string
   }
 
   export type ChatUpdateInput = {
-    roomId?: StringFieldUpdateOperationsInput | string
     senderId?: StringFieldUpdateOperationsInput | string
-    receiverId?: StringFieldUpdateOperationsInput | string
     message?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    team?: TeamUpdateOneRequiredWithoutChatNestedInput
   }
 
   export type ChatUncheckedUpdateInput = {
-    roomId?: StringFieldUpdateOperationsInput | string
+    teamId?: StringFieldUpdateOperationsInput | string
     senderId?: StringFieldUpdateOperationsInput | string
-    receiverId?: StringFieldUpdateOperationsInput | string
     message?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -28645,27 +31178,23 @@ export namespace Prisma {
 
   export type ChatCreateManyInput = {
     id?: string
-    roomId: string
+    teamId: string
     senderId: string
-    receiverId: string
     message: string
     createdAt?: Date | string
     updatedAt?: Date | string
   }
 
   export type ChatUpdateManyMutationInput = {
-    roomId?: StringFieldUpdateOperationsInput | string
     senderId?: StringFieldUpdateOperationsInput | string
-    receiverId?: StringFieldUpdateOperationsInput | string
     message?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type ChatUncheckedUpdateManyInput = {
-    roomId?: StringFieldUpdateOperationsInput | string
+    teamId?: StringFieldUpdateOperationsInput | string
     senderId?: StringFieldUpdateOperationsInput | string
-    receiverId?: StringFieldUpdateOperationsInput | string
     message?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -28680,10 +31209,12 @@ export namespace Prisma {
     description: string
     accessibility: $Enums.TeamAccessibility
     badge: string
+    min_requirement: number
     createdAt?: Date | string
     updatedAt?: Date | string
     creator: UserCreateNestedOneWithoutCreatedTeamInput
     members?: TeamMemberCreateNestedManyWithoutTeamInput
+    chat?: ChatCreateNestedManyWithoutTeamInput
   }
 
   export type TeamUncheckedCreateInput = {
@@ -28695,10 +31226,12 @@ export namespace Prisma {
     description: string
     accessibility: $Enums.TeamAccessibility
     badge: string
+    min_requirement: number
     creatorId: string
     createdAt?: Date | string
     updatedAt?: Date | string
     members?: TeamMemberUncheckedCreateNestedManyWithoutTeamInput
+    chat?: ChatUncheckedCreateNestedManyWithoutTeamInput
   }
 
   export type TeamUpdateInput = {
@@ -28709,10 +31242,12 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     accessibility?: EnumTeamAccessibilityFieldUpdateOperationsInput | $Enums.TeamAccessibility
     badge?: StringFieldUpdateOperationsInput | string
+    min_requirement?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     creator?: UserUpdateOneRequiredWithoutCreatedTeamNestedInput
     members?: TeamMemberUpdateManyWithoutTeamNestedInput
+    chat?: ChatUpdateManyWithoutTeamNestedInput
   }
 
   export type TeamUncheckedUpdateInput = {
@@ -28723,10 +31258,12 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     accessibility?: EnumTeamAccessibilityFieldUpdateOperationsInput | $Enums.TeamAccessibility
     badge?: StringFieldUpdateOperationsInput | string
+    min_requirement?: IntFieldUpdateOperationsInput | number
     creatorId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     members?: TeamMemberUncheckedUpdateManyWithoutTeamNestedInput
+    chat?: ChatUncheckedUpdateManyWithoutTeamNestedInput
   }
 
   export type TeamCreateManyInput = {
@@ -28738,6 +31275,7 @@ export namespace Prisma {
     description: string
     accessibility: $Enums.TeamAccessibility
     badge: string
+    min_requirement: number
     creatorId: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -28751,6 +31289,7 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     accessibility?: EnumTeamAccessibilityFieldUpdateOperationsInput | $Enums.TeamAccessibility
     badge?: StringFieldUpdateOperationsInput | string
+    min_requirement?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -28763,6 +31302,7 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     accessibility?: EnumTeamAccessibilityFieldUpdateOperationsInput | $Enums.TeamAccessibility
     badge?: StringFieldUpdateOperationsInput | string
+    min_requirement?: IntFieldUpdateOperationsInput | number
     creatorId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -28838,7 +31378,6 @@ export namespace Prisma {
     phone?: string | null
     email: string
     location?: string | null
-    level?: $Enums.UserLevel | null
     password?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
@@ -28871,7 +31410,6 @@ export namespace Prisma {
     phone?: string | null
     email: string
     location?: string | null
-    level?: $Enums.UserLevel | null
     password?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
@@ -28903,7 +31441,6 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
-    level?: NullableEnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel | null
     password?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -28935,7 +31472,6 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
-    level?: NullableEnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel | null
     password?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -28968,7 +31504,6 @@ export namespace Prisma {
     phone?: string | null
     email: string
     location?: string | null
-    level?: $Enums.UserLevel | null
     password?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
@@ -28988,7 +31523,6 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
-    level?: NullableEnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel | null
     password?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -29008,7 +31542,6 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
-    level?: NullableEnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel | null
     password?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -29423,6 +31956,7 @@ export namespace Prisma {
 
   export type VoteCreateInput = {
     id?: string
+    type: $Enums.VoteType
     createdAt?: Date | string
     updatedAt?: Date | string
     provider: UserCreateNestedOneWithoutVotesInput
@@ -29435,11 +31969,13 @@ export namespace Prisma {
     providerId: string
     photoId: string
     contestId: string
+    type: $Enums.VoteType
     createdAt?: Date | string
     updatedAt?: Date | string
   }
 
   export type VoteUpdateInput = {
+    type?: EnumVoteTypeFieldUpdateOperationsInput | $Enums.VoteType
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     provider?: UserUpdateOneRequiredWithoutVotesNestedInput
@@ -29451,6 +31987,7 @@ export namespace Prisma {
     providerId?: StringFieldUpdateOperationsInput | string
     photoId?: StringFieldUpdateOperationsInput | string
     contestId?: StringFieldUpdateOperationsInput | string
+    type?: EnumVoteTypeFieldUpdateOperationsInput | $Enums.VoteType
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -29460,11 +31997,13 @@ export namespace Prisma {
     providerId: string
     photoId: string
     contestId: string
+    type: $Enums.VoteType
     createdAt?: Date | string
     updatedAt?: Date | string
   }
 
   export type VoteUpdateManyMutationInput = {
+    type?: EnumVoteTypeFieldUpdateOperationsInput | $Enums.VoteType
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -29473,6 +32012,104 @@ export namespace Prisma {
     providerId?: StringFieldUpdateOperationsInput | string
     photoId?: StringFieldUpdateOperationsInput | string
     contestId?: StringFieldUpdateOperationsInput | string
+    type?: EnumVoteTypeFieldUpdateOperationsInput | $Enums.VoteType
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserLevelCreateInput = {
+    id?: string
+    userId: string
+    levelId: string
+  }
+
+  export type UserLevelUncheckedCreateInput = {
+    id?: string
+    userId: string
+    levelId: string
+  }
+
+  export type UserLevelUpdateInput = {
+    userId?: StringFieldUpdateOperationsInput | string
+    levelId?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type UserLevelUncheckedUpdateInput = {
+    userId?: StringFieldUpdateOperationsInput | string
+    levelId?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type UserLevelCreateManyInput = {
+    id?: string
+    userId: string
+    levelId: string
+  }
+
+  export type UserLevelUpdateManyMutationInput = {
+    userId?: StringFieldUpdateOperationsInput | string
+    levelId?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type UserLevelUncheckedUpdateManyInput = {
+    userId?: StringFieldUpdateOperationsInput | string
+    levelId?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type LevelCreateInput = {
+    id?: string
+    level: number
+    levelName: $Enums.LevelName
+    requirements?: XOR<LevelRequirementListCreateEnvelopeInput, LevelRequirementCreateInput> | LevelRequirementCreateInput[]
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type LevelUncheckedCreateInput = {
+    id?: string
+    level: number
+    levelName: $Enums.LevelName
+    requirements?: XOR<LevelRequirementListCreateEnvelopeInput, LevelRequirementCreateInput> | LevelRequirementCreateInput[]
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type LevelUpdateInput = {
+    level?: IntFieldUpdateOperationsInput | number
+    levelName?: EnumLevelNameFieldUpdateOperationsInput | $Enums.LevelName
+    requirements?: XOR<LevelRequirementListUpdateEnvelopeInput, LevelRequirementCreateInput> | LevelRequirementCreateInput[]
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LevelUncheckedUpdateInput = {
+    level?: IntFieldUpdateOperationsInput | number
+    levelName?: EnumLevelNameFieldUpdateOperationsInput | $Enums.LevelName
+    requirements?: XOR<LevelRequirementListUpdateEnvelopeInput, LevelRequirementCreateInput> | LevelRequirementCreateInput[]
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LevelCreateManyInput = {
+    id?: string
+    level: number
+    levelName: $Enums.LevelName
+    requirements?: XOR<LevelRequirementListCreateEnvelopeInput, LevelRequirementCreateInput> | LevelRequirementCreateInput[]
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type LevelUpdateManyMutationInput = {
+    level?: IntFieldUpdateOperationsInput | number
+    levelName?: EnumLevelNameFieldUpdateOperationsInput | $Enums.LevelName
+    requirements?: XOR<LevelRequirementListUpdateEnvelopeInput, LevelRequirementCreateInput> | LevelRequirementCreateInput[]
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LevelUncheckedUpdateManyInput = {
+    level?: IntFieldUpdateOperationsInput | number
+    levelName?: EnumLevelNameFieldUpdateOperationsInput | $Enums.LevelName
+    requirements?: XOR<LevelRequirementListUpdateEnvelopeInput, LevelRequirementCreateInput> | LevelRequirementCreateInput[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -30295,21 +32932,28 @@ export namespace Prisma {
 
   export type RoomCountOrderByAggregateInput = {
     id?: SortOrder
+    teamId?: SortOrder
   }
 
   export type RoomMaxOrderByAggregateInput = {
     id?: SortOrder
+    teamId?: SortOrder
   }
 
   export type RoomMinOrderByAggregateInput = {
     id?: SortOrder
+    teamId?: SortOrder
+  }
+
+  export type TeamScalarRelationFilter = {
+    is?: TeamWhereInput
+    isNot?: TeamWhereInput
   }
 
   export type ChatCountOrderByAggregateInput = {
     id?: SortOrder
-    roomId?: SortOrder
+    teamId?: SortOrder
     senderId?: SortOrder
-    receiverId?: SortOrder
     message?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -30317,9 +32961,8 @@ export namespace Prisma {
 
   export type ChatMaxOrderByAggregateInput = {
     id?: SortOrder
-    roomId?: SortOrder
+    teamId?: SortOrder
     senderId?: SortOrder
-    receiverId?: SortOrder
     message?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -30327,9 +32970,8 @@ export namespace Prisma {
 
   export type ChatMinOrderByAggregateInput = {
     id?: SortOrder
-    roomId?: SortOrder
+    teamId?: SortOrder
     senderId?: SortOrder
-    receiverId?: SortOrder
     message?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -30348,7 +32990,17 @@ export namespace Prisma {
     none?: TeamMemberWhereInput
   }
 
+  export type ChatListRelationFilter = {
+    every?: ChatWhereInput
+    some?: ChatWhereInput
+    none?: ChatWhereInput
+  }
+
   export type TeamMemberOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type ChatOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -30361,9 +33013,14 @@ export namespace Prisma {
     description?: SortOrder
     accessibility?: SortOrder
     badge?: SortOrder
+    min_requirement?: SortOrder
     creatorId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+  }
+
+  export type TeamAvgOrderByAggregateInput = {
+    min_requirement?: SortOrder
   }
 
   export type TeamMaxOrderByAggregateInput = {
@@ -30375,6 +33032,7 @@ export namespace Prisma {
     description?: SortOrder
     accessibility?: SortOrder
     badge?: SortOrder
+    min_requirement?: SortOrder
     creatorId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -30389,9 +33047,14 @@ export namespace Prisma {
     description?: SortOrder
     accessibility?: SortOrder
     badge?: SortOrder
+    min_requirement?: SortOrder
     creatorId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+  }
+
+  export type TeamSumOrderByAggregateInput = {
+    min_requirement?: SortOrder
   }
 
   export type EnumTeamAccessibilityWithAggregatesFilter<$PrismaModel = never> = {
@@ -30409,11 +33072,6 @@ export namespace Prisma {
     in?: $Enums.TeamMemberStatus[] | ListEnumTeamMemberStatusFieldRefInput<$PrismaModel>
     notIn?: $Enums.TeamMemberStatus[] | ListEnumTeamMemberStatusFieldRefInput<$PrismaModel>
     not?: NestedEnumTeamMemberStatusFilter<$PrismaModel> | $Enums.TeamMemberStatus
-  }
-
-  export type TeamScalarRelationFilter = {
-    is?: TeamWhereInput
-    isNot?: TeamWhereInput
   }
 
   export type TeamMemberCountOrderByAggregateInput = {
@@ -30451,14 +33109,6 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumTeamMemberStatusFilter<$PrismaModel>
     _max?: NestedEnumTeamMemberStatusFilter<$PrismaModel>
-  }
-
-  export type EnumUserLevelNullableFilter<$PrismaModel = never> = {
-    equals?: $Enums.UserLevel | EnumUserLevelFieldRefInput<$PrismaModel> | null
-    in?: $Enums.UserLevel[] | ListEnumUserLevelFieldRefInput<$PrismaModel> | null
-    notIn?: $Enums.UserLevel[] | ListEnumUserLevelFieldRefInput<$PrismaModel> | null
-    not?: NestedEnumUserLevelNullableFilter<$PrismaModel> | $Enums.UserLevel | null
-    isSet?: boolean
   }
 
   export type EnumUserRoleFilter<$PrismaModel = never> = {
@@ -30546,7 +33196,6 @@ export namespace Prisma {
     phone?: SortOrder
     email?: SortOrder
     location?: SortOrder
-    level?: SortOrder
     password?: SortOrder
     role?: SortOrder
     accessToken?: SortOrder
@@ -30567,7 +33216,6 @@ export namespace Prisma {
     phone?: SortOrder
     email?: SortOrder
     location?: SortOrder
-    level?: SortOrder
     password?: SortOrder
     role?: SortOrder
     accessToken?: SortOrder
@@ -30588,23 +33236,11 @@ export namespace Prisma {
     phone?: SortOrder
     email?: SortOrder
     location?: SortOrder
-    level?: SortOrder
     password?: SortOrder
     role?: SortOrder
     accessToken?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-  }
-
-  export type EnumUserLevelNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.UserLevel | EnumUserLevelFieldRefInput<$PrismaModel> | null
-    in?: $Enums.UserLevel[] | ListEnumUserLevelFieldRefInput<$PrismaModel> | null
-    notIn?: $Enums.UserLevel[] | ListEnumUserLevelFieldRefInput<$PrismaModel> | null
-    not?: NestedEnumUserLevelNullableWithAggregatesFilter<$PrismaModel> | $Enums.UserLevel | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedEnumUserLevelNullableFilter<$PrismaModel>
-    _max?: NestedEnumUserLevelNullableFilter<$PrismaModel>
-    isSet?: boolean
   }
 
   export type EnumUserRoleWithAggregatesFilter<$PrismaModel = never> = {
@@ -30881,11 +33517,19 @@ export namespace Prisma {
     updatedAt?: SortOrder
   }
 
+  export type EnumVoteTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.VoteType | EnumVoteTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.VoteType[] | ListEnumVoteTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.VoteType[] | ListEnumVoteTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumVoteTypeFilter<$PrismaModel> | $Enums.VoteType
+  }
+
   export type VoteCountOrderByAggregateInput = {
     id?: SortOrder
     providerId?: SortOrder
     photoId?: SortOrder
     contestId?: SortOrder
+    type?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -30895,6 +33539,7 @@ export namespace Prisma {
     providerId?: SortOrder
     photoId?: SortOrder
     contestId?: SortOrder
+    type?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -30904,8 +33549,105 @@ export namespace Prisma {
     providerId?: SortOrder
     photoId?: SortOrder
     contestId?: SortOrder
+    type?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+  }
+
+  export type EnumVoteTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.VoteType | EnumVoteTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.VoteType[] | ListEnumVoteTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.VoteType[] | ListEnumVoteTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumVoteTypeWithAggregatesFilter<$PrismaModel> | $Enums.VoteType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumVoteTypeFilter<$PrismaModel>
+    _max?: NestedEnumVoteTypeFilter<$PrismaModel>
+  }
+
+  export type UserLevelCountOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    levelId?: SortOrder
+  }
+
+  export type UserLevelMaxOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    levelId?: SortOrder
+  }
+
+  export type UserLevelMinOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    levelId?: SortOrder
+  }
+
+  export type EnumLevelNameFilter<$PrismaModel = never> = {
+    equals?: $Enums.LevelName | EnumLevelNameFieldRefInput<$PrismaModel>
+    in?: $Enums.LevelName[] | ListEnumLevelNameFieldRefInput<$PrismaModel>
+    notIn?: $Enums.LevelName[] | ListEnumLevelNameFieldRefInput<$PrismaModel>
+    not?: NestedEnumLevelNameFilter<$PrismaModel> | $Enums.LevelName
+  }
+
+  export type LevelRequirementCompositeListFilter = {
+    equals?: LevelRequirementObjectEqualityInput[]
+    every?: LevelRequirementWhereInput
+    some?: LevelRequirementWhereInput
+    none?: LevelRequirementWhereInput
+    isEmpty?: boolean
+    isSet?: boolean
+  }
+
+  export type LevelRequirementObjectEqualityInput = {
+    title: string
+    required: number
+    badge: BadgeObjectEqualityInput
+  }
+
+  export type LevelRequirementOrderByCompositeAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type LevelCountOrderByAggregateInput = {
+    id?: SortOrder
+    level?: SortOrder
+    levelName?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type LevelAvgOrderByAggregateInput = {
+    level?: SortOrder
+  }
+
+  export type LevelMaxOrderByAggregateInput = {
+    id?: SortOrder
+    level?: SortOrder
+    levelName?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type LevelMinOrderByAggregateInput = {
+    id?: SortOrder
+    level?: SortOrder
+    levelName?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type LevelSumOrderByAggregateInput = {
+    level?: SortOrder
+  }
+
+  export type EnumLevelNameWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.LevelName | EnumLevelNameFieldRefInput<$PrismaModel>
+    in?: $Enums.LevelName[] | ListEnumLevelNameFieldRefInput<$PrismaModel>
+    notIn?: $Enums.LevelName[] | ListEnumLevelNameFieldRefInput<$PrismaModel>
+    not?: NestedEnumLevelNameWithAggregatesFilter<$PrismaModel> | $Enums.LevelName
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumLevelNameFilter<$PrismaModel>
+    _max?: NestedEnumLevelNameFilter<$PrismaModel>
   }
 
   export type ContestCreatelevel_requirementsInput = {
@@ -31677,6 +34419,20 @@ export namespace Prisma {
     set?: $Enums.SitePolicyType
   }
 
+  export type TeamCreateNestedOneWithoutChatInput = {
+    create?: XOR<TeamCreateWithoutChatInput, TeamUncheckedCreateWithoutChatInput>
+    connectOrCreate?: TeamCreateOrConnectWithoutChatInput
+    connect?: TeamWhereUniqueInput
+  }
+
+  export type TeamUpdateOneRequiredWithoutChatNestedInput = {
+    create?: XOR<TeamCreateWithoutChatInput, TeamUncheckedCreateWithoutChatInput>
+    connectOrCreate?: TeamCreateOrConnectWithoutChatInput
+    upsert?: TeamUpsertWithoutChatInput
+    connect?: TeamWhereUniqueInput
+    update?: XOR<XOR<TeamUpdateToOneWithWhereWithoutChatInput, TeamUpdateWithoutChatInput>, TeamUncheckedUpdateWithoutChatInput>
+  }
+
   export type UserCreateNestedOneWithoutCreatedTeamInput = {
     create?: XOR<UserCreateWithoutCreatedTeamInput, UserUncheckedCreateWithoutCreatedTeamInput>
     connectOrCreate?: UserCreateOrConnectWithoutCreatedTeamInput
@@ -31690,11 +34446,25 @@ export namespace Prisma {
     connect?: TeamMemberWhereUniqueInput | TeamMemberWhereUniqueInput[]
   }
 
+  export type ChatCreateNestedManyWithoutTeamInput = {
+    create?: XOR<ChatCreateWithoutTeamInput, ChatUncheckedCreateWithoutTeamInput> | ChatCreateWithoutTeamInput[] | ChatUncheckedCreateWithoutTeamInput[]
+    connectOrCreate?: ChatCreateOrConnectWithoutTeamInput | ChatCreateOrConnectWithoutTeamInput[]
+    createMany?: ChatCreateManyTeamInputEnvelope
+    connect?: ChatWhereUniqueInput | ChatWhereUniqueInput[]
+  }
+
   export type TeamMemberUncheckedCreateNestedManyWithoutTeamInput = {
     create?: XOR<TeamMemberCreateWithoutTeamInput, TeamMemberUncheckedCreateWithoutTeamInput> | TeamMemberCreateWithoutTeamInput[] | TeamMemberUncheckedCreateWithoutTeamInput[]
     connectOrCreate?: TeamMemberCreateOrConnectWithoutTeamInput | TeamMemberCreateOrConnectWithoutTeamInput[]
     createMany?: TeamMemberCreateManyTeamInputEnvelope
     connect?: TeamMemberWhereUniqueInput | TeamMemberWhereUniqueInput[]
+  }
+
+  export type ChatUncheckedCreateNestedManyWithoutTeamInput = {
+    create?: XOR<ChatCreateWithoutTeamInput, ChatUncheckedCreateWithoutTeamInput> | ChatCreateWithoutTeamInput[] | ChatUncheckedCreateWithoutTeamInput[]
+    connectOrCreate?: ChatCreateOrConnectWithoutTeamInput | ChatCreateOrConnectWithoutTeamInput[]
+    createMany?: ChatCreateManyTeamInputEnvelope
+    connect?: ChatWhereUniqueInput | ChatWhereUniqueInput[]
   }
 
   export type EnumTeamAccessibilityFieldUpdateOperationsInput = {
@@ -31723,6 +34493,20 @@ export namespace Prisma {
     deleteMany?: TeamMemberScalarWhereInput | TeamMemberScalarWhereInput[]
   }
 
+  export type ChatUpdateManyWithoutTeamNestedInput = {
+    create?: XOR<ChatCreateWithoutTeamInput, ChatUncheckedCreateWithoutTeamInput> | ChatCreateWithoutTeamInput[] | ChatUncheckedCreateWithoutTeamInput[]
+    connectOrCreate?: ChatCreateOrConnectWithoutTeamInput | ChatCreateOrConnectWithoutTeamInput[]
+    upsert?: ChatUpsertWithWhereUniqueWithoutTeamInput | ChatUpsertWithWhereUniqueWithoutTeamInput[]
+    createMany?: ChatCreateManyTeamInputEnvelope
+    set?: ChatWhereUniqueInput | ChatWhereUniqueInput[]
+    disconnect?: ChatWhereUniqueInput | ChatWhereUniqueInput[]
+    delete?: ChatWhereUniqueInput | ChatWhereUniqueInput[]
+    connect?: ChatWhereUniqueInput | ChatWhereUniqueInput[]
+    update?: ChatUpdateWithWhereUniqueWithoutTeamInput | ChatUpdateWithWhereUniqueWithoutTeamInput[]
+    updateMany?: ChatUpdateManyWithWhereWithoutTeamInput | ChatUpdateManyWithWhereWithoutTeamInput[]
+    deleteMany?: ChatScalarWhereInput | ChatScalarWhereInput[]
+  }
+
   export type TeamMemberUncheckedUpdateManyWithoutTeamNestedInput = {
     create?: XOR<TeamMemberCreateWithoutTeamInput, TeamMemberUncheckedCreateWithoutTeamInput> | TeamMemberCreateWithoutTeamInput[] | TeamMemberUncheckedCreateWithoutTeamInput[]
     connectOrCreate?: TeamMemberCreateOrConnectWithoutTeamInput | TeamMemberCreateOrConnectWithoutTeamInput[]
@@ -31735,6 +34519,20 @@ export namespace Prisma {
     update?: TeamMemberUpdateWithWhereUniqueWithoutTeamInput | TeamMemberUpdateWithWhereUniqueWithoutTeamInput[]
     updateMany?: TeamMemberUpdateManyWithWhereWithoutTeamInput | TeamMemberUpdateManyWithWhereWithoutTeamInput[]
     deleteMany?: TeamMemberScalarWhereInput | TeamMemberScalarWhereInput[]
+  }
+
+  export type ChatUncheckedUpdateManyWithoutTeamNestedInput = {
+    create?: XOR<ChatCreateWithoutTeamInput, ChatUncheckedCreateWithoutTeamInput> | ChatCreateWithoutTeamInput[] | ChatUncheckedCreateWithoutTeamInput[]
+    connectOrCreate?: ChatCreateOrConnectWithoutTeamInput | ChatCreateOrConnectWithoutTeamInput[]
+    upsert?: ChatUpsertWithWhereUniqueWithoutTeamInput | ChatUpsertWithWhereUniqueWithoutTeamInput[]
+    createMany?: ChatCreateManyTeamInputEnvelope
+    set?: ChatWhereUniqueInput | ChatWhereUniqueInput[]
+    disconnect?: ChatWhereUniqueInput | ChatWhereUniqueInput[]
+    delete?: ChatWhereUniqueInput | ChatWhereUniqueInput[]
+    connect?: ChatWhereUniqueInput | ChatWhereUniqueInput[]
+    update?: ChatUpdateWithWhereUniqueWithoutTeamInput | ChatUpdateWithWhereUniqueWithoutTeamInput[]
+    updateMany?: ChatUpdateManyWithWhereWithoutTeamInput | ChatUpdateManyWithWhereWithoutTeamInput[]
+    deleteMany?: ChatScalarWhereInput | ChatScalarWhereInput[]
   }
 
   export type TeamCreateNestedOneWithoutMembersInput = {
@@ -31929,11 +34727,6 @@ export namespace Prisma {
     connectOrCreate?: ContestParticipantCreateOrConnectWithoutUserInput | ContestParticipantCreateOrConnectWithoutUserInput[]
     createMany?: ContestParticipantCreateManyUserInputEnvelope
     connect?: ContestParticipantWhereUniqueInput | ContestParticipantWhereUniqueInput[]
-  }
-
-  export type NullableEnumUserLevelFieldUpdateOperationsInput = {
-    set?: $Enums.UserLevel | null
-    unset?: boolean
   }
 
   export type EnumUserRoleFieldUpdateOperationsInput = {
@@ -32570,6 +35363,10 @@ export namespace Prisma {
     connect?: ContestWhereUniqueInput
   }
 
+  export type EnumVoteTypeFieldUpdateOperationsInput = {
+    set?: $Enums.VoteType
+  }
+
   export type UserUpdateOneRequiredWithoutVotesNestedInput = {
     create?: XOR<UserCreateWithoutVotesInput, UserUncheckedCreateWithoutVotesInput>
     connectOrCreate?: UserCreateOrConnectWithoutVotesInput
@@ -32592,6 +35389,27 @@ export namespace Prisma {
     upsert?: ContestUpsertWithoutVotesInput
     connect?: ContestWhereUniqueInput
     update?: XOR<XOR<ContestUpdateToOneWithWhereWithoutVotesInput, ContestUpdateWithoutVotesInput>, ContestUncheckedUpdateWithoutVotesInput>
+  }
+
+  export type LevelRequirementListCreateEnvelopeInput = {
+    set?: LevelRequirementCreateInput | LevelRequirementCreateInput[]
+  }
+
+  export type LevelRequirementCreateInput = {
+    title: string
+    required: number
+    badge: BadgeCreateInput
+  }
+
+  export type EnumLevelNameFieldUpdateOperationsInput = {
+    set?: $Enums.LevelName
+  }
+
+  export type LevelRequirementListUpdateEnvelopeInput = {
+    set?: LevelRequirementCreateInput | LevelRequirementCreateInput[]
+    push?: LevelRequirementCreateInput | LevelRequirementCreateInput[]
+    updateMany?: LevelRequirementUpdateManyInput
+    deleteMany?: LevelRequirementDeleteManyInput
   }
 
   export type NestedStringFilter<$PrismaModel = never> = {
@@ -32942,30 +35760,11 @@ export namespace Prisma {
     _max?: NestedEnumTeamMemberStatusFilter<$PrismaModel>
   }
 
-  export type NestedEnumUserLevelNullableFilter<$PrismaModel = never> = {
-    equals?: $Enums.UserLevel | EnumUserLevelFieldRefInput<$PrismaModel> | null
-    in?: $Enums.UserLevel[] | ListEnumUserLevelFieldRefInput<$PrismaModel> | null
-    notIn?: $Enums.UserLevel[] | ListEnumUserLevelFieldRefInput<$PrismaModel> | null
-    not?: NestedEnumUserLevelNullableFilter<$PrismaModel> | $Enums.UserLevel | null
-    isSet?: boolean
-  }
-
   export type NestedEnumUserRoleFilter<$PrismaModel = never> = {
     equals?: $Enums.UserRole | EnumUserRoleFieldRefInput<$PrismaModel>
     in?: $Enums.UserRole[] | ListEnumUserRoleFieldRefInput<$PrismaModel>
     notIn?: $Enums.UserRole[] | ListEnumUserRoleFieldRefInput<$PrismaModel>
     not?: NestedEnumUserRoleFilter<$PrismaModel> | $Enums.UserRole
-  }
-
-  export type NestedEnumUserLevelNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.UserLevel | EnumUserLevelFieldRefInput<$PrismaModel> | null
-    in?: $Enums.UserLevel[] | ListEnumUserLevelFieldRefInput<$PrismaModel> | null
-    notIn?: $Enums.UserLevel[] | ListEnumUserLevelFieldRefInput<$PrismaModel> | null
-    not?: NestedEnumUserLevelNullableWithAggregatesFilter<$PrismaModel> | $Enums.UserLevel | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedEnumUserLevelNullableFilter<$PrismaModel>
-    _max?: NestedEnumUserLevelNullableFilter<$PrismaModel>
-    isSet?: boolean
   }
 
   export type NestedEnumUserRoleWithAggregatesFilter<$PrismaModel = never> = {
@@ -33005,6 +35804,54 @@ export namespace Prisma {
     _max?: NestedEnumOtpStatusFilter<$PrismaModel>
   }
 
+  export type NestedEnumVoteTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.VoteType | EnumVoteTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.VoteType[] | ListEnumVoteTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.VoteType[] | ListEnumVoteTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumVoteTypeFilter<$PrismaModel> | $Enums.VoteType
+  }
+
+  export type NestedEnumVoteTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.VoteType | EnumVoteTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.VoteType[] | ListEnumVoteTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.VoteType[] | ListEnumVoteTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumVoteTypeWithAggregatesFilter<$PrismaModel> | $Enums.VoteType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumVoteTypeFilter<$PrismaModel>
+    _max?: NestedEnumVoteTypeFilter<$PrismaModel>
+  }
+
+  export type NestedEnumLevelNameFilter<$PrismaModel = never> = {
+    equals?: $Enums.LevelName | EnumLevelNameFieldRefInput<$PrismaModel>
+    in?: $Enums.LevelName[] | ListEnumLevelNameFieldRefInput<$PrismaModel>
+    notIn?: $Enums.LevelName[] | ListEnumLevelNameFieldRefInput<$PrismaModel>
+    not?: NestedEnumLevelNameFilter<$PrismaModel> | $Enums.LevelName
+  }
+
+  export type LevelRequirementWhereInput = {
+    AND?: LevelRequirementWhereInput | LevelRequirementWhereInput[]
+    OR?: LevelRequirementWhereInput[]
+    NOT?: LevelRequirementWhereInput | LevelRequirementWhereInput[]
+    title?: StringFilter<"LevelRequirement"> | string
+    required?: IntFilter<"LevelRequirement"> | number
+    badge?: XOR<BadgeCompositeFilter, BadgeObjectEqualityInput>
+  }
+
+  export type BadgeObjectEqualityInput = {
+    type: string
+    param: string
+  }
+
+  export type NestedEnumLevelNameWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.LevelName | EnumLevelNameFieldRefInput<$PrismaModel>
+    in?: $Enums.LevelName[] | ListEnumLevelNameFieldRefInput<$PrismaModel>
+    notIn?: $Enums.LevelName[] | ListEnumLevelNameFieldRefInput<$PrismaModel>
+    not?: NestedEnumLevelNameWithAggregatesFilter<$PrismaModel> | $Enums.LevelName
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumLevelNameFilter<$PrismaModel>
+    _max?: NestedEnumLevelNameFilter<$PrismaModel>
+  }
+
   export type UserCreateWithoutCreatedContestsInput = {
     id?: string
     cover?: string | null
@@ -33018,7 +35865,6 @@ export namespace Prisma {
     phone?: string | null
     email: string
     location?: string | null
-    level?: $Enums.UserLevel | null
     password?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
@@ -33050,7 +35896,6 @@ export namespace Prisma {
     phone?: string | null
     email: string
     location?: string | null
-    level?: $Enums.UserLevel | null
     password?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
@@ -33111,6 +35956,7 @@ export namespace Prisma {
 
   export type VoteCreateWithoutContestInput = {
     id?: string
+    type: $Enums.VoteType
     createdAt?: Date | string
     updatedAt?: Date | string
     provider: UserCreateNestedOneWithoutVotesInput
@@ -33121,6 +35967,7 @@ export namespace Prisma {
     id?: string
     providerId: string
     photoId: string
+    type: $Enums.VoteType
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -33236,7 +36083,6 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
-    level?: NullableEnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel | null
     password?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -33267,7 +36113,6 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
-    level?: NullableEnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel | null
     password?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -33340,6 +36185,7 @@ export namespace Prisma {
     providerId?: StringFilter<"Vote"> | string
     photoId?: StringFilter<"Vote"> | string
     contestId?: StringFilter<"Vote"> | string
+    type?: EnumVoteTypeFilter<"Vote"> | $Enums.VoteType
     createdAt?: DateTimeFilter<"Vote"> | Date | string
     updatedAt?: DateTimeFilter<"Vote"> | Date | string
   }
@@ -33572,6 +36418,7 @@ export namespace Prisma {
 
   export type VoteCreateWithoutPhotoInput = {
     id?: string
+    type: $Enums.VoteType
     createdAt?: Date | string
     updatedAt?: Date | string
     provider: UserCreateNestedOneWithoutVotesInput
@@ -33582,6 +36429,7 @@ export namespace Prisma {
     id?: string
     providerId: string
     contestId: string
+    type: $Enums.VoteType
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -34080,7 +36928,6 @@ export namespace Prisma {
     phone?: string | null
     email: string
     location?: string | null
-    level?: $Enums.UserLevel | null
     password?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
@@ -34112,7 +36959,6 @@ export namespace Prisma {
     phone?: string | null
     email: string
     location?: string | null
-    level?: $Enums.UserLevel | null
     password?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
@@ -34305,7 +37151,6 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
-    level?: NullableEnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel | null
     password?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -34336,7 +37181,6 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
-    level?: NullableEnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel | null
     password?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -34767,6 +37611,84 @@ export namespace Prisma {
     ContestWinner?: ContestWinnerUncheckedUpdateManyWithoutParticipantNestedInput
   }
 
+  export type TeamCreateWithoutChatInput = {
+    id?: string
+    name: string
+    level: string
+    language: string
+    country: string
+    description: string
+    accessibility: $Enums.TeamAccessibility
+    badge: string
+    min_requirement: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    creator: UserCreateNestedOneWithoutCreatedTeamInput
+    members?: TeamMemberCreateNestedManyWithoutTeamInput
+  }
+
+  export type TeamUncheckedCreateWithoutChatInput = {
+    id?: string
+    name: string
+    level: string
+    language: string
+    country: string
+    description: string
+    accessibility: $Enums.TeamAccessibility
+    badge: string
+    min_requirement: number
+    creatorId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    members?: TeamMemberUncheckedCreateNestedManyWithoutTeamInput
+  }
+
+  export type TeamCreateOrConnectWithoutChatInput = {
+    where: TeamWhereUniqueInput
+    create: XOR<TeamCreateWithoutChatInput, TeamUncheckedCreateWithoutChatInput>
+  }
+
+  export type TeamUpsertWithoutChatInput = {
+    update: XOR<TeamUpdateWithoutChatInput, TeamUncheckedUpdateWithoutChatInput>
+    create: XOR<TeamCreateWithoutChatInput, TeamUncheckedCreateWithoutChatInput>
+    where?: TeamWhereInput
+  }
+
+  export type TeamUpdateToOneWithWhereWithoutChatInput = {
+    where?: TeamWhereInput
+    data: XOR<TeamUpdateWithoutChatInput, TeamUncheckedUpdateWithoutChatInput>
+  }
+
+  export type TeamUpdateWithoutChatInput = {
+    name?: StringFieldUpdateOperationsInput | string
+    level?: StringFieldUpdateOperationsInput | string
+    language?: StringFieldUpdateOperationsInput | string
+    country?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    accessibility?: EnumTeamAccessibilityFieldUpdateOperationsInput | $Enums.TeamAccessibility
+    badge?: StringFieldUpdateOperationsInput | string
+    min_requirement?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    creator?: UserUpdateOneRequiredWithoutCreatedTeamNestedInput
+    members?: TeamMemberUpdateManyWithoutTeamNestedInput
+  }
+
+  export type TeamUncheckedUpdateWithoutChatInput = {
+    name?: StringFieldUpdateOperationsInput | string
+    level?: StringFieldUpdateOperationsInput | string
+    language?: StringFieldUpdateOperationsInput | string
+    country?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    accessibility?: EnumTeamAccessibilityFieldUpdateOperationsInput | $Enums.TeamAccessibility
+    badge?: StringFieldUpdateOperationsInput | string
+    min_requirement?: IntFieldUpdateOperationsInput | number
+    creatorId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    members?: TeamMemberUncheckedUpdateManyWithoutTeamNestedInput
+  }
+
   export type UserCreateWithoutCreatedTeamInput = {
     id?: string
     cover?: string | null
@@ -34780,7 +37702,6 @@ export namespace Prisma {
     phone?: string | null
     email: string
     location?: string | null
-    level?: $Enums.UserLevel | null
     password?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
@@ -34812,7 +37733,6 @@ export namespace Prisma {
     phone?: string | null
     email: string
     location?: string | null
-    level?: $Enums.UserLevel | null
     password?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
@@ -34861,6 +37781,31 @@ export namespace Prisma {
     data: TeamMemberCreateManyTeamInput | TeamMemberCreateManyTeamInput[]
   }
 
+  export type ChatCreateWithoutTeamInput = {
+    id?: string
+    senderId: string
+    message: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ChatUncheckedCreateWithoutTeamInput = {
+    id?: string
+    senderId: string
+    message: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ChatCreateOrConnectWithoutTeamInput = {
+    where: ChatWhereUniqueInput
+    create: XOR<ChatCreateWithoutTeamInput, ChatUncheckedCreateWithoutTeamInput>
+  }
+
+  export type ChatCreateManyTeamInputEnvelope = {
+    data: ChatCreateManyTeamInput | ChatCreateManyTeamInput[]
+  }
+
   export type UserUpsertWithoutCreatedTeamInput = {
     update: XOR<UserUpdateWithoutCreatedTeamInput, UserUncheckedUpdateWithoutCreatedTeamInput>
     create: XOR<UserCreateWithoutCreatedTeamInput, UserUncheckedCreateWithoutCreatedTeamInput>
@@ -34884,7 +37829,6 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
-    level?: NullableEnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel | null
     password?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -34915,7 +37859,6 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
-    level?: NullableEnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel | null
     password?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -34962,6 +37905,34 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"TeamMember"> | Date | string
   }
 
+  export type ChatUpsertWithWhereUniqueWithoutTeamInput = {
+    where: ChatWhereUniqueInput
+    update: XOR<ChatUpdateWithoutTeamInput, ChatUncheckedUpdateWithoutTeamInput>
+    create: XOR<ChatCreateWithoutTeamInput, ChatUncheckedCreateWithoutTeamInput>
+  }
+
+  export type ChatUpdateWithWhereUniqueWithoutTeamInput = {
+    where: ChatWhereUniqueInput
+    data: XOR<ChatUpdateWithoutTeamInput, ChatUncheckedUpdateWithoutTeamInput>
+  }
+
+  export type ChatUpdateManyWithWhereWithoutTeamInput = {
+    where: ChatScalarWhereInput
+    data: XOR<ChatUpdateManyMutationInput, ChatUncheckedUpdateManyWithoutTeamInput>
+  }
+
+  export type ChatScalarWhereInput = {
+    AND?: ChatScalarWhereInput | ChatScalarWhereInput[]
+    OR?: ChatScalarWhereInput[]
+    NOT?: ChatScalarWhereInput | ChatScalarWhereInput[]
+    id?: StringFilter<"Chat"> | string
+    teamId?: StringFilter<"Chat"> | string
+    senderId?: StringFilter<"Chat"> | string
+    message?: StringFilter<"Chat"> | string
+    createdAt?: DateTimeFilter<"Chat"> | Date | string
+    updatedAt?: DateTimeFilter<"Chat"> | Date | string
+  }
+
   export type TeamCreateWithoutMembersInput = {
     id?: string
     name: string
@@ -34971,9 +37942,11 @@ export namespace Prisma {
     description: string
     accessibility: $Enums.TeamAccessibility
     badge: string
+    min_requirement: number
     createdAt?: Date | string
     updatedAt?: Date | string
     creator: UserCreateNestedOneWithoutCreatedTeamInput
+    chat?: ChatCreateNestedManyWithoutTeamInput
   }
 
   export type TeamUncheckedCreateWithoutMembersInput = {
@@ -34985,9 +37958,11 @@ export namespace Prisma {
     description: string
     accessibility: $Enums.TeamAccessibility
     badge: string
+    min_requirement: number
     creatorId: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    chat?: ChatUncheckedCreateNestedManyWithoutTeamInput
   }
 
   export type TeamCreateOrConnectWithoutMembersInput = {
@@ -35008,7 +37983,6 @@ export namespace Prisma {
     phone?: string | null
     email: string
     location?: string | null
-    level?: $Enums.UserLevel | null
     password?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
@@ -35040,7 +38014,6 @@ export namespace Prisma {
     phone?: string | null
     email: string
     location?: string | null
-    level?: $Enums.UserLevel | null
     password?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
@@ -35083,9 +38056,11 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     accessibility?: EnumTeamAccessibilityFieldUpdateOperationsInput | $Enums.TeamAccessibility
     badge?: StringFieldUpdateOperationsInput | string
+    min_requirement?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     creator?: UserUpdateOneRequiredWithoutCreatedTeamNestedInput
+    chat?: ChatUpdateManyWithoutTeamNestedInput
   }
 
   export type TeamUncheckedUpdateWithoutMembersInput = {
@@ -35096,9 +38071,11 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     accessibility?: EnumTeamAccessibilityFieldUpdateOperationsInput | $Enums.TeamAccessibility
     badge?: StringFieldUpdateOperationsInput | string
+    min_requirement?: IntFieldUpdateOperationsInput | number
     creatorId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    chat?: ChatUncheckedUpdateManyWithoutTeamNestedInput
   }
 
   export type UserUpsertWithoutJoinedTeamInput = {
@@ -35124,7 +38101,6 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
-    level?: NullableEnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel | null
     password?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -35155,7 +38131,6 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
-    level?: NullableEnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel | null
     password?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -35231,9 +38206,11 @@ export namespace Prisma {
     description: string
     accessibility: $Enums.TeamAccessibility
     badge: string
+    min_requirement: number
     createdAt?: Date | string
     updatedAt?: Date | string
     members?: TeamMemberCreateNestedManyWithoutTeamInput
+    chat?: ChatCreateNestedManyWithoutTeamInput
   }
 
   export type TeamUncheckedCreateWithoutCreatorInput = {
@@ -35245,9 +38222,11 @@ export namespace Prisma {
     description: string
     accessibility: $Enums.TeamAccessibility
     badge: string
+    min_requirement: number
     createdAt?: Date | string
     updatedAt?: Date | string
     members?: TeamMemberUncheckedCreateNestedManyWithoutTeamInput
+    chat?: ChatUncheckedCreateNestedManyWithoutTeamInput
   }
 
   export type TeamCreateOrConnectWithoutCreatorInput = {
@@ -35410,6 +38389,7 @@ export namespace Prisma {
 
   export type VoteCreateWithoutProviderInput = {
     id?: string
+    type: $Enums.VoteType
     createdAt?: Date | string
     updatedAt?: Date | string
     photo: ContestPhotoCreateNestedOneWithoutVotesInput
@@ -35420,6 +38400,7 @@ export namespace Prisma {
     id?: string
     photoId: string
     contestId: string
+    type: $Enums.VoteType
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -35614,6 +38595,7 @@ export namespace Prisma {
     description?: StringFilter<"Team"> | string
     accessibility?: EnumTeamAccessibilityFilter<"Team"> | $Enums.TeamAccessibility
     badge?: StringFilter<"Team"> | string
+    min_requirement?: IntFilter<"Team"> | number
     creatorId?: StringFilter<"Team"> | string
     createdAt?: DateTimeFilter<"Team"> | Date | string
     updatedAt?: DateTimeFilter<"Team"> | Date | string
@@ -35844,7 +38826,6 @@ export namespace Prisma {
     phone?: string | null
     email: string
     location?: string | null
-    level?: $Enums.UserLevel | null
     password?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
@@ -35876,7 +38857,6 @@ export namespace Prisma {
     phone?: string | null
     email: string
     location?: string | null
-    level?: $Enums.UserLevel | null
     password?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
@@ -35923,7 +38903,6 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
-    level?: NullableEnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel | null
     password?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -35954,7 +38933,6 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
-    level?: NullableEnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel | null
     password?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -35986,7 +38964,6 @@ export namespace Prisma {
     phone?: string | null
     email: string
     location?: string | null
-    level?: $Enums.UserLevel | null
     password?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
@@ -36018,7 +38995,6 @@ export namespace Prisma {
     phone?: string | null
     email: string
     location?: string | null
-    level?: $Enums.UserLevel | null
     password?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
@@ -36134,7 +39110,6 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
-    level?: NullableEnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel | null
     password?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -36165,7 +39140,6 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
-    level?: NullableEnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel | null
     password?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -36229,7 +39203,6 @@ export namespace Prisma {
     phone?: string | null
     email: string
     location?: string | null
-    level?: $Enums.UserLevel | null
     password?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
@@ -36261,7 +39234,6 @@ export namespace Prisma {
     phone?: string | null
     email: string
     location?: string | null
-    level?: $Enums.UserLevel | null
     password?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
@@ -36343,7 +39315,6 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
-    level?: NullableEnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel | null
     password?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -36374,7 +39345,6 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
-    level?: NullableEnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel | null
     password?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -36445,7 +39415,6 @@ export namespace Prisma {
     phone?: string | null
     email: string
     location?: string | null
-    level?: $Enums.UserLevel | null
     password?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
@@ -36477,7 +39446,6 @@ export namespace Prisma {
     phone?: string | null
     email: string
     location?: string | null
-    level?: $Enums.UserLevel | null
     password?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
@@ -36524,7 +39492,6 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
-    level?: NullableEnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel | null
     password?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -36555,7 +39522,6 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
-    level?: NullableEnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel | null
     password?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -36587,7 +39553,6 @@ export namespace Prisma {
     phone?: string | null
     email: string
     location?: string | null
-    level?: $Enums.UserLevel | null
     password?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
@@ -36619,7 +39584,6 @@ export namespace Prisma {
     phone?: string | null
     email: string
     location?: string | null
-    level?: $Enums.UserLevel | null
     password?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
@@ -36757,7 +39721,6 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
-    level?: NullableEnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel | null
     password?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -36788,7 +39751,6 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
-    level?: NullableEnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel | null
     password?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -36906,7 +39868,6 @@ export namespace Prisma {
     phone?: string | null
     email: string
     location?: string | null
-    level?: $Enums.UserLevel | null
     password?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
@@ -36938,7 +39899,6 @@ export namespace Prisma {
     phone?: string | null
     email: string
     location?: string | null
-    level?: $Enums.UserLevel | null
     password?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
@@ -36975,7 +39935,6 @@ export namespace Prisma {
     phone?: string | null
     email: string
     location?: string | null
-    level?: $Enums.UserLevel | null
     password?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
@@ -37007,7 +39966,6 @@ export namespace Prisma {
     phone?: string | null
     email: string
     location?: string | null
-    level?: $Enums.UserLevel | null
     password?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
@@ -37054,7 +40012,6 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
-    level?: NullableEnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel | null
     password?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -37085,7 +40042,6 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
-    level?: NullableEnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel | null
     password?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -37127,7 +40083,6 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
-    level?: NullableEnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel | null
     password?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -37158,7 +40113,6 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
-    level?: NullableEnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel | null
     password?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -37190,7 +40144,6 @@ export namespace Prisma {
     phone?: string | null
     email: string
     location?: string | null
-    level?: $Enums.UserLevel | null
     password?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
@@ -37222,7 +40175,6 @@ export namespace Prisma {
     phone?: string | null
     email: string
     location?: string | null
-    level?: $Enums.UserLevel | null
     password?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
@@ -37355,7 +40307,6 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
-    level?: NullableEnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel | null
     password?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -37386,7 +40337,6 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
-    level?: NullableEnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel | null
     password?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -37499,11 +40449,31 @@ export namespace Prisma {
     achievements?: ContestAchievementUncheckedUpdateManyWithoutContestNestedInput
   }
 
+  export type BadgeCreateInput = {
+    type: string
+    param: string
+  }
+
+  export type LevelRequirementUpdateManyInput = {
+    where: LevelRequirementWhereInput
+    data: LevelRequirementUpdateInput
+  }
+
+  export type LevelRequirementDeleteManyInput = {
+    where: LevelRequirementWhereInput
+  }
+
   export type EnumRecurringTypeFilter<$PrismaModel = never> = {
     equals?: $Enums.RecurringType | EnumRecurringTypeFieldRefInput<$PrismaModel>
     in?: $Enums.RecurringType[] | ListEnumRecurringTypeFieldRefInput<$PrismaModel>
     notIn?: $Enums.RecurringType[] | ListEnumRecurringTypeFieldRefInput<$PrismaModel>
     not?: NestedEnumRecurringTypeFilter<$PrismaModel> | $Enums.RecurringType
+  }
+
+  export type BadgeCompositeFilter = {
+    equals?: BadgeObjectEqualityInput
+    is?: BadgeWhereInput
+    isNot?: BadgeWhereInput
   }
 
   export type ContestParticipantCreateManyContestInput = {
@@ -37520,6 +40490,7 @@ export namespace Prisma {
     id?: string
     providerId: string
     photoId: string
+    type: $Enums.VoteType
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -37584,6 +40555,7 @@ export namespace Prisma {
   }
 
   export type VoteUpdateWithoutContestInput = {
+    type?: EnumVoteTypeFieldUpdateOperationsInput | $Enums.VoteType
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     provider?: UserUpdateOneRequiredWithoutVotesNestedInput
@@ -37593,6 +40565,7 @@ export namespace Prisma {
   export type VoteUncheckedUpdateWithoutContestInput = {
     providerId?: StringFieldUpdateOperationsInput | string
     photoId?: StringFieldUpdateOperationsInput | string
+    type?: EnumVoteTypeFieldUpdateOperationsInput | $Enums.VoteType
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -37600,6 +40573,7 @@ export namespace Prisma {
   export type VoteUncheckedUpdateManyWithoutContestInput = {
     providerId?: StringFieldUpdateOperationsInput | string
     photoId?: StringFieldUpdateOperationsInput | string
+    type?: EnumVoteTypeFieldUpdateOperationsInput | $Enums.VoteType
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -37681,6 +40655,7 @@ export namespace Prisma {
     id?: string
     providerId: string
     contestId: string
+    type: $Enums.VoteType
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -37712,6 +40687,7 @@ export namespace Prisma {
   }
 
   export type VoteUpdateWithoutPhotoInput = {
+    type?: EnumVoteTypeFieldUpdateOperationsInput | $Enums.VoteType
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     provider?: UserUpdateOneRequiredWithoutVotesNestedInput
@@ -37721,6 +40697,7 @@ export namespace Prisma {
   export type VoteUncheckedUpdateWithoutPhotoInput = {
     providerId?: StringFieldUpdateOperationsInput | string
     contestId?: StringFieldUpdateOperationsInput | string
+    type?: EnumVoteTypeFieldUpdateOperationsInput | $Enums.VoteType
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -37728,6 +40705,7 @@ export namespace Prisma {
   export type VoteUncheckedUpdateManyWithoutPhotoInput = {
     providerId?: StringFieldUpdateOperationsInput | string
     contestId?: StringFieldUpdateOperationsInput | string
+    type?: EnumVoteTypeFieldUpdateOperationsInput | $Enums.VoteType
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -37926,6 +40904,14 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
+  export type ChatCreateManyTeamInput = {
+    id?: string
+    senderId: string
+    message: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
   export type TeamMemberUpdateWithoutTeamInput = {
     status?: EnumTeamMemberStatusFieldUpdateOperationsInput | $Enums.TeamMemberStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -37947,6 +40933,27 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type ChatUpdateWithoutTeamInput = {
+    senderId?: StringFieldUpdateOperationsInput | string
+    message?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ChatUncheckedUpdateWithoutTeamInput = {
+    senderId?: StringFieldUpdateOperationsInput | string
+    message?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ChatUncheckedUpdateManyWithoutTeamInput = {
+    senderId?: StringFieldUpdateOperationsInput | string
+    message?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type TeamCreateManyCreatorInput = {
     id?: string
     name: string
@@ -37956,6 +40963,7 @@ export namespace Prisma {
     description: string
     accessibility: $Enums.TeamAccessibility
     badge: string
+    min_requirement: number
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -38004,6 +41012,7 @@ export namespace Prisma {
     id?: string
     photoId: string
     contestId: string
+    type: $Enums.VoteType
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -38046,9 +41055,11 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     accessibility?: EnumTeamAccessibilityFieldUpdateOperationsInput | $Enums.TeamAccessibility
     badge?: StringFieldUpdateOperationsInput | string
+    min_requirement?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     members?: TeamMemberUpdateManyWithoutTeamNestedInput
+    chat?: ChatUpdateManyWithoutTeamNestedInput
   }
 
   export type TeamUncheckedUpdateWithoutCreatorInput = {
@@ -38059,9 +41070,11 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     accessibility?: EnumTeamAccessibilityFieldUpdateOperationsInput | $Enums.TeamAccessibility
     badge?: StringFieldUpdateOperationsInput | string
+    min_requirement?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     members?: TeamMemberUncheckedUpdateManyWithoutTeamNestedInput
+    chat?: ChatUncheckedUpdateManyWithoutTeamNestedInput
   }
 
   export type TeamUncheckedUpdateManyWithoutCreatorInput = {
@@ -38072,6 +41085,7 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     accessibility?: EnumTeamAccessibilityFieldUpdateOperationsInput | $Enums.TeamAccessibility
     badge?: StringFieldUpdateOperationsInput | string
+    min_requirement?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -38197,6 +41211,7 @@ export namespace Prisma {
   }
 
   export type VoteUpdateWithoutProviderInput = {
+    type?: EnumVoteTypeFieldUpdateOperationsInput | $Enums.VoteType
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     photo?: ContestPhotoUpdateOneRequiredWithoutVotesNestedInput
@@ -38206,6 +41221,7 @@ export namespace Prisma {
   export type VoteUncheckedUpdateWithoutProviderInput = {
     photoId?: StringFieldUpdateOperationsInput | string
     contestId?: StringFieldUpdateOperationsInput | string
+    type?: EnumVoteTypeFieldUpdateOperationsInput | $Enums.VoteType
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -38213,6 +41229,7 @@ export namespace Prisma {
   export type VoteUncheckedUpdateManyWithoutProviderInput = {
     photoId?: StringFieldUpdateOperationsInput | string
     contestId?: StringFieldUpdateOperationsInput | string
+    type?: EnumVoteTypeFieldUpdateOperationsInput | $Enums.VoteType
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -38428,11 +41445,35 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type LevelRequirementUpdateInput = {
+    title?: StringFieldUpdateOperationsInput | string
+    required?: IntFieldUpdateOperationsInput | number
+    badge?: XOR<BadgeUpdateEnvelopeInput, BadgeCreateInput>
+  }
+
   export type NestedEnumRecurringTypeFilter<$PrismaModel = never> = {
     equals?: $Enums.RecurringType | EnumRecurringTypeFieldRefInput<$PrismaModel>
     in?: $Enums.RecurringType[] | ListEnumRecurringTypeFieldRefInput<$PrismaModel>
     notIn?: $Enums.RecurringType[] | ListEnumRecurringTypeFieldRefInput<$PrismaModel>
     not?: NestedEnumRecurringTypeFilter<$PrismaModel> | $Enums.RecurringType
+  }
+
+  export type BadgeWhereInput = {
+    AND?: BadgeWhereInput | BadgeWhereInput[]
+    OR?: BadgeWhereInput[]
+    NOT?: BadgeWhereInput | BadgeWhereInput[]
+    type?: StringFilter<"Badge"> | string
+    param?: StringFilter<"Badge"> | string
+  }
+
+  export type BadgeUpdateEnvelopeInput = {
+    set?: BadgeCreateInput
+    update?: BadgeUpdateInput
+  }
+
+  export type BadgeUpdateInput = {
+    type?: StringFieldUpdateOperationsInput | string
+    param?: StringFieldUpdateOperationsInput | string
   }
 
 

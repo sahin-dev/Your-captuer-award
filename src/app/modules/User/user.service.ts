@@ -7,9 +7,10 @@ import { fileUploader } from "../../../helpers/fileUploader"
 import { generateOtp } from "../../../helpers/generateOtp"
 import mailer from "../../../shared/mailSender"
 import { hashing } from "../../../helpers/hash"
-import { OtpStatus, UserRole } from "../../../prismaClient"
+import { LevelName, OtpStatus, UserRole } from "../../../prismaClient"
 import { userAdminUpdateData, userUpdateData } from "./user.types"
 import bcrypt from 'bcryptjs'
+import { voteService } from "../Vote/vote.service"
 
 
 
@@ -77,10 +78,9 @@ const updateUser = async (adminId:string,userId:string,userData:userAdminUpdateD
 
 
     const updatedUser = await prisma.user.update({where:{id:user.id}, data:{
-        firstName:userData.firstName,
-        lastName:userData.lastName,
-        location:userData.location,
-        level: userData.level
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        location: userData.location,
     }})
 
     return UserDto(updatedUser)
@@ -256,6 +256,40 @@ const getUserBySocialId = async (socialProvider:string, socialId:string)=>{
     return user
 }
 
+const getUserCurrentLevel = async (userId:string)=>{
+
+    const levels = await prisma.level.findMany()
+    const totalPromotedVotes = await voteService.getTotalPromotedVotes(userId)
+    const totalOrganicVotes = await voteService.getTotalOrganicVotes(userId)
+    let currentLevel:number = 0
+
+    levels.forEach(level => {
+        let satisfied:boolean = true
+        level.requirements.forEach(requirement => {
+            
+            if ( requirement.badge.type === "point"){
+                if ( (requirement.title === 'votes') &&  (requirement.required >= totalOrganicVotes)){
+                    satisfied = satisfied && false
+                }
+                else if ((requirement.title === 'promoted_votes') &&  (requirement.required >= totalPromotedVotes)){
+                    satisfied = satisfied && false
+                }
+            }
+        })
+
+        if (satisfied){
+            currentLevel = level.level
+        }
+    })
+
+    return currentLevel
+
+}
+
+const checkLevelRequirement = async ()=>{
+
+}
+
 export const userService = {
     getUsers,
     updateUser,
@@ -267,6 +301,7 @@ export const userService = {
     verifyOtp,
     getUserDetails,
     changePassword,
-    updateProfile
+    updateProfile,
+    getUserCurrentLevel
     
 }

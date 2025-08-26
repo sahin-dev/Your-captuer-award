@@ -1,3 +1,4 @@
+import { LevelName } from "../../../prismaClient"
 
 
 export interface ITeam {
@@ -7,4 +8,5 @@ export interface ITeam {
     country:string
     description:string
     accessibility:string
+    min_requirement:number
 }

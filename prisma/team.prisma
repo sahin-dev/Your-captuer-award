@@ -8,9 +8,11 @@ model Team {
   description   String
   accessibility TeamAccessibility
   badge         String //Image file
+  min_requirement   Int
   creatorId     String            @db.ObjectId
   creator       User              @relation(fields: [creatorId], references: [id])
   members       TeamMember[]
+  chat          Chat[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
