@@ -6,6 +6,7 @@ import { setupWebSocket } from "./helpers/websocketSetUp";
 import "./app/modules/Agenda";
 import agenda from "./app/modules/Agenda";
 import prisma from "./shared/prisma";
+import WebSocketHandler from "./socket";
 
 
 let server: Server;
@@ -26,6 +27,8 @@ async function startServer() {
     console.log("Server is listiening on port ", config.port);
   });
   // await setupWebSocket(server);
+  let webSocket = new WebSocketHandler(server)
+  
 }
 
 async function main() {

@@ -3261,6 +3261,7 @@ export namespace Prisma {
     likes: number
     userPhotos: number
     ContestParticipant: number
+    chat: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -3273,6 +3274,7 @@ export namespace Prisma {
     likes?: boolean | UserCountOutputTypeCountLikesArgs
     userPhotos?: boolean | UserCountOutputTypeCountUserPhotosArgs
     ContestParticipant?: boolean | UserCountOutputTypeCountContestParticipantArgs
+    chat?: boolean | UserCountOutputTypeCountChatArgs
   }
 
   // Custom InputTypes
@@ -3347,6 +3349,13 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountContestParticipantArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: ContestParticipantWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountChatArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ChatWhereInput
   }
 
 
@@ -14505,6 +14514,7 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     team?: boolean | TeamDefaultArgs<ExtArgs>
+    sender?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["chat"]>
 
 
@@ -14521,12 +14531,14 @@ export namespace Prisma {
   export type ChatOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "teamId" | "senderId" | "message" | "createdAt" | "updatedAt", ExtArgs["result"]["chat"]>
   export type ChatInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     team?: boolean | TeamDefaultArgs<ExtArgs>
+    sender?: boolean | UserDefaultArgs<ExtArgs>
   }
 
   export type $ChatPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Chat"
     objects: {
       team: Prisma.$TeamPayload<ExtArgs>
+      sender: Prisma.$UserPayload<ExtArgs>
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -14899,6 +14911,7 @@ export namespace Prisma {
   export interface Prisma__ChatClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     team<T extends TeamDefaultArgs<ExtArgs> = {}>(args?: Subset<T, TeamDefaultArgs<ExtArgs>>): Prisma__TeamClient<$Result.GetResult<Prisma.$TeamPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    sender<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -17736,6 +17749,7 @@ export namespace Prisma {
     likes?: boolean | User$likesArgs<ExtArgs>
     userPhotos?: boolean | User$userPhotosArgs<ExtArgs>
     ContestParticipant?: boolean | User$ContestParticipantArgs<ExtArgs>
+    chat?: boolean | User$chatArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -17775,6 +17789,7 @@ export namespace Prisma {
     likes?: boolean | User$likesArgs<ExtArgs>
     userPhotos?: boolean | User$userPhotosArgs<ExtArgs>
     ContestParticipant?: boolean | User$ContestParticipantArgs<ExtArgs>
+    chat?: boolean | User$chatArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
 
@@ -17793,6 +17808,7 @@ export namespace Prisma {
       likes: Prisma.$LikePayload<ExtArgs>[]
       userPhotos: Prisma.$UserPhotoPayload<ExtArgs>[]
       ContestParticipant: Prisma.$ContestParticipantPayload<ExtArgs>[]
+      chat: Prisma.$ChatPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -18187,6 +18203,7 @@ export namespace Prisma {
     likes<T extends User$likesArgs<ExtArgs> = {}>(args?: Subset<T, User$likesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LikePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     userPhotos<T extends User$userPhotosArgs<ExtArgs> = {}>(args?: Subset<T, User$userPhotosArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserPhotoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     ContestParticipant<T extends User$ContestParticipantArgs<ExtArgs> = {}>(args?: Subset<T, User$ContestParticipantArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ContestParticipantPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    chat<T extends User$chatArgs<ExtArgs> = {}>(args?: Subset<T, User$chatArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ChatPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -18873,6 +18890,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: ContestParticipantScalarFieldEnum | ContestParticipantScalarFieldEnum[]
+  }
+
+  /**
+   * User.chat
+   */
+  export type User$chatArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Chat
+     */
+    select?: ChatSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Chat
+     */
+    omit?: ChatOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChatInclude<ExtArgs> | null
+    where?: ChatWhereInput
+    orderBy?: ChatOrderByWithRelationInput | ChatOrderByWithRelationInput[]
+    cursor?: ChatWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ChatScalarFieldEnum | ChatScalarFieldEnum[]
   }
 
   /**
@@ -29407,6 +29448,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Chat"> | Date | string
     updatedAt?: DateTimeFilter<"Chat"> | Date | string
     team?: XOR<TeamScalarRelationFilter, TeamWhereInput>
+    sender?: XOR<UserScalarRelationFilter, UserWhereInput>
   }
 
   export type ChatOrderByWithRelationInput = {
@@ -29417,6 +29459,7 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrder
     team?: TeamOrderByWithRelationInput
+    sender?: UserOrderByWithRelationInput
   }
 
   export type ChatWhereUniqueInput = Prisma.AtLeast<{
@@ -29430,6 +29473,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Chat"> | Date | string
     updatedAt?: DateTimeFilter<"Chat"> | Date | string
     team?: XOR<TeamScalarRelationFilter, TeamWhereInput>
+    sender?: XOR<UserScalarRelationFilter, UserWhereInput>
   }, "id">
 
   export type ChatOrderByWithAggregationInput = {
@@ -29650,6 +29694,7 @@ export namespace Prisma {
     likes?: LikeListRelationFilter
     userPhotos?: UserPhotoListRelationFilter
     ContestParticipant?: ContestParticipantListRelationFilter
+    chat?: ChatListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -29682,6 +29727,7 @@ export namespace Prisma {
     likes?: LikeOrderByRelationAggregateInput
     userPhotos?: UserPhotoOrderByRelationAggregateInput
     ContestParticipant?: ContestParticipantOrderByRelationAggregateInput
+    chat?: ChatOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -29717,6 +29763,7 @@ export namespace Prisma {
     likes?: LikeListRelationFilter
     userPhotos?: UserPhotoListRelationFilter
     ContestParticipant?: ContestParticipantListRelationFilter
+    chat?: ChatListRelationFilter
   }, "id" | "email">
 
   export type UserOrderByWithAggregationInput = {
@@ -31144,11 +31191,11 @@ export namespace Prisma {
 
   export type ChatCreateInput = {
     id?: string
-    senderId: string
     message: string
     createdAt?: Date | string
     updatedAt?: Date | string
     team: TeamCreateNestedOneWithoutChatInput
+    sender: UserCreateNestedOneWithoutChatInput
   }
 
   export type ChatUncheckedCreateInput = {
@@ -31161,11 +31208,11 @@ export namespace Prisma {
   }
 
   export type ChatUpdateInput = {
-    senderId?: StringFieldUpdateOperationsInput | string
     message?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     team?: TeamUpdateOneRequiredWithoutChatNestedInput
+    sender?: UserUpdateOneRequiredWithoutChatNestedInput
   }
 
   export type ChatUncheckedUpdateInput = {
@@ -31186,7 +31233,6 @@ export namespace Prisma {
   }
 
   export type ChatUpdateManyMutationInput = {
-    senderId?: StringFieldUpdateOperationsInput | string
     message?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -31395,6 +31441,7 @@ export namespace Prisma {
     likes?: LikeCreateNestedManyWithoutProviderInput
     userPhotos?: UserPhotoCreateNestedManyWithoutUserInput
     ContestParticipant?: ContestParticipantCreateNestedManyWithoutUserInput
+    chat?: ChatCreateNestedManyWithoutSenderInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -31427,6 +31474,7 @@ export namespace Prisma {
     likes?: LikeUncheckedCreateNestedManyWithoutProviderInput
     userPhotos?: UserPhotoUncheckedCreateNestedManyWithoutUserInput
     ContestParticipant?: ContestParticipantUncheckedCreateNestedManyWithoutUserInput
+    chat?: ChatUncheckedCreateNestedManyWithoutSenderInput
   }
 
   export type UserUpdateInput = {
@@ -31458,6 +31506,7 @@ export namespace Prisma {
     likes?: LikeUpdateManyWithoutProviderNestedInput
     userPhotos?: UserPhotoUpdateManyWithoutUserNestedInput
     ContestParticipant?: ContestParticipantUpdateManyWithoutUserNestedInput
+    chat?: ChatUpdateManyWithoutSenderNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -31489,6 +31538,7 @@ export namespace Prisma {
     likes?: LikeUncheckedUpdateManyWithoutProviderNestedInput
     userPhotos?: UserPhotoUncheckedUpdateManyWithoutUserNestedInput
     ContestParticipant?: ContestParticipantUncheckedUpdateManyWithoutUserNestedInput
+    chat?: ChatUncheckedUpdateManyWithoutSenderNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -34425,12 +34475,26 @@ export namespace Prisma {
     connect?: TeamWhereUniqueInput
   }
 
+  export type UserCreateNestedOneWithoutChatInput = {
+    create?: XOR<UserCreateWithoutChatInput, UserUncheckedCreateWithoutChatInput>
+    connectOrCreate?: UserCreateOrConnectWithoutChatInput
+    connect?: UserWhereUniqueInput
+  }
+
   export type TeamUpdateOneRequiredWithoutChatNestedInput = {
     create?: XOR<TeamCreateWithoutChatInput, TeamUncheckedCreateWithoutChatInput>
     connectOrCreate?: TeamCreateOrConnectWithoutChatInput
     upsert?: TeamUpsertWithoutChatInput
     connect?: TeamWhereUniqueInput
     update?: XOR<XOR<TeamUpdateToOneWithWhereWithoutChatInput, TeamUpdateWithoutChatInput>, TeamUncheckedUpdateWithoutChatInput>
+  }
+
+  export type UserUpdateOneRequiredWithoutChatNestedInput = {
+    create?: XOR<UserCreateWithoutChatInput, UserUncheckedCreateWithoutChatInput>
+    connectOrCreate?: UserCreateOrConnectWithoutChatInput
+    upsert?: UserUpsertWithoutChatInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutChatInput, UserUpdateWithoutChatInput>, UserUncheckedUpdateWithoutChatInput>
   }
 
   export type UserCreateNestedOneWithoutCreatedTeamInput = {
@@ -34648,6 +34712,13 @@ export namespace Prisma {
     connect?: ContestParticipantWhereUniqueInput | ContestParticipantWhereUniqueInput[]
   }
 
+  export type ChatCreateNestedManyWithoutSenderInput = {
+    create?: XOR<ChatCreateWithoutSenderInput, ChatUncheckedCreateWithoutSenderInput> | ChatCreateWithoutSenderInput[] | ChatUncheckedCreateWithoutSenderInput[]
+    connectOrCreate?: ChatCreateOrConnectWithoutSenderInput | ChatCreateOrConnectWithoutSenderInput[]
+    createMany?: ChatCreateManySenderInputEnvelope
+    connect?: ChatWhereUniqueInput | ChatWhereUniqueInput[]
+  }
+
   export type OtpUncheckedCreateNestedOneWithoutUserInput = {
     create?: XOR<OtpCreateWithoutUserInput, OtpUncheckedCreateWithoutUserInput>
     connectOrCreate?: OtpCreateOrConnectWithoutUserInput
@@ -34727,6 +34798,13 @@ export namespace Prisma {
     connectOrCreate?: ContestParticipantCreateOrConnectWithoutUserInput | ContestParticipantCreateOrConnectWithoutUserInput[]
     createMany?: ContestParticipantCreateManyUserInputEnvelope
     connect?: ContestParticipantWhereUniqueInput | ContestParticipantWhereUniqueInput[]
+  }
+
+  export type ChatUncheckedCreateNestedManyWithoutSenderInput = {
+    create?: XOR<ChatCreateWithoutSenderInput, ChatUncheckedCreateWithoutSenderInput> | ChatCreateWithoutSenderInput[] | ChatUncheckedCreateWithoutSenderInput[]
+    connectOrCreate?: ChatCreateOrConnectWithoutSenderInput | ChatCreateOrConnectWithoutSenderInput[]
+    createMany?: ChatCreateManySenderInputEnvelope
+    connect?: ChatWhereUniqueInput | ChatWhereUniqueInput[]
   }
 
   export type EnumUserRoleFieldUpdateOperationsInput = {
@@ -34889,6 +34967,20 @@ export namespace Prisma {
     deleteMany?: ContestParticipantScalarWhereInput | ContestParticipantScalarWhereInput[]
   }
 
+  export type ChatUpdateManyWithoutSenderNestedInput = {
+    create?: XOR<ChatCreateWithoutSenderInput, ChatUncheckedCreateWithoutSenderInput> | ChatCreateWithoutSenderInput[] | ChatUncheckedCreateWithoutSenderInput[]
+    connectOrCreate?: ChatCreateOrConnectWithoutSenderInput | ChatCreateOrConnectWithoutSenderInput[]
+    upsert?: ChatUpsertWithWhereUniqueWithoutSenderInput | ChatUpsertWithWhereUniqueWithoutSenderInput[]
+    createMany?: ChatCreateManySenderInputEnvelope
+    set?: ChatWhereUniqueInput | ChatWhereUniqueInput[]
+    disconnect?: ChatWhereUniqueInput | ChatWhereUniqueInput[]
+    delete?: ChatWhereUniqueInput | ChatWhereUniqueInput[]
+    connect?: ChatWhereUniqueInput | ChatWhereUniqueInput[]
+    update?: ChatUpdateWithWhereUniqueWithoutSenderInput | ChatUpdateWithWhereUniqueWithoutSenderInput[]
+    updateMany?: ChatUpdateManyWithWhereWithoutSenderInput | ChatUpdateManyWithWhereWithoutSenderInput[]
+    deleteMany?: ChatScalarWhereInput | ChatScalarWhereInput[]
+  }
+
   export type OtpUncheckedUpdateOneWithoutUserNestedInput = {
     create?: XOR<OtpCreateWithoutUserInput, OtpUncheckedCreateWithoutUserInput>
     connectOrCreate?: OtpCreateOrConnectWithoutUserInput
@@ -35043,6 +35135,20 @@ export namespace Prisma {
     update?: ContestParticipantUpdateWithWhereUniqueWithoutUserInput | ContestParticipantUpdateWithWhereUniqueWithoutUserInput[]
     updateMany?: ContestParticipantUpdateManyWithWhereWithoutUserInput | ContestParticipantUpdateManyWithWhereWithoutUserInput[]
     deleteMany?: ContestParticipantScalarWhereInput | ContestParticipantScalarWhereInput[]
+  }
+
+  export type ChatUncheckedUpdateManyWithoutSenderNestedInput = {
+    create?: XOR<ChatCreateWithoutSenderInput, ChatUncheckedCreateWithoutSenderInput> | ChatCreateWithoutSenderInput[] | ChatUncheckedCreateWithoutSenderInput[]
+    connectOrCreate?: ChatCreateOrConnectWithoutSenderInput | ChatCreateOrConnectWithoutSenderInput[]
+    upsert?: ChatUpsertWithWhereUniqueWithoutSenderInput | ChatUpsertWithWhereUniqueWithoutSenderInput[]
+    createMany?: ChatCreateManySenderInputEnvelope
+    set?: ChatWhereUniqueInput | ChatWhereUniqueInput[]
+    disconnect?: ChatWhereUniqueInput | ChatWhereUniqueInput[]
+    delete?: ChatWhereUniqueInput | ChatWhereUniqueInput[]
+    connect?: ChatWhereUniqueInput | ChatWhereUniqueInput[]
+    update?: ChatUpdateWithWhereUniqueWithoutSenderInput | ChatUpdateWithWhereUniqueWithoutSenderInput[]
+    updateMany?: ChatUpdateManyWithWhereWithoutSenderInput | ChatUpdateManyWithWhereWithoutSenderInput[]
+    deleteMany?: ChatScalarWhereInput | ChatScalarWhereInput[]
   }
 
   export type UserCreateNestedOneWithoutStoreInput = {
@@ -35881,6 +35987,7 @@ export namespace Prisma {
     likes?: LikeCreateNestedManyWithoutProviderInput
     userPhotos?: UserPhotoCreateNestedManyWithoutUserInput
     ContestParticipant?: ContestParticipantCreateNestedManyWithoutUserInput
+    chat?: ChatCreateNestedManyWithoutSenderInput
   }
 
   export type UserUncheckedCreateWithoutCreatedContestsInput = {
@@ -35912,6 +36019,7 @@ export namespace Prisma {
     likes?: LikeUncheckedCreateNestedManyWithoutProviderInput
     userPhotos?: UserPhotoUncheckedCreateNestedManyWithoutUserInput
     ContestParticipant?: ContestParticipantUncheckedCreateNestedManyWithoutUserInput
+    chat?: ChatUncheckedCreateNestedManyWithoutSenderInput
   }
 
   export type UserCreateOrConnectWithoutCreatedContestsInput = {
@@ -36099,6 +36207,7 @@ export namespace Prisma {
     likes?: LikeUpdateManyWithoutProviderNestedInput
     userPhotos?: UserPhotoUpdateManyWithoutUserNestedInput
     ContestParticipant?: ContestParticipantUpdateManyWithoutUserNestedInput
+    chat?: ChatUpdateManyWithoutSenderNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCreatedContestsInput = {
@@ -36129,6 +36238,7 @@ export namespace Prisma {
     likes?: LikeUncheckedUpdateManyWithoutProviderNestedInput
     userPhotos?: UserPhotoUncheckedUpdateManyWithoutUserNestedInput
     ContestParticipant?: ContestParticipantUncheckedUpdateManyWithoutUserNestedInput
+    chat?: ChatUncheckedUpdateManyWithoutSenderNestedInput
   }
 
   export type ContestParticipantUpsertWithWhereUniqueWithoutContestInput = {
@@ -36944,6 +37054,7 @@ export namespace Prisma {
     votes?: VoteCreateNestedManyWithoutProviderInput
     likes?: LikeCreateNestedManyWithoutProviderInput
     userPhotos?: UserPhotoCreateNestedManyWithoutUserInput
+    chat?: ChatCreateNestedManyWithoutSenderInput
   }
 
   export type UserUncheckedCreateWithoutContestParticipantInput = {
@@ -36975,6 +37086,7 @@ export namespace Prisma {
     votes?: VoteUncheckedCreateNestedManyWithoutProviderInput
     likes?: LikeUncheckedCreateNestedManyWithoutProviderInput
     userPhotos?: UserPhotoUncheckedCreateNestedManyWithoutUserInput
+    chat?: ChatUncheckedCreateNestedManyWithoutSenderInput
   }
 
   export type UserCreateOrConnectWithoutContestParticipantInput = {
@@ -37167,6 +37279,7 @@ export namespace Prisma {
     votes?: VoteUpdateManyWithoutProviderNestedInput
     likes?: LikeUpdateManyWithoutProviderNestedInput
     userPhotos?: UserPhotoUpdateManyWithoutUserNestedInput
+    chat?: ChatUpdateManyWithoutSenderNestedInput
   }
 
   export type UserUncheckedUpdateWithoutContestParticipantInput = {
@@ -37197,6 +37310,7 @@ export namespace Prisma {
     votes?: VoteUncheckedUpdateManyWithoutProviderNestedInput
     likes?: LikeUncheckedUpdateManyWithoutProviderNestedInput
     userPhotos?: UserPhotoUncheckedUpdateManyWithoutUserNestedInput
+    chat?: ChatUncheckedUpdateManyWithoutSenderNestedInput
   }
 
   export type ContestPhotoUpsertWithWhereUniqueWithoutParticipantInput = {
@@ -37648,6 +37762,75 @@ export namespace Prisma {
     create: XOR<TeamCreateWithoutChatInput, TeamUncheckedCreateWithoutChatInput>
   }
 
+  export type UserCreateWithoutChatInput = {
+    id?: string
+    cover?: string | null
+    avatar?: string | null
+    socialId?: string | null
+    socialProvider?: string | null
+    firstName?: string | null
+    lastName?: string | null
+    fullName?: string | null
+    username?: string | null
+    phone?: string | null
+    email: string
+    location?: string | null
+    password?: string | null
+    role?: $Enums.UserRole
+    accessToken?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    otps?: OtpCreateNestedOneWithoutUserInput
+    store?: UserStoreCreateNestedOneWithoutUserInput
+    createdTeam?: TeamCreateNestedManyWithoutCreatorInput
+    joinedTeam?: TeamMemberCreateNestedOneWithoutMemberInput
+    createdContests?: ContestCreateNestedManyWithoutCreatorInput
+    commentProvides?: CommentCreateNestedManyWithoutProviderInput
+    followers?: FollowCreateNestedManyWithoutFollowerInput
+    followings?: FollowCreateNestedManyWithoutFollowingInput
+    votes?: VoteCreateNestedManyWithoutProviderInput
+    likes?: LikeCreateNestedManyWithoutProviderInput
+    userPhotos?: UserPhotoCreateNestedManyWithoutUserInput
+    ContestParticipant?: ContestParticipantCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutChatInput = {
+    id?: string
+    cover?: string | null
+    avatar?: string | null
+    socialId?: string | null
+    socialProvider?: string | null
+    firstName?: string | null
+    lastName?: string | null
+    fullName?: string | null
+    username?: string | null
+    phone?: string | null
+    email: string
+    location?: string | null
+    password?: string | null
+    role?: $Enums.UserRole
+    accessToken?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    otps?: OtpUncheckedCreateNestedOneWithoutUserInput
+    store?: UserStoreUncheckedCreateNestedOneWithoutUserInput
+    createdTeam?: TeamUncheckedCreateNestedManyWithoutCreatorInput
+    joinedTeam?: TeamMemberUncheckedCreateNestedOneWithoutMemberInput
+    createdContests?: ContestUncheckedCreateNestedManyWithoutCreatorInput
+    commentProvides?: CommentUncheckedCreateNestedManyWithoutProviderInput
+    followers?: FollowUncheckedCreateNestedManyWithoutFollowerInput
+    followings?: FollowUncheckedCreateNestedManyWithoutFollowingInput
+    votes?: VoteUncheckedCreateNestedManyWithoutProviderInput
+    likes?: LikeUncheckedCreateNestedManyWithoutProviderInput
+    userPhotos?: UserPhotoUncheckedCreateNestedManyWithoutUserInput
+    ContestParticipant?: ContestParticipantUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutChatInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutChatInput, UserUncheckedCreateWithoutChatInput>
+  }
+
   export type TeamUpsertWithoutChatInput = {
     update: XOR<TeamUpdateWithoutChatInput, TeamUncheckedUpdateWithoutChatInput>
     create: XOR<TeamCreateWithoutChatInput, TeamUncheckedCreateWithoutChatInput>
@@ -37689,6 +37872,79 @@ export namespace Prisma {
     members?: TeamMemberUncheckedUpdateManyWithoutTeamNestedInput
   }
 
+  export type UserUpsertWithoutChatInput = {
+    update: XOR<UserUpdateWithoutChatInput, UserUncheckedUpdateWithoutChatInput>
+    create: XOR<UserCreateWithoutChatInput, UserUncheckedCreateWithoutChatInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutChatInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutChatInput, UserUncheckedUpdateWithoutChatInput>
+  }
+
+  export type UserUpdateWithoutChatInput = {
+    cover?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    socialId?: NullableStringFieldUpdateOperationsInput | string | null
+    socialProvider?: NullableStringFieldUpdateOperationsInput | string | null
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    fullName?: NullableStringFieldUpdateOperationsInput | string | null
+    username?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    accessToken?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    otps?: OtpUpdateOneWithoutUserNestedInput
+    store?: UserStoreUpdateOneWithoutUserNestedInput
+    createdTeam?: TeamUpdateManyWithoutCreatorNestedInput
+    joinedTeam?: TeamMemberUpdateOneWithoutMemberNestedInput
+    createdContests?: ContestUpdateManyWithoutCreatorNestedInput
+    commentProvides?: CommentUpdateManyWithoutProviderNestedInput
+    followers?: FollowUpdateManyWithoutFollowerNestedInput
+    followings?: FollowUpdateManyWithoutFollowingNestedInput
+    votes?: VoteUpdateManyWithoutProviderNestedInput
+    likes?: LikeUpdateManyWithoutProviderNestedInput
+    userPhotos?: UserPhotoUpdateManyWithoutUserNestedInput
+    ContestParticipant?: ContestParticipantUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutChatInput = {
+    cover?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    socialId?: NullableStringFieldUpdateOperationsInput | string | null
+    socialProvider?: NullableStringFieldUpdateOperationsInput | string | null
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    fullName?: NullableStringFieldUpdateOperationsInput | string | null
+    username?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    accessToken?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    otps?: OtpUncheckedUpdateOneWithoutUserNestedInput
+    store?: UserStoreUncheckedUpdateOneWithoutUserNestedInput
+    createdTeam?: TeamUncheckedUpdateManyWithoutCreatorNestedInput
+    joinedTeam?: TeamMemberUncheckedUpdateOneWithoutMemberNestedInput
+    createdContests?: ContestUncheckedUpdateManyWithoutCreatorNestedInput
+    commentProvides?: CommentUncheckedUpdateManyWithoutProviderNestedInput
+    followers?: FollowUncheckedUpdateManyWithoutFollowerNestedInput
+    followings?: FollowUncheckedUpdateManyWithoutFollowingNestedInput
+    votes?: VoteUncheckedUpdateManyWithoutProviderNestedInput
+    likes?: LikeUncheckedUpdateManyWithoutProviderNestedInput
+    userPhotos?: UserPhotoUncheckedUpdateManyWithoutUserNestedInput
+    ContestParticipant?: ContestParticipantUncheckedUpdateManyWithoutUserNestedInput
+  }
+
   export type UserCreateWithoutCreatedTeamInput = {
     id?: string
     cover?: string | null
@@ -37718,6 +37974,7 @@ export namespace Prisma {
     likes?: LikeCreateNestedManyWithoutProviderInput
     userPhotos?: UserPhotoCreateNestedManyWithoutUserInput
     ContestParticipant?: ContestParticipantCreateNestedManyWithoutUserInput
+    chat?: ChatCreateNestedManyWithoutSenderInput
   }
 
   export type UserUncheckedCreateWithoutCreatedTeamInput = {
@@ -37749,6 +38006,7 @@ export namespace Prisma {
     likes?: LikeUncheckedCreateNestedManyWithoutProviderInput
     userPhotos?: UserPhotoUncheckedCreateNestedManyWithoutUserInput
     ContestParticipant?: ContestParticipantUncheckedCreateNestedManyWithoutUserInput
+    chat?: ChatUncheckedCreateNestedManyWithoutSenderInput
   }
 
   export type UserCreateOrConnectWithoutCreatedTeamInput = {
@@ -37783,10 +38041,10 @@ export namespace Prisma {
 
   export type ChatCreateWithoutTeamInput = {
     id?: string
-    senderId: string
     message: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    sender: UserCreateNestedOneWithoutChatInput
   }
 
   export type ChatUncheckedCreateWithoutTeamInput = {
@@ -37845,6 +38103,7 @@ export namespace Prisma {
     likes?: LikeUpdateManyWithoutProviderNestedInput
     userPhotos?: UserPhotoUpdateManyWithoutUserNestedInput
     ContestParticipant?: ContestParticipantUpdateManyWithoutUserNestedInput
+    chat?: ChatUpdateManyWithoutSenderNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCreatedTeamInput = {
@@ -37875,6 +38134,7 @@ export namespace Prisma {
     likes?: LikeUncheckedUpdateManyWithoutProviderNestedInput
     userPhotos?: UserPhotoUncheckedUpdateManyWithoutUserNestedInput
     ContestParticipant?: ContestParticipantUncheckedUpdateManyWithoutUserNestedInput
+    chat?: ChatUncheckedUpdateManyWithoutSenderNestedInput
   }
 
   export type TeamMemberUpsertWithWhereUniqueWithoutTeamInput = {
@@ -37999,6 +38259,7 @@ export namespace Prisma {
     likes?: LikeCreateNestedManyWithoutProviderInput
     userPhotos?: UserPhotoCreateNestedManyWithoutUserInput
     ContestParticipant?: ContestParticipantCreateNestedManyWithoutUserInput
+    chat?: ChatCreateNestedManyWithoutSenderInput
   }
 
   export type UserUncheckedCreateWithoutJoinedTeamInput = {
@@ -38030,6 +38291,7 @@ export namespace Prisma {
     likes?: LikeUncheckedCreateNestedManyWithoutProviderInput
     userPhotos?: UserPhotoUncheckedCreateNestedManyWithoutUserInput
     ContestParticipant?: ContestParticipantUncheckedCreateNestedManyWithoutUserInput
+    chat?: ChatUncheckedCreateNestedManyWithoutSenderInput
   }
 
   export type UserCreateOrConnectWithoutJoinedTeamInput = {
@@ -38117,6 +38379,7 @@ export namespace Prisma {
     likes?: LikeUpdateManyWithoutProviderNestedInput
     userPhotos?: UserPhotoUpdateManyWithoutUserNestedInput
     ContestParticipant?: ContestParticipantUpdateManyWithoutUserNestedInput
+    chat?: ChatUpdateManyWithoutSenderNestedInput
   }
 
   export type UserUncheckedUpdateWithoutJoinedTeamInput = {
@@ -38147,6 +38410,7 @@ export namespace Prisma {
     likes?: LikeUncheckedUpdateManyWithoutProviderNestedInput
     userPhotos?: UserPhotoUncheckedUpdateManyWithoutUserNestedInput
     ContestParticipant?: ContestParticipantUncheckedUpdateManyWithoutUserNestedInput
+    chat?: ChatUncheckedUpdateManyWithoutSenderNestedInput
   }
 
   export type OtpCreateWithoutUserInput = {
@@ -38511,6 +38775,31 @@ export namespace Prisma {
     data: ContestParticipantCreateManyUserInput | ContestParticipantCreateManyUserInput[]
   }
 
+  export type ChatCreateWithoutSenderInput = {
+    id?: string
+    message: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    team: TeamCreateNestedOneWithoutChatInput
+  }
+
+  export type ChatUncheckedCreateWithoutSenderInput = {
+    id?: string
+    teamId: string
+    message: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ChatCreateOrConnectWithoutSenderInput = {
+    where: ChatWhereUniqueInput
+    create: XOR<ChatCreateWithoutSenderInput, ChatUncheckedCreateWithoutSenderInput>
+  }
+
+  export type ChatCreateManySenderInputEnvelope = {
+    data: ChatCreateManySenderInput | ChatCreateManySenderInput[]
+  }
+
   export type OtpUpsertWithoutUserInput = {
     update: XOR<OtpUpdateWithoutUserInput, OtpUncheckedUpdateWithoutUserInput>
     create: XOR<OtpCreateWithoutUserInput, OtpUncheckedCreateWithoutUserInput>
@@ -38813,6 +39102,22 @@ export namespace Prisma {
     data: XOR<ContestParticipantUpdateManyMutationInput, ContestParticipantUncheckedUpdateManyWithoutUserInput>
   }
 
+  export type ChatUpsertWithWhereUniqueWithoutSenderInput = {
+    where: ChatWhereUniqueInput
+    update: XOR<ChatUpdateWithoutSenderInput, ChatUncheckedUpdateWithoutSenderInput>
+    create: XOR<ChatCreateWithoutSenderInput, ChatUncheckedCreateWithoutSenderInput>
+  }
+
+  export type ChatUpdateWithWhereUniqueWithoutSenderInput = {
+    where: ChatWhereUniqueInput
+    data: XOR<ChatUpdateWithoutSenderInput, ChatUncheckedUpdateWithoutSenderInput>
+  }
+
+  export type ChatUpdateManyWithWhereWithoutSenderInput = {
+    where: ChatScalarWhereInput
+    data: XOR<ChatUpdateManyMutationInput, ChatUncheckedUpdateManyWithoutSenderInput>
+  }
+
   export type UserCreateWithoutStoreInput = {
     id?: string
     cover?: string | null
@@ -38842,6 +39147,7 @@ export namespace Prisma {
     likes?: LikeCreateNestedManyWithoutProviderInput
     userPhotos?: UserPhotoCreateNestedManyWithoutUserInput
     ContestParticipant?: ContestParticipantCreateNestedManyWithoutUserInput
+    chat?: ChatCreateNestedManyWithoutSenderInput
   }
 
   export type UserUncheckedCreateWithoutStoreInput = {
@@ -38873,6 +39179,7 @@ export namespace Prisma {
     likes?: LikeUncheckedCreateNestedManyWithoutProviderInput
     userPhotos?: UserPhotoUncheckedCreateNestedManyWithoutUserInput
     ContestParticipant?: ContestParticipantUncheckedCreateNestedManyWithoutUserInput
+    chat?: ChatUncheckedCreateNestedManyWithoutSenderInput
   }
 
   export type UserCreateOrConnectWithoutStoreInput = {
@@ -38919,6 +39226,7 @@ export namespace Prisma {
     likes?: LikeUpdateManyWithoutProviderNestedInput
     userPhotos?: UserPhotoUpdateManyWithoutUserNestedInput
     ContestParticipant?: ContestParticipantUpdateManyWithoutUserNestedInput
+    chat?: ChatUpdateManyWithoutSenderNestedInput
   }
 
   export type UserUncheckedUpdateWithoutStoreInput = {
@@ -38949,6 +39257,7 @@ export namespace Prisma {
     likes?: LikeUncheckedUpdateManyWithoutProviderNestedInput
     userPhotos?: UserPhotoUncheckedUpdateManyWithoutUserNestedInput
     ContestParticipant?: ContestParticipantUncheckedUpdateManyWithoutUserNestedInput
+    chat?: ChatUncheckedUpdateManyWithoutSenderNestedInput
   }
 
   export type UserCreateWithoutUserPhotosInput = {
@@ -38980,6 +39289,7 @@ export namespace Prisma {
     votes?: VoteCreateNestedManyWithoutProviderInput
     likes?: LikeCreateNestedManyWithoutProviderInput
     ContestParticipant?: ContestParticipantCreateNestedManyWithoutUserInput
+    chat?: ChatCreateNestedManyWithoutSenderInput
   }
 
   export type UserUncheckedCreateWithoutUserPhotosInput = {
@@ -39011,6 +39321,7 @@ export namespace Prisma {
     votes?: VoteUncheckedCreateNestedManyWithoutProviderInput
     likes?: LikeUncheckedCreateNestedManyWithoutProviderInput
     ContestParticipant?: ContestParticipantUncheckedCreateNestedManyWithoutUserInput
+    chat?: ChatUncheckedCreateNestedManyWithoutSenderInput
   }
 
   export type UserCreateOrConnectWithoutUserPhotosInput = {
@@ -39126,6 +39437,7 @@ export namespace Prisma {
     votes?: VoteUpdateManyWithoutProviderNestedInput
     likes?: LikeUpdateManyWithoutProviderNestedInput
     ContestParticipant?: ContestParticipantUpdateManyWithoutUserNestedInput
+    chat?: ChatUpdateManyWithoutSenderNestedInput
   }
 
   export type UserUncheckedUpdateWithoutUserPhotosInput = {
@@ -39156,6 +39468,7 @@ export namespace Prisma {
     votes?: VoteUncheckedUpdateManyWithoutProviderNestedInput
     likes?: LikeUncheckedUpdateManyWithoutProviderNestedInput
     ContestParticipant?: ContestParticipantUncheckedUpdateManyWithoutUserNestedInput
+    chat?: ChatUncheckedUpdateManyWithoutSenderNestedInput
   }
 
   export type ContestPhotoUpsertWithWhereUniqueWithoutPhotoInput = {
@@ -39219,6 +39532,7 @@ export namespace Prisma {
     votes?: VoteCreateNestedManyWithoutProviderInput
     userPhotos?: UserPhotoCreateNestedManyWithoutUserInput
     ContestParticipant?: ContestParticipantCreateNestedManyWithoutUserInput
+    chat?: ChatCreateNestedManyWithoutSenderInput
   }
 
   export type UserUncheckedCreateWithoutLikesInput = {
@@ -39250,6 +39564,7 @@ export namespace Prisma {
     votes?: VoteUncheckedCreateNestedManyWithoutProviderInput
     userPhotos?: UserPhotoUncheckedCreateNestedManyWithoutUserInput
     ContestParticipant?: ContestParticipantUncheckedCreateNestedManyWithoutUserInput
+    chat?: ChatUncheckedCreateNestedManyWithoutSenderInput
   }
 
   export type UserCreateOrConnectWithoutLikesInput = {
@@ -39331,6 +39646,7 @@ export namespace Prisma {
     votes?: VoteUpdateManyWithoutProviderNestedInput
     userPhotos?: UserPhotoUpdateManyWithoutUserNestedInput
     ContestParticipant?: ContestParticipantUpdateManyWithoutUserNestedInput
+    chat?: ChatUpdateManyWithoutSenderNestedInput
   }
 
   export type UserUncheckedUpdateWithoutLikesInput = {
@@ -39361,6 +39677,7 @@ export namespace Prisma {
     votes?: VoteUncheckedUpdateManyWithoutProviderNestedInput
     userPhotos?: UserPhotoUncheckedUpdateManyWithoutUserNestedInput
     ContestParticipant?: ContestParticipantUncheckedUpdateManyWithoutUserNestedInput
+    chat?: ChatUncheckedUpdateManyWithoutSenderNestedInput
   }
 
   export type UserPhotoUpsertWithoutLikesInput = {
@@ -39431,6 +39748,7 @@ export namespace Prisma {
     likes?: LikeCreateNestedManyWithoutProviderInput
     userPhotos?: UserPhotoCreateNestedManyWithoutUserInput
     ContestParticipant?: ContestParticipantCreateNestedManyWithoutUserInput
+    chat?: ChatCreateNestedManyWithoutSenderInput
   }
 
   export type UserUncheckedCreateWithoutOtpsInput = {
@@ -39462,6 +39780,7 @@ export namespace Prisma {
     likes?: LikeUncheckedCreateNestedManyWithoutProviderInput
     userPhotos?: UserPhotoUncheckedCreateNestedManyWithoutUserInput
     ContestParticipant?: ContestParticipantUncheckedCreateNestedManyWithoutUserInput
+    chat?: ChatUncheckedCreateNestedManyWithoutSenderInput
   }
 
   export type UserCreateOrConnectWithoutOtpsInput = {
@@ -39508,6 +39827,7 @@ export namespace Prisma {
     likes?: LikeUpdateManyWithoutProviderNestedInput
     userPhotos?: UserPhotoUpdateManyWithoutUserNestedInput
     ContestParticipant?: ContestParticipantUpdateManyWithoutUserNestedInput
+    chat?: ChatUpdateManyWithoutSenderNestedInput
   }
 
   export type UserUncheckedUpdateWithoutOtpsInput = {
@@ -39538,6 +39858,7 @@ export namespace Prisma {
     likes?: LikeUncheckedUpdateManyWithoutProviderNestedInput
     userPhotos?: UserPhotoUncheckedUpdateManyWithoutUserNestedInput
     ContestParticipant?: ContestParticipantUncheckedUpdateManyWithoutUserNestedInput
+    chat?: ChatUncheckedUpdateManyWithoutSenderNestedInput
   }
 
   export type UserCreateWithoutCommentProvidesInput = {
@@ -39569,6 +39890,7 @@ export namespace Prisma {
     likes?: LikeCreateNestedManyWithoutProviderInput
     userPhotos?: UserPhotoCreateNestedManyWithoutUserInput
     ContestParticipant?: ContestParticipantCreateNestedManyWithoutUserInput
+    chat?: ChatCreateNestedManyWithoutSenderInput
   }
 
   export type UserUncheckedCreateWithoutCommentProvidesInput = {
@@ -39600,6 +39922,7 @@ export namespace Prisma {
     likes?: LikeUncheckedCreateNestedManyWithoutProviderInput
     userPhotos?: UserPhotoUncheckedCreateNestedManyWithoutUserInput
     ContestParticipant?: ContestParticipantUncheckedCreateNestedManyWithoutUserInput
+    chat?: ChatUncheckedCreateNestedManyWithoutSenderInput
   }
 
   export type UserCreateOrConnectWithoutCommentProvidesInput = {
@@ -39737,6 +40060,7 @@ export namespace Prisma {
     likes?: LikeUpdateManyWithoutProviderNestedInput
     userPhotos?: UserPhotoUpdateManyWithoutUserNestedInput
     ContestParticipant?: ContestParticipantUpdateManyWithoutUserNestedInput
+    chat?: ChatUpdateManyWithoutSenderNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCommentProvidesInput = {
@@ -39767,6 +40091,7 @@ export namespace Prisma {
     likes?: LikeUncheckedUpdateManyWithoutProviderNestedInput
     userPhotos?: UserPhotoUncheckedUpdateManyWithoutUserNestedInput
     ContestParticipant?: ContestParticipantUncheckedUpdateManyWithoutUserNestedInput
+    chat?: ChatUncheckedUpdateManyWithoutSenderNestedInput
   }
 
   export type ContestPhotoUpsertWithoutCommentsInput = {
@@ -39884,6 +40209,7 @@ export namespace Prisma {
     likes?: LikeCreateNestedManyWithoutProviderInput
     userPhotos?: UserPhotoCreateNestedManyWithoutUserInput
     ContestParticipant?: ContestParticipantCreateNestedManyWithoutUserInput
+    chat?: ChatCreateNestedManyWithoutSenderInput
   }
 
   export type UserUncheckedCreateWithoutFollowersInput = {
@@ -39915,6 +40241,7 @@ export namespace Prisma {
     likes?: LikeUncheckedCreateNestedManyWithoutProviderInput
     userPhotos?: UserPhotoUncheckedCreateNestedManyWithoutUserInput
     ContestParticipant?: ContestParticipantUncheckedCreateNestedManyWithoutUserInput
+    chat?: ChatUncheckedCreateNestedManyWithoutSenderInput
   }
 
   export type UserCreateOrConnectWithoutFollowersInput = {
@@ -39951,6 +40278,7 @@ export namespace Prisma {
     likes?: LikeCreateNestedManyWithoutProviderInput
     userPhotos?: UserPhotoCreateNestedManyWithoutUserInput
     ContestParticipant?: ContestParticipantCreateNestedManyWithoutUserInput
+    chat?: ChatCreateNestedManyWithoutSenderInput
   }
 
   export type UserUncheckedCreateWithoutFollowingsInput = {
@@ -39982,6 +40310,7 @@ export namespace Prisma {
     likes?: LikeUncheckedCreateNestedManyWithoutProviderInput
     userPhotos?: UserPhotoUncheckedCreateNestedManyWithoutUserInput
     ContestParticipant?: ContestParticipantUncheckedCreateNestedManyWithoutUserInput
+    chat?: ChatUncheckedCreateNestedManyWithoutSenderInput
   }
 
   export type UserCreateOrConnectWithoutFollowingsInput = {
@@ -40028,6 +40357,7 @@ export namespace Prisma {
     likes?: LikeUpdateManyWithoutProviderNestedInput
     userPhotos?: UserPhotoUpdateManyWithoutUserNestedInput
     ContestParticipant?: ContestParticipantUpdateManyWithoutUserNestedInput
+    chat?: ChatUpdateManyWithoutSenderNestedInput
   }
 
   export type UserUncheckedUpdateWithoutFollowersInput = {
@@ -40058,6 +40388,7 @@ export namespace Prisma {
     likes?: LikeUncheckedUpdateManyWithoutProviderNestedInput
     userPhotos?: UserPhotoUncheckedUpdateManyWithoutUserNestedInput
     ContestParticipant?: ContestParticipantUncheckedUpdateManyWithoutUserNestedInput
+    chat?: ChatUncheckedUpdateManyWithoutSenderNestedInput
   }
 
   export type UserUpsertWithoutFollowingsInput = {
@@ -40099,6 +40430,7 @@ export namespace Prisma {
     likes?: LikeUpdateManyWithoutProviderNestedInput
     userPhotos?: UserPhotoUpdateManyWithoutUserNestedInput
     ContestParticipant?: ContestParticipantUpdateManyWithoutUserNestedInput
+    chat?: ChatUpdateManyWithoutSenderNestedInput
   }
 
   export type UserUncheckedUpdateWithoutFollowingsInput = {
@@ -40129,6 +40461,7 @@ export namespace Prisma {
     likes?: LikeUncheckedUpdateManyWithoutProviderNestedInput
     userPhotos?: UserPhotoUncheckedUpdateManyWithoutUserNestedInput
     ContestParticipant?: ContestParticipantUncheckedUpdateManyWithoutUserNestedInput
+    chat?: ChatUncheckedUpdateManyWithoutSenderNestedInput
   }
 
   export type UserCreateWithoutVotesInput = {
@@ -40160,6 +40493,7 @@ export namespace Prisma {
     likes?: LikeCreateNestedManyWithoutProviderInput
     userPhotos?: UserPhotoCreateNestedManyWithoutUserInput
     ContestParticipant?: ContestParticipantCreateNestedManyWithoutUserInput
+    chat?: ChatCreateNestedManyWithoutSenderInput
   }
 
   export type UserUncheckedCreateWithoutVotesInput = {
@@ -40191,6 +40525,7 @@ export namespace Prisma {
     likes?: LikeUncheckedCreateNestedManyWithoutProviderInput
     userPhotos?: UserPhotoUncheckedCreateNestedManyWithoutUserInput
     ContestParticipant?: ContestParticipantUncheckedCreateNestedManyWithoutUserInput
+    chat?: ChatUncheckedCreateNestedManyWithoutSenderInput
   }
 
   export type UserCreateOrConnectWithoutVotesInput = {
@@ -40323,6 +40658,7 @@ export namespace Prisma {
     likes?: LikeUpdateManyWithoutProviderNestedInput
     userPhotos?: UserPhotoUpdateManyWithoutUserNestedInput
     ContestParticipant?: ContestParticipantUpdateManyWithoutUserNestedInput
+    chat?: ChatUpdateManyWithoutSenderNestedInput
   }
 
   export type UserUncheckedUpdateWithoutVotesInput = {
@@ -40353,6 +40689,7 @@ export namespace Prisma {
     likes?: LikeUncheckedUpdateManyWithoutProviderNestedInput
     userPhotos?: UserPhotoUncheckedUpdateManyWithoutUserNestedInput
     ContestParticipant?: ContestParticipantUncheckedUpdateManyWithoutUserNestedInput
+    chat?: ChatUncheckedUpdateManyWithoutSenderNestedInput
   }
 
   export type ContestPhotoUpsertWithoutVotesInput = {
@@ -40934,10 +41271,10 @@ export namespace Prisma {
   }
 
   export type ChatUpdateWithoutTeamInput = {
-    senderId?: StringFieldUpdateOperationsInput | string
     message?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    sender?: UserUpdateOneRequiredWithoutChatNestedInput
   }
 
   export type ChatUncheckedUpdateWithoutTeamInput = {
@@ -41043,6 +41380,14 @@ export namespace Prisma {
     contestId: string
     level?: $Enums.YCLevel
     rank?: number | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ChatCreateManySenderInput = {
+    id?: string
+    teamId: string
+    message: string
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -41321,6 +41666,27 @@ export namespace Prisma {
     contestId?: StringFieldUpdateOperationsInput | string
     level?: EnumYCLevelFieldUpdateOperationsInput | $Enums.YCLevel
     rank?: NullableIntFieldUpdateOperationsInput | number | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ChatUpdateWithoutSenderInput = {
+    message?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    team?: TeamUpdateOneRequiredWithoutChatNestedInput
+  }
+
+  export type ChatUncheckedUpdateWithoutSenderInput = {
+    teamId?: StringFieldUpdateOperationsInput | string
+    message?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ChatUncheckedUpdateManyWithoutSenderInput = {
+    teamId?: StringFieldUpdateOperationsInput | string
+    message?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

@@ -12,6 +12,7 @@ model Chat {
     message   String
 
     team      Team          @relation(fields: [teamId], references: [id])
+    sender    User          @relation(fields: [senderId], references: [id])
     createdAt DateTime    @default(now())
     updatedAt DateTime    @updatedAt
     

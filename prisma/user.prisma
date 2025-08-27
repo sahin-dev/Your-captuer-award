@@ -27,6 +27,7 @@ model User {
   likes              Like[]
   userPhotos         UserPhoto[]
   ContestParticipant ContestParticipant[]
+  chat               Chat[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

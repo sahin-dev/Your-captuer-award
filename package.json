@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Backend api developed using NodeJs and ExpressJs",
   "main": "server.ts",
+  
   "scripts": {
     "start": "nodemon src/server.ts",
     "prod": "node dist/server.js",
@@ -18,11 +19,9 @@
     "url": ""
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": ""
-  },
+  "author": "Md Sahin Siraj",
+  "license": "MIT",
+ 
   "homepage": "",
   "devDependencies": {
     "@eslint/js": "^9.30.0",
@@ -43,7 +42,6 @@
     "eslint": "^9.30.0",
     "globals": "^16.2.0",
     "onchange": "^7.1.0",
-    "passport-facebook": "^3.0.0",
     "prisma": "^6.6.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
@@ -80,6 +78,7 @@
     "passport-apple": "^2.0.2",
     "passport-appleid": "^1.0.5",
     "passport-google-oauth20": "^2.0.0",
+    "passport-facebook": "^3.0.0",
     "passport-local": "^1.0.0",
     "socket.io": "^4.8.1",
     "streamifier": "^0.1.1",

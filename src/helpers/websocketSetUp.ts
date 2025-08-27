@@ -4,11 +4,13 @@ import config from "../config";
 
 import { jwtHelpers } from "./jwt";
 import prisma from "../shared/prisma";
+import { any } from "zod";
 
 interface ExtendedWebSocket extends WebSocket {
   userId?: string;
 }
 
+type Message  = {event:string, token?:string, teamId?:string, message?:string} 
 const onlineUsers = new Set<string>();
 const userSockets = new Map<string, ExtendedWebSocket>();
 const teamsChannel = new Map<string, Set<ExtendedWebSocket>>()
@@ -23,7 +25,11 @@ export function setupWebSocket(server: Server) {
 
     ws.on("message", async (data: string) => {
       try {
-        const parsedData = JSON.parse(data);
+        const parsedData:Message = JSON.parse(data);
+
+        if (!ws.userId && parsedData.event !== "authenticate"){
+          ws.send(JSON.stringify({message:"User not authenticated"}))
+        }
 
         switch (parsedData.event) {
           case "authenticate": {
@@ -88,9 +94,12 @@ export function setupWebSocket(server: Server) {
 
           case "unsubscribe":{
             const {teamId} = parsedData
+            if(!teamId){
+              ws.send(JSON.stringify({message:"teamId is required"}))
+            }
             
-            if (teamsChannel.has(teamId)){
-              let memberSet = teamsChannel.get(teamId) as Set<ExtendedWebSocket>
+            if (teamsChannel.has(teamId as string)){
+              let memberSet = teamsChannel.get(teamId as string) as Set<ExtendedWebSocket>
               memberSet.delete(ws)
             }
 
@@ -103,6 +112,7 @@ export function setupWebSocket(server: Server) {
   
             if ( !teamId || !message) {
               console.log("Invalid message payload");
+              ws.send("Payload is invalid for message event")
               return;
             }
             if(!ws.userId){
@@ -144,6 +154,7 @@ export function setupWebSocket(server: Server) {
               where: {
                teamId
               },
+              include:{sender:{select:{fullName:true, avatar:true}}},
               orderBy:{createdAt:"asc"}
             });
 
@@ -159,9 +170,6 @@ export function setupWebSocket(server: Server) {
             );
             break;
           }
-
-
-         
 
           default:
             console.log("Unknown event type:", parsedData.event);
@@ -192,6 +200,10 @@ export function setupWebSocket(server: Server) {
   });
 
   return wss;
+}
+
+function handleMessage (){
+
 }
 
 function broadcastToAll(wss: WebSocketServer, message: object) {
