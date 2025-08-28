@@ -5,6 +5,7 @@ import config from "../config";
 import { jwtHelpers } from "./jwt";
 import prisma from "../shared/prisma";
 import { any } from "zod";
+import { chatService } from "../app/modules/Chat/chat.service";
 
 interface ExtendedWebSocket extends WebSocket {
   userId?: string;
@@ -28,7 +29,8 @@ export function setupWebSocket(server: Server) {
         const parsedData:Message = JSON.parse(data);
 
         if (!ws.userId && parsedData.event !== "authenticate"){
-          ws.send(JSON.stringify({message:"User not authenticated"}))
+          ws.send(JSON.stringify({event:"error",message:"User not authenticated"}))
+          return
         }
 
         switch (parsedData.event) {
@@ -67,6 +69,10 @@ export function setupWebSocket(server: Server) {
           }
 
           case "subscribe" : {
+             if(!ws.userId){
+              ws.send("User is not authenticated")
+              ws.terminate()
+            }
             const {teamId} = parsedData
 
             if(!teamId){
@@ -83,12 +89,9 @@ export function setupWebSocket(server: Server) {
               memberSet.add(ws)
             }
 
-            let room = await prisma.room.findFirst({where:{teamId}})
-            if(!room){
-              room = await prisma.room.create({data:{teamId}})
-            }
+            const allChats = await chatService.getAllChats(ws.userId as string,teamId)
             
-           ws.send(JSON.stringify({event:'subscribed', data:room}))
+           ws.send(JSON.stringify({event:'subscribed', data:allChats}))
 
           }
 
@@ -115,6 +118,7 @@ export function setupWebSocket(server: Server) {
               ws.send("Payload is invalid for message event")
               return;
             }
+            
             if(!ws.userId){
               ws.send("User is not authenticated")
               ws.terminate()
@@ -132,8 +136,6 @@ export function setupWebSocket(server: Server) {
             }else {
               memberSockets = teamsChannel.get(teamId)
             }
-
-
               memberSockets?.forEach(socket => {
                 if(socket !== ws){
                   socket.send(JSON.stringify({event:"message", data:chat}))
@@ -147,20 +149,14 @@ export function setupWebSocket(server: Server) {
             const { teamId } = parsedData;
             if (!ws.userId) {
               console.log("User not authenticated");
+              ws.send(JSON.stringify({event:"unauthenticated", message:"User not authenticated"}))
               return;
             }
+            if (!teamId){
+              ws.send(JSON.stringify({event:"error", message:"teamId is required"}))
+            }
 
-            const chats = await prisma.chat.findMany({
-              where: {
-               teamId
-              },
-              include:{sender:{select:{fullName:true, avatar:true}}},
-              orderBy:{createdAt:"asc"}
-            });
-
-            
-
-           
+            const chats = await chatService.getAllChats(ws.userId as string,teamId as string)
 
             ws.send(
               JSON.stringify({
@@ -202,9 +198,7 @@ export function setupWebSocket(server: Server) {
   return wss;
 }
 
-function handleMessage (){
 
-}
 
 function broadcastToAll(wss: WebSocketServer, message: object) {
   wss.clients.forEach((client) => {

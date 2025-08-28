@@ -1,11 +1,11 @@
 import ApiError from "../../../../errors/ApiError";
 import prisma from "../../../../shared/prisma";
-import { ContestPrizeData } from "./contestPrize.type";
+import { ContestPrize } from "./contestPrize.type";
 import httpStatus from 'http-status'
 
 
 
-export const addContestPrizes = async (contestId:string, prizes:ContestPrizeData[])=>{
+export const addContestPrizes = async (contestId:string, prizes:ContestPrize[])=>{
     const contest = await prisma.contest.findUnique({where:{id:contestId}})
     try{
         
@@ -15,7 +15,7 @@ export const addContestPrizes = async (contestId:string, prizes:ContestPrizeData
         }
 
         prizes.forEach(async (prize)=>{
-            await prisma.contestPrize.create({data:{contestId:contestId, category:prize.category,keys:prize.keys, trades:prize.trades, charges:prize.charges}})
+            await prisma.contestPrize.create({data:{contestId:contestId, category:prize.category,keys:parseInt(prize.keys), trades:parseInt(prize.trades), charges:parseInt(prize.charges)}})
         })
 
         return "Contest prizes added successfully"

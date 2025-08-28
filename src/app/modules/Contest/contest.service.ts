@@ -79,16 +79,16 @@ export const createContest = async (creatorId: string, body: contestData, banner
 
     
 
-    // if(body.rules){
-    //     const rules:ContestRule[] = JSON.parse(body.rules)
+    if(body.rules){
+        const rules:ContestRule[] = body.rules
         
-    //     await contestRuleService.addContestRules(contest.id, rules)
-    // }
+        await contestRuleService.addContestRules(contest.id, rules)
+    }
    
-    // if(body.prizes){
-    //      const prizes:ContestPrizeData[] = JSON.parse(body.prizes)
-    //     await addContestPrizes(contest.id, prizes)
-    // }
+    if(body.prizes){
+         const prizes:ContestPrize[] = body.prizes
+        await addContestPrizes(contest.id, prizes)
+    }
 
     return contest;
 };
@@ -126,8 +126,8 @@ const createRecurringContest  =  async (creatorId: string, body: contestData, ba
         throw new ApiError(httpstatus.BAD_REQUEST, "contest rules and prizes are required")
     }
 
-    contestData.rules = body.rules
-    contestData.prizes = body.prizes
+    contestData.rules = JSON.stringify(body.rules)
+    contestData.prizes = JSON.stringify(body.prizes)
    
     let bannerUrl = null
     if (banner){

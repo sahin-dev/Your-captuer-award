@@ -9,3 +9,9 @@ globalEventHandler.on(Events.NEW_VOTE, async ({photoId, contestId}:{photoId:stri
     const getContestDetails = await contestService.getContestById(contestId)
 
 })
+
+globalEventHandler.on(Events.CONTEST_ENDED, async (contestId:string)=>{
+
+    console.log(`${contestId} has ended`)
+
+})

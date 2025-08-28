@@ -9,6 +9,8 @@ import { addContestPrizes, getContestPrizes } from '../Contest/ContestPrizes/con
 import { calculateNextOccurance } from '../../../helpers/nextOccurance';
 import { ContestRule } from '../Contest/ContestRules/conetstRules.type';
 import { ContestPrize } from '../Contest/ContestPrizes/contestPrize.type';
+import globalEventHandler from '../../event/eventEmitter';
+import Events from '../../event/events.constant';
 
 
 
@@ -143,6 +145,8 @@ async function scheduleContest(rContest:RecurringContest){
         
         })
 
+        console.log(rContest)
+
         const rules = JSON.parse(rContest.rules as string) as ContestRule[]
 
         rules.forEach(async rule => {
@@ -183,10 +187,11 @@ agenda.define("contest:watcher", async (job: Job) => {
     const { contestId} = job.attrs.data as {  contestId:string };
     
     await prisma.contest.update({where:{id:contestId}, data:{status:ContestStatus.CLOSED}})
-        console.log(`Contest with id: ${contestId} has ended.`)
-        console.log('Identifying winner=>')
-        const winners = await identifyWinner(contestId)
-        console.log("Winners awarded automatically")
+    globalEventHandler.emit(Events.CONTEST_ENDED,contestId)
+    console.log(`Contest with id: ${contestId} has ended.`)
+    console.log('Identifying winner=>')
+    const winners = await identifyWinner(contestId)
+    console.log("Winners awarded automatically")
 
     });
 

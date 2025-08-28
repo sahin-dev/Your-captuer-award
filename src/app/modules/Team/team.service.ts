@@ -196,6 +196,14 @@ const joinATeam = async (userId:string, teamId:string)=>{
 }
 
 
+const isTeamMemberExist = async (userId:string, teamId:string)=>{
+
+    const member = await prisma.teamMember.findUnique({where:{memberId:userId, teamId}})
+
+    return member || false
+}
+
+
 export const teamService = {
-    createTeam, getTeams, getTeamDetails, updateTeam, deleteTeam, joinATeam
+    createTeam, getTeams, getTeamDetails, updateTeam, deleteTeam, joinATeam, isTeamExist, isTeamMemberExist
 }

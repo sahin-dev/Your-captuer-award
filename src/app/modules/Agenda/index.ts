@@ -3,7 +3,7 @@ import agenda from "./jobs"
 
 agenda.on('ready', async () => {
     console.log("Agenda is ready"); 
-    // agenda.start();
+    agenda.start();
     agenda.every("five minute", "contest:checkRecurring");   
     agenda.every("one minute", "contest:active")
 });
