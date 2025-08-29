@@ -145,8 +145,6 @@ async function scheduleContest(rContest:RecurringContest){
         
         })
 
-        console.log(rContest)
-
         const rules = JSON.parse(rContest.rules as string) as ContestRule[]
 
         rules.forEach(async rule => {

@@ -10,6 +10,7 @@ import { achievementRoutes } from "../modules/Achievements/achievement.route";
 import { voteRouter } from "../modules/Vote/vote.route";
 import { profileRoutes } from "../modules/Profile/profile.route";
 import { sitePolicyRoutes } from "../modules/SitePolicy/sitepolicy.route";
+import { charRoutes } from "../modules/Chat/chat.routes";
 
 
 
@@ -28,6 +29,7 @@ const moduleRoutes = [
     {path:"/achievements", route:achievementRoutes},
     {path:"/votes", route:voteRouter},
     {path:"/site-policies", route:sitePolicyRoutes},
+    {path:"/chats", route:charRoutes}
 
 ]
 

@@ -18,8 +18,6 @@ class WebSocketHandler {
 
     private init (){
 
-
-
         this.wsServer.on('connection', (socket,req)=>{
            
             
@@ -27,8 +25,6 @@ class WebSocketHandler {
                 console.log(data.toString())
                 let parsedData = JSON.parse(data.toString())
                 
-                
-              
             })
 
         })

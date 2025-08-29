@@ -250,8 +250,8 @@ const verifyOtp = async (email:string, otp:string)=>{
      
 }
 
-const getUserBySocialId = async (socialProvider:string, socialId:string)=>{
-    const user = await prisma.user.findFirst({where:{socialProvider, socialId}})
+const getUserByEmail = async (socialProvider:string, email:string)=>{
+    const user = await prisma.user.findFirst({where:{OR:[{socialProvider,email}, {email}]}})
 
     return user
 }
@@ -297,7 +297,7 @@ export const userService = {
     updateCoverPhoto,
     updateProfilePhoto,
     forgetPassword,
-    getUserBySocialId,
+    getUserByEmail,
     verifyOtp,
     getUserDetails,
     changePassword,

@@ -2,7 +2,7 @@ import z from 'zod'
 
 export const SignInSchema = z.object({
     
-emailorusername: z.string({required_error:"email or username is required"}),
+email: z.string({required_error:"email or username is required"}).email({message:"email is not valid"}),
 password: z.string({required_error:"password is required"})
 
 })

@@ -9,4 +9,4 @@ router.get("/:teamId",auth(UserRole.USER), chatController.getAllChats)
 
 
 
-export const charRouter = router
+export const charRoutes = router

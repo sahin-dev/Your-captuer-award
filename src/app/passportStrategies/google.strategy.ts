@@ -2,7 +2,7 @@ import passport from "passport";
 import google, { Profile } from 'passport-google-oauth20'
 import config from "../../config";
 import { userService } from "../modules/User/user.service";
-import { IUserRegister } from "../modules/User/user.interface";
+import { IUser } from "../modules/User/user.interface";
 import prisma from "../../shared/prisma";
 
 const googleConfig = {
@@ -14,9 +14,16 @@ const googleConfig = {
 const googleCallback = async (accessToken:any, refreshToken:any, profile:Profile, done:any)=>{
     console.log('# Google Profile --->', profile, "------------###############################------------");
   try {
-    let user = await userService.getUserBySocialId("google", profile.id)
+    
+
+    if (!profile.emails || !profile.emails[0]?.value) {
+      return done(new Error("No email found in Google profile"), null);
+    }
+    let user = await userService.getUserByEmail("google", profile.emails[0].value)
+    console.log(user)
+    
       if (!user){
-         let userData:IUserRegister = {
+         let userData:IUser = {
                 socialProvider:"google",
                 socialId: profile?.id,
                 fullName: profile?.displayName,
