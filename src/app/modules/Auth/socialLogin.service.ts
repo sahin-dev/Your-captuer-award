@@ -9,13 +9,6 @@ import sendResponse from '../../../shared/ApiResponse';
 
 
 
-//google login
-// const initiateGoogleAuth = googlePassport.authenticate("google", {
-//   scope: ["profile", "email"],
-// });
-
-
-
 const googleCallback =  (req:Request, res:Response, next:NextFunction) => {
   passport.authenticate(
     "google",
@@ -47,9 +40,6 @@ const googleCallback =  (req:Request, res:Response, next:NextFunction) => {
   )(req, res, next);
 };
 
-//FaceBook login
-
-// const facebookAuth = passport.authenticate("facebook");
 
 const facebookCallback = (req:Request, res:Response, next:NextFunction) => {
   passport.authenticate(
@@ -80,6 +70,5 @@ const facebookCallback = (req:Request, res:Response, next:NextFunction) => {
 
 export const socialLogin = {
     googleCallback,
-    // facebookAuth,
     facebookCallback
 }

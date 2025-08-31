@@ -11,13 +11,7 @@ import ErrorHandler from "./app/middlewares/error.middleware";
 import { User } from "./prismaClient";
 import './app/event'
 
-
-
-
-
-
 const app: Application = express();
-
 
 app.use(session({
   secret:"secret123#ABC",
@@ -34,14 +28,11 @@ declare module "express-serve-static-core" {
   }
 }
 
-
-
-
 export const corsOptions = {
   origin: ["http://localhost:3001", "http://localhost:3000"],
   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true,
+  credentials: false,
 };
 
 

@@ -8,7 +8,7 @@ import catchAsync from "../../../shared/catchAsync"
 // @access Private
 
 
-export const toggleLike = catchAsync(async (req:Request, res: Response) => {
+export const toggleLike = catchAsync(async (req: Request, res: Response) => {
     
     const {photoId} = req.body
     const userId = req.user.id
@@ -24,7 +24,7 @@ export const toggleLike = catchAsync(async (req:Request, res: Response) => {
 })
 
 export const getLikedPhotos = catchAsync(async (req: Request, res: Response) => {
-     const {userId} = req.body
+    const {userId} = req.body
 
     const likes = await handleGetLikedPhotos(userId)
 
@@ -40,7 +40,7 @@ export const getMyLikedPhotos = catchAsync(async (req: Request, res: Response) =
     const userId = req.user.id
 
     const likes = await handleGetLikedPhotos(userId)
-
+    
     sendResponse(res, {
         statusCode: 200,
         success: true,

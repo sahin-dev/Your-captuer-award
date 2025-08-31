@@ -20,13 +20,10 @@ router.get("/me",auth(), getAuthenticatedUser)
 router.post("/register", validateRequest(userRegistrationSchema), registerUser)
 
 
-//Social Logins
-//initial google login route
 router.get("/google", passport.use(googleStrategy).authenticate("google",{
   scope: ["profile", "email"],
 } ))
 
-//google callback
 
 router.get("/google/callback", socialLogin.googleCallback);
 

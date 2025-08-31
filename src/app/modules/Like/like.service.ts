@@ -7,6 +7,7 @@ import Events from "../../event/events.constant";
 //if like exists, remove it, if not, create it
 
 export const handleToggleLike = async (userId:string,photoId:string)=>{
+    
     const existingLike = await prisma.like.findFirst({
         where: {
             providerId: userId,
@@ -17,10 +18,11 @@ export const handleToggleLike = async (userId:string,photoId:string)=>{
     if (existingLike) {
         // If like exists, remove it
         return  await removeLike(userId, photoId);
-    } else {
-        // If like does not exist, create it
-        return  await provideLike(userId, photoId);
-    }
+    } 
+
+    // If like does not exist, create it
+    return  await provideLike(userId, photoId);
+    
 }
 
 //user can provide like on a photo
@@ -74,8 +76,8 @@ export const removeLike = async (userId:string,photoId:string)=>{
 
 //user can get all likes on a photo
 
-export const getLikes = (photoId:string)=>{
-    return prisma.like.findMany({
+export const getLikes = async (photoId:string)=>{
+    return await prisma.like.findMany({
         where:{
             photoId
         },
@@ -87,8 +89,8 @@ export const getLikes = (photoId:string)=>{
 
 //user can get all photos liked by a user
 
-export const handleGetLikedPhotos = (userId:string)=>{
-    return prisma.like.findMany({
+export const handleGetLikedPhotos = async (userId:string)=>{
+    return await prisma.like.findMany({
         where:{
             providerId:userId
         },

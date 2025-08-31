@@ -17,7 +17,7 @@ import { UserStoreService } from "../User/UserStore/userStore.service"
 export const handleRegister = async (body:UserRegistrationData)=>{
 
     const existingUser = await prisma.user.findFirst({where:{email:body.email}})
-   
+    console.log(existingUser)
 
     if (existingUser){
         throw new ApiError(httpstatus.CONFLICT, "user already exist with this email")
@@ -65,8 +65,7 @@ const attachStoreToUser = async (userId:string)=>{
 
 export const handleSignIn = async(body:UserSignInData)=>{
     
-    const user = await prisma.user.findFirst({where:{OR:[{email:body.emailorusername}, {username:body.emailorusername}]}})
-
+    const user = await prisma.user.findFirst({where:{email:body.email}})  
     if (!user){
         throw new ApiError(httpstatus.NOT_FOUND,"User not found")
     }

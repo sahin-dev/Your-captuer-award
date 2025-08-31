@@ -3,7 +3,7 @@ import { PrismaClient } from "../prismaClient";
 // import { initiateSuperAdmin } from "../app/db/db";
 
 const prisma = new PrismaClient({
-  log: ['query', 'info', 'warn', 'error']
+  log: ['info', 'warn', 'error']
 });
 
 // async function connectPrisma() {
