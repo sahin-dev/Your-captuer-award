@@ -1,4 +1,4 @@
-// ./events.constatnt.ts
+// ./events.constant.ts
 
 export const Events = {
     USER_REGISTERED : "userRegistered",

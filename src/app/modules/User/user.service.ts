@@ -7,7 +7,7 @@ import { fileUploader } from "../../../helpers/fileUploader"
 import { generateOtp } from "../../../helpers/generateOtp"
 import mailer from "../../../shared/mailSender"
 import { hashing } from "../../../helpers/hash"
-import { LevelName, OtpStatus, UserRole } from "../../../prismaClient"
+import { OtpStatus, UserRole } from "../../../prismaClient"
 import { userAdminUpdateData, userUpdateData } from "./user.types"
 import bcrypt from 'bcryptjs'
 import { voteService } from "../Vote/vote.service"

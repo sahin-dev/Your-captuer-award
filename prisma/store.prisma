@@ -1,0 +1,34 @@
+
+model Product {
+    id              String  @id @map("_id") @default(auto()) @db.ObjectId
+    productType     ProductType
+    title           String
+    icon            String?
+    description     String?
+    image           String?
+    prices          Price[]
+
+    @@map("products")
+    @@index([id,productType])
+}
+
+model Price {
+    id      String          @id @map("_id")  @default(auto())  @db.ObjectId
+    product_id      String  @db.ObjectId
+    name            String
+    amount          Float
+    quantity        Int
+    price_id        String
+    product         Product @relation(references: [id], fields: [product_id])
+
+    createdAt      DateTime     @default(now())
+    updatedAt      DateTime     @updatedAt
+    @@map("prices")
+    @@index([id,product_id])
+}
+
+enum ProductType {
+    KEY
+    PROMOTE
+    CHARGE
+}

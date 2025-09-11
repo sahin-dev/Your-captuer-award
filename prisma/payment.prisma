@@ -1,0 +1,12 @@
+model Payment {
+    id             String        @id @default(auto()) @map("_id") @db.ObjectId
+    status  PaymentStatus
+    
+
+    @@map("payments")      
+}
+
+enum PaymentStatus {
+    PENDING
+    SUCCEEDED
+}

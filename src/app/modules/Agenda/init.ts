@@ -2,9 +2,8 @@ import Agenda from "agenda";
 import config from "../../../config";
 
 
-const mongodbUrl = config.db || "";
-
  function initAgenda() {
+    const mongodbUrl = config.db || "";
     if (!mongodbUrl) {  
         throw new Error("Database URL is not defined in the configuration.");
     }

@@ -1,0 +1,11 @@
+model Notification {
+   id             String        @id @default(auto()) @map("_id") @db.ObjectId
+   title          String
+   message        String
+   isRead          Boolean  @default(false)
+
+   createdAt       DateTime     @default(now())
+   updatedAT       DateTime     @updatedAt
+
+   @@map("notifications")
+}
