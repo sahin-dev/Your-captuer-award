@@ -10,6 +10,7 @@ import router from "./app/routes";
 import ErrorHandler from "./app/middlewares/error.middleware";
 import { User } from "./prismaClient";
 import './app/event'
+import stripeWebhook from "./helpers/stripeWebhook";
 
 const app: Application = express();
 
@@ -36,6 +37,7 @@ export const corsOptions = {
 };
 
 
+app.post("/webhook",express.raw({type:"application/json"}), stripeWebhook)
 
 // Middleware setup
 app.use(cors(corsOptions));
@@ -56,13 +58,15 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 
+
+
 // Router setup
 app.use("/api/v1", router);
 
 // Error handling middleware
 app.use(ErrorHandler);
 
-// Not found handler
+// Not found handlerc
 app.use((req: Request, res: Response, next: NextFunction) => {
   res.status(httpStatus.NOT_FOUND).json({
     success: false,

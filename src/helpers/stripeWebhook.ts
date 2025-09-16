@@ -1,10 +1,11 @@
 import { Request, Response } from 'express';
 import config from '../config';
 import Stripe from 'stripe';
-const stripe = require('stripe')(config.stripe_key as string);
+import prisma from '../shared/prisma';
+import { PaymentStatus } from '../prismaClient';
+const stripe = require('stripe')(config.stripe_key as string, {apiVersion: "2025-08-27.basil"});
 
 const stripeWebhook =  async (req: Request, res: Response) => {
-    console.log('Webhook received!');
     const sig = req.headers['stripe-signature'] as string;
   
     if (!sig) {
@@ -13,7 +14,7 @@ const stripeWebhook =  async (req: Request, res: Response) => {
     }
   
     try {
-      // The raw body is required here
+
       const event = stripe.webhooks.constructEvent(req.body, sig, config.webhook_secret as string);
   
       console.log(`✅ Stripe event received: ${event.type}`);
@@ -21,6 +22,11 @@ const stripeWebhook =  async (req: Request, res: Response) => {
       switch (event.type) {
         case 'payment_intent.succeeded':
           const paymentIntent = event.data.object;
+          const payment = await prisma.payment.findFirst({where:{stripe_intent_id:paymentIntent.id}})
+          if(!payment){
+            throw new Error("Payment not found")
+          }
+          await prisma.payment.update({where:{id:payment.id}, data:{status:PaymentStatus.SUCCEEDED}})
           console.log('💰 PaymentIntent was successful:', paymentIntent);
           break;
   

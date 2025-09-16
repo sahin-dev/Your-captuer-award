@@ -6,13 +6,17 @@ model Team {
   language      String
   country       String
   description   String
-  accessibility TeamAccessibility
+  accessibility TeamAccessibility   @default(PUBLIC)
+  score         Int   @default(0)
+  win           Int   @default(0)
+  lost          Int   @default(0)
   badge         String //Image file
   min_requirement   Int
   creatorId     String            @db.ObjectId
   creator       User              @relation(fields: [creatorId], references: [id])
   members       TeamMember[]
   chat          Chat[]
+  participations    TeamParticipation[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -24,16 +28,33 @@ model Team {
 model TeamMember {
   id     String           @id @default(auto()) @map("_id") @db.ObjectId
   status TeamMemberStatus @default(ACTIVE)
+  level   MemberLevel   @default(NEW)
 
   teamId   String @db.ObjectId
   memberId String @unique @db.ObjectId
+  contestId String  @db.ObjectId
   team     Team   @relation(fields: [teamId], references: [id])
   member   User   @relation(fields: [memberId], references: [id])
+  contestParticipant   ContestParticipant[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@map("team_members")
+}
+
+model TeamParticipation {
+  id      String      @id  @map("_id")  @default(auto())  @db.ObjectId
+
+  teamId    String    @db.ObjectId
+  contestId   String    @db.ObjectId
+
+  team      Team   @relation(references: [id], fields: [teamId])
+  contest Contest   @relation(references: [id], fields: [contestId])
+
+  @@map("team_participations")
+  @@index([teamId])
+  @@unique([teamId, contestId])
 }
 
 enum TeamAccessibility {
@@ -46,4 +67,11 @@ enum TeamMemberStatus {
   ACTIVE
   REMOVED
   BLOCKED
+}
+
+enum MemberLevel {
+  NEW
+  EXPERT
+  MASTER
+  LEADER
 }

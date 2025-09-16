@@ -11,6 +11,7 @@ import { voteRouter } from "../modules/Vote/vote.route";
 import { profileRoutes } from "../modules/Profile/profile.route";
 import { sitePolicyRoutes } from "../modules/SitePolicy/sitepolicy.route";
 import { charRoutes } from "../modules/Chat/chat.routes";
+import {  paymentRouter} from "../modules/Payment/payment.route";
 
 
 
@@ -29,7 +30,8 @@ const moduleRoutes = [
     {path:"/achievements", route:achievementRoutes},
     {path:"/votes", route:voteRouter},
     {path:"/site-policies", route:sitePolicyRoutes},
-    {path:"/chats", route:charRoutes}
+    {path:"/chats", route:charRoutes},
+    {path:"/payments", route:paymentRouter.router}
 
 ]
 

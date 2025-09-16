@@ -3,10 +3,11 @@ model Product {
     id              String  @id @map("_id") @default(auto()) @db.ObjectId
     productType     ProductType
     title           String
+    quantity        Int
+    amount          Float
     icon            String?
     description     String?
     image           String?
-    prices          Price[]
 
     @@map("products")
     @@index([id,productType])
@@ -19,7 +20,6 @@ model Price {
     amount          Float
     quantity        Int
     price_id        String
-    product         Product @relation(references: [id], fields: [product_id])
 
     createdAt      DateTime     @default(now())
     updatedAt      DateTime     @updatedAt

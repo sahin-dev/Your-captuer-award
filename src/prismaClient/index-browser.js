@@ -119,6 +119,7 @@ exports.Prisma.ContestScalarFieldEnum = {
   description: 'description',
   banner: 'banner',
   status: 'status',
+  mode: 'mode',
   maxUploads: 'maxUploads',
   isMoneyContest: 'isMoneyContest',
   maxPrize: 'maxPrize',
@@ -187,6 +188,7 @@ exports.Prisma.ContestParticipantScalarFieldEnum = {
   status: 'status',
   contestId: 'contestId',
   userId: 'userId',
+  memberId: 'memberId',
   level: 'level',
   rank: 'rank',
   createdAt: 'createdAt',
@@ -208,6 +210,30 @@ exports.Prisma.ContestAchievementScalarFieldEnum = {
   photoId: 'photoId',
   participantId: 'participantId',
   contestId: 'contestId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.NotificationScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  message: 'message',
+  isSent: 'isSent',
+  isRead: 'isRead',
+  receiverId: 'receiverId',
+  createdAt: 'createdAt',
+  updatedAT: 'updatedAT'
+};
+
+exports.Prisma.PaymentScalarFieldEnum = {
+  id: 'id',
+  status: 'status',
+  productId: 'productId',
+  userId: 'userId',
+  stripe_intent_id: 'stripe_intent_id',
+  amount: 'amount',
+  currency: 'currency',
+  method: 'method',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -234,6 +260,28 @@ exports.Prisma.ChatScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.ProductScalarFieldEnum = {
+  id: 'id',
+  productType: 'productType',
+  title: 'title',
+  quantity: 'quantity',
+  amount: 'amount',
+  icon: 'icon',
+  description: 'description',
+  image: 'image'
+};
+
+exports.Prisma.PriceScalarFieldEnum = {
+  id: 'id',
+  product_id: 'product_id',
+  name: 'name',
+  amount: 'amount',
+  quantity: 'quantity',
+  price_id: 'price_id',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.TeamScalarFieldEnum = {
   id: 'id',
   name: 'name',
@@ -242,6 +290,9 @@ exports.Prisma.TeamScalarFieldEnum = {
   country: 'country',
   description: 'description',
   accessibility: 'accessibility',
+  score: 'score',
+  win: 'win',
+  lost: 'lost',
   badge: 'badge',
   min_requirement: 'min_requirement',
   creatorId: 'creatorId',
@@ -252,10 +303,18 @@ exports.Prisma.TeamScalarFieldEnum = {
 exports.Prisma.TeamMemberScalarFieldEnum = {
   id: 'id',
   status: 'status',
+  level: 'level',
   teamId: 'teamId',
   memberId: 'memberId',
+  contestId: 'contestId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
+};
+
+exports.Prisma.TeamParticipationScalarFieldEnum = {
+  id: 'id',
+  teamId: 'teamId',
+  contestId: 'contestId'
 };
 
 exports.Prisma.UserScalarFieldEnum = {
@@ -379,6 +438,11 @@ exports.ContestStatus = exports.$Enums.ContestStatus = {
   CLOSED: 'CLOSED'
 };
 
+exports.ContestMode = exports.$Enums.ContestMode = {
+  SOLO: 'SOLO',
+  TEAM: 'TEAM'
+};
+
 exports.ContestParticipantStatus = exports.$Enums.ContestParticipantStatus = {
   ACTIVE: 'ACTIVE',
   BLOCKED: 'BLOCKED'
@@ -398,10 +462,21 @@ exports.PrizeType = exports.$Enums.PrizeType = {
   TOP_YC_PICK: 'TOP_YC_PICK'
 };
 
+exports.PaymentStatus = exports.$Enums.PaymentStatus = {
+  PENDING: 'PENDING',
+  SUCCEEDED: 'SUCCEEDED'
+};
+
 exports.SitePolicyType = exports.$Enums.SitePolicyType = {
   TERMS: 'TERMS',
   POLICY: 'POLICY',
   ABOUT: 'ABOUT'
+};
+
+exports.ProductType = exports.$Enums.ProductType = {
+  KEY: 'KEY',
+  PROMOTE: 'PROMOTE',
+  CHARGE: 'CHARGE'
 };
 
 exports.TeamAccessibility = exports.$Enums.TeamAccessibility = {
@@ -413,6 +488,13 @@ exports.TeamMemberStatus = exports.$Enums.TeamMemberStatus = {
   ACTIVE: 'ACTIVE',
   REMOVED: 'REMOVED',
   BLOCKED: 'BLOCKED'
+};
+
+exports.MemberLevel = exports.$Enums.MemberLevel = {
+  NEW: 'NEW',
+  EXPERT: 'EXPERT',
+  MASTER: 'MASTER',
+  LEADER: 'LEADER'
 };
 
 exports.UserRole = exports.$Enums.UserRole = {
@@ -457,11 +539,16 @@ exports.Prisma.ModelName = {
   ContestParticipant: 'ContestParticipant',
   ContestPrize: 'ContestPrize',
   ContestAchievement: 'ContestAchievement',
+  Notification: 'Notification',
+  Payment: 'Payment',
   SitePolicy: 'SitePolicy',
   Room: 'Room',
   Chat: 'Chat',
+  Product: 'Product',
+  Price: 'Price',
   Team: 'Team',
   TeamMember: 'TeamMember',
+  TeamParticipation: 'TeamParticipation',
   User: 'User',
   UserStore: 'UserStore',
   UserPhoto: 'UserPhoto',

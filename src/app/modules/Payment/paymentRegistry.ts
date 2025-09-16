@@ -18,3 +18,4 @@ export class PaymentRegistry {
     return Array.from(this.providers.keys());
   }
 }
+

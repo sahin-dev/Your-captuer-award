@@ -6,6 +6,7 @@ model Contest {
   description        String
   banner             String?       @default("https://images.unsplash.com/photo-1689539137236-b68e436248de?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D")
   status             ContestStatus @default(UPCOMING)
+  mode               ContestMode   @default(SOLO)
   maxUploads         Int           @default(1)
   isMoneyContest     Boolean       @default(false)
   maxPrize           Int?          @default(0)
@@ -17,14 +18,15 @@ model Contest {
 
   creatorId String @db.ObjectId
 
-  creator       User                 @relation(fields: [creatorId], references: [id])
-  participants  ContestParticipant[]
-  votes         Vote[]
-  contestRules  ContestRule[]
-  contestPrizes ContestPrize[]
-  achievements  ContestAchievement[]
-  createdAt     DateTime             @default(now())
-  updatedAt     DateTime             @updatedAt
+  creator            User                 @relation(fields: [creatorId], references: [id])
+  participants       ContestParticipant[]
+  teamParticipations TeamParticipation[]
+  votes              Vote[]
+  contestRules       ContestRule[]
+  contestPrizes      ContestPrize[]
+  achievements       ContestAchievement[]
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
 
   @@map("contests")
 }
@@ -109,11 +111,13 @@ model ContestParticipant {
   status    ContestParticipantStatus @default(ACTIVE)
   contestId String                   @db.ObjectId
   userId    String                   @db.ObjectId
+  memberId  String?                  @db.ObjectId
   level     YCLevel                  @default(AMATEUR)
   rank      Int?                     @default(0)
 
   contest            Contest              @relation(fields: [contestId], references: [id], onDelete: Cascade)
   user               User                 @relation(fields: [userId], references: [id])
+  member             TeamMember?          @relation(fields: [memberId], references: [id])
   photos             ContestPhoto[]
   ContestWinner      ContestWinner[]
   contestAchievement ContestAchievement[]
@@ -175,6 +179,11 @@ enum PrizeType {
   TOP_YC_PICK
 }
 
+enum ContestMode {
+  SOLO
+  TEAM
+}
+
 enum ContestStatus {
   NEW // Just created, not started yet
   UPCOMING // Contest is upcoming, not started yet
@@ -213,6 +222,39 @@ enum YCLevel {
 enum ContestParticipantStatus {
   ACTIVE
   BLOCKED
+}
+
+model Notification {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  title      String
+  message    String
+  isSent     Boolean  @default(false)
+  isRead     Boolean  @default(false)
+  receiverId String
+  createdAt  DateTime @default(now())
+  updatedAT  DateTime @updatedAt
+
+  @@map("notifications")
+}
+
+model Payment {
+  id               String        @id @default(auto()) @map("_id") @db.ObjectId
+  status           PaymentStatus
+  productId        String        @db.ObjectId
+  userId           String        @db.ObjectId
+  stripe_intent_id String?
+  amount           Float
+  currency         String
+  method           String
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  @@map("payments")
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCEEDED
 }
 
 model SitePolicy {
@@ -263,20 +305,59 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Product {
+  id          String      @id @default(auto()) @map("_id") @db.ObjectId
+  productType ProductType
+  title       String
+  quantity    Int
+  amount      Float
+  icon        String?
+  description String?
+  image       String?
+
+  @@index([id, productType])
+  @@map("products")
+}
+
+model Price {
+  id         String @id @default(auto()) @map("_id") @db.ObjectId
+  product_id String @db.ObjectId
+  name       String
+  amount     Float
+  quantity   Int
+  price_id   String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([id, product_id])
+  @@map("prices")
+}
+
+enum ProductType {
+  KEY
+  PROMOTE
+  CHARGE
+}
+
 model Team {
-  id              String            @id @default(auto()) @map("_id") @db.ObjectId
+  id              String              @id @default(auto()) @map("_id") @db.ObjectId
   name            String
   level           String
   language        String
   country         String
   description     String
-  accessibility   TeamAccessibility
+  accessibility   TeamAccessibility   @default(PUBLIC)
+  score           Int                 @default(0)
+  win             Int                 @default(0)
+  lost            Int                 @default(0)
   badge           String //Image file
   min_requirement Int
-  creatorId       String            @db.ObjectId
-  creator         User              @relation(fields: [creatorId], references: [id])
+  creatorId       String              @db.ObjectId
+  creator         User                @relation(fields: [creatorId], references: [id])
   members         TeamMember[]
   chat            Chat[]
+  participations  TeamParticipation[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -287,16 +368,33 @@ model Team {
 model TeamMember {
   id     String           @id @default(auto()) @map("_id") @db.ObjectId
   status TeamMemberStatus @default(ACTIVE)
+  level  MemberLevel      @default(NEW)
 
-  teamId   String @db.ObjectId
-  memberId String @unique @db.ObjectId
-  team     Team   @relation(fields: [teamId], references: [id])
-  member   User   @relation(fields: [memberId], references: [id])
+  teamId             String               @db.ObjectId
+  memberId           String               @unique @db.ObjectId
+  contestId          String               @db.ObjectId
+  team               Team                 @relation(fields: [teamId], references: [id])
+  member             User                 @relation(fields: [memberId], references: [id])
+  contestParticipant ContestParticipant[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@map("team_members")
+}
+
+model TeamParticipation {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  teamId    String @db.ObjectId
+  contestId String @db.ObjectId
+
+  team    Team    @relation(references: [id], fields: [teamId])
+  contest Contest @relation(references: [id], fields: [contestId])
+
+  @@unique([teamId, contestId])
+  @@index([teamId])
+  @@map("team_participations")
 }
 
 enum TeamAccessibility {
@@ -308,6 +406,13 @@ enum TeamMemberStatus {
   ACTIVE
   REMOVED
   BLOCKED
+}
+
+enum MemberLevel {
+  NEW
+  EXPERT
+  MASTER
+  LEADER
 }
 
 model User {

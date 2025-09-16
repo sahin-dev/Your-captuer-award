@@ -1,11 +1,8 @@
-import { ContestStatus, RecurringContest, RecurringType } from '../../../prismaClient';
+import { ContestStatus, RecurringContest } from '../../../prismaClient';
 import { Job } from "agenda";
 import prisma from '../../../shared/prisma';
 import agenda from "./init";
-import {contestService, identifyWinner } from '../Contest/contest.service';
-import ApiError from '../../../errors/ApiError';
-import { contestRuleService } from '../Contest/ContestRules/contestRules.service';
-import { addContestPrizes, getContestPrizes } from '../Contest/ContestPrizes/contestPrize.service';
+import {contestService } from '../Contest/contest.service';
 import { calculateNextOccurance } from '../../../helpers/nextOccurance';
 import { ContestRule } from '../Contest/ContestRules/conetstRules.type';
 import { ContestPrize } from '../Contest/ContestPrizes/contestPrize.type';
@@ -116,7 +113,7 @@ async function scheduleContest(rContest:RecurringContest){
     const totalTimeSpan = nextOccurrence.getTime() - previousOccurrence.getTime();
     const passedTimeSpan = Math.abs(new Date().getTime() - previousOccurrence.getTime());
 
-    let time_ratio = 0.2
+    const time_ratio = 0.2
    
 
     if (passedTimeSpan >= (totalTimeSpan * time_ratio)) {
@@ -183,29 +180,31 @@ async function scheduleContest(rContest:RecurringContest){
 
 agenda.define("contest:watcher", async (job: Job) => {
     const { contestId} = job.attrs.data as {  contestId:string };
+
+    const contest = await contestService.getContestById(contestId)
+    if (!contest){
+        throw new Error("'Contest:watcher, contest not found")
+    }
     
     await prisma.contest.update({where:{id:contestId}, data:{status:ContestStatus.CLOSED}})
     globalEventHandler.emit(Events.CONTEST_ENDED,contestId)
-    console.log(`Contest with id: ${contestId} has ended.`)
-    console.log('Identifying winner=>')
-    const winners = await identifyWinner(contestId)
-    console.log("Winners awarded automatically")
+    console.log(`Contest has ended ${contestId}`)
+});
 
-    });
 
-    agenda.define("promotion:remove", async (job: Job) => {
-        const { photoId } = job.attrs.data as { photoId: string };  
-        const contestPhoto = await prisma.contestPhoto.findUnique({ where: { id: photoId } });
-        if (contestPhoto) {
-            await prisma.contestPhoto.update({
-                where: { id: photoId },
-                data: { promoted: false, promotionExpiresAt: null }
-            });
-            console.log(`Promotion removed for photo ID: ${photoId}`);
-        } else {
-            console.log(`No contest photo found with ID: ${photoId}`);
-        }
-    });
+agenda.define("promotion:remove", async (job: Job) => {
+    const { photoId } = job.attrs.data as { photoId: string };  
+    const contestPhoto = await prisma.contestPhoto.findUnique({ where: { id: photoId } });
+    if (contestPhoto) {
+        await prisma.contestPhoto.update({
+            where: { id: photoId },
+            data: { promoted: false, promotionExpiresAt: null }
+        });
+        console.log(`Promotion removed for photo ID: ${photoId}`);
+    } else {
+        console.log(`No contest photo found with ID: ${photoId}`);
+    }
+});
 
 
 export default agenda;
