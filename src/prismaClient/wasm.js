@@ -306,7 +306,6 @@ exports.Prisma.TeamMemberScalarFieldEnum = {
   level: 'level',
   teamId: 'teamId',
   memberId: 'memberId',
-  contestId: 'contestId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };

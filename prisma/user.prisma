@@ -12,9 +12,13 @@ model User {
   phone              String?
   email              String               @unique
   location           String?
+  country            String?
   password           String?
   role               UserRole             @default(USER)         
   accessToken        String?
+  currentLevel       Int @default(-1)
+  voting_power       Int @default(1)
+  level              UserLevel?
   otps               Otp?
   store              UserStore?
   createdTeam        Team[]
@@ -33,6 +37,7 @@ model User {
   updatedAt DateTime @updatedAt
 
   @@map("users")
+
 }
 
 model UserStore {
@@ -141,7 +146,8 @@ model Vote {
   providerId String @db.ObjectId
   photoId    String @db.ObjectId
   contestId  String @db.ObjectId
-  type       VoteType 
+  type       VoteType
+  power      Int @default(1)
 
   provider User         @relation(fields: [providerId], references: [id])
   photo    ContestPhoto @relation(fields: [photoId], references: [id], onDelete: Cascade)
@@ -155,8 +161,11 @@ model Vote {
 
 model UserLevel {
   id      String  @id  @default(auto())  @map("_id")  @db.ObjectId
-  userId   String @db.ObjectId
+  userId   String @db.ObjectId @unique
   levelId   String @db.ObjectId
+
+  level     Level     @relation(references: [id], fields: [levelId])
+  user      User?     @relation(references: [id], fields: [userId])
   @@map("user_levels")
 }
 
@@ -167,9 +176,12 @@ model Level {
   level       Int
   levelName   LevelName
   requirements    LevelRequirement[]
+  userLevel UserLevel[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+
 }
 
 // model Love {

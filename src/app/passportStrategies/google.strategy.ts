@@ -4,6 +4,7 @@ import config from "../../config";
 import { userService } from "../modules/User/user.service";
 import { IUser } from "../modules/User/user.interface";
 import prisma from "../../shared/prisma";
+import { userStoreService } from "../modules/User/UserStore/userStore.service";
 
 const googleConfig = {
     clientID:config.google.client_id as string, 
@@ -33,7 +34,8 @@ const googleCallback = async (accessToken:any, refreshToken:any, profile:Profile
                 lastName:profile.name?.familyName
               };
 
-        user = await prisma.user.create({data:
+        user = await prisma.$transaction(async tx => {
+           let user = await tx.user.create({data:
                 {   
                     email:userData.email as string, 
                     firstName:userData.firstName as string, 
@@ -42,6 +44,10 @@ const googleCallback = async (accessToken:any, refreshToken:any, profile:Profile
                     socialId:userData.socialId,
                     avatar:userData.avatar
                 }})
+                await tx.userStore.create({data:{userId:user.id, trades:0, charges:0, promotes:0}})
+                return user
+        })
+         
       }
 
     return done(null, user);

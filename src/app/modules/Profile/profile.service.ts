@@ -3,6 +3,9 @@ import { fileUploader } from "../../../helpers/fileUploader"
 import prisma from "../../../shared/prisma"
 import httpStatus from 'http-status'
 import { achievementService } from "../Achievements/achievement.service"
+import { UserPhoto } from "../../../prismaClient"
+import { MappedPhoto } from "./profile.types"
+import { voteService } from "../Vote/vote.service"
 
 export const handleGetUserUploads = async (userId:string)=>{
     const uploads = await prisma.userPhoto.findMany({
@@ -60,7 +63,9 @@ export const getParticipatedContest = async(userId:string)=> {
 }
 
 
-export const getPhotos = async (userId:string, sortBy:string = '')=>{
+export const getPhotos = async (userId:string, sortBy:string = 'votes')=>{
+
+    const contestPhotos = await prisma.contestPhoto.findMany({where:{photo:{userId}}, select:{_count:{select:{votes:true}}}})
 
     const photos = await prisma.userPhoto.findMany({where:{userId}, select:{url:true, id:true, views:true,_count:{select:{likes:true}} ,contestUpload:{select:{_count:{select:{votes:true}}}}}})
     
@@ -68,25 +73,28 @@ export const getPhotos = async (userId:string, sortBy:string = '')=>{
         throw new ApiError(httpStatus.NOT_FOUND, "user does not have any photos")
     }
     // Map photos to include votes property without mutating the original type
-    const mappedPhotos:any = photos.map((photo) => {
+    const mappedPhotos = photos.map((photo) => {
         const votes = photo.contestUpload.reduce((acc: number, obj: any) => {
             return acc + (obj._count.votes || 0);
         }, 0);
 
-        sortPhotos(mappedPhotos, sortBy);
-    
+        // Omit contestUpload property when returning the object
+        const { contestUpload,_count, ...rest } = photo;
         return {
-            ...mappedPhotos,
-            votes
+            ...rest,
+            votes,
+            likes: _count.likes
         };
     });
+
+    sortPhotos(mappedPhotos, sortBy);
 
     
 
     return mappedPhotos
 }
 
-const sortPhotosByVotes = (photos: any[], start:number, end:number) => {
+const sortPhotosByVotes = (photos: MappedPhoto[], start:number, end:number) => {
    
     if(end >= start){
         return photos
@@ -100,7 +108,7 @@ const sortPhotosByVotes = (photos: any[], start:number, end:number) => {
 
 }
 
-const merge = (photos: any[], start:number, mid:number, end:number) => {
+const merge = (photos: MappedPhoto[], start:number, mid:number, end:number) => {
     if (start >= mid || mid + 1 > end) {
         return;
     }
@@ -145,6 +153,17 @@ const getStates = async (userId:string)=>{
     return {...userStates?._count, achievements: (achievementsCount.top_photo + achievementsCount.top_photographer)}
 }
 
+const getUserProfileDetails = async (userId:string)=>{
+    const user = await prisma.user.findUnique({where:{id:userId}, select:{avatar:true, location:true,fullName:true, cover:true}})
+    if(!user){
+        throw new ApiError(httpStatus.NOT_FOUND, "User not found")
+    }
+
+    const totalVotes = (await voteService.getTotalOrganicVotes(userId)) +  (await voteService.getTotalPromotedVotes(userId))
+
+    return {...user, totalVotes}
+}
+
 
 export const profileService = {
     uploadUserPhoto,
@@ -152,6 +171,7 @@ export const profileService = {
     getAvailablePhotoForContest,
     getParticipatedContest,
     getPhotos,
-    handleAddUpload
+    handleAddUpload,
+    getUserProfileDetails
  
 }

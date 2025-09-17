@@ -9,6 +9,7 @@ const getStoreData = async (userId: string) => {
   try {
     const storeData = await prisma.userStore.findUnique({
       where: { userId },
+      select:{trades:true, promotes:true, charges:true}
     });
     return storeData;
   } catch (error) {
@@ -55,7 +56,7 @@ const updateStoreData = async (userId: string, data: Partial<UserStore>) => {
 }   
 
 
-export const UserStoreService = {
+export const userStoreService = {
   getStoreData, 
   addStoreData,
   updateStoreData

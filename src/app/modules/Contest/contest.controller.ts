@@ -76,8 +76,9 @@ export const joinContest = catchAsync(async (req:any, res:Response)=>{
 
 const getUploadedPhotos =  catchAsync(async  (req:any, res: Response)=>{
     const {contestId} = req.params
+    const user = req.user
 
-    const uploadedPhotos = await contestService.getContestUploads(contestId)
+    const uploadedPhotos = await contestService.getContestUploads(user.id,contestId)
 
      sendResponse(res, {
         statusCode:200,

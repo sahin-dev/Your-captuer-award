@@ -6,15 +6,16 @@ import { jwtHelpers } from "../../../helpers/jwt"
 import config from "../../../config"
 import { Secret } from "jsonwebtoken"
 import { UserDto } from "../../dtos/user.dto"
-import { IUser } from "../User/user.interface"
 import globalEventHandler from "../../event/eventEmitter"
 import Events from "../../event/events.constant"
 import { UserRegistrationData, UserSignInData } from "./auth.types"
-import { UserStoreService } from "../User/UserStore/userStore.service"
+import { userService } from "../User/user.service"
 
 
 
 export const handleRegister = async (body:UserRegistrationData)=>{
+
+
 
     const existingUser = await prisma.user.findFirst({where:{email:body.email}})
     console.log(existingUser)
@@ -31,36 +32,35 @@ export const handleRegister = async (body:UserRegistrationData)=>{
 
 
 
-    const createdUser = await prisma.user.create({data:{firstName:body.firstName, lastName:body.lastName,email:body.email as string, password:hashedPassword,phone:body.phone}})
+    const createdUser = await prisma.$transaction( async tx =>{
+        
+        const user  = await tx.user.create({data:{firstName:body.firstName, lastName:body.lastName,email:body.email as string, password:hashedPassword,phone:body.phone}})
+        await tx.user.update({where:{id:createdUser.id}, data:{accessToken:token}})
+
+        // const userData = {
+        //         id:createdUser.id,
+        //         firstName:createdUser.firstName,
+        //         lastName: createdUser.lastName,
+        //         username:createdUser.username,
+        //         email: createdUser.email,
+        //         role: createdUser.role,
+        //         phone: createdUser.phone
+        //     }
+        
+        //create user store for every user register
+       await tx.userStore.create({data:{id:user.id, trades:0, charges:0, promotes:0}})
+
+        return user
+    })
 
     //Publish a event: New user registered
-
     globalEventHandler.publish(Events.USER_REGISTERED, createdUser)
-    
+
     const token = jwtHelpers.generateToken({id:createdUser.id, role:createdUser.role, email:createdUser.email})
-
-    await prisma.user.update({where:{id:createdUser.id}, data:{accessToken:token}})
-
-    // const userData = {
-    //         id:createdUser.id,
-    //         firstName:createdUser.firstName,
-    //         lastName: createdUser.lastName,
-    //         username:createdUser.username,
-    //         email: createdUser.email,
-    //         role: createdUser.role,
-    //         phone: createdUser.phone
-    //     }
-    
-    //create user store for every user register
-    await UserStoreService.addStoreData(createdUser.id, {trades:0, promotes:0, charges:0})
 
     return {user:UserDto(createdUser), token}
 }
 
-const attachStoreToUser = async (userId:string)=>{
-    const store = await prisma.userStore.create({data:{userId}})
-
-}
 
 
 export const handleSignIn = async(body:UserSignInData)=>{

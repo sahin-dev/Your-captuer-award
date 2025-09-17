@@ -197,6 +197,8 @@ enum ContestMode {
 
 
 enum ContestStatus {
+  JOINED
+  OPEN
   NEW // Just created, not started yet
   UPCOMING // Contest is upcoming, not started yet
   ACTIVE // Contest is currently active

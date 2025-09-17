@@ -2,7 +2,7 @@ import prisma from '../../../shared/prisma';
 import ApiError from '../../../errors/ApiError';
 import httpstatus from 'http-status';
 import { fileUploader } from '../../../helpers/fileUploader';
-import { Contest, ContestMode, ContestParticipant, ContestPhoto, ContestStatus, PrizeType, RecurringContest, RecurringData, YCLevel } from '../../../prismaClient';
+import { Contest, ContestMode, ContestParticipant, ContestPhoto, ContestStatus, PrizeType, RecurringType, YCLevel } from '../../../prismaClient';
 import { IContest } from './contest.interface';
 import { contestData } from './contest.type';
 import { contestRuleService } from './ContestRules/contestRules.service';
@@ -11,48 +11,84 @@ import { ContestRule } from './ContestRules/conetstRules.type';
 import { ContestPrize } from './ContestPrizes/contestPrize.type';
 import { profileService } from '../Profile/profile.service';
 import agenda from '../Agenda';
-import { UserStoreService } from '../User/UserStore/userStore.service';
 import { validateContestDate } from '../../../helpers/validateDate';
-import { calculateNextOccurance } from '../../../helpers/nextOccurance';
+import { userStoreService } from '../User/UserStore/userStore.service';
 
 
 
+
+
+//This approach is not final yet. Currently in testing phase
+/*
+
+const createContestBuilderApproach = async (creatorId:string, body:contestData, banner:Express.Multer.File)=> {
+
+    let contestBuilder: SimpleContestBuilder | RecurringContestBuilder | null = null
+
+    if(body.recurring){
+        contestBuilder  = ContestBuilderFactory.create("recurring", creatorId) as RecurringContestBuilder
+        
+        contestBuilder.recurrence(body.recurringType || RecurringType.DAILY)
+    }else{
+        contestBuilder = ContestBuilderFactory.create("normal", creatorId) as SimpleContestBuilder
+    }
+
+    let bannerUrl = banner? (await fileUploader.uploadToDigitalOcean(banner)).Location: null
+
+     contestBuilder
+        .title(body.title)
+        .description(body.description)
+        .banner(bannerUrl)
+        .levelRequirements(body.level_requirements)
+        .dates(body.startDate, body.endDate)
+
+
+    if (body.isMoneyContest) {
+
+
+        if(!body.minPrize || !body.maxPrize || (body.minPrize > body.maxPrize)){
+            throw new ApiError(httpstatus.BAD_REQUEST, "Contest prize data is invalid")
+        }  
+        //Add contest prize data in builder
+        contestBuilder.moneyContest(body.minPrize, body.maxPrize)
+    }
+    if(body.recurring){
+        // return await prisma.recurringContest.create({data:contestBuilder.build() as RecurringContest})
+    }
+
+    return await prisma.contest.create({data:contestBuilder.build()})
+
+}
+
+*/
 
 //Create a new contest
-
+//mode: ContestMode
 
 export const createContest = async (creatorId: string, body: contestData, banner:Express.Multer.File) => {
+
+    
+    if(!validateContestDate(body.startDate, body.endDate)){
+        throw new ApiError(httpstatus.BAD_REQUEST, "Start date cannot be after end date");
+    }
 
     //If contest is recurring , save recurring data separately
     if(body.recurring){
        return createRecurringContest(creatorId, body, banner)
     }
-    let bannerUrl = null;
 
+    let bannerUrl = banner? (await fileUploader.uploadToDigitalOcean(banner)).Location: null
 
     let levels = body.level_requirements.map(levels => parseInt(levels))
-    
+
     const contestData:any = {
         creatorId,
         title: body.title,
         description: body.description,
         status: ContestStatus.UPCOMING,
-        level_requirements:levels
+        level_requirements:levels,
+        ...(bannerUrl && {banner:bannerUrl})
     }
-
-    if (banner){
-        bannerUrl = (await fileUploader.uploadToDigitalOcean(banner)).Location;
-        contestData.banner = bannerUrl
-    }
-
-    
-    const isDateValid = validateContestDate(body.startDate, body.endDate);
-
-    if(!isDateValid){
-        throw new ApiError(httpstatus.BAD_REQUEST, "Start date cannot be after end date");
-    }
-
-    
     // If contest is money contest, add money contest data like max prize and min prize for the paerticipants
     // If isMoneyContest is not provided, it will default to false
 
@@ -61,7 +97,8 @@ export const createContest = async (creatorId: string, body: contestData, banner
 
         if(!body.minPrize || !body.maxPrize || (body.minPrize > body.maxPrize)){
             throw new ApiError(httpstatus.BAD_REQUEST, "Contest prize data is invalid")
-        }  
+        } 
+
         contestData.isMoneyContest = true; 
         contestData.maxPrize = body.maxPrize || 0;
         contestData.minPrize = body.minPrize || 0;
@@ -76,8 +113,6 @@ export const createContest = async (creatorId: string, body: contestData, banner
        let contest = await prisma.contest.create({
             data: contestData
         });
-
-    
 
     if(body.rules){
         const rules:ContestRule[] = body.rules
@@ -412,8 +447,6 @@ const identifyTeamWinner = async (contestId:string)=>{
 
         return {id:participant.id, voteCount:votes}
     }))
-    
-
 }
 
 //Award prize to the winners
@@ -464,13 +497,43 @@ const getContestUploadsByUserId = async (contestId:string, userId:string)=>{
     return userUploads
 }
 
+const isContestParticipantExist = async (userId:string, contestId:string)=>{
+    const count =  await prisma.contestParticipant.count({where:{userId, contestId}})
+
+    return count >= 1;
+}
+
 //Get all contest uploaded images
 
-export const getContestUploads = async (contestId:string)=>{
+export const getContestUploads = async (userId:string,contestId:string)=>{
+
+    const contest = await prisma.contest.findUnique({where:{id:contestId}})
+    if(!contest){
+        throw new ApiError(httpstatus.NOT_FOUND, "contest not found")
+    }
+
+    if( !(await isContestParticipantExist(userId, contestId))){
+        throw new ApiError(httpstatus.NOT_FOUND, "user is not in the participation list")
+    }
+
 
     const contestUploads = await prisma.contestPhoto.findMany({where:{contestId}})
+
+    if(contest.status === ContestStatus.ACTIVE){
+        contestUploads.sort((a: ContestPhoto, b: ContestPhoto) => {
+            
+            if (a.promoted && !b.promoted) return -1;
+            if (!a.promoted && b.promoted) return 1;
+            
+            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        })
+    }
     return contestUploads
 }   
+
+export const uploadPhotoToTeamContest = async ()=>{
+    
+}
 
 
 //Upload photo to a contest, user can upload photo from pforile or can upload directly from computer
@@ -582,13 +645,13 @@ const promoteContestPhoto = async (contestId:string, photoId:string, userId:stri
         throw new ApiError(httpstatus.NOT_FOUND, "Contest not found")
     }
 
-    if (contest.creatorId !== userId){
+    if (contestPhoto.participantId !== userId){
         throw new ApiError(httpstatus.FORBIDDEN, "You are not allowed to promote this contest photo")
     }
 
     const promotionExpiresAt = new Date(Date.now() + 30 * 60 * 1000) //30 minutes from now
 
-    const userStore = await UserStoreService.getStoreData(userId)
+    const userStore = await userStoreService.getStoreData(userId)
     if ( !userStore || userStore.promotes <= 0){
         throw new ApiError(httpstatus.BAD_REQUEST, "You don't have enough promotes")
     }
@@ -644,6 +707,18 @@ const getContestParticipants = async (contestId:string)=>{
     }
 
     return await prisma.contestParticipant.findMany({where:{contestId}})
+
+}
+
+
+const identifyContestTopPhoto = async (contestId:string)=>{
+
+    const contest = await prisma.contest.findUnique({where:{id:contestId}})
+    if(!contest){
+        throw new ApiError(httpstatus.NOT_FOUND, "contest not found")
+    }
+
+    const contestVote = await prisma.contestPhoto.count({where:{contestId}})
 
 }
 

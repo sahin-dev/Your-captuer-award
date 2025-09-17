@@ -21192,7 +21192,6 @@ export namespace Prisma {
     level: $Enums.MemberLevel | null
     teamId: string | null
     memberId: string | null
-    contestId: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -21203,7 +21202,6 @@ export namespace Prisma {
     level: $Enums.MemberLevel | null
     teamId: string | null
     memberId: string | null
-    contestId: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -21214,7 +21212,6 @@ export namespace Prisma {
     level: number
     teamId: number
     memberId: number
-    contestId: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -21227,7 +21224,6 @@ export namespace Prisma {
     level?: true
     teamId?: true
     memberId?: true
-    contestId?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -21238,7 +21234,6 @@ export namespace Prisma {
     level?: true
     teamId?: true
     memberId?: true
-    contestId?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -21249,7 +21244,6 @@ export namespace Prisma {
     level?: true
     teamId?: true
     memberId?: true
-    contestId?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -21333,7 +21327,6 @@ export namespace Prisma {
     level: $Enums.MemberLevel
     teamId: string
     memberId: string
-    contestId: string
     createdAt: Date
     updatedAt: Date
     _count: TeamMemberCountAggregateOutputType | null
@@ -21361,7 +21354,6 @@ export namespace Prisma {
     level?: boolean
     teamId?: boolean
     memberId?: boolean
-    contestId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     team?: boolean | TeamDefaultArgs<ExtArgs>
@@ -21378,12 +21370,11 @@ export namespace Prisma {
     level?: boolean
     teamId?: boolean
     memberId?: boolean
-    contestId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type TeamMemberOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "status" | "level" | "teamId" | "memberId" | "contestId" | "createdAt" | "updatedAt", ExtArgs["result"]["teamMember"]>
+  export type TeamMemberOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "status" | "level" | "teamId" | "memberId" | "createdAt" | "updatedAt", ExtArgs["result"]["teamMember"]>
   export type TeamMemberInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     team?: boolean | TeamDefaultArgs<ExtArgs>
     member?: boolean | UserDefaultArgs<ExtArgs>
@@ -21404,7 +21395,6 @@ export namespace Prisma {
       level: $Enums.MemberLevel
       teamId: string
       memberId: string
-      contestId: string
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["teamMember"]>
@@ -21807,7 +21797,6 @@ export namespace Prisma {
     readonly level: FieldRef<"TeamMember", 'MemberLevel'>
     readonly teamId: FieldRef<"TeamMember", 'String'>
     readonly memberId: FieldRef<"TeamMember", 'String'>
-    readonly contestId: FieldRef<"TeamMember", 'String'>
     readonly createdAt: FieldRef<"TeamMember", 'DateTime'>
     readonly updatedAt: FieldRef<"TeamMember", 'DateTime'>
   }
@@ -34038,7 +34027,6 @@ export namespace Prisma {
     level: 'level',
     teamId: 'teamId',
     memberId: 'memberId',
-    contestId: 'contestId',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -35761,7 +35749,6 @@ export namespace Prisma {
     level?: EnumMemberLevelFilter<"TeamMember"> | $Enums.MemberLevel
     teamId?: StringFilter<"TeamMember"> | string
     memberId?: StringFilter<"TeamMember"> | string
-    contestId?: StringFilter<"TeamMember"> | string
     createdAt?: DateTimeFilter<"TeamMember"> | Date | string
     updatedAt?: DateTimeFilter<"TeamMember"> | Date | string
     team?: XOR<TeamScalarRelationFilter, TeamWhereInput>
@@ -35775,7 +35762,6 @@ export namespace Prisma {
     level?: SortOrder
     teamId?: SortOrder
     memberId?: SortOrder
-    contestId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     team?: TeamOrderByWithRelationInput
@@ -35792,7 +35778,6 @@ export namespace Prisma {
     status?: EnumTeamMemberStatusFilter<"TeamMember"> | $Enums.TeamMemberStatus
     level?: EnumMemberLevelFilter<"TeamMember"> | $Enums.MemberLevel
     teamId?: StringFilter<"TeamMember"> | string
-    contestId?: StringFilter<"TeamMember"> | string
     createdAt?: DateTimeFilter<"TeamMember"> | Date | string
     updatedAt?: DateTimeFilter<"TeamMember"> | Date | string
     team?: XOR<TeamScalarRelationFilter, TeamWhereInput>
@@ -35806,7 +35791,6 @@ export namespace Prisma {
     level?: SortOrder
     teamId?: SortOrder
     memberId?: SortOrder
-    contestId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: TeamMemberCountOrderByAggregateInput
@@ -35823,7 +35807,6 @@ export namespace Prisma {
     level?: EnumMemberLevelWithAggregatesFilter<"TeamMember"> | $Enums.MemberLevel
     teamId?: StringWithAggregatesFilter<"TeamMember"> | string
     memberId?: StringWithAggregatesFilter<"TeamMember"> | string
-    contestId?: StringWithAggregatesFilter<"TeamMember"> | string
     createdAt?: DateTimeWithAggregatesFilter<"TeamMember"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"TeamMember"> | Date | string
   }
@@ -37922,7 +37905,6 @@ export namespace Prisma {
     id?: string
     status?: $Enums.TeamMemberStatus
     level?: $Enums.MemberLevel
-    contestId: string
     createdAt?: Date | string
     updatedAt?: Date | string
     team: TeamCreateNestedOneWithoutMembersInput
@@ -37936,7 +37918,6 @@ export namespace Prisma {
     level?: $Enums.MemberLevel
     teamId: string
     memberId: string
-    contestId: string
     createdAt?: Date | string
     updatedAt?: Date | string
     contestParticipant?: ContestParticipantUncheckedCreateNestedManyWithoutMemberInput
@@ -37945,7 +37926,6 @@ export namespace Prisma {
   export type TeamMemberUpdateInput = {
     status?: EnumTeamMemberStatusFieldUpdateOperationsInput | $Enums.TeamMemberStatus
     level?: EnumMemberLevelFieldUpdateOperationsInput | $Enums.MemberLevel
-    contestId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     team?: TeamUpdateOneRequiredWithoutMembersNestedInput
@@ -37958,7 +37938,6 @@ export namespace Prisma {
     level?: EnumMemberLevelFieldUpdateOperationsInput | $Enums.MemberLevel
     teamId?: StringFieldUpdateOperationsInput | string
     memberId?: StringFieldUpdateOperationsInput | string
-    contestId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     contestParticipant?: ContestParticipantUncheckedUpdateManyWithoutMemberNestedInput
@@ -37970,7 +37949,6 @@ export namespace Prisma {
     level?: $Enums.MemberLevel
     teamId: string
     memberId: string
-    contestId: string
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -37978,7 +37956,6 @@ export namespace Prisma {
   export type TeamMemberUpdateManyMutationInput = {
     status?: EnumTeamMemberStatusFieldUpdateOperationsInput | $Enums.TeamMemberStatus
     level?: EnumMemberLevelFieldUpdateOperationsInput | $Enums.MemberLevel
-    contestId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -37988,7 +37965,6 @@ export namespace Prisma {
     level?: EnumMemberLevelFieldUpdateOperationsInput | $Enums.MemberLevel
     teamId?: StringFieldUpdateOperationsInput | string
     memberId?: StringFieldUpdateOperationsInput | string
-    contestId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -40036,7 +40012,6 @@ export namespace Prisma {
     level?: SortOrder
     teamId?: SortOrder
     memberId?: SortOrder
-    contestId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -40047,7 +40022,6 @@ export namespace Prisma {
     level?: SortOrder
     teamId?: SortOrder
     memberId?: SortOrder
-    contestId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -40058,7 +40032,6 @@ export namespace Prisma {
     level?: SortOrder
     teamId?: SortOrder
     memberId?: SortOrder
-    contestId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -44383,7 +44356,6 @@ export namespace Prisma {
     id?: string
     status?: $Enums.TeamMemberStatus
     level?: $Enums.MemberLevel
-    contestId: string
     createdAt?: Date | string
     updatedAt?: Date | string
     team: TeamCreateNestedOneWithoutMembersInput
@@ -44396,7 +44368,6 @@ export namespace Prisma {
     level?: $Enums.MemberLevel
     teamId: string
     memberId: string
-    contestId: string
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -44643,7 +44614,6 @@ export namespace Prisma {
   export type TeamMemberUpdateWithoutContestParticipantInput = {
     status?: EnumTeamMemberStatusFieldUpdateOperationsInput | $Enums.TeamMemberStatus
     level?: EnumMemberLevelFieldUpdateOperationsInput | $Enums.MemberLevel
-    contestId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     team?: TeamUpdateOneRequiredWithoutMembersNestedInput
@@ -44655,7 +44625,6 @@ export namespace Prisma {
     level?: EnumMemberLevelFieldUpdateOperationsInput | $Enums.MemberLevel
     teamId?: StringFieldUpdateOperationsInput | string
     memberId?: StringFieldUpdateOperationsInput | string
-    contestId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -45401,7 +45370,6 @@ export namespace Prisma {
     id?: string
     status?: $Enums.TeamMemberStatus
     level?: $Enums.MemberLevel
-    contestId: string
     createdAt?: Date | string
     updatedAt?: Date | string
     member: UserCreateNestedOneWithoutJoinedTeamInput
@@ -45413,7 +45381,6 @@ export namespace Prisma {
     status?: $Enums.TeamMemberStatus
     level?: $Enums.MemberLevel
     memberId: string
-    contestId: string
     createdAt?: Date | string
     updatedAt?: Date | string
     contestParticipant?: ContestParticipantUncheckedCreateNestedManyWithoutMemberInput
@@ -45570,7 +45537,6 @@ export namespace Prisma {
     level?: EnumMemberLevelFilter<"TeamMember"> | $Enums.MemberLevel
     teamId?: StringFilter<"TeamMember"> | string
     memberId?: StringFilter<"TeamMember"> | string
-    contestId?: StringFilter<"TeamMember"> | string
     createdAt?: DateTimeFilter<"TeamMember"> | Date | string
     updatedAt?: DateTimeFilter<"TeamMember"> | Date | string
   }
@@ -46213,7 +46179,6 @@ export namespace Prisma {
     id?: string
     status?: $Enums.TeamMemberStatus
     level?: $Enums.MemberLevel
-    contestId: string
     createdAt?: Date | string
     updatedAt?: Date | string
     team: TeamCreateNestedOneWithoutMembersInput
@@ -46225,7 +46190,6 @@ export namespace Prisma {
     status?: $Enums.TeamMemberStatus
     level?: $Enums.MemberLevel
     teamId: string
-    contestId: string
     createdAt?: Date | string
     updatedAt?: Date | string
     contestParticipant?: ContestParticipantUncheckedCreateNestedManyWithoutMemberInput
@@ -46626,7 +46590,6 @@ export namespace Prisma {
   export type TeamMemberUpdateWithoutMemberInput = {
     status?: EnumTeamMemberStatusFieldUpdateOperationsInput | $Enums.TeamMemberStatus
     level?: EnumMemberLevelFieldUpdateOperationsInput | $Enums.MemberLevel
-    contestId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     team?: TeamUpdateOneRequiredWithoutMembersNestedInput
@@ -46637,7 +46600,6 @@ export namespace Prisma {
     status?: EnumTeamMemberStatusFieldUpdateOperationsInput | $Enums.TeamMemberStatus
     level?: EnumMemberLevelFieldUpdateOperationsInput | $Enums.MemberLevel
     teamId?: StringFieldUpdateOperationsInput | string
-    contestId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     contestParticipant?: ContestParticipantUncheckedUpdateManyWithoutMemberNestedInput
@@ -48996,7 +48958,6 @@ export namespace Prisma {
     status?: $Enums.TeamMemberStatus
     level?: $Enums.MemberLevel
     memberId: string
-    contestId: string
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -49017,7 +48978,6 @@ export namespace Prisma {
   export type TeamMemberUpdateWithoutTeamInput = {
     status?: EnumTeamMemberStatusFieldUpdateOperationsInput | $Enums.TeamMemberStatus
     level?: EnumMemberLevelFieldUpdateOperationsInput | $Enums.MemberLevel
-    contestId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     member?: UserUpdateOneRequiredWithoutJoinedTeamNestedInput
@@ -49028,7 +48988,6 @@ export namespace Prisma {
     status?: EnumTeamMemberStatusFieldUpdateOperationsInput | $Enums.TeamMemberStatus
     level?: EnumMemberLevelFieldUpdateOperationsInput | $Enums.MemberLevel
     memberId?: StringFieldUpdateOperationsInput | string
-    contestId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     contestParticipant?: ContestParticipantUncheckedUpdateManyWithoutMemberNestedInput
@@ -49038,7 +48997,6 @@ export namespace Prisma {
     status?: EnumTeamMemberStatusFieldUpdateOperationsInput | $Enums.TeamMemberStatus
     level?: EnumMemberLevelFieldUpdateOperationsInput | $Enums.MemberLevel
     memberId?: StringFieldUpdateOperationsInput | string
-    contestId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

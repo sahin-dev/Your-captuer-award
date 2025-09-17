@@ -1,7 +1,7 @@
 import facebook, {Profile, StrategyOptions} from "passport-facebook"
 import config from "../../config";
 import { userService } from "../modules/User/user.service";
-import { IUserRegister } from "../modules/User/user.interface";
+import { IUser } from "../modules/User/user.interface";
 import prisma from "../../shared/prisma";
 
 
@@ -17,7 +17,7 @@ const facebookCallback = async (accessToken:any, refreshToken:any, profile:Profi
     try{
         let user = await userService.getUserBySocialId("facebook", profile.id)
         if (!user){
-         let userData:IUserRegister = {
+         let userData:IUser = {
                 socialProvider:"facebook",
                 socialId: profile?.id,
                 fullName: profile?.displayName,
@@ -27,7 +27,9 @@ const facebookCallback = async (accessToken:any, refreshToken:any, profile:Profi
                 lastName:profile.name?.familyName
               };
 
-            user = await prisma.user.create({data:
+            user = await  prisma.$transaction(async tx => {
+                
+                const user = await tx.user.create({data:
                 {   
                     email:userData.email as string, 
                     firstName:userData.firstName as string, 
@@ -36,11 +38,16 @@ const facebookCallback = async (accessToken:any, refreshToken:any, profile:Profi
                     socialId:userData.socialId,
                     avatar:userData.avatar
                 }})
+
+                await tx.userStore.create({data:{userId:user.id, promotes:0, charges:0, trades:0}})
+
+                return user
+            })
       }
         return done(null, user);
 
     }catch(error){
-         console.error(error, "Error in Google Strategy");
+         console.error(error, "Error in Facebook Strategy");
         done(error, null);
     }
 }

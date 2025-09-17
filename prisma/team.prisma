@@ -32,7 +32,6 @@ model TeamMember {
 
   teamId   String @db.ObjectId
   memberId String @unique @db.ObjectId
-  contestId String  @db.ObjectId
   team     Team   @relation(fields: [teamId], references: [id])
   member   User   @relation(fields: [memberId], references: [id])
   contestParticipant   ContestParticipant[]

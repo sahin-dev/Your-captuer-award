@@ -5,8 +5,6 @@ const postNotification = async (title:string, message:string, receiverId:string)
     const notification = await prisma.notification.create({data:{message,receiverId,title}})
 
     return notification
-
-
 }
 
 const getUserNotifications = async (receiverId:string)=>{

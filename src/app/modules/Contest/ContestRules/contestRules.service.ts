@@ -11,9 +11,9 @@ const addContestRules = async (contestId:string,rules:ContestRule[])=>{
         throw new ApiError(httpStatus.NOT_FOUND, "Contest not found")
     }
 
-    rules.forEach(async (rule:ContestRule) => {
-        await prisma.contestRule.create({data:{contestId, name:rule.name, description:rule.description}})
-    })
+    
+    await prisma.contestRule.createMany({data: rules.map (r => ({...r, contestId}))})
+    
 
     return "Contest rules added"
 }

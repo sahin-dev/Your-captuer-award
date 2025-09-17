@@ -11,6 +11,7 @@ import { OtpStatus, UserRole } from "../../../prismaClient"
 import { userAdminUpdateData, userUpdateData } from "./user.types"
 import bcrypt from 'bcryptjs'
 import { voteService } from "../Vote/vote.service"
+import { userStoreService } from "./UserStore/userStore.service"
 
 
 
@@ -256,6 +257,15 @@ const getUserByEmail = async (socialProvider:string, email:string)=>{
     return user
 }
 
+const  getUserBySocialId = async (socialProvider:string, providerId:string)=>{
+    if(socialProvider !== "facebook"){
+        throw new Error("Only facebook allowed to fetch user by unique id")
+    }
+    const user = await prisma.user.findFirst({where:{socialProvider, socialId:providerId}})
+
+    return user
+}
+
 const getUserCurrentLevel = async (userId:string)=>{
 
     const levels = await prisma.level.findMany()
@@ -286,6 +296,12 @@ const getUserCurrentLevel = async (userId:string)=>{
 
 }
 
+
+const attachStoreToUser = async (userId:string)=>{
+    const store = await userStoreService.addStoreData(userId, {trades:0, promotes:0, charges:0})
+
+}
+
 const checkLevelRequirement = async ()=>{
 
 }
@@ -298,10 +314,12 @@ export const userService = {
     updateProfilePhoto,
     forgetPassword,
     getUserByEmail,
+    getUserBySocialId,
     verifyOtp,
     getUserDetails,
     changePassword,
     updateProfile,
-    getUserCurrentLevel
+    getUserCurrentLevel,
+    attachStoreToUser
     
 }
