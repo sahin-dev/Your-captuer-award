@@ -1,5 +1,5 @@
 import ApiError from "../../../../errors/ApiError";
-import { ContestRule } from "./conetstRules.type";
+import { ContestRule } from "./contestRules.type";
 import prisma from "../../../../shared/prisma";
 import httpStatus from 'http-status'
 

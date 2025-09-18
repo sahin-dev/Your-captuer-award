@@ -16,6 +16,7 @@ model Contest {
   
   startDate DateTime
   endDate   DateTime
+  startedAt DateTime?
 
   creatorId String @db.ObjectId
 
@@ -118,8 +119,9 @@ model ContestParticipant {
   contestId String                   @db.ObjectId
   userId    String                   @db.ObjectId
   memberId    String?                   @db.ObjectId
-  level     YCLevel                  @default(AMATEUR)
+  level     YCLevel                  @default(NEW)
   rank      Int?                     @default(0)
+  exposure_bonus  Int     @default(100)
 
   contest            Contest              @relation(fields: [contestId], references: [id], onDelete: Cascade)
   user               User                @relation(fields: [userId], references: [id])
@@ -227,8 +229,9 @@ enum ContestLevel {
 }
 
 enum YCLevel {
+  NEW
   AMATEUR
-  TALANTED
+  TALENTED
   SUPREME
   SUPERIOR
   TOP_NOTCH

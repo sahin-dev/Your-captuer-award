@@ -7,7 +7,7 @@ import { IContest } from './contest.interface';
 import { contestData } from './contest.type';
 import { contestRuleService } from './ContestRules/contestRules.service';
 import { addContestPrizes } from './ContestPrizes/contestPrize.service';
-import { ContestRule } from './ContestRules/conetstRules.type';
+import { ContestRule } from './ContestRules/contestRules.type';
 import { ContestPrize } from './ContestPrizes/contestPrize.type';
 import { profileService } from '../Profile/profile.service';
 import agenda from '../Agenda';
@@ -93,7 +93,6 @@ export const createContest = async (creatorId: string, body: contestData, banner
     // If isMoneyContest is not provided, it will default to false
 
      if (body.isMoneyContest) {
-
 
         if(!body.minPrize || !body.maxPrize || (body.minPrize > body.maxPrize)){
             throw new ApiError(httpstatus.BAD_REQUEST, "Contest prize data is invalid")
@@ -627,6 +626,60 @@ const getParticipantRank = async (contestId:string, participantId:string)=>{
     const partipantsVoteCount = await prisma.contestParticipant
 }
 
+const getYCLevelByOrder = ()=>{
+
+    return [
+       
+        YCLevel.AMATEUR,
+        YCLevel.SUPERIOR,
+        YCLevel.SUPREME,
+        YCLevel.TALENTED,
+        YCLevel.TOP_NOTCH
+    ]
+    
+}
+
+const getContestLevelRequirements = async (contestId:string)=>{
+    const contest = await prisma.contest.findUnique({where:{id:contestId}})
+    if(!contest){
+        throw new ApiError(httpstatus.NOT_FOUND, "contest not found")
+    }
+    let ycLevels = getYCLevelByOrder()
+
+    let levels = contest.level_requirements.map((level, idx) => ({levelName:ycLevels[0], point: level}))
+
+    return levels
+}
+
+const getParticipantLevelData = async (contestId:string,participantId:string)=>{
+
+    const participant = await prisma.contestParticipant.findUnique({where:{id:participantId}})
+
+    if (!participant){
+        throw new Error("Participant not found")
+    }
+
+    const totalVotes = await getParticipantTotalVotes(contestId, participantId)
+    const contestLevelRequirement = await getContestLevelRequirements(contestId)
+    let currentLevel = YCLevel.NEW.toString()
+    let currentIdx = -1
+    
+    contestLevelRequirement.forEach( (contestLevel,idx) => {
+        if(contestLevel.point <= totalVotes){
+            currentLevel = contestLevel.levelName.toString()
+            currentIdx = idx
+        }else {
+            return
+        }
+        
+    })
+    
+
+    return {currentLevel, currentVote:totalVotes, nextLevel:contestLevelRequirement[currentIdx+1], exposure_bonus: participant.exposure_bonus}
+
+}
+
+
 
 const promoteContestPhoto = async (contestId:string, photoId:string, userId:string)=>{
     const contestPhoto = await prisma.contestPhoto.findUnique({where:{id:photoId}})
@@ -738,4 +791,6 @@ export const contestService = {
     deleteContestByContestId,
     getContestUploadsByUserId,
     promoteContestPhoto,
+    getParticipantLevelData
+    
 }

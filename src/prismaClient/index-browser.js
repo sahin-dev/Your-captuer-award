@@ -127,6 +127,7 @@ exports.Prisma.ContestScalarFieldEnum = {
   level_requirements: 'level_requirements',
   startDate: 'startDate',
   endDate: 'endDate',
+  startedAt: 'startedAt',
   creatorId: 'creatorId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -191,6 +192,7 @@ exports.Prisma.ContestParticipantScalarFieldEnum = {
   memberId: 'memberId',
   level: 'level',
   rank: 'rank',
+  exposure_bonus: 'exposure_bonus',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -329,9 +331,12 @@ exports.Prisma.UserScalarFieldEnum = {
   phone: 'phone',
   email: 'email',
   location: 'location',
+  country: 'country',
   password: 'password',
   role: 'role',
   accessToken: 'accessToken',
+  currentLevel: 'currentLevel',
+  voting_power: 'voting_power',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -402,6 +407,7 @@ exports.Prisma.VoteScalarFieldEnum = {
   photoId: 'photoId',
   contestId: 'contestId',
   type: 'type',
+  power: 'power',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -430,6 +436,8 @@ exports.Prisma.QueryMode = {
   insensitive: 'insensitive'
 };
 exports.ContestStatus = exports.$Enums.ContestStatus = {
+  JOINED: 'JOINED',
+  OPEN: 'OPEN',
   NEW: 'NEW',
   UPCOMING: 'UPCOMING',
   ACTIVE: 'ACTIVE',
@@ -448,8 +456,9 @@ exports.ContestParticipantStatus = exports.$Enums.ContestParticipantStatus = {
 };
 
 exports.YCLevel = exports.$Enums.YCLevel = {
+  NEW: 'NEW',
   AMATEUR: 'AMATEUR',
-  TALANTED: 'TALANTED',
+  TALENTED: 'TALENTED',
   SUPREME: 'SUPREME',
   SUPERIOR: 'SUPERIOR',
   TOP_NOTCH: 'TOP_NOTCH'

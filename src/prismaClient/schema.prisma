@@ -15,6 +15,7 @@ model Contest {
 
   startDate DateTime
   endDate   DateTime
+  startedAt DateTime?
 
   creatorId String @db.ObjectId
 
@@ -107,13 +108,14 @@ model ContestWinner {
 }
 
 model ContestParticipant {
-  id        String                   @id @default(auto()) @map("_id") @db.ObjectId
-  status    ContestParticipantStatus @default(ACTIVE)
-  contestId String                   @db.ObjectId
-  userId    String                   @db.ObjectId
-  memberId  String?                  @db.ObjectId
-  level     YCLevel                  @default(AMATEUR)
-  rank      Int?                     @default(0)
+  id             String                   @id @default(auto()) @map("_id") @db.ObjectId
+  status         ContestParticipantStatus @default(ACTIVE)
+  contestId      String                   @db.ObjectId
+  userId         String                   @db.ObjectId
+  memberId       String?                  @db.ObjectId
+  level          YCLevel                  @default(NEW)
+  rank           Int?                     @default(0)
+  exposure_bonus Int                      @default(100)
 
   contest            Contest              @relation(fields: [contestId], references: [id], onDelete: Cascade)
   user               User                 @relation(fields: [userId], references: [id])
@@ -185,6 +187,8 @@ enum ContestMode {
 }
 
 enum ContestStatus {
+  JOINED
+  OPEN
   NEW // Just created, not started yet
   UPCOMING // Contest is upcoming, not started yet
   ACTIVE // Contest is currently active
@@ -212,8 +216,9 @@ enum ContestLevel {
 }
 
 enum YCLevel {
+  NEW
   AMATEUR
-  TALANTED
+  TALENTED
   SUPREME
   SUPERIOR
   TOP_NOTCH
@@ -427,9 +432,13 @@ model User {
   phone              String?
   email              String               @unique
   location           String?
+  country            String?
   password           String?
   role               UserRole             @default(USER)
   accessToken        String?
+  currentLevel       Int                  @default(-1)
+  voting_power       Int                  @default(1)
+  level              UserLevel?
   otps               Otp?
   store              UserStore?
   createdTeam        Team[]
@@ -555,6 +564,7 @@ model Vote {
   photoId    String   @db.ObjectId
   contestId  String   @db.ObjectId
   type       VoteType
+  power      Int      @default(1)
 
   provider User         @relation(fields: [providerId], references: [id])
   photo    ContestPhoto @relation(fields: [photoId], references: [id], onDelete: Cascade)
@@ -568,8 +578,11 @@ model Vote {
 
 model UserLevel {
   id      String @id @default(auto()) @map("_id") @db.ObjectId
-  userId  String @db.ObjectId
+  userId  String @unique @db.ObjectId
   levelId String @db.ObjectId
+
+  level Level @relation(references: [id], fields: [levelId])
+  user  User? @relation(references: [id], fields: [userId])
 
   @@map("user_levels")
 }
@@ -579,6 +592,7 @@ model Level {
   level        Int
   levelName    LevelName
   requirements LevelRequirement[]
+  userLevel    UserLevel[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

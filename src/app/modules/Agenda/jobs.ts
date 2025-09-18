@@ -4,7 +4,7 @@ import prisma from '../../../shared/prisma';
 import agenda from "./init";
 import {contestService } from '../Contest/contest.service';
 import { calculateNextOccurance } from '../../../helpers/nextOccurance';
-import { ContestRule } from '../Contest/ContestRules/conetstRules.type';
+import { ContestRule } from '../Contest/ContestRules/contestRules.type';
 import { ContestPrize } from '../Contest/ContestPrizes/contestPrize.type';
 import globalEventHandler from '../../event/eventEmitter';
 import Events from '../../event/events.constant';
@@ -29,7 +29,7 @@ agenda.define('contest:checkUpcoming', async () => {
         const currentDate = new Date()
         
         if (startDate <= currentDate){
-            const updatedContest = await prisma.contest.update({where:{id:contest.id}, data:{status:ContestStatus.ACTIVE}})
+            const updatedContest = await prisma.contest.update({where:{id:contest.id}, data:{status:ContestStatus.ACTIVE, startedAt:new Date(Date.now())}})
             console.log(`Contest with id: ${contest.id} has started`)
             agenda.schedule(contest.endDate, "contest:watcher",{contestId:updatedContest.id})
         }
