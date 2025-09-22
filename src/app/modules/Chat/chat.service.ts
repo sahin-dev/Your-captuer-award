@@ -11,7 +11,7 @@ const sendMessage = async (senderId:string,teamId:string, message:string)=>{
         throw new ApiError(httpStatus.NOT_FOUND, "team not found")
     }
 
-    const chat = await prisma.chat.create({data:{ message,teamId, senderId}})
+    const chat = await prisma.chat.create({data:{ message,teamId:team.id, senderId}})
 
     return chat
 }
@@ -24,12 +24,12 @@ const getAllChats = async (userId:string,teamId:string)=>{
         throw new ApiError(httpStatus.NOT_FOUND, "team member is not present")
     }
     
+    const team = await teamService.isTeamExist(teamId)
 
-    const team = await prisma.team.findUnique({where:{id:teamId}})
     if(!team){
         throw new ApiError(httpStatus.NOT_FOUND, "team is not found")
     }
-    const chats = await prisma.chat.findMany({where:{teamId}, orderBy:{createdAt:"desc"}, include:{sender:{select:{avatar:true, fullName:true}}}})
+    const chats = await prisma.chat.findMany({where:{teamId:team.id}, orderBy:{createdAt:"desc"}, include:{sender:{select:{avatar:true, fullName:true}}}})
 
     return chats
 }

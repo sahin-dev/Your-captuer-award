@@ -26,3 +26,10 @@ const getProductDetails = async (productId:string)=>{
 const updateProduct = async (title:string, amount:number, quantity:number)=>{
     
 }
+
+export const storeService = {
+    addProduct,
+    getAllProductByType,
+    getProductDetails,
+    updateProduct
+}

@@ -5,7 +5,7 @@ import { getFollowers, getFollowings, toggoleFollow } from "./follow.controller"
 
 const route = Router()
 
-route.post("/", auth(), toggoleFollow)
+route.post("/toggole", auth(), toggoleFollow)
 route.get("/followers",auth(), getFollowers)
 route.get("/followings", auth(), getFollowings)
 

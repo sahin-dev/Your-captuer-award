@@ -15,6 +15,8 @@ export const handleFollowUnfollow = async (followerId:string, followingId:string
     return handleFollowUser(followerId, followingId)
 }
 
+//If user does not follow previously, Add a new follower
+
 export const handleFollowUser = async (followerId: string, followingId: string) => {
     const follow = await prisma.follow.create({
         data: { followerId, followingId }
@@ -26,7 +28,7 @@ export const handleFollowUser = async (followerId: string, followingId: string) 
     return follow;
 };
 
-//If user does not follow previously, Add a new follower
+
 
 export const handleUnfollowUser = async (followerId: string, followingId: string) => {
     const follow = await prisma.follow.findFirst({
@@ -61,7 +63,7 @@ export const handleGetMyFollowers = async (userId:string)=>{
 }
 
 export const handleGetMyFollowings = async (userId:string) => {
-    const follwoings = await prisma.follow.findMany({where:{followerId:userId}, include:{following:true}})
+    const followings = await prisma.follow.findMany({where:{followerId:userId}, include:{following:true}})
 
-    return follwoings
+    return followings
 }

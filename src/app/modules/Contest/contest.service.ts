@@ -113,18 +113,22 @@ export const createContest = async (creatorId: string, body: contestData, banner
             data: contestData
         });
 
+        let createdRules, createdPrizes
+
     if(body.rules){
         const rules:ContestRule[] = body.rules
         
-        await contestRuleService.addContestRules(contest.id, rules)
+        createdRules =await contestRuleService.addContestRules(contest.id, rules)
     }
    
     if(body.prizes){
          const prizes:ContestPrize[] = body.prizes
-        await addContestPrizes(contest.id, prizes)
+        createdPrizes = await addContestPrizes(contest.id, prizes)
     }
 
-    return contest;
+    console.log(createdPrizes)
+
+    return {contest, rules:JSON.parse(createdRules as string), prizes:JSON.parse(createdPrizes as string)};
 };
 
 
@@ -671,15 +675,12 @@ const getParticipantLevelData = async (contestId:string,participantId:string)=>{
         }else {
             return
         }
-        
     })
     
 
-    return {currentLevel, currentVote:totalVotes, nextLevel:contestLevelRequirement[currentIdx+1], exposure_bonus: participant.exposure_bonus}
+    return {currentLevel, totalVotes, nextLevel:contestLevelRequirement[currentIdx+1], exposure_bonus: participant.exposure_bonus}
 
 }
-
-
 
 const promoteContestPhoto = async (contestId:string, photoId:string, userId:string)=>{
     const contestPhoto = await prisma.contestPhoto.findUnique({where:{id:photoId}})
