@@ -3,12 +3,21 @@ import { Request, Response } from "express";
 import catchAsync from "../../../shared/catchAsync";
 import { getAll, handlDeleteComment, handlePostComment, handleUpdateComment } from "./comment.service";
 import sendResponse from "../../../shared/ApiResponse";
+import prisma from '../../../shared/prisma';
+import ApiError from '../../../errors/ApiError';
 
 
 export const postComment = catchAsync(async (req:Request, res:Response)=>{
 
-    const {photoId, text} = req.body
+    const { text} = req.body
+    const {photoId} = req.params
     const userId = req.user.id
+
+    const photo = await prisma.userPhoto.findUnique({where:{id:photoId}})
+
+    if(!photo){
+        throw new ApiError(httpStatus.NOT_FOUND, "photo not found")
+    }
 
     const comment = await handlePostComment(userId, photoId, text)
 

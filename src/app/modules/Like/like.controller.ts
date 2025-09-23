@@ -10,7 +10,7 @@ import catchAsync from "../../../shared/catchAsync"
 
 export const toggleLike = catchAsync(async (req: Request, res: Response) => {
     
-    const {photoId} = req.body
+    const {photoId} = req.params
     const userId = req.user.id
 
     const like = await handleToggleLike(userId, photoId)

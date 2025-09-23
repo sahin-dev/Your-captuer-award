@@ -7,6 +7,6 @@ const route = Router();
 
 route.get("/photos", auth(), profileController.getMyUploads);
 route.post("/photos/upload",auth(), fileUploader.userPhoto, profileController.uploadUserPhoto);
-route.get("/states", auth(), profileController.getUserStates);
+route.get("/stats", auth(), profileController.getUserStates);
 
 export const profileRoutes = route;

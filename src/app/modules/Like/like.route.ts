@@ -7,6 +7,6 @@ import { getMyLikedPhotos, toggleLike } from "./like.controller";
 let route = Router()
 
 route.get("/photos", auth(), getMyLikedPhotos)
-route.post("/", auth(), toggleLike)
+route.post("/photos/:photoId", auth(), toggleLike)
 
 export const likeRoutes = route
