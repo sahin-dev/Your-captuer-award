@@ -387,7 +387,7 @@ exports.Prisma.CommentScalarFieldEnum = {
   id: 'id',
   text: 'text',
   providerId: 'providerId',
-  receiverId: 'receiverId',
+  photoId: 'photoId',
   parentId: 'parentId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'

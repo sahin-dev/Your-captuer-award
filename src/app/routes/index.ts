@@ -26,7 +26,7 @@ const moduleRoutes = [
     {path:"/follows", route:followRoutes},
     {path:"/comments", route:commentRoutes},
     {path:"/teams", route:teamRoutes},
-    {path:"profiles", route:profileRoutes},
+    {path:"/profiles", route:profileRoutes},
     {path:"/achievements", route:achievementRoutes},
     {path:"/votes", route:voteRouter},
     {path:"/site-policies", route:sitePolicyRoutes},

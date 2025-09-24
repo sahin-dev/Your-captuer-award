@@ -8,8 +8,9 @@ import ApiError from '../../../errors/ApiError';
 
 const createTeam = catchAsync(async (req: Request, res: Response) => {
     const creatorId = req.user.id;
-    const body = JSON.parse(req.body.data);
-
+   
+    const body = req.body;
+   
      const file = req.file;
 
     if (!file) {
@@ -52,6 +53,20 @@ const getTeamDetails = catchAsync(async (req: Request, res: Response) => {
     });
 });
 
+const getMyTeamDetails = catchAsync( async (req:Request, res:Response)=>{
+
+    const userId = req.user.id
+    const team = await teamService.getMyTeamDetails(userId)
+
+    sendResponse(res, {
+        success:true,
+        statusCode:httpstatus.OK,
+        message:"user team found successfully",
+        data:team
+    })
+
+})
+
 const updateTeam = catchAsync(async (req: Request, res: Response) => {
     const { teamId } = req.params;
     const body = JSON.parse(req.body.data);
@@ -81,10 +96,40 @@ const deleteTeam = catchAsync(async (req: Request, res: Response) => {
     });
 });
 
+const joinTeam = catchAsync( async (req:Request, res:Response)=>{
+    const {teamId} = req.params
+    const userId = req.user.id
+
+    const result = await teamService.joinATeam(userId, teamId)
+
+    sendResponse(res, {
+        statusCode:httpstatus.CREATED,
+        success:true,
+        message:"user joined the team",
+        data:result
+    })
+})
+
+const getAllTeamMembers = catchAsync(async (req:Request, res:Response)=>{
+    const {teamId} = req.params
+
+    const result = await teamService.getAllTeamMember(teamId)
+
+    sendResponse(res, {
+        statusCode:httpstatus.OK,
+        success:true,
+        message:"Team member getched successfully",
+        data:result
+    })
+})
+
 export const teamController = {
     createTeam,
     getTeams,
     getTeamDetails,
     updateTeam,
     deleteTeam,
+    joinTeam,
+    getAllTeamMembers,
+    getMyTeamDetails
 };

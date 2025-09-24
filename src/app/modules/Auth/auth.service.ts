@@ -33,9 +33,10 @@ export const handleRegister = async (body:UserRegistrationData)=>{
 
 
     const createdUser = await prisma.$transaction( async tx =>{
+        let fullName = `${body.firstName} ${body.lastName}`
         
-        const user  = await tx.user.create({data:{firstName:body.firstName, lastName:body.lastName,email:body.email as string, password:hashedPassword,phone:body.phone}})
-        await tx.user.update({where:{id:createdUser.id}, data:{accessToken:token}})
+        const user  = await tx.user.create({data:{firstName:body.firstName, lastName:body.lastName,fullName,email:body.email as string, password:hashedPassword,phone:body.phone}})
+        
 
         // const userData = {
         //         id:createdUser.id,
@@ -48,7 +49,7 @@ export const handleRegister = async (body:UserRegistrationData)=>{
         //     }
         
         //create user store for every user register
-       await tx.userStore.create({data:{id:user.id, trades:0, charges:0, promotes:0}})
+       await tx.userStore.create({data:{userId:user.id, trades:0, charges:0, promotes:0}})
 
         return user
     })
@@ -57,6 +58,7 @@ export const handleRegister = async (body:UserRegistrationData)=>{
     globalEventHandler.publish(Events.USER_REGISTERED, createdUser)
 
     const token = jwtHelpers.generateToken({id:createdUser.id, role:createdUser.role, email:createdUser.email})
+    await prisma.user.update({where:{id:createdUser.id}, data:{accessToken:token}})
 
     return {user:UserDto(createdUser), token}
 }

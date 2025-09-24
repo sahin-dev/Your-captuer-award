@@ -10,7 +10,7 @@ model Team {
   score         Int   @default(0)
   win           Int   @default(0)
   lost          Int   @default(0)
-  badge         String //Image file
+  badge         String     @default("https://www.freepik.com/free-photo/businesspeople-having-good-time-meeting_861800.htm#fromView=keyword&page=1&position=6&uuid=59ca936a-5c54-464c-a5ed-b579a1cd4afe&query=Team")   //Image file
   min_requirement   Int
   creatorId     String            @db.ObjectId
   creator       User              @relation(fields: [creatorId], references: [id])

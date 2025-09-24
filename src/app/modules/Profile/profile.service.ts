@@ -6,13 +6,19 @@ import { achievementService } from "../Achievements/achievement.service"
 import { UserPhoto } from "../../../prismaClient"
 import { MappedPhoto } from "./profile.types"
 import { voteService } from "../Vote/vote.service"
+import { followService } from "../Follow/followe.service"
 
 export const handleGetUserUploads = async (userId:string)=>{
     const uploads = await prisma.userPhoto.findMany({
-        where:{userId},select:{id:true,url:true,contestUpload:{select:{achievements:{orderBy:{createdAt:'desc'}, take:1,select:{category:true}}}}},
+        where:{userId},include:{contestUpload:{select:{achievements:{orderBy:{createdAt:'desc'}, take:1,select:{category:true},}, _count:{select:{votes:true}}}},_count:{select:{likes:true}}},
     })
-
-    return uploads
+    const newUploads = uploads.map( photo => {
+        const totalVotes = photo.contestUpload.reduce ( (sum, contestUploads)=>{
+            return sum + (contestUploads?._count?.votes ?? 0)
+        },0)
+        return { ...photo, totalVotes,likes:photo._count.likes,_count:undefined}
+    })
+    return newUploads
 } 
 
 //Upload photo to cloud and then add to user profile
@@ -147,10 +153,18 @@ const sortPhotos = (photos: any[], sortBy: string) => {
 
 const getStates = async (userId:string)=>{
 
-    const userStates = await prisma.user.findUnique({where:{id:userId},select:{_count:{select:{followers:true,followings:true,likes:{where:{photo:{userId}}}, userPhotos:true, }}}})
-    const achievementsCount = await achievementService.getAchievementCount(userId)
+    const user = await prisma.user.findUnique({where:{id:userId}})
 
-    return {...userStates?._count, achievements: (achievementsCount.top_photo + achievementsCount.top_photographer)}
+    if(!user){
+        throw new ApiError(httpStatus.NOT_FOUND, "user not found")
+    }
+
+    const userStates = await prisma.user.findUnique({where:{id:userId},select:{_count:{select:{likes:{where:{photo:{userId}}}, userPhotos:true, }}}})
+    const achievementsCount = await achievementService.getAchievementCount(userId)
+    const followerCount = await followService.getFollowerCount(userId)
+    const followingCount = await followService.getFollowingCount(userId)
+
+    return {...userStates?._count, follower:followerCount, following:followingCount, achievements: (achievementsCount.top_photo + achievementsCount.top_photographer)}
 }
 
 const getUserProfileDetails = async (userId:string)=>{

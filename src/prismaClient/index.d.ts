@@ -3962,11 +3962,11 @@ export namespace Prisma {
    */
 
   export type CommentCountOutputType = {
-    CommentReplies: number
+    commentReplies: number
   }
 
   export type CommentCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    CommentReplies?: boolean | CommentCountOutputTypeCountCommentRepliesArgs
+    commentReplies?: boolean | CommentCountOutputTypeCountCommentRepliesArgs
   }
 
   // Custom InputTypes
@@ -28980,7 +28980,7 @@ export namespace Prisma {
     id: string | null
     text: string | null
     providerId: string | null
-    receiverId: string | null
+    photoId: string | null
     parentId: string | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -28990,7 +28990,7 @@ export namespace Prisma {
     id: string | null
     text: string | null
     providerId: string | null
-    receiverId: string | null
+    photoId: string | null
     parentId: string | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -29000,7 +29000,7 @@ export namespace Prisma {
     id: number
     text: number
     providerId: number
-    receiverId: number
+    photoId: number
     parentId: number
     createdAt: number
     updatedAt: number
@@ -29012,7 +29012,7 @@ export namespace Prisma {
     id?: true
     text?: true
     providerId?: true
-    receiverId?: true
+    photoId?: true
     parentId?: true
     createdAt?: true
     updatedAt?: true
@@ -29022,7 +29022,7 @@ export namespace Prisma {
     id?: true
     text?: true
     providerId?: true
-    receiverId?: true
+    photoId?: true
     parentId?: true
     createdAt?: true
     updatedAt?: true
@@ -29032,7 +29032,7 @@ export namespace Prisma {
     id?: true
     text?: true
     providerId?: true
-    receiverId?: true
+    photoId?: true
     parentId?: true
     createdAt?: true
     updatedAt?: true
@@ -29115,7 +29115,7 @@ export namespace Prisma {
     id: string
     text: string
     providerId: string
-    receiverId: string
+    photoId: string | null
     parentId: string | null
     createdAt: Date
     updatedAt: Date
@@ -29142,14 +29142,14 @@ export namespace Prisma {
     id?: boolean
     text?: boolean
     providerId?: boolean
-    receiverId?: boolean
+    photoId?: boolean
     parentId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     provider?: boolean | UserDefaultArgs<ExtArgs>
-    receiver?: boolean | ContestPhotoDefaultArgs<ExtArgs>
+    photo?: boolean | Comment$photoArgs<ExtArgs>
     parent?: boolean | Comment$parentArgs<ExtArgs>
-    CommentReplies?: boolean | Comment$CommentRepliesArgs<ExtArgs>
+    commentReplies?: boolean | Comment$commentRepliesArgs<ExtArgs>
     _count?: boolean | CommentCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["comment"]>
 
@@ -29159,18 +29159,18 @@ export namespace Prisma {
     id?: boolean
     text?: boolean
     providerId?: boolean
-    receiverId?: boolean
+    photoId?: boolean
     parentId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type CommentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "text" | "providerId" | "receiverId" | "parentId" | "createdAt" | "updatedAt", ExtArgs["result"]["comment"]>
+  export type CommentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "text" | "providerId" | "photoId" | "parentId" | "createdAt" | "updatedAt", ExtArgs["result"]["comment"]>
   export type CommentInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     provider?: boolean | UserDefaultArgs<ExtArgs>
-    receiver?: boolean | ContestPhotoDefaultArgs<ExtArgs>
+    photo?: boolean | Comment$photoArgs<ExtArgs>
     parent?: boolean | Comment$parentArgs<ExtArgs>
-    CommentReplies?: boolean | Comment$CommentRepliesArgs<ExtArgs>
+    commentReplies?: boolean | Comment$commentRepliesArgs<ExtArgs>
     _count?: boolean | CommentCountOutputTypeDefaultArgs<ExtArgs>
   }
 
@@ -29178,15 +29178,15 @@ export namespace Prisma {
     name: "Comment"
     objects: {
       provider: Prisma.$UserPayload<ExtArgs>
-      receiver: Prisma.$ContestPhotoPayload<ExtArgs>
+      photo: Prisma.$ContestPhotoPayload<ExtArgs> | null
       parent: Prisma.$CommentPayload<ExtArgs> | null
-      CommentReplies: Prisma.$CommentPayload<ExtArgs>[]
+      commentReplies: Prisma.$CommentPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
       text: string
       providerId: string
-      receiverId: string
+      photoId: string | null
       parentId: string | null
       createdAt: Date
       updatedAt: Date
@@ -29554,9 +29554,9 @@ export namespace Prisma {
   export interface Prisma__CommentClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     provider<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    receiver<T extends ContestPhotoDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ContestPhotoDefaultArgs<ExtArgs>>): Prisma__ContestPhotoClient<$Result.GetResult<Prisma.$ContestPhotoPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    photo<T extends Comment$photoArgs<ExtArgs> = {}>(args?: Subset<T, Comment$photoArgs<ExtArgs>>): Prisma__ContestPhotoClient<$Result.GetResult<Prisma.$ContestPhotoPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     parent<T extends Comment$parentArgs<ExtArgs> = {}>(args?: Subset<T, Comment$parentArgs<ExtArgs>>): Prisma__CommentClient<$Result.GetResult<Prisma.$CommentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-    CommentReplies<T extends Comment$CommentRepliesArgs<ExtArgs> = {}>(args?: Subset<T, Comment$CommentRepliesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CommentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    commentReplies<T extends Comment$commentRepliesArgs<ExtArgs> = {}>(args?: Subset<T, Comment$commentRepliesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CommentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -29589,7 +29589,7 @@ export namespace Prisma {
     readonly id: FieldRef<"Comment", 'String'>
     readonly text: FieldRef<"Comment", 'String'>
     readonly providerId: FieldRef<"Comment", 'String'>
-    readonly receiverId: FieldRef<"Comment", 'String'>
+    readonly photoId: FieldRef<"Comment", 'String'>
     readonly parentId: FieldRef<"Comment", 'String'>
     readonly createdAt: FieldRef<"Comment", 'DateTime'>
     readonly updatedAt: FieldRef<"Comment", 'DateTime'>
@@ -29963,6 +29963,25 @@ export namespace Prisma {
   }
 
   /**
+   * Comment.photo
+   */
+  export type Comment$photoArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContestPhoto
+     */
+    select?: ContestPhotoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContestPhoto
+     */
+    omit?: ContestPhotoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContestPhotoInclude<ExtArgs> | null
+    where?: ContestPhotoWhereInput
+  }
+
+  /**
    * Comment.parent
    */
   export type Comment$parentArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -29982,9 +30001,9 @@ export namespace Prisma {
   }
 
   /**
-   * Comment.CommentReplies
+   * Comment.commentReplies
    */
-  export type Comment$CommentRepliesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type Comment$commentRepliesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the Comment
      */
@@ -34430,7 +34449,7 @@ export namespace Prisma {
     id: 'id',
     text: 'text',
     providerId: 'providerId',
-    receiverId: 'receiverId',
+    photoId: 'photoId',
     parentId: 'parentId',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
@@ -36642,28 +36661,28 @@ export namespace Prisma {
     id?: StringFilter<"Comment"> | string
     text?: StringFilter<"Comment"> | string
     providerId?: StringFilter<"Comment"> | string
-    receiverId?: StringFilter<"Comment"> | string
+    photoId?: StringNullableFilter<"Comment"> | string | null
     parentId?: StringNullableFilter<"Comment"> | string | null
     createdAt?: DateTimeFilter<"Comment"> | Date | string
     updatedAt?: DateTimeFilter<"Comment"> | Date | string
     provider?: XOR<UserScalarRelationFilter, UserWhereInput>
-    receiver?: XOR<ContestPhotoScalarRelationFilter, ContestPhotoWhereInput>
+    photo?: XOR<ContestPhotoNullableScalarRelationFilter, ContestPhotoWhereInput> | null
     parent?: XOR<CommentNullableScalarRelationFilter, CommentWhereInput> | null
-    CommentReplies?: CommentListRelationFilter
+    commentReplies?: CommentListRelationFilter
   }
 
   export type CommentOrderByWithRelationInput = {
     id?: SortOrder
     text?: SortOrder
     providerId?: SortOrder
-    receiverId?: SortOrder
+    photoId?: SortOrder
     parentId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     provider?: UserOrderByWithRelationInput
-    receiver?: ContestPhotoOrderByWithRelationInput
+    photo?: ContestPhotoOrderByWithRelationInput
     parent?: CommentOrderByWithRelationInput
-    CommentReplies?: CommentOrderByRelationAggregateInput
+    commentReplies?: CommentOrderByRelationAggregateInput
   }
 
   export type CommentWhereUniqueInput = Prisma.AtLeast<{
@@ -36673,21 +36692,21 @@ export namespace Prisma {
     NOT?: CommentWhereInput | CommentWhereInput[]
     text?: StringFilter<"Comment"> | string
     providerId?: StringFilter<"Comment"> | string
-    receiverId?: StringFilter<"Comment"> | string
+    photoId?: StringNullableFilter<"Comment"> | string | null
     parentId?: StringNullableFilter<"Comment"> | string | null
     createdAt?: DateTimeFilter<"Comment"> | Date | string
     updatedAt?: DateTimeFilter<"Comment"> | Date | string
     provider?: XOR<UserScalarRelationFilter, UserWhereInput>
-    receiver?: XOR<ContestPhotoScalarRelationFilter, ContestPhotoWhereInput>
+    photo?: XOR<ContestPhotoNullableScalarRelationFilter, ContestPhotoWhereInput> | null
     parent?: XOR<CommentNullableScalarRelationFilter, CommentWhereInput> | null
-    CommentReplies?: CommentListRelationFilter
+    commentReplies?: CommentListRelationFilter
   }, "id">
 
   export type CommentOrderByWithAggregationInput = {
     id?: SortOrder
     text?: SortOrder
     providerId?: SortOrder
-    receiverId?: SortOrder
+    photoId?: SortOrder
     parentId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -36703,7 +36722,7 @@ export namespace Prisma {
     id?: StringWithAggregatesFilter<"Comment"> | string
     text?: StringWithAggregatesFilter<"Comment"> | string
     providerId?: StringWithAggregatesFilter<"Comment"> | string
-    receiverId?: StringWithAggregatesFilter<"Comment"> | string
+    photoId?: StringNullableWithAggregatesFilter<"Comment"> | string | null
     parentId?: StringNullableWithAggregatesFilter<"Comment"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Comment"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Comment"> | Date | string
@@ -37326,7 +37345,7 @@ export namespace Prisma {
     participant: ContestParticipantCreateNestedOneWithoutPhotosInput
     votes?: VoteCreateNestedManyWithoutPhotoInput
     photo: UserPhotoCreateNestedOneWithoutContestUploadInput
-    comments?: CommentCreateNestedManyWithoutReceiverInput
+    comments?: CommentCreateNestedManyWithoutPhotoInput
     achievements?: ContestAchievementCreateNestedManyWithoutPhotoInput
     ContestWinner?: ContestWinnerCreateNestedManyWithoutPhotoInput
   }
@@ -37343,7 +37362,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     votes?: VoteUncheckedCreateNestedManyWithoutPhotoInput
-    comments?: CommentUncheckedCreateNestedManyWithoutReceiverInput
+    comments?: CommentUncheckedCreateNestedManyWithoutPhotoInput
     achievements?: ContestAchievementUncheckedCreateNestedManyWithoutPhotoInput
     ContestWinner?: ContestWinnerUncheckedCreateNestedManyWithoutPhotoInput
   }
@@ -37359,7 +37378,7 @@ export namespace Prisma {
     participant?: ContestParticipantUpdateOneRequiredWithoutPhotosNestedInput
     votes?: VoteUpdateManyWithoutPhotoNestedInput
     photo?: UserPhotoUpdateOneRequiredWithoutContestUploadNestedInput
-    comments?: CommentUpdateManyWithoutReceiverNestedInput
+    comments?: CommentUpdateManyWithoutPhotoNestedInput
     achievements?: ContestAchievementUpdateManyWithoutPhotoNestedInput
     ContestWinner?: ContestWinnerUpdateManyWithoutPhotoNestedInput
   }
@@ -37375,7 +37394,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     votes?: VoteUncheckedUpdateManyWithoutPhotoNestedInput
-    comments?: CommentUncheckedUpdateManyWithoutReceiverNestedInput
+    comments?: CommentUncheckedUpdateManyWithoutPhotoNestedInput
     achievements?: ContestAchievementUncheckedUpdateManyWithoutPhotoNestedInput
     ContestWinner?: ContestWinnerUncheckedUpdateManyWithoutPhotoNestedInput
   }
@@ -38880,20 +38899,20 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     provider: UserCreateNestedOneWithoutCommentProvidesInput
-    receiver: ContestPhotoCreateNestedOneWithoutCommentsInput
+    photo?: ContestPhotoCreateNestedOneWithoutCommentsInput
     parent?: CommentCreateNestedOneWithoutCommentRepliesInput
-    CommentReplies?: CommentCreateNestedManyWithoutParentInput
+    commentReplies?: CommentCreateNestedManyWithoutParentInput
   }
 
   export type CommentUncheckedCreateInput = {
     id?: string
     text: string
     providerId: string
-    receiverId: string
+    photoId?: string | null
     parentId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    CommentReplies?: CommentUncheckedCreateNestedManyWithoutParentInput
+    commentReplies?: CommentUncheckedCreateNestedManyWithoutParentInput
   }
 
   export type CommentUpdateInput = {
@@ -38901,26 +38920,26 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     provider?: UserUpdateOneRequiredWithoutCommentProvidesNestedInput
-    receiver?: ContestPhotoUpdateOneRequiredWithoutCommentsNestedInput
+    photo?: ContestPhotoUpdateOneWithoutCommentsNestedInput
     parent?: CommentUpdateOneWithoutCommentRepliesNestedInput
-    CommentReplies?: CommentUpdateManyWithoutParentNestedInput
+    commentReplies?: CommentUpdateManyWithoutParentNestedInput
   }
 
   export type CommentUncheckedUpdateInput = {
     text?: StringFieldUpdateOperationsInput | string
     providerId?: StringFieldUpdateOperationsInput | string
-    receiverId?: StringFieldUpdateOperationsInput | string
+    photoId?: NullableStringFieldUpdateOperationsInput | string | null
     parentId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    CommentReplies?: CommentUncheckedUpdateManyWithoutParentNestedInput
+    commentReplies?: CommentUncheckedUpdateManyWithoutParentNestedInput
   }
 
   export type CommentCreateManyInput = {
     id?: string
     text: string
     providerId: string
-    receiverId: string
+    photoId?: string | null
     parentId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -38935,7 +38954,7 @@ export namespace Prisma {
   export type CommentUncheckedUpdateManyInput = {
     text?: StringFieldUpdateOperationsInput | string
     providerId?: StringFieldUpdateOperationsInput | string
-    receiverId?: StringFieldUpdateOperationsInput | string
+    photoId?: NullableStringFieldUpdateOperationsInput | string | null
     parentId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -40859,7 +40878,7 @@ export namespace Prisma {
     id?: SortOrder
     text?: SortOrder
     providerId?: SortOrder
-    receiverId?: SortOrder
+    photoId?: SortOrder
     parentId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -40869,7 +40888,7 @@ export namespace Prisma {
     id?: SortOrder
     text?: SortOrder
     providerId?: SortOrder
-    receiverId?: SortOrder
+    photoId?: SortOrder
     parentId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -40879,7 +40898,7 @@ export namespace Prisma {
     id?: SortOrder
     text?: SortOrder
     providerId?: SortOrder
-    receiverId?: SortOrder
+    photoId?: SortOrder
     parentId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -41453,10 +41472,10 @@ export namespace Prisma {
     connect?: UserPhotoWhereUniqueInput
   }
 
-  export type CommentCreateNestedManyWithoutReceiverInput = {
-    create?: XOR<CommentCreateWithoutReceiverInput, CommentUncheckedCreateWithoutReceiverInput> | CommentCreateWithoutReceiverInput[] | CommentUncheckedCreateWithoutReceiverInput[]
-    connectOrCreate?: CommentCreateOrConnectWithoutReceiverInput | CommentCreateOrConnectWithoutReceiverInput[]
-    createMany?: CommentCreateManyReceiverInputEnvelope
+  export type CommentCreateNestedManyWithoutPhotoInput = {
+    create?: XOR<CommentCreateWithoutPhotoInput, CommentUncheckedCreateWithoutPhotoInput> | CommentCreateWithoutPhotoInput[] | CommentUncheckedCreateWithoutPhotoInput[]
+    connectOrCreate?: CommentCreateOrConnectWithoutPhotoInput | CommentCreateOrConnectWithoutPhotoInput[]
+    createMany?: CommentCreateManyPhotoInputEnvelope
     connect?: CommentWhereUniqueInput | CommentWhereUniqueInput[]
   }
 
@@ -41481,10 +41500,10 @@ export namespace Prisma {
     connect?: VoteWhereUniqueInput | VoteWhereUniqueInput[]
   }
 
-  export type CommentUncheckedCreateNestedManyWithoutReceiverInput = {
-    create?: XOR<CommentCreateWithoutReceiverInput, CommentUncheckedCreateWithoutReceiverInput> | CommentCreateWithoutReceiverInput[] | CommentUncheckedCreateWithoutReceiverInput[]
-    connectOrCreate?: CommentCreateOrConnectWithoutReceiverInput | CommentCreateOrConnectWithoutReceiverInput[]
-    createMany?: CommentCreateManyReceiverInputEnvelope
+  export type CommentUncheckedCreateNestedManyWithoutPhotoInput = {
+    create?: XOR<CommentCreateWithoutPhotoInput, CommentUncheckedCreateWithoutPhotoInput> | CommentCreateWithoutPhotoInput[] | CommentUncheckedCreateWithoutPhotoInput[]
+    connectOrCreate?: CommentCreateOrConnectWithoutPhotoInput | CommentCreateOrConnectWithoutPhotoInput[]
+    createMany?: CommentCreateManyPhotoInputEnvelope
     connect?: CommentWhereUniqueInput | CommentWhereUniqueInput[]
   }
 
@@ -41532,17 +41551,17 @@ export namespace Prisma {
     update?: XOR<XOR<UserPhotoUpdateToOneWithWhereWithoutContestUploadInput, UserPhotoUpdateWithoutContestUploadInput>, UserPhotoUncheckedUpdateWithoutContestUploadInput>
   }
 
-  export type CommentUpdateManyWithoutReceiverNestedInput = {
-    create?: XOR<CommentCreateWithoutReceiverInput, CommentUncheckedCreateWithoutReceiverInput> | CommentCreateWithoutReceiverInput[] | CommentUncheckedCreateWithoutReceiverInput[]
-    connectOrCreate?: CommentCreateOrConnectWithoutReceiverInput | CommentCreateOrConnectWithoutReceiverInput[]
-    upsert?: CommentUpsertWithWhereUniqueWithoutReceiverInput | CommentUpsertWithWhereUniqueWithoutReceiverInput[]
-    createMany?: CommentCreateManyReceiverInputEnvelope
+  export type CommentUpdateManyWithoutPhotoNestedInput = {
+    create?: XOR<CommentCreateWithoutPhotoInput, CommentUncheckedCreateWithoutPhotoInput> | CommentCreateWithoutPhotoInput[] | CommentUncheckedCreateWithoutPhotoInput[]
+    connectOrCreate?: CommentCreateOrConnectWithoutPhotoInput | CommentCreateOrConnectWithoutPhotoInput[]
+    upsert?: CommentUpsertWithWhereUniqueWithoutPhotoInput | CommentUpsertWithWhereUniqueWithoutPhotoInput[]
+    createMany?: CommentCreateManyPhotoInputEnvelope
     set?: CommentWhereUniqueInput | CommentWhereUniqueInput[]
     disconnect?: CommentWhereUniqueInput | CommentWhereUniqueInput[]
     delete?: CommentWhereUniqueInput | CommentWhereUniqueInput[]
     connect?: CommentWhereUniqueInput | CommentWhereUniqueInput[]
-    update?: CommentUpdateWithWhereUniqueWithoutReceiverInput | CommentUpdateWithWhereUniqueWithoutReceiverInput[]
-    updateMany?: CommentUpdateManyWithWhereWithoutReceiverInput | CommentUpdateManyWithWhereWithoutReceiverInput[]
+    update?: CommentUpdateWithWhereUniqueWithoutPhotoInput | CommentUpdateWithWhereUniqueWithoutPhotoInput[]
+    updateMany?: CommentUpdateManyWithWhereWithoutPhotoInput | CommentUpdateManyWithWhereWithoutPhotoInput[]
     deleteMany?: CommentScalarWhereInput | CommentScalarWhereInput[]
   }
 
@@ -41588,17 +41607,17 @@ export namespace Prisma {
     deleteMany?: VoteScalarWhereInput | VoteScalarWhereInput[]
   }
 
-  export type CommentUncheckedUpdateManyWithoutReceiverNestedInput = {
-    create?: XOR<CommentCreateWithoutReceiverInput, CommentUncheckedCreateWithoutReceiverInput> | CommentCreateWithoutReceiverInput[] | CommentUncheckedCreateWithoutReceiverInput[]
-    connectOrCreate?: CommentCreateOrConnectWithoutReceiverInput | CommentCreateOrConnectWithoutReceiverInput[]
-    upsert?: CommentUpsertWithWhereUniqueWithoutReceiverInput | CommentUpsertWithWhereUniqueWithoutReceiverInput[]
-    createMany?: CommentCreateManyReceiverInputEnvelope
+  export type CommentUncheckedUpdateManyWithoutPhotoNestedInput = {
+    create?: XOR<CommentCreateWithoutPhotoInput, CommentUncheckedCreateWithoutPhotoInput> | CommentCreateWithoutPhotoInput[] | CommentUncheckedCreateWithoutPhotoInput[]
+    connectOrCreate?: CommentCreateOrConnectWithoutPhotoInput | CommentCreateOrConnectWithoutPhotoInput[]
+    upsert?: CommentUpsertWithWhereUniqueWithoutPhotoInput | CommentUpsertWithWhereUniqueWithoutPhotoInput[]
+    createMany?: CommentCreateManyPhotoInputEnvelope
     set?: CommentWhereUniqueInput | CommentWhereUniqueInput[]
     disconnect?: CommentWhereUniqueInput | CommentWhereUniqueInput[]
     delete?: CommentWhereUniqueInput | CommentWhereUniqueInput[]
     connect?: CommentWhereUniqueInput | CommentWhereUniqueInput[]
-    update?: CommentUpdateWithWhereUniqueWithoutReceiverInput | CommentUpdateWithWhereUniqueWithoutReceiverInput[]
-    updateMany?: CommentUpdateManyWithWhereWithoutReceiverInput | CommentUpdateManyWithWhereWithoutReceiverInput[]
+    update?: CommentUpdateWithWhereUniqueWithoutPhotoInput | CommentUpdateWithWhereUniqueWithoutPhotoInput[]
+    updateMany?: CommentUpdateManyWithWhereWithoutPhotoInput | CommentUpdateManyWithWhereWithoutPhotoInput[]
     deleteMany?: CommentScalarWhereInput | CommentScalarWhereInput[]
   }
 
@@ -42976,10 +42995,12 @@ export namespace Prisma {
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutCommentProvidesInput, UserUpdateWithoutCommentProvidesInput>, UserUncheckedUpdateWithoutCommentProvidesInput>
   }
 
-  export type ContestPhotoUpdateOneRequiredWithoutCommentsNestedInput = {
+  export type ContestPhotoUpdateOneWithoutCommentsNestedInput = {
     create?: XOR<ContestPhotoCreateWithoutCommentsInput, ContestPhotoUncheckedCreateWithoutCommentsInput>
     connectOrCreate?: ContestPhotoCreateOrConnectWithoutCommentsInput
     upsert?: ContestPhotoUpsertWithoutCommentsInput
+    disconnect?: boolean
+    delete?: ContestPhotoWhereInput | boolean
     connect?: ContestPhotoWhereUniqueInput
     update?: XOR<XOR<ContestPhotoUpdateToOneWithWhereWithoutCommentsInput, ContestPhotoUpdateWithoutCommentsInput>, ContestPhotoUncheckedUpdateWithoutCommentsInput>
   }
@@ -44430,33 +44451,33 @@ export namespace Prisma {
     create: XOR<UserPhotoCreateWithoutContestUploadInput, UserPhotoUncheckedCreateWithoutContestUploadInput>
   }
 
-  export type CommentCreateWithoutReceiverInput = {
+  export type CommentCreateWithoutPhotoInput = {
     id?: string
     text: string
     createdAt?: Date | string
     updatedAt?: Date | string
     provider: UserCreateNestedOneWithoutCommentProvidesInput
     parent?: CommentCreateNestedOneWithoutCommentRepliesInput
-    CommentReplies?: CommentCreateNestedManyWithoutParentInput
+    commentReplies?: CommentCreateNestedManyWithoutParentInput
   }
 
-  export type CommentUncheckedCreateWithoutReceiverInput = {
+  export type CommentUncheckedCreateWithoutPhotoInput = {
     id?: string
     text: string
     providerId: string
     parentId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    CommentReplies?: CommentUncheckedCreateNestedManyWithoutParentInput
+    commentReplies?: CommentUncheckedCreateNestedManyWithoutParentInput
   }
 
-  export type CommentCreateOrConnectWithoutReceiverInput = {
+  export type CommentCreateOrConnectWithoutPhotoInput = {
     where: CommentWhereUniqueInput
-    create: XOR<CommentCreateWithoutReceiverInput, CommentUncheckedCreateWithoutReceiverInput>
+    create: XOR<CommentCreateWithoutPhotoInput, CommentUncheckedCreateWithoutPhotoInput>
   }
 
-  export type CommentCreateManyReceiverInputEnvelope = {
-    data: CommentCreateManyReceiverInput | CommentCreateManyReceiverInput[]
+  export type CommentCreateManyPhotoInputEnvelope = {
+    data: CommentCreateManyPhotoInput | CommentCreateManyPhotoInput[]
   }
 
   export type ContestAchievementCreateWithoutPhotoInput = {
@@ -44605,20 +44626,20 @@ export namespace Prisma {
     likes?: LikeUncheckedUpdateManyWithoutPhotoNestedInput
   }
 
-  export type CommentUpsertWithWhereUniqueWithoutReceiverInput = {
+  export type CommentUpsertWithWhereUniqueWithoutPhotoInput = {
     where: CommentWhereUniqueInput
-    update: XOR<CommentUpdateWithoutReceiverInput, CommentUncheckedUpdateWithoutReceiverInput>
-    create: XOR<CommentCreateWithoutReceiverInput, CommentUncheckedCreateWithoutReceiverInput>
+    update: XOR<CommentUpdateWithoutPhotoInput, CommentUncheckedUpdateWithoutPhotoInput>
+    create: XOR<CommentCreateWithoutPhotoInput, CommentUncheckedCreateWithoutPhotoInput>
   }
 
-  export type CommentUpdateWithWhereUniqueWithoutReceiverInput = {
+  export type CommentUpdateWithWhereUniqueWithoutPhotoInput = {
     where: CommentWhereUniqueInput
-    data: XOR<CommentUpdateWithoutReceiverInput, CommentUncheckedUpdateWithoutReceiverInput>
+    data: XOR<CommentUpdateWithoutPhotoInput, CommentUncheckedUpdateWithoutPhotoInput>
   }
 
-  export type CommentUpdateManyWithWhereWithoutReceiverInput = {
+  export type CommentUpdateManyWithWhereWithoutPhotoInput = {
     where: CommentScalarWhereInput
-    data: XOR<CommentUpdateManyMutationInput, CommentUncheckedUpdateManyWithoutReceiverInput>
+    data: XOR<CommentUpdateManyMutationInput, CommentUncheckedUpdateManyWithoutPhotoInput>
   }
 
   export type CommentScalarWhereInput = {
@@ -44628,7 +44649,7 @@ export namespace Prisma {
     id?: StringFilter<"Comment"> | string
     text?: StringFilter<"Comment"> | string
     providerId?: StringFilter<"Comment"> | string
-    receiverId?: StringFilter<"Comment"> | string
+    photoId?: StringNullableFilter<"Comment"> | string | null
     parentId?: StringNullableFilter<"Comment"> | string | null
     createdAt?: DateTimeFilter<"Comment"> | Date | string
     updatedAt?: DateTimeFilter<"Comment"> | Date | string
@@ -44725,7 +44746,7 @@ export namespace Prisma {
     participant: ContestParticipantCreateNestedOneWithoutPhotosInput
     votes?: VoteCreateNestedManyWithoutPhotoInput
     photo: UserPhotoCreateNestedOneWithoutContestUploadInput
-    comments?: CommentCreateNestedManyWithoutReceiverInput
+    comments?: CommentCreateNestedManyWithoutPhotoInput
     achievements?: ContestAchievementCreateNestedManyWithoutPhotoInput
   }
 
@@ -44741,7 +44762,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     votes?: VoteUncheckedCreateNestedManyWithoutPhotoInput
-    comments?: CommentUncheckedCreateNestedManyWithoutReceiverInput
+    comments?: CommentUncheckedCreateNestedManyWithoutPhotoInput
     achievements?: ContestAchievementUncheckedCreateNestedManyWithoutPhotoInput
   }
 
@@ -44811,7 +44832,7 @@ export namespace Prisma {
     participant?: ContestParticipantUpdateOneRequiredWithoutPhotosNestedInput
     votes?: VoteUpdateManyWithoutPhotoNestedInput
     photo?: UserPhotoUpdateOneRequiredWithoutContestUploadNestedInput
-    comments?: CommentUpdateManyWithoutReceiverNestedInput
+    comments?: CommentUpdateManyWithoutPhotoNestedInput
     achievements?: ContestAchievementUpdateManyWithoutPhotoNestedInput
   }
 
@@ -44826,7 +44847,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     votes?: VoteUncheckedUpdateManyWithoutPhotoNestedInput
-    comments?: CommentUncheckedUpdateManyWithoutReceiverNestedInput
+    comments?: CommentUncheckedUpdateManyWithoutPhotoNestedInput
     achievements?: ContestAchievementUncheckedUpdateManyWithoutPhotoNestedInput
   }
 
@@ -44998,7 +45019,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     votes?: VoteCreateNestedManyWithoutPhotoInput
     photo: UserPhotoCreateNestedOneWithoutContestUploadInput
-    comments?: CommentCreateNestedManyWithoutReceiverInput
+    comments?: CommentCreateNestedManyWithoutPhotoInput
     achievements?: ContestAchievementCreateNestedManyWithoutPhotoInput
     ContestWinner?: ContestWinnerCreateNestedManyWithoutPhotoInput
   }
@@ -45014,7 +45035,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     votes?: VoteUncheckedCreateNestedManyWithoutPhotoInput
-    comments?: CommentUncheckedCreateNestedManyWithoutReceiverInput
+    comments?: CommentUncheckedCreateNestedManyWithoutPhotoInput
     achievements?: ContestAchievementUncheckedCreateNestedManyWithoutPhotoInput
     ContestWinner?: ContestWinnerUncheckedCreateNestedManyWithoutPhotoInput
   }
@@ -45439,7 +45460,7 @@ export namespace Prisma {
     participant: ContestParticipantCreateNestedOneWithoutPhotosInput
     votes?: VoteCreateNestedManyWithoutPhotoInput
     photo: UserPhotoCreateNestedOneWithoutContestUploadInput
-    comments?: CommentCreateNestedManyWithoutReceiverInput
+    comments?: CommentCreateNestedManyWithoutPhotoInput
     ContestWinner?: ContestWinnerCreateNestedManyWithoutPhotoInput
   }
 
@@ -45455,7 +45476,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     votes?: VoteUncheckedCreateNestedManyWithoutPhotoInput
-    comments?: CommentUncheckedCreateNestedManyWithoutReceiverInput
+    comments?: CommentUncheckedCreateNestedManyWithoutPhotoInput
     ContestWinner?: ContestWinnerUncheckedCreateNestedManyWithoutPhotoInput
   }
 
@@ -45576,7 +45597,7 @@ export namespace Prisma {
     participant?: ContestParticipantUpdateOneRequiredWithoutPhotosNestedInput
     votes?: VoteUpdateManyWithoutPhotoNestedInput
     photo?: UserPhotoUpdateOneRequiredWithoutContestUploadNestedInput
-    comments?: CommentUpdateManyWithoutReceiverNestedInput
+    comments?: CommentUpdateManyWithoutPhotoNestedInput
     ContestWinner?: ContestWinnerUpdateManyWithoutPhotoNestedInput
   }
 
@@ -45591,7 +45612,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     votes?: VoteUncheckedUpdateManyWithoutPhotoNestedInput
-    comments?: CommentUncheckedUpdateManyWithoutReceiverNestedInput
+    comments?: CommentUncheckedUpdateManyWithoutPhotoNestedInput
     ContestWinner?: ContestWinnerUncheckedUpdateManyWithoutPhotoNestedInput
   }
 
@@ -46965,19 +46986,19 @@ export namespace Prisma {
     text: string
     createdAt?: Date | string
     updatedAt?: Date | string
-    receiver: ContestPhotoCreateNestedOneWithoutCommentsInput
+    photo?: ContestPhotoCreateNestedOneWithoutCommentsInput
     parent?: CommentCreateNestedOneWithoutCommentRepliesInput
-    CommentReplies?: CommentCreateNestedManyWithoutParentInput
+    commentReplies?: CommentCreateNestedManyWithoutParentInput
   }
 
   export type CommentUncheckedCreateWithoutProviderInput = {
     id?: string
     text: string
-    receiverId: string
+    photoId?: string | null
     parentId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    CommentReplies?: CommentUncheckedCreateNestedManyWithoutParentInput
+    commentReplies?: CommentUncheckedCreateNestedManyWithoutParentInput
   }
 
   export type CommentCreateOrConnectWithoutProviderInput = {
@@ -47782,7 +47803,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     participant: ContestParticipantCreateNestedOneWithoutPhotosInput
     votes?: VoteCreateNestedManyWithoutPhotoInput
-    comments?: CommentCreateNestedManyWithoutReceiverInput
+    comments?: CommentCreateNestedManyWithoutPhotoInput
     achievements?: ContestAchievementCreateNestedManyWithoutPhotoInput
     ContestWinner?: ContestWinnerCreateNestedManyWithoutPhotoInput
   }
@@ -47798,7 +47819,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     votes?: VoteUncheckedCreateNestedManyWithoutPhotoInput
-    comments?: CommentUncheckedCreateNestedManyWithoutReceiverInput
+    comments?: CommentUncheckedCreateNestedManyWithoutPhotoInput
     achievements?: ContestAchievementUncheckedCreateNestedManyWithoutPhotoInput
     ContestWinner?: ContestWinnerUncheckedCreateNestedManyWithoutPhotoInput
   }
@@ -48463,7 +48484,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     provider: UserCreateNestedOneWithoutCommentProvidesInput
-    receiver: ContestPhotoCreateNestedOneWithoutCommentsInput
+    photo?: ContestPhotoCreateNestedOneWithoutCommentsInput
     parent?: CommentCreateNestedOneWithoutCommentRepliesInput
   }
 
@@ -48471,7 +48492,7 @@ export namespace Prisma {
     id?: string
     text: string
     providerId: string
-    receiverId: string
+    photoId?: string | null
     parentId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -48488,18 +48509,18 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     provider: UserCreateNestedOneWithoutCommentProvidesInput
-    receiver: ContestPhotoCreateNestedOneWithoutCommentsInput
-    CommentReplies?: CommentCreateNestedManyWithoutParentInput
+    photo?: ContestPhotoCreateNestedOneWithoutCommentsInput
+    commentReplies?: CommentCreateNestedManyWithoutParentInput
   }
 
   export type CommentUncheckedCreateWithoutParentInput = {
     id?: string
     text: string
     providerId: string
-    receiverId: string
+    photoId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    CommentReplies?: CommentUncheckedCreateNestedManyWithoutParentInput
+    commentReplies?: CommentUncheckedCreateNestedManyWithoutParentInput
   }
 
   export type CommentCreateOrConnectWithoutParentInput = {
@@ -48649,14 +48670,14 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     provider?: UserUpdateOneRequiredWithoutCommentProvidesNestedInput
-    receiver?: ContestPhotoUpdateOneRequiredWithoutCommentsNestedInput
+    photo?: ContestPhotoUpdateOneWithoutCommentsNestedInput
     parent?: CommentUpdateOneWithoutCommentRepliesNestedInput
   }
 
   export type CommentUncheckedUpdateWithoutCommentRepliesInput = {
     text?: StringFieldUpdateOperationsInput | string
     providerId?: StringFieldUpdateOperationsInput | string
-    receiverId?: StringFieldUpdateOperationsInput | string
+    photoId?: NullableStringFieldUpdateOperationsInput | string | null
     parentId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -49082,7 +49103,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     participant: ContestParticipantCreateNestedOneWithoutPhotosInput
     photo: UserPhotoCreateNestedOneWithoutContestUploadInput
-    comments?: CommentCreateNestedManyWithoutReceiverInput
+    comments?: CommentCreateNestedManyWithoutPhotoInput
     achievements?: ContestAchievementCreateNestedManyWithoutPhotoInput
     ContestWinner?: ContestWinnerCreateNestedManyWithoutPhotoInput
   }
@@ -49098,7 +49119,7 @@ export namespace Prisma {
     promotionExpiresAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    comments?: CommentUncheckedCreateNestedManyWithoutReceiverInput
+    comments?: CommentUncheckedCreateNestedManyWithoutPhotoInput
     achievements?: ContestAchievementUncheckedCreateNestedManyWithoutPhotoInput
     ContestWinner?: ContestWinnerUncheckedCreateNestedManyWithoutPhotoInput
   }
@@ -49265,7 +49286,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     participant?: ContestParticipantUpdateOneRequiredWithoutPhotosNestedInput
     photo?: UserPhotoUpdateOneRequiredWithoutContestUploadNestedInput
-    comments?: CommentUpdateManyWithoutReceiverNestedInput
+    comments?: CommentUpdateManyWithoutPhotoNestedInput
     achievements?: ContestAchievementUpdateManyWithoutPhotoNestedInput
     ContestWinner?: ContestWinnerUpdateManyWithoutPhotoNestedInput
   }
@@ -49280,7 +49301,7 @@ export namespace Prisma {
     promotionExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    comments?: CommentUncheckedUpdateManyWithoutReceiverNestedInput
+    comments?: CommentUncheckedUpdateManyWithoutPhotoNestedInput
     achievements?: ContestAchievementUncheckedUpdateManyWithoutPhotoNestedInput
     ContestWinner?: ContestWinnerUncheckedUpdateManyWithoutPhotoNestedInput
   }
@@ -49837,7 +49858,7 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
-  export type CommentCreateManyReceiverInput = {
+  export type CommentCreateManyPhotoInput = {
     id?: string
     text: string
     providerId: string
@@ -49890,25 +49911,25 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type CommentUpdateWithoutReceiverInput = {
+  export type CommentUpdateWithoutPhotoInput = {
     text?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     provider?: UserUpdateOneRequiredWithoutCommentProvidesNestedInput
     parent?: CommentUpdateOneWithoutCommentRepliesNestedInput
-    CommentReplies?: CommentUpdateManyWithoutParentNestedInput
+    commentReplies?: CommentUpdateManyWithoutParentNestedInput
   }
 
-  export type CommentUncheckedUpdateWithoutReceiverInput = {
+  export type CommentUncheckedUpdateWithoutPhotoInput = {
     text?: StringFieldUpdateOperationsInput | string
     providerId?: StringFieldUpdateOperationsInput | string
     parentId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    CommentReplies?: CommentUncheckedUpdateManyWithoutParentNestedInput
+    commentReplies?: CommentUncheckedUpdateManyWithoutParentNestedInput
   }
 
-  export type CommentUncheckedUpdateManyWithoutReceiverInput = {
+  export type CommentUncheckedUpdateManyWithoutPhotoInput = {
     text?: StringFieldUpdateOperationsInput | string
     providerId?: StringFieldUpdateOperationsInput | string
     parentId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -50000,7 +50021,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     votes?: VoteUpdateManyWithoutPhotoNestedInput
     photo?: UserPhotoUpdateOneRequiredWithoutContestUploadNestedInput
-    comments?: CommentUpdateManyWithoutReceiverNestedInput
+    comments?: CommentUpdateManyWithoutPhotoNestedInput
     achievements?: ContestAchievementUpdateManyWithoutPhotoNestedInput
     ContestWinner?: ContestWinnerUpdateManyWithoutPhotoNestedInput
   }
@@ -50015,7 +50036,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     votes?: VoteUncheckedUpdateManyWithoutPhotoNestedInput
-    comments?: CommentUncheckedUpdateManyWithoutReceiverNestedInput
+    comments?: CommentUncheckedUpdateManyWithoutPhotoNestedInput
     achievements?: ContestAchievementUncheckedUpdateManyWithoutPhotoNestedInput
     ContestWinner?: ContestWinnerUncheckedUpdateManyWithoutPhotoNestedInput
   }
@@ -50247,7 +50268,7 @@ export namespace Prisma {
   export type CommentCreateManyProviderInput = {
     id?: string
     text: string
-    receiverId: string
+    photoId?: string | null
     parentId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -50441,23 +50462,23 @@ export namespace Prisma {
     text?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    receiver?: ContestPhotoUpdateOneRequiredWithoutCommentsNestedInput
+    photo?: ContestPhotoUpdateOneWithoutCommentsNestedInput
     parent?: CommentUpdateOneWithoutCommentRepliesNestedInput
-    CommentReplies?: CommentUpdateManyWithoutParentNestedInput
+    commentReplies?: CommentUpdateManyWithoutParentNestedInput
   }
 
   export type CommentUncheckedUpdateWithoutProviderInput = {
     text?: StringFieldUpdateOperationsInput | string
-    receiverId?: StringFieldUpdateOperationsInput | string
+    photoId?: NullableStringFieldUpdateOperationsInput | string | null
     parentId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    CommentReplies?: CommentUncheckedUpdateManyWithoutParentNestedInput
+    commentReplies?: CommentUncheckedUpdateManyWithoutParentNestedInput
   }
 
   export type CommentUncheckedUpdateManyWithoutProviderInput = {
     text?: StringFieldUpdateOperationsInput | string
-    receiverId?: StringFieldUpdateOperationsInput | string
+    photoId?: NullableStringFieldUpdateOperationsInput | string | null
     parentId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -50680,7 +50701,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     participant?: ContestParticipantUpdateOneRequiredWithoutPhotosNestedInput
     votes?: VoteUpdateManyWithoutPhotoNestedInput
-    comments?: CommentUpdateManyWithoutReceiverNestedInput
+    comments?: CommentUpdateManyWithoutPhotoNestedInput
     achievements?: ContestAchievementUpdateManyWithoutPhotoNestedInput
     ContestWinner?: ContestWinnerUpdateManyWithoutPhotoNestedInput
   }
@@ -50695,7 +50716,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     votes?: VoteUncheckedUpdateManyWithoutPhotoNestedInput
-    comments?: CommentUncheckedUpdateManyWithoutReceiverNestedInput
+    comments?: CommentUncheckedUpdateManyWithoutPhotoNestedInput
     achievements?: ContestAchievementUncheckedUpdateManyWithoutPhotoNestedInput
     ContestWinner?: ContestWinnerUncheckedUpdateManyWithoutPhotoNestedInput
   }
@@ -50733,7 +50754,7 @@ export namespace Prisma {
     id?: string
     text: string
     providerId: string
-    receiverId: string
+    photoId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -50743,23 +50764,23 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     provider?: UserUpdateOneRequiredWithoutCommentProvidesNestedInput
-    receiver?: ContestPhotoUpdateOneRequiredWithoutCommentsNestedInput
-    CommentReplies?: CommentUpdateManyWithoutParentNestedInput
+    photo?: ContestPhotoUpdateOneWithoutCommentsNestedInput
+    commentReplies?: CommentUpdateManyWithoutParentNestedInput
   }
 
   export type CommentUncheckedUpdateWithoutParentInput = {
     text?: StringFieldUpdateOperationsInput | string
     providerId?: StringFieldUpdateOperationsInput | string
-    receiverId?: StringFieldUpdateOperationsInput | string
+    photoId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    CommentReplies?: CommentUncheckedUpdateManyWithoutParentNestedInput
+    commentReplies?: CommentUncheckedUpdateManyWithoutParentNestedInput
   }
 
   export type CommentUncheckedUpdateManyWithoutParentInput = {
     text?: StringFieldUpdateOperationsInput | string
     providerId?: StringFieldUpdateOperationsInput | string
-    receiverId?: StringFieldUpdateOperationsInput | string
+    photoId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

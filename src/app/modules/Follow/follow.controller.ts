@@ -8,9 +8,9 @@ import httpStatus from 'http-status'
 export const toggoleFollow = catchAsync(async ( req:Request, res:Response)=>{
 
     const userId = req.user.id
-    const {userId:followUserId} = req.body
+    const {userId:followedUserId} = req.body
 
-    const data = await handleFollowUnfollow(userId, followUserId)
+    const data = await handleFollowUnfollow(userId, followedUserId)
 
     sendResponse (res, {
         statusCode:httpStatus.OK,

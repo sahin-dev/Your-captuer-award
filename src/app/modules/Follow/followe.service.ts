@@ -10,7 +10,7 @@ export const handleFollowUnfollow = async (followerId:string, followingId:string
     const existingFollow = await prisma.follow.findUnique({where:{followerId_followingId:{followerId, followingId}}})
 
     if (existingFollow){
-        return handleUnfollowUser(followerId, followingId)
+        return handleUnfollowUser(existingFollow.id)
     }
     return handleFollowUser(followerId, followingId)
 }
@@ -30,16 +30,8 @@ export const handleFollowUser = async (followerId: string, followingId: string) 
 
 
 
-export const handleUnfollowUser = async (followerId: string, followingId: string) => {
-    const follow = await prisma.follow.findFirst({
-        where: { followerId, followingId }
-    });
- 
-    if (!follow) {
-        throw new ApiError(httpstatus.NOT_FOUND, 'Follow relation not found');
-    }
-
-    await prisma.follow.delete({ where: { id: follow.id } });
+export const handleUnfollowUser = async (followId:string) => {
+    await prisma.follow.delete({ where: { id: followId } });
 };
 
 
@@ -57,13 +49,19 @@ export const getFollowingCount = async (userId:string)=>{
 
 
 export const handleGetMyFollowers = async (userId:string)=>{
-    const followers = await prisma.follow.findMany({where:{followingId:userId}, include:{follower:true}})
+    const followers = await prisma.follow.findMany({where:{followingId:userId}, include:{follower:{select:{id:true, avatar:true, fullName:true, firstName:true, lastName:true}}}})
 
     return followers
 }
 
 export const handleGetMyFollowings = async (userId:string) => {
-    const followings = await prisma.follow.findMany({where:{followerId:userId}, include:{following:true}})
+    const followings = await prisma.follow.findMany({where:{followerId:userId}, include:{following:{select:{id:true, avatar:true, fullName:true, firstName:true, lastName:true}}}})
 
     return followings
+}
+
+
+export const followService  ={
+    getFollowerCount,
+    getFollowingCount
 }

@@ -26,8 +26,8 @@ const updateSitePolicy = async (policyId: string, policy: string) => {
     });
 }
 
-const getSitePolicies = async () => {
-    const policies = await prisma.sitePolicy.findMany();
+const getSitePolicies = async (type?:SitePolicyType) => {
+    const policies = await prisma.sitePolicy.findMany({where:{type:type}});
     if (!policies || policies.length === 0) {
         throw new ApiError(httpStatus.NOT_FOUND, "Site policy not found");
     }

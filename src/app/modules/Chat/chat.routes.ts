@@ -5,7 +5,7 @@ import auth from "../../middlewares/auth.middleware";
 
 const router = Router()
 
-router.get("/:teamId",auth(UserRole.USER), chatController.getAllChats)
+router.get("/:teamId",auth(), chatController.getAllChats)
 
 
 

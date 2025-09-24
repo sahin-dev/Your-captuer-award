@@ -8,5 +8,5 @@ export interface ITeam {
     country:string
     description:string
     accessibility:string
-    min_requirement:number
+    min_requirement:string
 }

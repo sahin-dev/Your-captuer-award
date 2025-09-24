@@ -6,6 +6,7 @@ import { ITeam } from './team.interface';
 import { ContestMode, TeamAccessibility } from '../../../prismaClient';
 import { userService } from '../User/user.service';
 import { contestService } from '../Contest/contest.service';
+import sendResponse from '../../../shared/ApiResponse';
 
 
 //create a team
@@ -23,7 +24,7 @@ export const createTeam = async (creatorId: string, body: ITeam, file:Express.Mu
             language: body.language,
             country: body.country,
             description: body.description,
-            min_requirement:body.min_requirement,
+            min_requirement:parseInt(body.min_requirement),
             accessibility: body.accessibility as TeamAccessibility,
             badge: badgeUrl.Location,
         },
@@ -94,6 +95,16 @@ export const getTeamDetails = async (teamId: string) => {
 
     return team;
 };
+
+const getMyTeamDetails = async (userId:string)=>{
+    const member = await prisma.teamMember.findFirst({where:{memberId:userId}})
+    if(!member){
+        throw new ApiError(httpstatus.NOT_FOUND, "team does not found")
+    }
+    const team = await prisma.team.findUnique({where:{id:member.teamId}})
+
+  return team
+}
 
 
 //Suggest Team based on user language and country
@@ -188,9 +199,9 @@ const joinATeam = async (userId:string, teamId:string)=>{
         throw new ApiError(httpstatus.BAD_REQUEST, "You are already joined a team!")
     }
 
-    if(team.min_requirement >= (await userService.getUserCurrentLevel(userId))){
-        throw new ApiError(httpstatus.BAD_REQUEST, "Sorry, you can not join this team")
-    }
+    // if(team.min_requirement >= (await userService.getUserCurrentLevel(userId))){
+    //     throw new ApiError(httpstatus.BAD_REQUEST, "Sorry, you can not join this team")
+    // }
 
     const newMemeber = await prisma.teamMember.create({data:{memberId:userId, teamId}})
 
@@ -207,7 +218,7 @@ const isTeamMemberExist = async (userId:string, teamId:string)=>{
 
 
 
-const joinTeamContest = async (contestId:string, teamId:string)=>{
+const joinTeamContest = async (userId:string,contestId:string, teamId:string)=>{
     const contest = await contestService.getContestById(contestId)
     if(contest?.mode !== ContestMode.TEAM){
         throw new ApiError(httpstatus.BAD_REQUEST, "Contest is only for solo participation")
@@ -215,12 +226,16 @@ const joinTeamContest = async (contestId:string, teamId:string)=>{
     if(!contest){
         throw new ApiError(httpstatus.NOT_FOUND, "Team contest not found")
     }
-    const contestParticipant = await prisma.contestParticipant.create({data:{teamId, contestId}})
+    const teamMember = await prisma.teamMember.findFirst({where:{memberId:userId, teamId}})
+    if(!teamMember){
+        throw new ApiError(httpstatus.NOT_FOUND, "Team member does not exist")
+    }
+    const contestParticipant = await prisma.contestParticipant.create({data:{memberId:teamMember.id,userId:userId, contestId}})
 
 }
 
-const getJoinedTeamContests = async (teamId:string)=>{
-    const teamJoinedContests = await prisma.contestParticipant.findMany({where:{teamId}})
+const getJoinedTeamContests = async (userId:string)=>{
+    const teamJoinedContests = await prisma.contestParticipant.findMany({where:{userId}})
 
     return teamJoinedContests
 }
@@ -232,12 +247,12 @@ const getAllTeamMember = async (teamId:string)=>{
 
         throw new ApiError(httpstatus.NOT_FOUND, 'Team not found')
     }
-    const members = await prisma.teamMember.findMany({where:{teamId}})
+    const members = await prisma.teamMember.findMany({where:{teamId}, include:{member:{select:{id:true, avatar:true, firstName:true, lastName:true, fullName:true}}}})
 
     return members
 }
 
 
 export const teamService = {
-    createTeam, getTeams, getTeamDetails, updateTeam, deleteTeam, joinATeam, isTeamExist, isTeamMemberExist
+    createTeam, getTeams, getTeamDetails, updateTeam, deleteTeam, joinATeam, isTeamExist, isTeamMemberExist, getAllTeamMember, getMyTeamDetails
 }

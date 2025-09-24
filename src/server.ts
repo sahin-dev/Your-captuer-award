@@ -10,7 +10,7 @@ import WebSocketHandler from "./socket";
 
 
 let server: Server;
-const PORT = config.port || 5000
+const PORT = config.port || 5002
 
 //Https options
 // const options = {

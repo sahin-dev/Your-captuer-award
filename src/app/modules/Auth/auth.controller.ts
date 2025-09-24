@@ -26,6 +26,7 @@ export const registerUser = catchAsync(async (req:Request, res:Response)=>{
 
 export const SignIn = catchAsync(async (req:Request,res:Response)=>{
     const body = req.body
+    console.log(body)
 
     const data = await handleSignIn(body)
 

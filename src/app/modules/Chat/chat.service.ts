@@ -17,7 +17,7 @@ const sendMessage = async (senderId:string,teamId:string, message:string)=>{
 }
 
 const getAllChats = async (userId:string,teamId:string)=>{
-
+    console.log(teamId)
     const isExist = await teamService.isTeamMemberExist(userId, teamId)
     
     if(!isExist){
