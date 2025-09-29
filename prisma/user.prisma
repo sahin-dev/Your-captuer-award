@@ -14,10 +14,12 @@ model User {
   location           String?
   country            String?
   password           String?
+  customerId         String?
   role               UserRole             @default(USER)         
   accessToken        String?
   currentLevel       Int @default(-1)
   voting_power       Int @default(1)
+  purchased_plan    SubscriptionPlanEnum?
   level              UserLevel?
   otps               Otp?
   store              UserStore?
@@ -32,6 +34,7 @@ model User {
   userPhotos         UserPhoto[]
   ContestParticipant ContestParticipant[]
   chat               Chat[]
+  subscriptions     Subscription[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -201,7 +204,6 @@ model Level {
 type LevelRequirement {
   title    String
   required    Int
-  badge     Badge
 }
 
 type Badge {

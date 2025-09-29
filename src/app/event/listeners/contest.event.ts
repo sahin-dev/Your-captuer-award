@@ -1,5 +1,6 @@
+import { ContestStatus } from "../../../prismaClient";
 import prisma from "../../../shared/prisma";
-import { contestService, identifyWinner } from "../../modules/Contest/contest.service";
+import { contestService } from "../../modules/Contest/contest.service";
 import globalEventHandler from "../eventEmitter";
 import Events from "../events.constant";
 
@@ -12,12 +13,12 @@ globalEventHandler.on(Events.NEW_VOTE, async ({photoId, contestId}:{photoId:stri
 
 globalEventHandler.on(Events.CONTEST_ENDED, async (contestId:string)=>{
     
-    const contest = await prisma.contest.findUnique({where:{id:contestId}})
+    const contest = await prisma.contest.findUnique({where:{id:contestId, status:ContestStatus.CLOSED}})
 
     if(!contest){
         throw new Error("No contest found")
     }
 
-    await identifyWinner(contestId)
+   
 
 })

@@ -25,6 +25,9 @@ router.put("/change-password",auth(), validateRequest(userSchema.changePasswordS
 router.post("/verify-otp",validateRequest(userSchema.verifyOtpSchema), userController.verifyOtp)
 
 router.get("/store", auth(),userStoreController.getStoreData)
+router.get("/progress", auth(), userController.getUserProgress)
+router.get("/search", auth(), userController.searchUser)
+router.get("/photos/:photoId", auth(), userController.getUserPhotoAchievements)
 
 router.get("/:userId", auth(UserRole.ADMIN), userController.getUserDetails)
 router.patch("/:userId",auth(UserRole.ADMIN),validateRequest(userSchema.updateUserAdminSchema), userController.updateUser)

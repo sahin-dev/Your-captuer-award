@@ -179,6 +179,19 @@ const getUserProfileDetails = async (userId:string)=>{
 }
 
 
+const getUserPhotoDetails = async (userId:string, photoId:string) => {
+    const photo = await prisma.userPhoto.findUnique({where:{id:photoId,userId}})
+    if(!photo){
+        throw new ApiError(httpStatus.NOT_FOUND, "photo not found")
+    }
+
+    const votes = await voteService.getVoteCount(photo.id)
+    const comments = await prisma.comment.findMany({where:{photoId}})
+    const achievememnts = await achievementService.getPhotoAchievements(photoId)
+
+    return {photo, votes, comments, achievememnts}
+}
+
 export const profileService = {
     uploadUserPhoto,
     getStates,
@@ -186,6 +199,7 @@ export const profileService = {
     getParticipatedContest,
     getPhotos,
     handleAddUpload,
-    getUserProfileDetails
+    getUserProfileDetails,
+    getUserPhotoDetails
  
 }

@@ -3,10 +3,12 @@ import ApiError from '../../../errors/ApiError';
 import httpstatus from 'http-status';
 import { fileUploader } from '../../../helpers/fileUploader';
 import { ITeam } from './team.interface';
-import { ContestMode, TeamAccessibility } from '../../../prismaClient';
-import { userService } from '../User/user.service';
+import { ContestMode, ContestStatus, MemberLevel, NotificationType, TeamAccessibility } from '../../../prismaClient';
 import { contestService } from '../Contest/contest.service';
-import sendResponse from '../../../shared/ApiResponse';
+import { notificationService } from '../Notification/notification.service';
+import { levelService } from '../Level/level.service';
+import { voteService } from '../Vote/vote.service';
+import { userService } from '../User/user.service';
 
 
 //create a team
@@ -15,6 +17,10 @@ import sendResponse from '../../../shared/ApiResponse';
 export const createTeam = async (creatorId: string, body: ITeam, file:Express.Multer.File) => {
 
     const badgeUrl = await fileUploader.uploadToDigitalOcean(file)
+    const min_requirement = parseInt(body.min_requirement)
+
+    const level = await levelService.getLevelByOrder(min_requirement)
+
 
     const team = await prisma.team.create({
         data: {
@@ -24,11 +30,14 @@ export const createTeam = async (creatorId: string, body: ITeam, file:Express.Mu
             language: body.language,
             country: body.country,
             description: body.description,
-            min_requirement:parseInt(body.min_requirement),
+            min_requirement,
+            min_requirement_str: level?.levelName ?? 'None',
             accessibility: body.accessibility as TeamAccessibility,
             badge: badgeUrl.Location,
         },
     });
+
+    const member = await prisma.teamMember.create({data:{memberId:creatorId,teamId:team.id, level:MemberLevel.LEADER}})
     return team;
 };
 
@@ -86,7 +95,7 @@ const getTeam = async (teamId:string)=>{
 export const getTeamDetails = async (teamId: string) => {
     const team = await prisma.team.findUnique({
         where: { id: teamId },
-        include: { creator: true, members: { include: { member: true } } },
+        include: { creator: {select:{id:true, avatar:true, fullName:true, firstName:true, lastName:true}} },
     });
 
     if (!team) {
@@ -99,11 +108,19 @@ export const getTeamDetails = async (teamId: string) => {
 const getMyTeamDetails = async (userId:string)=>{
     const member = await prisma.teamMember.findFirst({where:{memberId:userId}})
     if(!member){
-        throw new ApiError(httpstatus.NOT_FOUND, "team does not found")
+        throw new ApiError(httpstatus.NOT_FOUND, "member does not found")
     }
     const team = await prisma.team.findUnique({where:{id:member.teamId}})
 
-  return team
+    if(!team){
+        throw new ApiError(httpstatus.NOT_FOUND, "team not found")
+    }
+
+    const memberCount = await prisma.teamMember.count({where:{teamId:team?.id}})
+
+    const memberDetails = await getMembers(team.id)
+
+  return {team, members:memberDetails,memberCount}
 }
 
 
@@ -163,6 +180,19 @@ const getMyTeamDetails = async (userId:string)=>{
 // };
 
 
+const getSuggestedTeams = async (userId:string) => {
+    const user = await userService.getUserDetails(userId)
+
+    if(!user){
+        throw new ApiError(httpstatus.NOT_FOUND, "user not found")
+    }
+    const country = user.country as string
+
+    const teams = await prisma.team.findMany({where:{OR:[{country}, {min_requirement:user.currentLevel}]}})
+
+    return teams
+}
+
 const isTeamExist = async (teamId:string)=>{
     const team = await prisma.team.findUnique({where:{id:teamId}})
     return team != null? team: false
@@ -204,6 +234,9 @@ const joinATeam = async (userId:string, teamId:string)=>{
     // }
 
     const newMemeber = await prisma.teamMember.create({data:{memberId:userId, teamId}})
+    if(newMemeber){
+        await prisma.team.update({where:{id:team.id}, data:{member_count:{increment:1}}})
+    }
 
     return newMemeber
 }
@@ -214,6 +247,16 @@ const isTeamMemberExist = async (userId:string, teamId:string)=>{
     const member = await prisma.teamMember.findUnique({where:{memberId:userId, teamId}})
 
     return member || false
+}
+
+const isAlreaderJoinedTeam =async (userId:string)=>{
+    const userJoined = await prisma.teamMember.findFirst({where:{memberId:userId}})
+
+    if(userJoined){
+        return true
+    }
+
+    return false
 }
 
 
@@ -252,7 +295,150 @@ const getAllTeamMember = async (teamId:string)=>{
     return members
 }
 
+const startTeamMatch = async (contestId:string, ownTeamId:string, otherTeamId:string) => {
+    const contest = await prisma.contest.findUnique({where:{id:contestId, status:ContestStatus.ACTIVE}})
+
+    if(!contest){
+        throw new ApiError(httpstatus.NOT_FOUND, "contest not found")
+    }
+
+    const ownTeam = await prisma.team.findUnique({where:{id:ownTeamId}})
+    const otherTeam = await prisma.team.findUnique({where:{id:otherTeamId}})
+
+   const teamMatch =  await prisma.teamMatch.create({data:{contestId, team1Id:ownTeamId, team2Id:otherTeamId, endedAt:contest.endDate}})
+
+   return teamMatch
+}
+
+
+
+const inviteUser = async (senderId:string, teamId:string, receiverId:string) => {
+
+    const team = await prisma.team.findUnique({where:{id:teamId}})
+    if(!team){
+        throw new ApiError(httpstatus.NOT_FOUND, "team not found")
+    }
+
+    const teamMember = await isTeamMemberExist(senderId, team.id)
+
+    if(!teamMember || (teamMember.level !== MemberLevel.LEADER)){
+        throw new ApiError(httpstatus.BAD_REQUEST, "you are not allowed to invite any user")
+    }
+   
+    const teamInvitation = await prisma.teamInvitation.create({data:{teamId,senderId,receiverId,expiredAt: new Date(Date.now() + 30*60*1000)}})
+    await notificationService.postNotificationWithPayload("Team Invitation",`You recieve an invitatino to join ${team.name} team`,receiverId,{code:teamInvitation.id}, NotificationType.INVITATION)
+    await notificationService.postNotification("Invitation Sent", "Your invitation sent successfully", senderId, NotificationType.DEFAULT)
+    return teamInvitation
+}
+const joinByInvitation = async (invitationId:string) => {
+    const invitation = await prisma.teamInvitation.findUnique({where:{id:invitationId}})
+
+    if(!invitation || (invitation.expiredAt < new Date())){
+        throw new ApiError(httpstatus.BAD_REQUEST, "invitation expired")
+    }
+    try{
+        const joinedTeam = await joinATeam(invitation.receiverId, invitation.teamId)
+        await notificationService.postNotification("Invitation Accepted", "Your invitation accepted", invitation.senderId,NotificationType.DEFAULT)
+        return joinedTeam
+    }catch(err:any){
+        console.log(err)
+        throw new ApiError(httpstatus.BAD_REQUEST, err.message)
+    }
+    
+}
+
+
+const leaveATeam = async (userId:string, teamId:string) => {
+    const member = await prisma.teamMember.findFirst({where:{memberId:userId,teamId}})
+    if(!member){
+        throw new ApiError(httpstatus.NOT_FOUND, "member not found")
+    }
+
+    await prisma.teamMember.delete({where:{id:member.id}})
+
+}
+
+const removeFromTeam = async (userId:string,memberId:string, teamId:string) => {
+
+    const teamMember = await isTeamMemberExist(userId, teamId)
+
+    if(!teamMember || (teamMember.level !== MemberLevel.LEADER)){
+        throw new ApiError(httpstatus.BAD_REQUEST, 'Sorry, You are not allowed to remove member')
+    }
+
+    return await prisma.teamMember.delete({where:{id:memberId}})
+}
+
+const getMyTeamMatches = async (userId:string ) => {
+    const teamMember = await prisma.teamMember.findFirst({where:{memberId:userId}})
+    
+    if(!teamMember){
+        throw new ApiError(httpstatus.NOT_FOUND, "team not found")
+    }
+    const teamMatch = await prisma.teamMatch.findMany({where:{OR:[{team1Id:teamMember.teamId}, {team2Id:teamMember.teamId}]}, include:{contest:{select:{title:true, banner:true, maxUploads:true}}}})
+
+    return teamMatch
+}
+
+
+const getMembers = async (teamId:string, contestId?:string) => {
+
+    const members = await prisma.teamMember.findMany({where:{teamId},include:{member:{select:{id:true, avatar:true, fullName:true, firstName:true,lastName:true,location:true}}}})
+    let mappedMember
+    if(!contestId){
+        mappedMember = members.map(async member => {
+        const memberTotalVotes = await voteService.getUserTotalVotes(member.memberId)
+
+        return {...member, totalVote:memberTotalVotes}
+    } )
+
+        return await Promise.all(mappedMember)
+    }else{
+        mappedMember = members.map(async member => {
+            const memberTotalVotes = await voteService.getUserContestSpecificVote(contestId,member.memberId)
+             return {...member, totalVote:memberTotalVotes}
+        })
+    }
+   
+    return await Promise.all(mappedMember)
+
+}
+
+const getMatchDetails = async (userId:string,matchId:string) => {
+    const userTeam = await prisma.teamMember.findFirst({where:{memberId:userId}})
+
+    if(!userTeam){
+        throw new ApiError(httpstatus.NOT_FOUND, "team not found")
+    }
+
+    const teamMatch = await prisma.teamMatch.findUnique({where:{id:matchId}})
+    if(!teamMatch){
+        throw new ApiError(httpstatus.NOT_FOUND, "match not found")
+    }
+
+    const team1Vote = await voteService.getTeamTotalVotes(teamMatch.contestId, teamMatch.team1Id)
+    const team2Vote = await voteService.getTeamTotalVotes(teamMatch.contestId, teamMatch.team2Id)
+
+    const team1Members = await getMembers(teamMatch.team1Id, teamMatch.contestId)
+    const team2Members = await getMembers(teamMatch.team2Id, teamMatch.contestId)
+
+    if(teamMatch.team1Id === userTeam.id){
+        return {oposition:{totalVote:team2Vote,members:team2Members}, own:{totalVote:team1Vote,members:team1Members}}
+    }
+
+    return {own:{totalVote:team2Vote,members:team2Members}, oposition:{totalVote:team1Vote,members:team1Members}}
+
+}
+
 
 export const teamService = {
-    createTeam, getTeams, getTeamDetails, updateTeam, deleteTeam, joinATeam, isTeamExist, isTeamMemberExist, getAllTeamMember, getMyTeamDetails
+    createTeam, getTeams, getTeamDetails, updateTeam, deleteTeam, joinATeam, isTeamExist, isTeamMemberExist, getAllTeamMember, getMyTeamDetails,
+    startTeamMatch,
+    inviteUser,
+    joinByInvitation,
+    getMatchDetails,
+    getMyTeamMatches,
+    leaveATeam,
+    removeFromTeam,
+    getSuggestedTeams
 }

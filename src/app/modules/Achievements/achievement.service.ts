@@ -74,6 +74,13 @@ const getContestByAchievementsType = async (userId:string,type:PrizeType)=>{
     return achievements
 }
 
+const getUserPhotoAchievements = async (userId:string, photoId:string) => {
+
+    const achievements = await prisma.contestAchievement.findMany({where:{photo:{photoId}, participantId:userId}})
+
+    return achievements
+}
+
 export const achievementService = {
     addAchievement,
     getContestAchievementsByUser,
@@ -81,5 +88,6 @@ export const achievementService = {
     getAchievements,
     getAchievementCount,
     getPhotoAchievements,
-    getContestByAchievementsType
+    getContestByAchievementsType,
+    getUserPhotoAchievements
 }

@@ -1,19 +1,23 @@
-import { Response } from "express";
+import { Request, Response } from "express";
 import sendResponse from "../../../shared/ApiResponse";
 import {contestService} from "./contest.service";
 import { IContest } from "./contest.interface";
 import catchAsync from "../../../shared/catchAsync";
 import { contestData } from "./contest.type";
-import { profileService } from "../Profile/profile.service";
+import { ContestStatus } from "../../../prismaClient";
+import httpStatus from 'http-status'
 
 
 
 
-export const createContest = catchAsync( async (req: any, res: Response) => {
+
+const createContest = catchAsync( async (req: any, res: Response) => {
     const creatorId = req.user.id; // Assuming user ID is stored in req.user
     const banner = req.file
     const body:contestData = req.body; // Parse the JSON data from the request body
+    console.log(body)
     const contest = await contestService.createContest(creatorId, body, banner);
+
     
     sendResponse(res, {
         statusCode: 201,    
@@ -23,7 +27,9 @@ export const createContest = catchAsync( async (req: any, res: Response) => {
     });
 })
 
-export const getContests = catchAsync(async (req:any, res:Response)=>{
+
+const getAllContests = catchAsync(async (req:any, res:Response)=>{
+    
     const contests = await contestService.getAllContests()
 
     sendResponse(res, {
@@ -34,7 +40,7 @@ export const getContests = catchAsync(async (req:any, res:Response)=>{
     })
 })
 
-export const getContestById = catchAsync(async (req:any, res:Response)=>{
+const getContestById = catchAsync(async (req:any, res:Response)=>{
     const {contestId} = req.params
     const contest = await contestService.getContestById(contestId)
 
@@ -46,7 +52,7 @@ export const getContestById = catchAsync(async (req:any, res:Response)=>{
     })
 })
 
-export const updateContestDetails = catchAsync(async (req:any, res:Response)=>{
+const updateContestDetails = catchAsync(async (req:any, res:Response)=>{
     const {contestId} = req.params
     const contestData:Partial<IContest> = req.body
 
@@ -60,7 +66,7 @@ export const updateContestDetails = catchAsync(async (req:any, res:Response)=>{
     })
 })
 
-export const joinContest = catchAsync(async (req:any, res:Response)=>{
+const joinContest = catchAsync(async (req:any, res:Response)=>{
     const userId = req.user.id
     const {contestId} = req.params
 
@@ -92,7 +98,8 @@ const getUploadedPhotos =  catchAsync(async  (req:any, res: Response)=>{
 
 const uploadPhoto = catchAsync(async (req:any, res:Response)=>{
     const user = req.user
-    const {contestId, photoId} = req.body
+    const { photoId} = req.body
+    const {contestId} = req.params
 
     const file = req.file as Express.Multer.File
 
@@ -119,8 +126,120 @@ const deleteContest = catchAsync(async (req:any, res:Response)=>{
     })
 })
 
+const getContestsByStatus = catchAsync (async (req:Request, res:Response) => {
+    const {status} = req.query as {status:ContestStatus}
+    const userId = req.user.id
+
+    const contests = await contestService.getContestsByStatus(userId,status)
+
+    sendResponse(res, {
+        success:true,
+        statusCode:httpStatus.OK,
+        message:`contests fetched successfully`,
+        data:contests
+    })
+})
+
+const getMyActiveContests = catchAsync(async (req:Request, res:Response) => {
+    const userId = req.user.id
+    console.log(userId)
+    const contests = await contestService.getMyActiveContests(userId)
+
+    sendResponse(res, {
+        success:true,
+        statusCode:httpStatus.OK,
+        message:"user active contest fetched successfully",
+        data:contests
+    })
+})
+
+const promotePhoto = catchAsync(async (req:Request, res:Response) => {
+    const {contestId,photoId} = req.body
+    const userId = req.user.id
+    const result = await contestService.promoteContestPhoto(contestId,photoId, userId)
+
+    sendResponse(res, {
+        success:true,
+        statusCode:httpStatus.OK,
+        message:"photo promoted successfully",
+        data:result
+    })
+})
+
+const getWinners = catchAsync(async (req:Request, res:Response) => {
+    const {contestId} = req.params
+    const userId = req.user.id
+
+    const winners = await contestService.getContestWinners(contestId)
+
+    sendResponse(res, {
+        success:true,
+        statusCode:httpStatus.OK,
+        message:"contest winners fetched successfully",
+        data:winners
+    })
+})
+
+
+const getUserRemainingPhotos = catchAsync(async (req:Request, res:Response) => {
+    const {contestId} = req.params
+    const userId = req.user.id
+
+    const remainingPhotos = await contestService.getRemainingPhotos(userId, contestId)
+
+    sendResponse(res, {
+        success:true,
+        statusCode:httpStatus.OK,
+        message:"remaining photos found successfully",
+        data:remainingPhotos
+    })
+})
+
+const tradePhoto = catchAsync(async (req:Request, res:Response) => {
+
+    const {contestId, contestPhotoId, newPhotoId} = req.body
+    const file = req.file as Express.Multer.File
+    const userId = req.user.id
+
+    const result =  await contestService.tradePhoto(userId,contestId,contestPhotoId,newPhotoId,file)
+
+    sendResponse(res, {
+        success:true,
+        statusCode:httpStatus.OK,
+        message:"trade a photo successfully",
+        data:result
+    })
+})
+
+const chargePhoto = catchAsync(async (req:Request, res:Response) => {
+    const {contestId, contestPhotoId} = req.body
+    const userId = req.user.id
+
+    const chargedPhoto = await contestService.chargePhoto(userId,contestId,contestPhotoId)
+
+    sendResponse(res, {
+        success:true,
+        statusCode:httpStatus.OK,
+        message:"photo charged successfully",
+        data:chargedPhoto
+    })
+})
+
 export const contestController = {
+    createContest,
     uploadPhoto,
     getUploadedPhotos,
-    deleteContest
+    deleteContest,
+    getContestsByStatus,
+    getMyActiveContests,
+    joinContest,
+    updateContestDetails,
+    getContestById,
+    getAllContests,
+    promotePhoto,
+    getWinners,
+    getUserRemainingPhotos,
+    tradePhoto,
+    chargePhoto
+
 }

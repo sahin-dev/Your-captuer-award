@@ -10,7 +10,12 @@ import { UserRole } from '../../../prismaClient';
 const router = express.Router();
 
 router.post('/',auth(UserRole.ADMIN),fileUploader.uploadBadge, validateRequest(createTeamValidationSchema), teamController.createTeam);
+router.post("/invite", auth(), teamController.inviteUser)
+router.post("/leave", auth(), teamController.leaveTeam)
+router.post("/remove", auth(), teamController.removeMemberFromTeam)
 router.get("/my-team", auth(), teamController.getMyTeamDetails)
+router.get("/suggests", auth(), teamController.getSuggestedTeams)
+router.post("/join-by-invitation", auth(), teamController.joinByInvitation)
 router.post("/join/:teamId", auth(), teamController.joinTeam)
 router.get('/', auth(),teamController.getTeams);
 router.get('/:teamId',auth(UserRole.ADMIN), teamController.getTeamDetails);

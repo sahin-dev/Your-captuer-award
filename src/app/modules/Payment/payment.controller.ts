@@ -13,9 +13,9 @@ export class PaymentController {
     }
 
      pay = catchAsync(async (req:Request, res:Response)=>{
-        const {amount, currency, mehtod, productId,} = req.body
+        const {productId, planId,mode, success_url, cancel_url} = req.body
         const {id} = req.user
-        const paymentData = await this.paymentService.pay(id,'STRIPE', amount,currency,mehtod, productId)
+        const paymentData = await this.paymentService.pay(id, productId,planId, mode, success_url, cancel_url)
         sendResponse(res, {
             success:true,
             statusCode:httpStatus.OK,

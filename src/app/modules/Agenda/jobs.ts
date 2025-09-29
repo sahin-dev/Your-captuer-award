@@ -77,6 +77,7 @@ agenda.define('contest:checkUpcoming', async () => {
 
 agenda.define("contest:active", async ()=>{
     const upcomingContest = await contestService.getUpcomingContest()
+    console.log(`Found ${upcomingContest.length} upcoming contests`)
     upcomingContest.forEach(async  (contest) => {
         let contestStartDate = new Date(contest.startDate).getTime()
         let currentDate = new Date().getTime()
@@ -189,7 +190,28 @@ agenda.define("contest:watcher", async (job: Job) => {
     await prisma.contest.update({where:{id:contestId}, data:{status:ContestStatus.CLOSED}})
     globalEventHandler.emit(Events.CONTEST_ENDED,contestId)
     console.log(`Contest has ended ${contestId}`)
+    
+    await contestService.identifyWinner(contestId)
+    await contestService.awardTeams(contest.id)
 });
+
+agenda.define("exposure:watcher", async (job:Job) => {
+    const {contestPhotoId}  = job.attrs.data as {contestPhotoId:string}
+
+    const contestPhoto = await prisma.contestPhoto.findUnique({where:{id:contestPhotoId},include:{participant:true}})
+    if(!contestPhoto){
+        console.log("photo not found")
+        await agenda.cancel({name: "exposure:watcher"})
+        return
+    }
+
+    const updatedBonus = contestPhoto.participant.exposure_bonus - 10
+    await prisma.contestParticipant.update({where:{id:contestPhoto.participant.id}, data:{exposure_bonus:updatedBonus < 0? 0: updatedBonus}})
+
+     if(updatedBonus <= 0){
+        await agenda.cancel({name: "exposure:watcher"})
+    }
+})
 
 
 agenda.define("promotion:remove", async (job: Job) => {

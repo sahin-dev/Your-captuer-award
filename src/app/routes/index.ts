@@ -12,6 +12,10 @@ import { profileRoutes } from "../modules/Profile/profile.route";
 import { sitePolicyRoutes } from "../modules/SitePolicy/sitepolicy.route";
 import { charRoutes } from "../modules/Chat/chat.routes";
 import {  paymentRouter} from "../modules/Payment/payment.route";
+import { storeRoutes } from "../modules/Store/store.route";
+import { levelRoutes } from "../modules/Level/level.route";
+import { notificationRoutes } from "../modules/Notification/notification.route";
+import { subscriptionRoutes } from "../modules/Subscription/subscription.route";
 
 
 
@@ -31,7 +35,11 @@ const moduleRoutes = [
     {path:"/votes", route:voteRouter},
     {path:"/site-policies", route:sitePolicyRoutes},
     {path:"/chats", route:charRoutes},
-    {path:"/payments", route:paymentRouter.router}
+    {path:"/payments", route:paymentRouter.router},
+    {path:"/stores", route:storeRoutes},
+    {path: "/levels", route:levelRoutes},
+    {path:"/notifications", route:notificationRoutes},
+    {path:"/subscriptions", route:subscriptionRoutes}
 
 ]
 

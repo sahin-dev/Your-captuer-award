@@ -10,9 +10,9 @@ interface ExtendedWebSocket extends WebSocket {
 }
 
 type Message  = {event:string, token?:string, teamId?:string, message?:string} 
-const onlineUsers = new Set<string>();
-const userSockets = new Map<string, ExtendedWebSocket>();
-const teamsChannel = new Map<string, Set<ExtendedWebSocket>>()
+export const onlineUsers = new Set<string>();
+export const userSockets = new Map<string, ExtendedWebSocket>();
+export const teamsChannel = new Map<string, Set<ExtendedWebSocket>>()
 
 export function setupWebSocket(server: Server) {
   

@@ -129,6 +129,8 @@ exports.Prisma.ContestScalarFieldEnum = {
   endDate: 'endDate',
   startedAt: 'startedAt',
   creatorId: 'creatorId',
+  rules: 'rules',
+  prizes: 'prizes',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -171,6 +173,7 @@ exports.Prisma.ContestPhotoScalarFieldEnum = {
   rank: 'rank',
   promoted: 'promoted',
   promotionExpiresAt: 'promotionExpiresAt',
+  initialVotes: 'initialVotes',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -220,9 +223,11 @@ exports.Prisma.NotificationScalarFieldEnum = {
   id: 'id',
   title: 'title',
   message: 'message',
+  type: 'type',
   isSent: 'isSent',
   isRead: 'isRead',
   receiverId: 'receiverId',
+  data: 'data',
   createdAt: 'createdAt',
   updatedAT: 'updatedAT'
 };
@@ -231,11 +236,41 @@ exports.Prisma.PaymentScalarFieldEnum = {
   id: 'id',
   status: 'status',
   productId: 'productId',
+  planId: 'planId',
+  subscriptionId: 'subscriptionId',
+  planName: 'planName',
+  recurring: 'recurring',
   userId: 'userId',
-  stripe_intent_id: 'stripe_intent_id',
+  stripe_sessino_id: 'stripe_sessino_id',
   amount: 'amount',
   currency: 'currency',
   method: 'method',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.SubscriptionPlanScalarFieldEnum = {
+  id: 'id',
+  planName: 'planName',
+  stripe_price_id: 'stripe_price_id',
+  stripe_product_id: 'stripe_product_id',
+  amount: 'amount',
+  recurring: 'recurring',
+  currency: 'currency',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.SubscriptionScalarFieldEnum = {
+  id: 'id',
+  plan: 'plan',
+  plan_id: 'plan_id',
+  userId: 'userId',
+  status: 'status',
+  stripe_session_id: 'stripe_session_id',
+  subscription_id: 'subscription_id',
+  startDate: 'startDate',
+  endDate: 'endDate',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -268,6 +303,7 @@ exports.Prisma.ProductScalarFieldEnum = {
   title: 'title',
   quantity: 'quantity',
   amount: 'amount',
+  currency: 'currency',
   icon: 'icon',
   description: 'description',
   image: 'image'
@@ -292,12 +328,26 @@ exports.Prisma.TeamScalarFieldEnum = {
   country: 'country',
   description: 'description',
   accessibility: 'accessibility',
+  member_count: 'member_count',
   score: 'score',
   win: 'win',
   lost: 'lost',
   badge: 'badge',
   min_requirement: 'min_requirement',
+  min_requirement_str: 'min_requirement_str',
   creatorId: 'creatorId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.TeamMatchScalarFieldEnum = {
+  id: 'id',
+  contestId: 'contestId',
+  team1Id: 'team1Id',
+  team2Id: 'team2Id',
+  status: 'status',
+  startedAt: 'startedAt',
+  endedAt: 'endedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -318,6 +368,17 @@ exports.Prisma.TeamParticipationScalarFieldEnum = {
   contestId: 'contestId'
 };
 
+exports.Prisma.TeamInvitationScalarFieldEnum = {
+  id: 'id',
+  teamId: 'teamId',
+  receiverId: 'receiverId',
+  senderId: 'senderId',
+  status: 'status',
+  expiredAt: 'expiredAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.UserScalarFieldEnum = {
   id: 'id',
   cover: 'cover',
@@ -333,10 +394,12 @@ exports.Prisma.UserScalarFieldEnum = {
   location: 'location',
   country: 'country',
   password: 'password',
+  customerId: 'customerId',
   role: 'role',
   accessToken: 'accessToken',
   currentLevel: 'currentLevel',
   voting_power: 'voting_power',
+  purchased_plan: 'purchased_plan',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -470,9 +533,36 @@ exports.PrizeType = exports.$Enums.PrizeType = {
   TOP_YC_PICK: 'TOP_YC_PICK'
 };
 
+exports.NotificationType = exports.$Enums.NotificationType = {
+  DEFAULT: 'DEFAULT',
+  INVITATION: 'INVITATION',
+  PAYMENT: 'PAYMENT',
+  VOTE: 'VOTE',
+  LIKE: 'LIKE'
+};
+
 exports.PaymentStatus = exports.$Enums.PaymentStatus = {
   PENDING: 'PENDING',
-  SUCCEEDED: 'SUCCEEDED'
+  SUCCEEDED: 'SUCCEEDED',
+  VALID: 'VALID',
+  EXPIRED: 'EXPIRED'
+};
+
+exports.SubscriptionPlanEnum = exports.$Enums.SubscriptionPlanEnum = {
+  PREMIUM: 'PREMIUM',
+  PRO: 'PRO'
+};
+
+exports.PlanRecurringType = exports.$Enums.PlanRecurringType = {
+  ONETIME: 'ONETIME',
+  MONTHLY: 'MONTHLY',
+  YEARLY: 'YEARLY'
+};
+
+exports.SubscriptionStatus = exports.$Enums.SubscriptionStatus = {
+  PENDING: 'PENDING',
+  VALID: 'VALID',
+  EXPIRED: 'EXPIRED'
 };
 
 exports.SitePolicyType = exports.$Enums.SitePolicyType = {
@@ -492,6 +582,11 @@ exports.TeamAccessibility = exports.$Enums.TeamAccessibility = {
   PRIVATE: 'PRIVATE'
 };
 
+exports.MatchStatus = exports.$Enums.MatchStatus = {
+  ACTIVE: 'ACTIVE',
+  CLOSED: 'CLOSED'
+};
+
 exports.TeamMemberStatus = exports.$Enums.TeamMemberStatus = {
   ACTIVE: 'ACTIVE',
   REMOVED: 'REMOVED',
@@ -503,6 +598,11 @@ exports.MemberLevel = exports.$Enums.MemberLevel = {
   EXPERT: 'EXPERT',
   MASTER: 'MASTER',
   LEADER: 'LEADER'
+};
+
+exports.InvitationStatus = exports.$Enums.InvitationStatus = {
+  ACTIVE: 'ACTIVE',
+  EXPIRED: 'EXPIRED'
 };
 
 exports.UserRole = exports.$Enums.UserRole = {
@@ -549,14 +649,18 @@ exports.Prisma.ModelName = {
   ContestAchievement: 'ContestAchievement',
   Notification: 'Notification',
   Payment: 'Payment',
+  SubscriptionPlan: 'SubscriptionPlan',
+  Subscription: 'Subscription',
   SitePolicy: 'SitePolicy',
   Room: 'Room',
   Chat: 'Chat',
   Product: 'Product',
   Price: 'Price',
   Team: 'Team',
+  TeamMatch: 'TeamMatch',
   TeamMember: 'TeamMember',
   TeamParticipation: 'TeamParticipation',
+  TeamInvitation: 'TeamInvitation',
   User: 'User',
   UserStore: 'UserStore',
   UserPhoto: 'UserPhoto',

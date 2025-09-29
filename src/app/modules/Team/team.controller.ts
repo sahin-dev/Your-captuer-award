@@ -123,6 +123,72 @@ const getAllTeamMembers = catchAsync(async (req:Request, res:Response)=>{
     })
 })
 
+const inviteUser = catchAsync(async (req:Request, res:Response) => {
+    const {teamId, receiverId} = req.body
+    const userId = req.user.id
+    const invitation = await teamService.inviteUser(userId,teamId,receiverId)
+
+    sendResponse(res, {
+        success:true,
+        statusCode:httpstatus.CREATED,
+        message:"invitation sent successfully",
+        data:invitation
+    })
+})
+
+const joinByInvitation = catchAsync(async (req:Request, res:Response) => {
+    const {code} = req.body
+    const result =  await teamService.joinByInvitation(code)
+
+    sendResponse(res, {
+        success:true,
+        statusCode:httpstatus.OK,
+        message:"invitation accepted successfully",
+        data:result
+    })
+})
+
+const leaveTeam = catchAsync(async (req:Request, res:Response) => {
+    const {teamId} = req.body
+    const userId = req.user.id
+
+    const result = await teamService.leaveATeam(userId,teamId)
+
+    sendResponse(res, {
+        success:true,
+        statusCode:httpstatus.OK,
+        message:"leave team successfully",
+        data:result
+    })
+
+})
+
+const removeMemberFromTeam =  catchAsync(async (req:Request, res:Response) => {
+    const {memberId, teamId} = req.body
+    const userId = req.user.id
+
+    const result = await teamService.removeFromTeam(userId, memberId, teamId)
+    
+    sendResponse(res, {
+        success:true,
+        statusCode:httpstatus.OK,
+        message:"member removed successfully",
+        data:result
+    })
+})
+
+const getSuggestedTeams = catchAsync(async (req:Request, res:Response) => {
+    const userId = req.user.id
+    const suggestedteams = await teamService.getSuggestedTeams(userId)
+
+    sendResponse(res, {
+        success:true,
+        statusCode:httpstatus.OK,
+        message:"suggested teams fetched successfully",
+        data:suggestedteams
+    })
+})
+
 export const teamController = {
     createTeam,
     getTeams,
@@ -131,5 +197,10 @@ export const teamController = {
     deleteTeam,
     joinTeam,
     getAllTeamMembers,
-    getMyTeamDetails
+    getMyTeamDetails,
+    inviteUser,
+    joinByInvitation,
+    leaveTeam,
+    removeMemberFromTeam,
+    getSuggestedTeams
 };

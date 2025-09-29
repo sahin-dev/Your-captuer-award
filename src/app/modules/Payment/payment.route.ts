@@ -13,7 +13,7 @@ class PaymentRouter {
     }
 
     private registerRoutes(){
-        this.router.post("/init",auth(), this.paymentController.pay)
+        this.router.post("/purchase",auth(), this.paymentController.pay)
     }
 }
 

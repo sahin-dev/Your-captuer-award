@@ -161,6 +161,44 @@ const changePassword = catchAsync(async (req:any, res:Response)=>{
     
 })
 
+const getUserProgress =  catchAsync(async (req:Request, res:Response) => {
+    const userId = req.user.id
+
+    const userProgress = await userService.getUserCurrentLevel(userId)
+    console.log(userProgress)
+    
+    sendResponse(res, {
+        success:true,
+        statusCode:httpstatus.OK,
+        message:"user progress fetched successfully",
+        data:userProgress
+    })
+})
+
+const searchUser = catchAsync(async (req:Request, res:Response) => {
+    const {query} = req.query as {query :string}
+
+    const user = await userService.searchUserByUserName(query)
+    sendResponse(res, {
+        success:true,
+        statusCode:httpstatus.OK,
+        message:"user fetched successfully",
+        data:user
+    })
+})
+
+const getUserPhotoAchievements = catchAsync(async (req:Request, res:Response) => {
+    const {photoId}  = req.params
+    const achievememnts = await userService.getPhototAchievements(photoId)
+
+    sendResponse(res, {
+        success:true,
+        statusCode:httpstatus.OK,
+        message:"photo achievements fetched successfully",
+        data:achievememnts
+    })
+})
+
 export const userController = {
 
     getUsers,
@@ -172,5 +210,8 @@ export const userController = {
     getUserDetails,
     resetPassword,
     uploadCover,
-    changePassword
+    changePassword,
+    getUserProgress,
+    searchUser,
+    getUserPhotoAchievements
 }

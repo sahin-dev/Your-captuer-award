@@ -7,21 +7,43 @@ model Team {
   country       String
   description   String
   accessibility TeamAccessibility   @default(PUBLIC)
+  member_count   Int  @default(0)
   score         Int   @default(0)
   win           Int   @default(0)
   lost          Int   @default(0)
   badge         String     @default("https://www.freepik.com/free-photo/businesspeople-having-good-time-meeting_861800.htm#fromView=keyword&page=1&position=6&uuid=59ca936a-5c54-464c-a5ed-b579a1cd4afe&query=Team")   //Image file
   min_requirement   Int
+  min_requirement_str  String
   creatorId     String            @db.ObjectId
   creator       User              @relation(fields: [creatorId], references: [id])
   members       TeamMember[]
   chat          Chat[]
   participations    TeamParticipation[]
+  MatchesAsTeam1     TeamMatch[]  @relation(name: "team1")
+  MatchesAsTeam2     TeamMatch[]  @relation(name: "team2")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@map("teams")
+}
+
+model TeamMatch {
+  id      String        @id  @default(auto())  @map("_id")  @db.ObjectId
+  contestId     String    @db.ObjectId
+  team1Id         String    @db.ObjectId
+  team2Id         String    @db.ObjectId
+  contest     Contest     @relation(references: [id], fields: [contestId])
+  team1    Team         @relation(name: "team1",references: [id], fields: [team1Id])
+  team2     Team        @relation(name: "team2",references: [id], fields: [team2Id])
+  status      MatchStatus   @default(ACTIVE)
+  startedAt   DateTime    @default(now())
+  endedAt     DateTime    
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("team_mathces")
+
 }
 
 
@@ -56,11 +78,36 @@ model TeamParticipation {
   @@unique([teamId, contestId])
 }
 
+model TeamInvitation {
+  id    String    @id  @map("_id")  @default(auto())  @db.ObjectId
+
+  teamId  String    @db.ObjectId
+  receiverId   String     @db.ObjectId
+  senderId      String      @db.ObjectId
+
+  status  InvitationStatus  @default(ACTIVE)
+  expiredAt  DateTime
+
+  createdAt    DateTime   @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@map("team_invitations")
+}
+
 enum TeamAccessibility {
   PUBLIC
   PRIVATE
 }
 
+enum  InvitationStatus {
+  ACTIVE
+  EXPIRED
+}
+
+enum MatchStatus {
+  ACTIVE
+  CLOSED
+}
 
 enum TeamMemberStatus {
   ACTIVE

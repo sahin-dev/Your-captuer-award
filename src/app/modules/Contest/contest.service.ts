@@ -2,7 +2,7 @@ import prisma from '../../../shared/prisma';
 import ApiError from '../../../errors/ApiError';
 import httpstatus from 'http-status';
 import { fileUploader } from '../../../helpers/fileUploader';
-import { Contest, ContestMode, ContestParticipant, ContestPhoto, ContestStatus, PrizeType, RecurringType, YCLevel } from '../../../prismaClient';
+import { ContestMode, ContestParticipant, ContestPhoto, ContestStatus, PrizeType, YCLevel } from '../../../prismaClient';
 import { IContest } from './contest.interface';
 import { contestData } from './contest.type';
 import { contestRuleService } from './ContestRules/contestRules.service';
@@ -13,6 +13,7 @@ import { profileService } from '../Profile/profile.service';
 import agenda from '../Agenda';
 import { validateContestDate } from '../../../helpers/validateDate';
 import { userStoreService } from '../User/UserStore/userStore.service';
+import { voteService } from '../Vote/vote.service';
 
 
 
@@ -65,7 +66,7 @@ const createContestBuilderApproach = async (creatorId:string, body:contestData, 
 //Create a new contest
 //mode: ContestMode
 
-export const createContest = async (creatorId: string, body: contestData, banner:Express.Multer.File) => {
+const createContest = async (creatorId: string, body: contestData, banner:Express.Multer.File) => {
 
     
     if(!validateContestDate(body.startDate, body.endDate)){
@@ -117,8 +118,8 @@ export const createContest = async (creatorId: string, body: contestData, banner
 
     if(body.rules){
         const rules:ContestRule[] = body.rules
-        
-        createdRules =await contestRuleService.addContestRules(contest.id, rules)
+    
+        createdRules = await contestRuleService.addContestRules(contest.id, rules)
     }
    
     if(body.prizes){
@@ -126,9 +127,9 @@ export const createContest = async (creatorId: string, body: contestData, banner
         createdPrizes = await addContestPrizes(contest.id, prizes)
     }
 
-    console.log(createdPrizes)
+    await prisma.contest.update({where:{id:contest.id}, data:{rules:body.rules, prizes:body.prizes}})
 
-    return {contest, rules:JSON.parse(createdRules as string), prizes:JSON.parse(createdPrizes as string)};
+    return {contest, rules:createdRules, prizes:createdPrizes};
 };
 
 
@@ -200,7 +201,7 @@ const createRecurringContest  =  async (creatorId: string, body: contestData, ba
 
 
 
-export const updateContest = async (contestId:string, contestData:Partial<IContest>)=>{
+const updateContest = async (contestId:string, contestData:Partial<IContest>)=>{
 
     const updatedContest = await prisma.contest.update({where:{id:contestId}, data:contestData})
 
@@ -223,7 +224,7 @@ const deleteContestByContestId =async (contestId:string)=>{
 
 // add a user to the contest participant list
 
-export const joinContest = async (userId:string,contestId:string)=>{
+const joinContest = async (userId:string,contestId:string)=>{
     const contest = await prisma.contest.findUnique({where:{id:contestId}})
 
     if (!contest || contest.status != ContestStatus.ACTIVE){
@@ -252,7 +253,7 @@ export const joinContest = async (userId:string,contestId:string)=>{
 
 //get the contest by it's id
 
-export const getContestById = async (contestId: string) => {
+const getContestById = async (contestId: string) => {
     const contest = await prisma.contest.findUnique({
         where: { id: contestId },
         include: { creator: true, participants: true }
@@ -261,19 +262,10 @@ export const getContestById = async (contestId: string) => {
     return contest;
 }
 
-// Get all the contests
-// This will be used to display all the contests in the contest page
 
-export const getContests = async () => {
-    const contests = await prisma.contest.findMany({
-        include: { creator: true}
-    });
-
-    return contests;
-};
 
 //Return all the contests
-export const getAllContests = async () => {
+const getAllContests = async () => {
     const contests = await prisma.contest.findMany({    
         include: { creator: true}
     });
@@ -281,55 +273,67 @@ export const getAllContests = async () => {
 };
 
 //Search contest by contest status
-export const getContestsByStatus = async (userId:string,status: ContestStatus) => {
-    let contests :Contest[]= []
-    
-    let strStatus = status as string
-    switch(strStatus){
-        case "COMPLETED":
-            contests = await prisma.contest.findMany({
-                where: { status: ContestStatus.CLOSED,participants: { some: { userId } } },
-                include: { creator: true, participants: true }
-            });
-            break
-        case 'UPCOMING':
-            contests = await prisma.contest.findMany({
-                where: { status: ContestStatus.UPCOMING } ,
-                include: { creator: true, participants: true }
-            });
-            break
-        case 'ACTIVE':
-            contests = await prisma.contest.findMany({
-                where: { status: ContestStatus.ACTIVE, participants:{some:{userId}} },
-                include: { creator: true, participants: true }
-            });
-            break
-        case 'CLOSED':
-            contests = await prisma.contest.findMany({
-                where: { status: ContestStatus.CLOSED },
-                include: { creator: true, participants: true }
-             });
-            break
-        default:
-            console.log(`No status matched with ${strStatus}`)
-            break
-
+const getContestsByStatus = async (userId:string,status: ContestStatus) => {
+    if(status === ContestStatus.COMPLETED){
+        return getMyCompletedContest(userId)
     }
+    
+     const contests = await prisma.contest.findMany({
+        where:{status},
+        include: { creator: {select:{id:true, avatar:true,fullName:true,cover:true, firstName:true, lastName:true}}}
+    });
+    
 
     return contests;
 };
 
-export const getUpcomingContest = async () => {
+
+//Get all uploads of a user
+
+const getContestUploadsByUserId = async (contestId:string, userId:string)=>{
+    const userUploads = await prisma.contestPhoto.findMany({where:{contestId:contestId, photo:{userId}}})
+
+    return userUploads
+}
+
+
+// Get all the contests
+// This will be used to display all the contests in the contest page
+
+const getMyActiveContests = async (userId:string) => {
+
+    
+
+    const contests = await prisma.contest.findMany({
+        where:{status:ContestStatus.ACTIVE, participants:{some:{userId}}},
+        include: { creator: {select:{id:true, avatar:true,fullName:true,cover:true, firstName:true, lastName:true}},}
+    });
+
+    const contestDetails = contests.map (async (contest) => {
+        const levelData = await getParticipantLevelData(contest.id, userId)
+        const photos = await getContestUploadsByUserId(contest.id,userId)
+        
+        return {...contest, level_data:levelData, photos}
+    })
+
+    return await Promise.all(contestDetails);
+};
+
+
+
+
+
+const getUpcomingContest = async () => {
     const contests = await prisma.contest.findMany({
         where: { status: ContestStatus.UPCOMING },
-        include: { creator: true}
+        include: { creator: {select:{id:true, avatar:true,fullName:true,cover:true, firstName:true, lastName:true}}}
     });
     return contests;
 };
 
 //Get my contests which are completed
 
-export const getMyCompletedContest = async (userId:string) => {
+const getMyCompletedContest = async (userId:string) => {
     if (!userId){
         throw new ApiError(httpstatus.BAD_REQUEST, "User id is not provided")
     }
@@ -339,9 +343,7 @@ export const getMyCompletedContest = async (userId:string) => {
         throw new ApiError(httpstatus.NOT_FOUND, "User not found")
     }
 
-    const myParticipatedContest = await prisma.contestParticipant.findMany(
-        {where:{userId,contest:{status:ContestStatus.CLOSED, participants:{some:{userId}}}}, 
-        select:{contest:{select:{_count:{select:{votes:true}},title:true,banner:true,description:true,}},contestAchievement:true,level:true,photos:{where:{participantId:userId}}}})
+    const myParticipatedContest = await prisma.contest.findMany({where:{status:ContestStatus.CLOSED, participants:{some:{userId}}}})
 
     // const myCompletedContests = await prisma.contest.findMany({where:{status:ContestStatus.COMPLETED, participants:{some:{userId}}},include:{_count:{select:{votes:true}}}})
     
@@ -349,9 +351,21 @@ export const getMyCompletedContest = async (userId:string) => {
     return myParticipatedContest
 }
 
+const getContestWinners = async (contestId:string) => {
+    const contest = await prisma.contest.findUnique({where:{id:contestId, status:ContestStatus.CLOSED}})
+
+    if(!contest){
+        throw new ApiError(httpstatus.NOT_FOUND, "contest not found")
+    }
+
+    const winners = await prisma.contestAchievement.findMany({where:{contestId:contest.id}, include:{participant:{include:{user:{select:{avatar:true, fullName:true, firstName:true, lastName:true}}}}}})
+
+    return winners
+}
+
 
 // Fetch completed contest details with winner
-export const getClosedContestsWithWinner = async () => {
+const getClosedContestsWithWinner = async () => {
     // Fetch contests with status 'COMPLETED' (enum)
     const contests = await prisma.contest.findMany({
         where: { status: ContestStatus.CLOSED },
@@ -394,7 +408,8 @@ export const getClosedContestsWithWinner = async () => {
 
 // Identify the winner after contest ended
 
-export const identifyWinner = async (contestId:string)=>{
+const identifyWinner = async (contestId:string)=>{
+    console.log('Identifying winners....')
 
     const contest = await getContestById(contestId)
     if(!contest){
@@ -433,6 +448,63 @@ export const identifyWinner = async (contestId:string)=>{
 
 }
 
+
+const awardTeams = async (contestId:string) => {
+    const teamMatches = await prisma.teamMatch.findMany({where:{contestId}})
+
+    if(!teamMatches || teamMatches.length <= 0){
+        console.log("No team match found for this contest")
+        return
+    }
+
+    teamMatches.forEach(async teamMatch => {
+       await awardTeam(teamMatch.id)
+    }) 
+}
+
+const awardTeam = async (matchId:string) => {
+    const teamMatch = await prisma.teamMatch.findUnique({where:{id:matchId}})
+    if(!teamMatch){
+        console.log("match not found")
+        return
+    }
+
+    const team1Votes = await voteService.getTeamTotalVotes(teamMatch.contestId, teamMatch.team1Id)
+    const team2Votes = await voteService.getTeamTotalVotes(teamMatch.contestId, teamMatch.team2Id)
+
+    await prisma.team.update({where:{id:teamMatch.team1Id}, data:{score:{increment:team1Votes}, }})
+    await prisma.team.update({where:{id:teamMatch.team2Id}, data:{score:{increment:team2Votes}}})
+
+    if(team1Votes > team2Votes){
+        await prisma.team.update({where:{id:teamMatch.team1Id}, data:{win:{increment:1}}})
+        await prisma.team.update({where:{id:teamMatch.team2Id}, data:{ lost:{increment:1}}})
+    }else if(team1Votes === team2Votes) {
+        await prisma.team.update({where:{id:teamMatch.team1Id}, data:{ win:{increment:1}}})
+        await prisma.team.update({where:{id:teamMatch.team2Id}, data:{ win:{increment:1}}})
+    }else {
+        await prisma.team.update({where:{id:teamMatch.team1Id}, data:{ lost:{increment:1}}})
+        await prisma.team.update({where:{id:teamMatch.team2Id}, data:{ win:{increment:1}}})       
+    }
+
+}
+
+const getTeamParticipant = async (contestId:string, teamId:string) => {
+    const participants = await prisma.contestParticipant.findMany({where:{user:{joinedTeam:{id:teamId}}, contestId, }})
+
+    return participants
+}
+
+
+const identifyTopPhoto = async (contestId:string)=>{
+    const contest = await prisma.contest.findUnique({where:{id:contestId}})
+
+    if(!contest){
+        throw new ApiError(httpstatus.NOT_FOUND, "contest not found")
+    }
+
+    const contestPhoto = await prisma.vote.groupBy({by:['photoId'], where:{contestId}, _count:{photoId:true},orderBy:{_count:{photoId:'desc'}}, take:1})
+}
+
 const identifyTeamWinner = async (contestId:string)=>{
     const contest = await getContestById(contestId)
     if(!contest){
@@ -454,7 +526,7 @@ const identifyTeamWinner = async (contestId:string)=>{
 
 //Award prize to the winners
 
-export const awardWinner = async (winner:ContestParticipant, contestId:string, prizeType:PrizeType)=>{
+const awardWinner = async (winner:ContestParticipant, contestId:string, prizeType:PrizeType)=>{
 
     const contestPrize = await prisma.contestPrize.findFirst({where:{contestId, category:prizeType}})
 
@@ -470,57 +542,59 @@ export const awardWinner = async (winner:ContestParticipant, contestId:string, p
 }
 
 
-export const getRemainingPhotos = async (userId:string, contestId:string)=>{
-    
-}
-
-
-
-export const rankingParticipant = async (participantId:string, contestId:string)=>{
-    const contest =  await prisma.contest.findUnique({where:{id:contestId}})
-
+const getRemainingPhotos = async (userId:string, contestId:string)=>{
+    const contest = await prisma.contest.findUnique({where:{id:contestId}})
     if(!contest){
-        return
+        throw new ApiError(httpstatus.NOT_FOUND, "conetest not found")
     }
-
-    const lastParticipant = await prisma.contestParticipant.findFirst({where:{contestId},select:{rank:true}, orderBy:{createdAt:"desc"}});
     
-    if (lastParticipant && lastParticipant.rank){
-        return lastParticipant.rank + 1
-    }
-
-    return 1
+    const contestUploads = await prisma.contestPhoto.findMany({where:{contestId, participant:{userId}}})
+    const userPhotos = await prisma.userPhoto.findMany({where:{userId, contestUpload:{none:{contestId}}}})
+    
+    return userPhotos
 }
 
-//Get all uploads of a user
 
-const getContestUploadsByUserId = async (contestId:string, userId:string)=>{
-    const userUploads = await prisma.contestPhoto.findMany({where:{contestId:contestId, photo:{userId}}})
 
-    return userUploads
-}
+// const rankingParticipant = async (participantId:string, contestId:string)=>{
+//     const contest =  await prisma.contest.findUnique({where:{id:contestId}})
+
+//     if(!contest){
+//         return
+//     }
+
+//     const lastParticipant = await prisma.contestParticipant.findFirst({where:{contestId},select:{rank:true}, orderBy:{createdAt:"desc"}});
+    
+//     if (lastParticipant && lastParticipant.rank){
+//         return lastParticipant.rank + 1
+//     }
+
+//     return 1
+// }
+
 
 const isContestParticipantExist = async (userId:string, contestId:string)=>{
-    const count =  await prisma.contestParticipant.count({where:{userId, contestId}})
+    const participantData =  await prisma.contestParticipant.findUnique({where:{contestId_userId:{contestId,userId}}})
 
-    return count >= 1;
+    return participantData? participantData: false;
 }
 
 //Get all contest uploaded images
 
-export const getContestUploads = async (userId:string,contestId:string)=>{
+const getContestUploads = async (userId:string,contestId:string)=>{
 
     const contest = await prisma.contest.findUnique({where:{id:contestId}})
     if(!contest){
         throw new ApiError(httpstatus.NOT_FOUND, "contest not found")
     }
+    const participant = await isContestParticipantExist(userId, contestId)
 
-    if( !(await isContestParticipantExist(userId, contestId))){
+    if( !participant){
         throw new ApiError(httpstatus.NOT_FOUND, "user is not in the participation list")
     }
 
 
-    const contestUploads = await prisma.contestPhoto.findMany({where:{contestId}})
+    const contestUploads = await prisma.contestPhoto.findMany({where:{contestId, participantId:{not:participant.id}}})
 
     if(contest.status === ContestStatus.ACTIVE){
         contestUploads.sort((a: ContestPhoto, b: ContestPhoto) => {
@@ -534,101 +608,128 @@ export const getContestUploads = async (userId:string,contestId:string)=>{
     return contestUploads
 }   
 
-export const uploadPhotoToTeamContest = async ()=>{
-    
-}
+
 
 
 //Upload photo to a contest, user can upload photo from pforile or can upload directly from computer
 
-export const uploadPhotoToContest = async (contestId:string,userId:string, photoId:string, file:Express.Multer.File)=>{
+const uploadPhotoToContest = async (contestId:string,userId:string, photoId:string, file:Express.Multer.File)=>{
 
-    const contestParticipant = await prisma.contestParticipant.findFirst({where:{id:contestId, userId:userId},include:{contest:true, _count:{select:{photos:true}}}})
+    if(!contestId){
+        throw new ApiError(httpstatus.BAD_REQUEST, "contest id is required")
+    }
+    const contest = await prisma.contest.findUnique({where:{id:contestId, status:ContestStatus.ACTIVE}})
 
-     if(!contestParticipant){
-        throw new ApiError(httpstatus.NOT_FOUND, "Sorry, You are not allowed to upload photo in this contest")
+    if(!contest){
+        throw new ApiError(httpstatus.NOT_FOUND, "contest not found or contest closed")
     }
 
-    if (contestParticipant._count.photos>= contestParticipant.contest.maxUploads ){
+    let user = await prisma.user.findUnique({where:{id:userId}})
+
+    if(!user){
+        throw new ApiError(httpstatus.NOT_FOUND, "user not found")
+    }
+
+    let contestParticipant:ContestParticipant | null = await prisma.contestParticipant.findUnique({where:{contestId_userId:{contestId,userId}}})
+
+
+     if(!contestParticipant){
+        contestParticipant = await prisma.contestParticipant.create({data:{contestId:contest.id,userId:userId}, include:{contest:true, _count:{select:{photos:true}}}})
+    }
+
+    const contestPhotosCount = await prisma.contestPhoto.count({where:{contestId:contest.id, participantId:contestParticipant.id}})
+
+    if (contestPhotosCount >= contest.maxUploads) {
         throw new ApiError(httpstatus.BAD_REQUEST, "maximum photo upload limit has reached!")
     }
 
-    let uploadImage = null;
+    let uploadImage:ContestPhoto | null = null;
 
     if(file){
 
         let uploadedPhoto = await profileService.uploadUserPhoto(userId, file)
 
-        uploadImage = await prisma.contestPhoto.create({data:{contestId,participantId:userId,photoId:uploadedPhoto.id}})
+        uploadImage = await prisma.contestPhoto.create({data:{contestId,participantId:contestParticipant.id,photoId:uploadedPhoto.id}})
     }else{
-        uploadImage = await prisma.contestPhoto.create({data:{contestId,participantId:userId,photoId}})
-    }
-   
-    
+        if(!photoId){
+            throw new ApiError(httpstatus.BAD_REQUEST,"photo is is required")
+        }
+        const userPhoto = await prisma.userPhoto.findUnique({where:{id:photoId}})
+        if(!userPhoto){
+            throw new ApiError(httpstatus.NOT_FOUND, "user photo not found")
+        }
 
+        uploadImage = await prisma.contestPhoto.create({data:{contestId,participantId:contestParticipant.id,photoId:userPhoto?.id}})
+    }
+    //add watcher for exposure bonus
+
+    if(uploadImage){
+        agenda.every("1 minute", "exposure:watcher",{contestPhotoId:uploadImage.id})
+    }
+
+   
     return uploadImage
 }
 
 
-export const uploadPhotoFromComputer = async (contestId:string, userId:string, file:Express.Multer.File)=>{
-    if(!file){
-        throw new ApiError(httpstatus.BAD_REQUEST, "file is required to upload")
-    }
+// const uploadPhotoFromComputer = async (contestId:string, userId:string, file:Express.Multer.File)=>{
+//     if(!file){
+//         throw new ApiError(httpstatus.BAD_REQUEST, "file is required to upload")
+//     }
 
-    const uploadedUserPhoto = await profileService.uploadUserPhoto(userId,file)
+//     const uploadedUserPhoto = await profileService.uploadUserPhoto(userId,file)
 
-    return uploadedUserPhoto
-}
+//     return uploadedUserPhoto
+// }
 
-const getContestDetails = async (contestId:string)=>{
+// const getContestDetails = async (contestId:string)=>{
     
-    return (await prisma.contest.findUnique({where:{id:contestId},include:{votes:true, participants:true}}))
-}
+//     return (await prisma.contest.findUnique({where:{id:contestId},include:{votes:true, participants:true}}))
+// }
 
 
 //Get currently active contest data like total vote and level
-const getContestSummary = async (contestId:string, userId:string)=>{
+// const getContestSummary = async (contestId:string, userId:string)=>{
 
-    const contestData = await prisma.contest.findUnique({where:{id:contestId},include:{participants:{where:{userId}}}})
+//     const contestData = await prisma.contest.findUnique({where:{id:contestId},include:{participants:{where:{userId}}}})
 
-    const participant = contestData?.participants[0]
-    if(!participant){
-        throw new ApiError(httpstatus.NOT_FOUND, "Participant not found")
-    }
+//     const participant = contestData?.participants[0]
+//     if(!participant){
+//         throw new ApiError(httpstatus.NOT_FOUND, "Participant not found")
+//     }
 
-    const totalVoteCoaunt = await getParticipantTotalVotes(contestId, participant.id)
+//     const totalVoteCount = await getParticipantTotalVotes(contestId, participant.id)
 
+//     return {level:participant?.level, votes:totalVoteCount}
 
-    
-    return {level:participant?.level, votees:totalVoteCoaunt}
-
-}
+// }
 
 
 const getParticipantTotalVotes =  async(contestId:string, participantId:string)=>{
+
+    // const contestPhotos = await prisma.contestPhoto.findMany({where:{contestId, participantId}})
+    // contestPhotos.forEach(async photo => {
+    //     const vote = await  voteService.getVoteCount(photo.id)
+    // })
     
-    const votes = await prisma.vote.count({where:{contestId, photo:{participantId}}})
+    const votes = await prisma.vote.count({where:{contestId, photo:{participant:{id:participantId}}}})
     
     return votes
 }
 
-const getParticipantLevelRank = async (contestId:string, participantId:string, participantLevel:YCLevel)=>{
+// const getParticipantLevelRank = async (contestId:string, participantId:string, participantLevel:YCLevel)=>{
 
-    const participant = await prisma.contestParticipant.findUnique({where:{id:participantId}})
+//     const participant = await prisma.contestParticipant.findUnique({where:{id:participantId}})
    
 
-    if(!participant){
-        return new ApiError(httpstatus.NOT_FOUND, "participant not found")
-    }
-    const targetVoteCount = await getParticipantTotalVotes(contestId, participant.id)
-    const otherParticipantsInSameLevel = await prisma.contestParticipant.findMany({where:{contestId, level:participant.level}})
-    const totalInSameLevel = otherParticipantsInSameLevel.length
-}
+//     if(!participant){
+//         return new ApiError(httpstatus.NOT_FOUND, "participant not found")
+//     }
+//     const targetVoteCount = await getParticipantTotalVotes(contestId, participant.id)
+//     const otherParticipantsInSameLevel = await prisma.contestParticipant.findMany({where:{contestId, level:participant.level}})
+//     const totalInSameLevel = otherParticipantsInSameLevel.length
+// }
 
-const getParticipantRank = async (contestId:string, participantId:string)=>{
-
-    const partipantsVoteCount = await prisma.contestParticipant
-}
 
 const getYCLevelByOrder = ()=>{
 
@@ -650,20 +751,20 @@ const getContestLevelRequirements = async (contestId:string)=>{
     }
     let ycLevels = getYCLevelByOrder()
 
-    let levels = contest.level_requirements.map((level, idx) => ({levelName:ycLevels[0], point: level}))
+    let levels = contest.level_requirements.map((level, idx) => ({levelName:ycLevels[idx], point: level}))
 
     return levels
 }
 
-const getParticipantLevelData = async (contestId:string,participantId:string)=>{
+const getParticipantLevelData = async (contestId:string,userId:string)=>{
 
-    const participant = await prisma.contestParticipant.findUnique({where:{id:participantId}})
+    const participant = await prisma.contestParticipant.findFirst({where:{userId, contestId,}})
 
     if (!participant){
         throw new Error("Participant not found")
     }
 
-    const totalVotes = await getParticipantTotalVotes(contestId, participantId)
+    const totalVotes = await getParticipantTotalVotes(contestId, participant.id)
     const contestLevelRequirement = await getContestLevelRequirements(contestId)
     let currentLevel = YCLevel.NEW.toString()
     let currentIdx = -1
@@ -683,7 +784,13 @@ const getParticipantLevelData = async (contestId:string,participantId:string)=>{
 }
 
 const promoteContestPhoto = async (contestId:string, photoId:string, userId:string)=>{
-    const contestPhoto = await prisma.contestPhoto.findUnique({where:{id:photoId}})
+
+     const contest = await prisma.contest.findUnique({where:{id:contestId, status:ContestStatus.ACTIVE}})
+
+    if (!contest){
+        throw new ApiError(httpstatus.NOT_FOUND, "Contest not found")
+    }
+    const contestPhoto = await prisma.contestPhoto.findUnique({where:{id:photoId},include:{participant:true}})
     
     if(!contestPhoto){
         throw new ApiError(httpstatus.NOT_FOUND, "Contest photo not found")
@@ -693,19 +800,15 @@ const promoteContestPhoto = async (contestId:string, photoId:string, userId:stri
         throw new ApiError(httpstatus.BAD_REQUEST, "Contest photo is already promoted")
     }
 
-    const contest = await prisma.contest.findUnique({where:{id:contestId, status:ContestStatus.ACTIVE}})
+   
 
-    if (!contest){
-        throw new ApiError(httpstatus.NOT_FOUND, "Contest not found")
-    }
-
-    if (contestPhoto.participantId !== userId){
+    if (contestPhoto.participant.userId !== userId){
         throw new ApiError(httpstatus.FORBIDDEN, "You are not allowed to promote this contest photo")
     }
 
     const promotionExpiresAt = new Date(Date.now() + 30 * 60 * 1000) //30 minutes from now
-
     const userStore = await userStoreService.getStoreData(userId)
+
     if ( !userStore || userStore.promotes <= 0){
         throw new ApiError(httpstatus.BAD_REQUEST, "You don't have enough promotes")
     }
@@ -734,23 +837,23 @@ const promoteContestPhoto = async (contestId:string, photoId:string, userId:stri
     return { message: `Contest photo with ID ${photoId} has been promoted until ${promotionExpiresAt}` };
 }
 
-const getContestPhotoToVote = async (contestId:string)=>{
-    const contestPhoto = await prisma.contestPhoto.findMany({where:{contestId}})
+// const getContestPhotoToVote = async (contestId:string)=>{
+//     const contestPhoto = await prisma.contestPhoto.findMany({where:{contestId}})
 
-    let start = 0;
-    let length = contestPhoto.length;
-    let idx = 1
+//     let start = 0;
+//     let length = contestPhoto.length;
+//     let idx = 1
 
-    while(idx < length){
+//     while(idx < length){
 
-        let photo = contestPhoto[idx]
-        if (photo.promoted && photo.promotionExpiresAt && photo.promotionExpiresAt > new Date()){
-            continue
-        }
-        idx++;
-    }
+//         let photo = contestPhoto[idx]
+//         if (photo.promoted && photo.promotionExpiresAt && photo.promotionExpiresAt > new Date()){
+//             continue
+//         }
+//         idx++;
+//     }
 
-}
+// }
 
 
 const getContestParticipants = async (contestId:string)=>{
@@ -776,13 +879,64 @@ const identifyContestTopPhoto = async (contestId:string)=>{
 
 }
 
+
+const tradePhoto = async (userId:string,contestId:string, contestPhotoId:string, photoId:string, file:Express.Multer.File) => {
+    const contestPhoto = await prisma.contestPhoto.findUnique({where:{id:contestPhotoId, contestId}, include:{photo:true}})
+    
+
+    if(!contestPhoto){
+        throw new ApiError(httpstatus.NOT_FOUND, "contest photo not found")
+    }
+
+    const userStore = await userStoreService.getStoreData(userId)
+    if (!userStore || userStore.trades <= 0 ){
+        throw new ApiError(httpstatus.BAD_REQUEST, "you does not have enough trade")
+    }
+    const vote = await voteService.getVoteCount(contestPhoto.photo.id)
+    await prisma.contestPhoto.delete({where:{id:contestPhoto.id}})
+
+    const uploadedPhoto = await uploadPhotoToContest(contestId,userId,photoId, file)
+    //decrease trade by 1
+    await userStoreService.updateStoreData(userId,{trades:-1})
+
+    return await prisma.contestPhoto.update({where:{id:uploadedPhoto.id}, data:{initialVotes:vote}})
+    
+}
+
+const chargePhoto = async (userId:string, contestId:string, contestPhotoId:string) => {
+    const contestPhoto = await prisma.contestPhoto.findUnique({where:{id:contestPhotoId},include:{participant:true}})
+
+    if(!contestPhoto){
+        throw new ApiError(httpstatus.NOT_FOUND, "contest photo not found")
+    }
+
+    const userStore = await userStoreService.getStoreData(userId)
+
+    if(!userStore || userStore.charges <= 0){
+        throw new ApiError(httpstatus.NOT_FOUND, "you does not have enough charge")
+    }
+    const participant = await prisma.contestParticipant.findUnique({where:{id:contestPhoto.participant.id}})
+    if(!participant){
+        throw new ApiError(httpstatus.NOT_FOUND, "participant not found")
+    }
+
+    const newContestPhoto = await prisma.contestParticipant.update({where:{id:participant.id}, data:{exposure_bonus:100}})
+
+   
+    agenda.every("1 minute", "exposure:watcher",{contestPhotoId:contestPhoto.id})
+    
+    await userStoreService.updateStoreData(userId, {charges:-1})
+    return newContestPhoto
+}
+
+
 export const contestService = {
     createContest,
     updateContest,
     joinContest,
     getContestById,
     getAllContests,
-    getContests,
+    getMyActiveContests,
     getContestsByStatus,
     getUpcomingContest,
     getMyCompletedContest,
@@ -792,6 +946,12 @@ export const contestService = {
     deleteContestByContestId,
     getContestUploadsByUserId,
     promoteContestPhoto,
-    getParticipantLevelData
-    
+    getParticipantLevelData,
+    identifyWinner,
+    getContestWinners,
+    getRemainingPhotos,
+    awardTeams,
+    tradePhoto,
+    chargePhoto
+
 }

@@ -3,6 +3,7 @@ import { handleGetUserUploads, profileService } from './profile.service'
 import sendResponse from '../../../shared/ApiResponse'
 
 import httpStatus from 'http-status'
+import catchAsync from '../../../shared/catchAsync'
 
 
 export const getMyUploads = async (req:Request, res:Response)=> {
@@ -45,9 +46,24 @@ const getUserStates = async (req:Request, res:Response) => {
     })
 }
 
+
+const getUserPhotoDetails = catchAsync(async (req:Request, res:Response) => {
+    const {photoId} = req.params
+    const userId = req.user.id
+
+    const result = await profileService.getUserPhotoDetails(userId,photoId)
+
+    sendResponse(res, {
+        success:true,
+        statusCode:httpStatus.OK,
+        message:"photo details fetched successfully",
+        data:result
+    })
+})
 export const profileController = {
     getMyUploads,
     uploadUserPhoto,
-    getUserStates
+    getUserStates,
+    getUserPhotoDetails
 
 }

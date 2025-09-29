@@ -1,8 +1,24 @@
+import ApiError from "../../../errors/ApiError"
+import { userSockets } from "../../../helpers/websocketSetUp"
+import { NotificationType, UserRole } from "../../../prismaClient"
 import prisma from "../../../shared/prisma"
+import httpStatus from 'http-status'
 
-const postNotification = async (title:string, message:string, receiverId:string)=>{
+const postNotification = async (title:string, message:string, receiverId:string,type?:NotificationType)=>{
 
-    const notification = await prisma.notification.create({data:{message,receiverId,title}})
+    const notification = await prisma.notification.create({data:{message, receiverId, title, ...(type && { type })}})
+
+    return notification
+}
+
+const postNotificationWithPayload = async (title:string, message:string, receiverId:string, payload:Record<string, any>,type?:NotificationType,) => {
+
+    const notification = await prisma.notification.create({data:{title, message, receiverId, data:payload, ...(type && { type })}})
+
+    const userSocket = userSockets.get(receiverId)
+    if(userSocket && (userSocket.readyState === WebSocket.OPEN)){
+        userSocket.send(JSON.stringify({type:"notification", data:notification}))
+    }
 
     return notification
 }
@@ -33,11 +49,34 @@ const getUnSentNotification = async ()=>{
     return unsentNotification
 }
 
+
+const getAdminNotification = async () => {
+    const adminNotifications = await prisma.notification.findMany({where:{type:NotificationType.PAYMENT}})
+
+    return adminNotifications
+}
+
+const markAllRead = async (userId:string) => {
+    const user = await prisma.user.findUnique({where:{id:userId}})
+    if(!user){
+        throw new ApiError(httpStatus.NOT_FOUND, "user not found")
+    }
+
+    if(user.role === UserRole.USER){
+        return await prisma.notification.updateMany({where:{receiverId:userId}, data:{isRead:true}})
+    }
+
+    return await prisma.notification.updateMany({where:{receiverId:'admin'}, data:{isRead:true}})
+}
+
 export const notificationService = {
     postNotification,
     getUserNotifications,
     getUnSentNotification,
     getNotificationDetails,
     updateNotificationStatus,
+    postNotificationWithPayload,
+    getAdminNotification,
+    markAllRead
     
 }

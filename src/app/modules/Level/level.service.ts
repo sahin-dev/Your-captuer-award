@@ -1,6 +1,6 @@
-import ApiError from "../../../../errors/ApiError"
-import { LevelName, LevelRequirement } from "../../../../prismaClient"
-import prisma from "../../../../shared/prisma"
+import ApiError from "../../../errors/ApiError"
+import { LevelName, LevelRequirement } from "../../../prismaClient"
+import prisma from "../../../shared/prisma"
 import httpStatus from 'http-status'
 
 
@@ -48,15 +48,23 @@ const deleteLevl  =async (levelId:string)=> {
     return level
 }
 
-const getLevelsName = async ()=>{
+const getLevels = async ()=>{
     const levels = await prisma.level.findMany()
 
     return levels
 }
 
-export const userLevelService =  {
+
+
+const getLevelByOrder = async (order:number) => {
+    const level = await prisma.level.findFirst({where:{level:order}})
+
+    return level
+}
+export const levelService =  {
     addLevel,
     editLevel,
     deleteLevl,
-    getLevelsName
+    getLevels,
+    getLevelByOrder
 }

@@ -1,9 +1,13 @@
 model Payment {
     id             String        @id @default(auto()) @map("_id") @db.ObjectId
-    status  PaymentStatus
-    productId       String  @db.ObjectId
+    status  PaymentStatus     @default(PENDING)
+    productId       String?  @db.ObjectId
+    planId           String? @db.ObjectId
+    subscriptionId    String? @db.ObjectId
+    planName        SubscriptionPlanEnum?
+    recurring           PlanRecurringType?
     userId          String  @db.ObjectId
-    stripe_intent_id    String?     
+    stripe_sessino_id    String?    
     amount          Float
     currency        String
     method          String
@@ -13,7 +17,60 @@ model Payment {
     @@map("payments")      
 }
 
+
+model SubscriptionPlan {
+    id              String   @id  @default(auto())  @map("_id")  @db.ObjectId
+    planName         SubscriptionPlanEnum
+    stripe_price_id     String
+    stripe_product_id   String
+    amount              Float
+    recurring           PlanRecurringType
+    currency            String @default("USD")
+
+    createdAt       DateTime  @default(now())
+    updatedAt       DateTime    @updatedAt
+    @@map("subscription_plans")
+
+}
+
+model Subscription {
+    id          String          @id  @default(auto())  @map("_id") @db.ObjectId
+    plan        SubscriptionPlanEnum
+    plan_id      String  @db.ObjectId
+    userId      String      @db.ObjectId
+    status       SubscriptionStatus @default(PENDING)
+    stripe_session_id   String?
+    subscription_id     String?
+    startDate        DateTime?
+    endDate         DateTime?
+    user        User  @relation(references: [id], fields: [userId])
+
+    createdAt       DateTime  @default(now())
+    updatedAt       DateTime  @updatedAt
+    @@map("subscriptions")
+
+}
+
+enum SubscriptionStatus {
+    PENDING
+    VALID
+    EXPIRED
+}
+
+enum PlanRecurringType {
+    ONETIME
+    MONTHLY
+    YEARLY
+}
+
+enum SubscriptionPlanEnum {
+    PREMIUM
+    PRO
+}
+
 enum PaymentStatus {
     PENDING
     SUCCEEDED
+    VALID
+    EXPIRED
 }

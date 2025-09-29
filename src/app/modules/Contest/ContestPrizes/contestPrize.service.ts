@@ -7,6 +7,7 @@ import httpStatus from 'http-status'
 
 export const addContestPrizes = async (contestId:string, prizes:ContestPrize[])=>{
     const contest = await prisma.contest.findUnique({where:{id:contestId}})
+   
     try{
         
 
@@ -16,9 +17,10 @@ export const addContestPrizes = async (contestId:string, prizes:ContestPrize[])=
 
         prizes.forEach(async (prize)=>{
             await prisma.contestPrize.create({data:{contestId:contestId, category:prize.category,keys:parseInt(prize.keys), trades:parseInt(prize.trades), charges:parseInt(prize.charges)}})
+          
         })
 
-        return "Contest prizes added successfully"
+        return await prisma.contestPrize.findMany({where:{contestId}, })
     }catch(err){
         throw err
     }
@@ -27,7 +29,7 @@ export const addContestPrizes = async (contestId:string, prizes:ContestPrize[])=
 }
 
 export const getContestPrizes = async (contestId:string)=>{
-    const contestPrizes = await prisma.contestPrize.findMany({where:{contestId}})
+    const contestPrizes = await prisma.contestPrize.findMany({where:{contestId},omit:{id:true, contestId:true}})
 
     return contestPrizes
 }

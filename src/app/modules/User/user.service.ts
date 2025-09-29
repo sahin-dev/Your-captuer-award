@@ -269,30 +269,43 @@ const  getUserBySocialId = async (socialProvider:string, providerId:string)=>{
 const getUserCurrentLevel = async (userId:string)=>{
 
     const levels = await prisma.level.findMany()
-    const totalPromotedVotes = await voteService.getTotalPromotedVotes(userId)
-    const totalOrganicVotes = await voteService.getTotalOrganicVotes(userId)
-    let currentLevel:number = 0
 
+    const totalPromotedVotes = await voteService.getTotalPromotedVotes(userId)
+    // const totalOrganicVotes = await voteService.getTotalOrganicVotes(userId)
+    const totalOrganicVotes = 100
+    let userLevels:{name:string,percentage:number, order:number}[] = []
+     let satisfied = true
     levels.forEach(level => {
-        let satisfied:boolean = true
+       
+        let percentage = 0
         level.requirements.forEach(requirement => {
             
-            if ( requirement.badge.type === "point"){
-                if ( (requirement.title === 'votes') &&  (requirement.required >= totalOrganicVotes)){
-                    satisfied = satisfied && false
-                }
-                else if ((requirement.title === 'promoted_votes') &&  (requirement.required >= totalPromotedVotes)){
-                    satisfied = satisfied && false
-                }
+            
+            if ( (requirement.title === 'votes')){
+                percentage = Math.min((100 * (totalOrganicVotes)) / requirement.required, 50)
+                
             }
+            else if ((requirement.title === 'promoted_votes')){
+                percentage += Math.min((100 * (totalPromotedVotes)) / requirement.required, 50)
+            }
+    
+            
         })
+        if(percentage >= 100){
+                
+            userLevels.push({name:level.levelName,percentage,order:level.level})
+        }else if(satisfied) {
+            userLevels.push({name:level.levelName,percentage,order:level.level})
+            satisfied = false
+        }else
+        
+            userLevels.push({name:level.levelName,percentage:0,order:level.level})
 
-        if (satisfied){
-            currentLevel = level.level
-        }
+       
     })
+    
 
-    return currentLevel
+    return userLevels
 
 }
 
@@ -302,8 +315,22 @@ const attachStoreToUser = async (userId:string)=>{
 
 }
 
+const searchUserByUserName = async (username:string) => {
+    const user = await prisma.user.findMany({where:{username:{contains:username}}, select:{id:true, avatar:true, firstName:true, username:true, lastName:true, fullName:true}})
+
+    return user
+}
+
 const checkLevelRequirement = async ()=>{
 
+}
+
+const checkUserLevel = async (userId:string)=> {}
+
+const getPhototAchievements = async (photoId:string) => {
+    const achievements = await prisma.contestAchievement.findMany({where:{photo:{photoId}}})
+
+    return achievements
 }
 
 export const userService = {
@@ -320,6 +347,8 @@ export const userService = {
     changePassword,
     updateProfile,
     getUserCurrentLevel,
-    attachStoreToUser
+    attachStoreToUser,
+    searchUserByUserName,
+    getPhototAchievements
     
 }

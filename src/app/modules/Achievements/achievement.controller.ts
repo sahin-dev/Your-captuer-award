@@ -63,7 +63,21 @@ const getAchievementsByType = catchAsync(async (req:Request, res:Response) => {
     })
 })
 
+const getUserPhotoAchievements =  catchAsync(async (req:Request, res:Response) => {
+
+    const {photoId} = req.params
+    const userId = req.user.id
+    const achievements = await achievementService.getUserPhotoAchievements(userId, photoId)
+
+    sendResponse(res, {
+        success:true,
+        statusCode:httpStatus.OK,
+        message:"photo achievements fetched successfully",
+        data:achievements
+    })
+})
+
 
 export const achieveController = {
-    getAchievementsByContest, getAchievementByUser, getMyAchievements, getAchievementsByType
+    getAchievementsByContest, getAchievementByUser, getMyAchievements, getAchievementsByType, getUserPhotoAchievements
 }

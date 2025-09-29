@@ -18,6 +18,8 @@ model Contest {
   startedAt DateTime?
 
   creatorId String @db.ObjectId
+  rules     Json?
+  prizes    Json?
 
   creator            User                 @relation(fields: [creatorId], references: [id])
   participants       ContestParticipant[]
@@ -26,6 +28,7 @@ model Contest {
   contestRules       ContestRule[]
   contestPrizes      ContestPrize[]
   achievements       ContestAchievement[]
+  teamMatch          TeamMatch[]
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @updatedAt
 
@@ -80,6 +83,7 @@ model ContestPhoto {
   rank               Int?                 @default(0)
   promoted           Boolean              @default(false)
   promotionExpiresAt DateTime?
+  initialVotes       Int                  @default(0)
   // contest   Contest @relation(fields: [contestId],references: [id])
   participant        ContestParticipant   @relation(fields: [participantId], references: [id], onDelete: Cascade)
   votes              Vote[]
@@ -230,36 +234,102 @@ enum ContestParticipantStatus {
 }
 
 model Notification {
-  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  id         String           @id @default(auto()) @map("_id") @db.ObjectId
   title      String
   message    String
-  isSent     Boolean  @default(false)
-  isRead     Boolean  @default(false)
+  type       NotificationType @default(DEFAULT)
+  isSent     Boolean          @default(false)
+  isRead     Boolean          @default(false)
   receiverId String
-  createdAt  DateTime @default(now())
-  updatedAT  DateTime @updatedAt
+  data       Json?
+  createdAt  DateTime         @default(now())
+  updatedAT  DateTime         @updatedAt
 
   @@map("notifications")
 }
 
+enum NotificationType {
+  DEFAULT
+  INVITATION
+  PAYMENT
+  VOTE
+  LIKE
+}
+
 model Payment {
-  id               String        @id @default(auto()) @map("_id") @db.ObjectId
-  status           PaymentStatus
-  productId        String        @db.ObjectId
-  userId           String        @db.ObjectId
-  stripe_intent_id String?
-  amount           Float
-  currency         String
-  method           String
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime      @updatedAt
+  id                String                @id @default(auto()) @map("_id") @db.ObjectId
+  status            PaymentStatus         @default(PENDING)
+  productId         String?               @db.ObjectId
+  planId            String?               @db.ObjectId
+  subscriptionId    String?               @db.ObjectId
+  planName          SubscriptionPlanEnum?
+  recurring         PlanRecurringType?
+  userId            String                @db.ObjectId
+  stripe_sessino_id String?
+  amount            Float
+  currency          String
+  method            String
+  createdAt         DateTime              @default(now())
+  updatedAt         DateTime              @updatedAt
 
   @@map("payments")
+}
+
+model SubscriptionPlan {
+  id                String               @id @default(auto()) @map("_id") @db.ObjectId
+  planName          SubscriptionPlanEnum
+  stripe_price_id   String
+  stripe_product_id String
+  amount            Float
+  recurring         PlanRecurringType
+  currency          String               @default("USD")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("subscription_plans")
+}
+
+model Subscription {
+  id                String               @id @default(auto()) @map("_id") @db.ObjectId
+  plan              SubscriptionPlanEnum
+  plan_id           String               @db.ObjectId
+  userId            String               @db.ObjectId
+  status            SubscriptionStatus   @default(PENDING)
+  stripe_session_id String?
+  subscription_id   String?
+  startDate         DateTime?
+  endDate           DateTime?
+  user              User                 @relation(references: [id], fields: [userId])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("subscriptions")
+}
+
+enum SubscriptionStatus {
+  PENDING
+  VALID
+  EXPIRED
+}
+
+enum PlanRecurringType {
+  ONETIME
+  MONTHLY
+  YEARLY
+}
+
+enum SubscriptionPlanEnum {
+  PREMIUM
+  PRO
 }
 
 enum PaymentStatus {
   PENDING
   SUCCEEDED
+  VALID
+  EXPIRED
 }
 
 model SitePolicy {
@@ -316,6 +386,7 @@ model Product {
   title       String
   quantity    Int
   amount      Float
+  currency    String      @default("USD")
   icon        String?
   description String?
   image       String?
@@ -346,28 +417,49 @@ enum ProductType {
 }
 
 model Team {
-  id              String              @id @default(auto()) @map("_id") @db.ObjectId
-  name            String
-  level           String
-  language        String
-  country         String
-  description     String
-  accessibility   TeamAccessibility   @default(PUBLIC)
-  score           Int                 @default(0)
-  win             Int                 @default(0)
-  lost            Int                 @default(0)
-  badge           String //Image file
-  min_requirement Int
-  creatorId       String              @db.ObjectId
-  creator         User                @relation(fields: [creatorId], references: [id])
-  members         TeamMember[]
-  chat            Chat[]
-  participations  TeamParticipation[]
+  id                  String              @id @default(auto()) @map("_id") @db.ObjectId
+  name                String
+  level               String
+  language            String
+  country             String
+  description         String
+  accessibility       TeamAccessibility   @default(PUBLIC)
+  member_count        Int                 @default(0)
+  score               Int                 @default(0)
+  win                 Int                 @default(0)
+  lost                Int                 @default(0)
+  badge               String              @default("https://www.freepik.com/free-photo/businesspeople-having-good-time-meeting_861800.htm#fromView=keyword&page=1&position=6&uuid=59ca936a-5c54-464c-a5ed-b579a1cd4afe&query=Team") //Image file
+  min_requirement     Int
+  min_requirement_str String
+  creatorId           String              @db.ObjectId
+  creator             User                @relation(fields: [creatorId], references: [id])
+  members             TeamMember[]
+  chat                Chat[]
+  participations      TeamParticipation[]
+  MatchesAsTeam1      TeamMatch[]         @relation(name: "team1")
+  MatchesAsTeam2      TeamMatch[]         @relation(name: "team2")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@map("teams")
+}
+
+model TeamMatch {
+  id        String      @id @default(auto()) @map("_id") @db.ObjectId
+  contestId String      @db.ObjectId
+  team1Id   String      @db.ObjectId
+  team2Id   String      @db.ObjectId
+  contest   Contest     @relation(references: [id], fields: [contestId])
+  team1     Team        @relation(name: "team1", references: [id], fields: [team1Id])
+  team2     Team        @relation(name: "team2", references: [id], fields: [team2Id])
+  status    MatchStatus @default(ACTIVE)
+  startedAt DateTime    @default(now())
+  endedAt   DateTime
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@map("team_mathces")
 }
 
 model TeamMember {
@@ -401,9 +493,35 @@ model TeamParticipation {
   @@map("team_participations")
 }
 
+model TeamInvitation {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  teamId     String @db.ObjectId
+  receiverId String @db.ObjectId
+  senderId   String @db.ObjectId
+
+  status    InvitationStatus @default(ACTIVE)
+  expiredAt DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("team_invitations")
+}
+
 enum TeamAccessibility {
   PUBLIC
   PRIVATE
+}
+
+enum InvitationStatus {
+  ACTIVE
+  EXPIRED
+}
+
+enum MatchStatus {
+  ACTIVE
+  CLOSED
 }
 
 enum TeamMemberStatus {
@@ -420,9 +538,9 @@ enum MemberLevel {
 }
 
 model User {
-  id                 String               @id @default(auto()) @map("_id") @db.ObjectId
-  cover              String?              @default("https://images.unsplash.com/photo-1689539137236-b68e436248de?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D")
-  avatar             String?              @default("https://plus.unsplash.com/premium_photo-1689539137236-b68e436248de?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D")
+  id                 String                @id @default(auto()) @map("_id") @db.ObjectId
+  cover              String?               @default("https://images.unsplash.com/photo-1689539137236-b68e436248de?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D")
+  avatar             String?               @default("https://plus.unsplash.com/premium_photo-1689539137236-b68e436248de?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D")
   socialId           String?
   socialProvider     String?
   firstName          String?
@@ -430,28 +548,31 @@ model User {
   fullName           String?
   username           String?
   phone              String?
-  email              String               @unique
+  email              String                @unique
   location           String?
   country            String?
   password           String?
-  role               UserRole             @default(USER)
+  customerId         String?
+  role               UserRole              @default(USER)
   accessToken        String?
-  currentLevel       Int                  @default(-1)
-  voting_power       Int                  @default(1)
+  currentLevel       Int                   @default(-1)
+  voting_power       Int                   @default(1)
+  purchased_plan     SubscriptionPlanEnum?
   level              UserLevel?
   otps               Otp?
   store              UserStore?
   createdTeam        Team[]
   joinedTeam         TeamMember?
   createdContests    Contest[]
-  commentProvides    Comment[]            @relation("provider")
-  followers          Follow[]             @relation(name: "follower")
-  followings         Follow[]             @relation(name: "following")
+  commentProvides    Comment[]             @relation("provider")
+  followers          Follow[]              @relation(name: "follower")
+  followings         Follow[]              @relation(name: "following")
   votes              Vote[]
   likes              Like[]
   userPhotos         UserPhoto[]
   ContestParticipant ContestParticipant[]
   chat               Chat[]
+  subscriptions      Subscription[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -615,7 +736,6 @@ model Level {
 type LevelRequirement {
   title    String
   required Int
-  badge    Badge
 }
 
 type Badge {

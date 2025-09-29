@@ -5,6 +5,7 @@ model Product {
     title           String
     quantity        Int
     amount          Float
+    currency        String  @default("USD")
     icon            String?
     description     String?
     image           String?
