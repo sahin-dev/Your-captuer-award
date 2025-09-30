@@ -397,6 +397,7 @@ exports.Prisma.UserScalarFieldEnum = {
   customerId: 'customerId',
   role: 'role',
   accessToken: 'accessToken',
+  isActive: 'isActive',
   currentLevel: 'currentLevel',
   voting_power: 'voting_power',
   purchased_plan: 'purchased_plan',

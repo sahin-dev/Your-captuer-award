@@ -45,6 +45,28 @@ export const SignIn = catchAsync(async (req:Request,res:Response)=>{
 
 })
 
+
+export const AdminSignIn = catchAsync(async (req:Request,res:Response)=>{
+    const body = req.body
+    console.log(body)
+
+    const data = await handleSignIn(body)
+
+      res.cookie("token", data.token, {
+      httpOnly: true,
+      secure: true,
+      maxAge: 365 * 24 * 60 * 60 * 1000,
+    });
+
+    sendResponse(res, {
+        success:true,
+        statusCode:httpstatus.OK,
+        message:'User sign in successfully',
+        data
+    })
+
+})
+
 export const SignOut = catchAsync (async (req:Request, res:Response)=>{
     const user = req.user
 

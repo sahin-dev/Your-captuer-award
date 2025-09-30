@@ -46,7 +46,7 @@ export class PaymentService {
     if(!plan) {
       throw new ApiError(httpStatus.NOT_FOUND, "plan not found")
     }
-    const payment = await prisma.payment.create({data:{amount:plan.amount, currency:plan.currency,method:"card", userId,planName:plan.planName,recurring:plan.recurring,planId:plan.id}})
+    const payment = await prisma.payment.create({data:{amount:plan.amount, currency:plan.currency,method:"SUBSCRIPTION", userId,planName:plan.planName,recurring:plan.recurring,planId:plan.id}})
 
     let startDate = new Date(Date.now())
     let endDate = plan.recurring === PlanRecurringType.MONTHLY? new Date(startDate.getTime() + 30 * 24 * 60 * 60 * 1000):new Date(startDate.getTime() + 365 * 24 * 60 * 60 * 1000)

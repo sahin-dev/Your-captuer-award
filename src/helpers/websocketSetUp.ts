@@ -58,7 +58,8 @@ export function setupWebSocket(server: Server) {
             ws.userId = id;
             onlineUsers.add(id);
             userSockets.set(id, ws);
-
+            await prisma.user.update({where:{id}, data:{isActive:true}})
+            console.log(`User ${id} active`);
             broadcastToAll(wss, {
               event: "user_status",
               data: { userId: id, isOnline: true },

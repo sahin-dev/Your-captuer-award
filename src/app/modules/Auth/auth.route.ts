@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getAuthenticatedUser, registerUser, SignIn, SignOut } from "./auth.controller";
+import { AdminSignIn, getAuthenticatedUser, registerUser, SignIn, SignOut } from "./auth.controller";
 import auth from "../../middlewares/auth.middleware";
 import { socialLogin } from "./socialLogin.service";
 import passport from "passport";
@@ -12,6 +12,7 @@ import { SignInSchema, userRegistrationSchema } from "./auth.validation";
 const router = Router()
 
 router.post("/signin", validateRequest(SignInSchema), SignIn)
+router.post("/admin/signin", validateRequest(SignInSchema), AdminSignIn)
 
 router.post('/signout',auth(), SignOut)
 

@@ -4286,6 +4286,7 @@ export namespace Prisma {
     ContestParticipant: number
     chat: number
     subscriptions: number
+    payments: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -4300,6 +4301,7 @@ export namespace Prisma {
     ContestParticipant?: boolean | UserCountOutputTypeCountContestParticipantArgs
     chat?: boolean | UserCountOutputTypeCountChatArgs
     subscriptions?: boolean | UserCountOutputTypeCountSubscriptionsArgs
+    payments?: boolean | UserCountOutputTypeCountPaymentsArgs
   }
 
   // Custom InputTypes
@@ -4388,6 +4390,13 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountSubscriptionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: SubscriptionWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountPaymentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PaymentWhereInput
   }
 
 
@@ -14911,6 +14920,7 @@ export namespace Prisma {
     method?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["payment"]>
 
 
@@ -14933,10 +14943,15 @@ export namespace Prisma {
   }
 
   export type PaymentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "status" | "productId" | "planId" | "subscriptionId" | "planName" | "recurring" | "userId" | "stripe_sessino_id" | "amount" | "currency" | "method" | "createdAt" | "updatedAt", ExtArgs["result"]["payment"]>
+  export type PaymentInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
 
   export type $PaymentPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Payment"
-    objects: {}
+    objects: {
+      user: Prisma.$UserPayload<ExtArgs>
+    }
     scalars: $Extensions.GetPayloadResult<{
       id: string
       status: $Enums.PaymentStatus
@@ -15315,6 +15330,7 @@ export namespace Prisma {
    */
   export interface Prisma__PaymentClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -15375,6 +15391,10 @@ export namespace Prisma {
      */
     omit?: PaymentOmit<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PaymentInclude<ExtArgs> | null
+    /**
      * Filter, which Payment to fetch.
      */
     where: PaymentWhereUniqueInput
@@ -15393,6 +15413,10 @@ export namespace Prisma {
      */
     omit?: PaymentOmit<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PaymentInclude<ExtArgs> | null
+    /**
      * Filter, which Payment to fetch.
      */
     where: PaymentWhereUniqueInput
@@ -15410,6 +15434,10 @@ export namespace Prisma {
      * Omit specific fields from the Payment
      */
     omit?: PaymentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PaymentInclude<ExtArgs> | null
     /**
      * Filter, which Payment to fetch.
      */
@@ -15459,6 +15487,10 @@ export namespace Prisma {
      */
     omit?: PaymentOmit<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PaymentInclude<ExtArgs> | null
+    /**
      * Filter, which Payment to fetch.
      */
     where?: PaymentWhereInput
@@ -15507,6 +15539,10 @@ export namespace Prisma {
      */
     omit?: PaymentOmit<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PaymentInclude<ExtArgs> | null
+    /**
      * Filter, which Payments to fetch.
      */
     where?: PaymentWhereInput
@@ -15550,6 +15586,10 @@ export namespace Prisma {
      */
     omit?: PaymentOmit<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PaymentInclude<ExtArgs> | null
+    /**
      * The data needed to create a Payment.
      */
     data: XOR<PaymentCreateInput, PaymentUncheckedCreateInput>
@@ -15577,6 +15617,10 @@ export namespace Prisma {
      * Omit specific fields from the Payment
      */
     omit?: PaymentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PaymentInclude<ExtArgs> | null
     /**
      * The data needed to update a Payment.
      */
@@ -15618,6 +15662,10 @@ export namespace Prisma {
      */
     omit?: PaymentOmit<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PaymentInclude<ExtArgs> | null
+    /**
      * The filter to search for the Payment to update in case it exists.
      */
     where: PaymentWhereUniqueInput
@@ -15643,6 +15691,10 @@ export namespace Prisma {
      * Omit specific fields from the Payment
      */
     omit?: PaymentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PaymentInclude<ExtArgs> | null
     /**
      * Filter which Payment to delete.
      */
@@ -15703,6 +15755,10 @@ export namespace Prisma {
      * Omit specific fields from the Payment
      */
     omit?: PaymentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PaymentInclude<ExtArgs> | null
   }
 
 
@@ -27938,6 +27994,7 @@ export namespace Prisma {
     customerId: string | null
     role: $Enums.UserRole | null
     accessToken: string | null
+    isActive: boolean | null
     currentLevel: number | null
     voting_power: number | null
     purchased_plan: $Enums.SubscriptionPlanEnum | null
@@ -27963,6 +28020,7 @@ export namespace Prisma {
     customerId: string | null
     role: $Enums.UserRole | null
     accessToken: string | null
+    isActive: boolean | null
     currentLevel: number | null
     voting_power: number | null
     purchased_plan: $Enums.SubscriptionPlanEnum | null
@@ -27988,6 +28046,7 @@ export namespace Prisma {
     customerId: number
     role: number
     accessToken: number
+    isActive: number
     currentLevel: number
     voting_power: number
     purchased_plan: number
@@ -28025,6 +28084,7 @@ export namespace Prisma {
     customerId?: true
     role?: true
     accessToken?: true
+    isActive?: true
     currentLevel?: true
     voting_power?: true
     purchased_plan?: true
@@ -28050,6 +28110,7 @@ export namespace Prisma {
     customerId?: true
     role?: true
     accessToken?: true
+    isActive?: true
     currentLevel?: true
     voting_power?: true
     purchased_plan?: true
@@ -28075,6 +28136,7 @@ export namespace Prisma {
     customerId?: true
     role?: true
     accessToken?: true
+    isActive?: true
     currentLevel?: true
     voting_power?: true
     purchased_plan?: true
@@ -28187,6 +28249,7 @@ export namespace Prisma {
     customerId: string | null
     role: $Enums.UserRole
     accessToken: string | null
+    isActive: boolean
     currentLevel: number
     voting_power: number
     purchased_plan: $Enums.SubscriptionPlanEnum | null
@@ -28231,6 +28294,7 @@ export namespace Prisma {
     customerId?: boolean
     role?: boolean
     accessToken?: boolean
+    isActive?: boolean
     currentLevel?: boolean
     voting_power?: boolean
     purchased_plan?: boolean
@@ -28251,6 +28315,7 @@ export namespace Prisma {
     ContestParticipant?: boolean | User$ContestParticipantArgs<ExtArgs>
     chat?: boolean | User$chatArgs<ExtArgs>
     subscriptions?: boolean | User$subscriptionsArgs<ExtArgs>
+    payments?: boolean | User$paymentsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -28274,6 +28339,7 @@ export namespace Prisma {
     customerId?: boolean
     role?: boolean
     accessToken?: boolean
+    isActive?: boolean
     currentLevel?: boolean
     voting_power?: boolean
     purchased_plan?: boolean
@@ -28281,7 +28347,7 @@ export namespace Prisma {
     updatedAt?: boolean
   }
 
-  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "cover" | "avatar" | "socialId" | "socialProvider" | "firstName" | "lastName" | "fullName" | "username" | "phone" | "email" | "location" | "country" | "password" | "customerId" | "role" | "accessToken" | "currentLevel" | "voting_power" | "purchased_plan" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
+  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "cover" | "avatar" | "socialId" | "socialProvider" | "firstName" | "lastName" | "fullName" | "username" | "phone" | "email" | "location" | "country" | "password" | "customerId" | "role" | "accessToken" | "isActive" | "currentLevel" | "voting_power" | "purchased_plan" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     level?: boolean | User$levelArgs<ExtArgs>
     otps?: boolean | User$otpsArgs<ExtArgs>
@@ -28298,6 +28364,7 @@ export namespace Prisma {
     ContestParticipant?: boolean | User$ContestParticipantArgs<ExtArgs>
     chat?: boolean | User$chatArgs<ExtArgs>
     subscriptions?: boolean | User$subscriptionsArgs<ExtArgs>
+    payments?: boolean | User$paymentsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
 
@@ -28319,6 +28386,7 @@ export namespace Prisma {
       ContestParticipant: Prisma.$ContestParticipantPayload<ExtArgs>[]
       chat: Prisma.$ChatPayload<ExtArgs>[]
       subscriptions: Prisma.$SubscriptionPayload<ExtArgs>[]
+      payments: Prisma.$PaymentPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -28338,6 +28406,7 @@ export namespace Prisma {
       customerId: string | null
       role: $Enums.UserRole
       accessToken: string | null
+      isActive: boolean
       currentLevel: number
       voting_power: number
       purchased_plan: $Enums.SubscriptionPlanEnum | null
@@ -28721,6 +28790,7 @@ export namespace Prisma {
     ContestParticipant<T extends User$ContestParticipantArgs<ExtArgs> = {}>(args?: Subset<T, User$ContestParticipantArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ContestParticipantPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     chat<T extends User$chatArgs<ExtArgs> = {}>(args?: Subset<T, User$chatArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ChatPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     subscriptions<T extends User$subscriptionsArgs<ExtArgs> = {}>(args?: Subset<T, User$subscriptionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SubscriptionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    payments<T extends User$paymentsArgs<ExtArgs> = {}>(args?: Subset<T, User$paymentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PaymentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -28767,6 +28837,7 @@ export namespace Prisma {
     readonly customerId: FieldRef<"User", 'String'>
     readonly role: FieldRef<"User", 'UserRole'>
     readonly accessToken: FieldRef<"User", 'String'>
+    readonly isActive: FieldRef<"User", 'Boolean'>
     readonly currentLevel: FieldRef<"User", 'Int'>
     readonly voting_power: FieldRef<"User", 'Int'>
     readonly purchased_plan: FieldRef<"User", 'SubscriptionPlanEnum'>
@@ -29479,6 +29550,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: SubscriptionScalarFieldEnum | SubscriptionScalarFieldEnum[]
+  }
+
+  /**
+   * User.payments
+   */
+  export type User$paymentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Payment
+     */
+    select?: PaymentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Payment
+     */
+    omit?: PaymentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PaymentInclude<ExtArgs> | null
+    where?: PaymentWhereInput
+    orderBy?: PaymentOrderByWithRelationInput | PaymentOrderByWithRelationInput[]
+    cursor?: PaymentWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: PaymentScalarFieldEnum | PaymentScalarFieldEnum[]
   }
 
   /**
@@ -39172,6 +39267,7 @@ export namespace Prisma {
     customerId: 'customerId',
     role: 'role',
     accessToken: 'accessToken',
+    isActive: 'isActive',
     currentLevel: 'currentLevel',
     voting_power: 'voting_power',
     purchased_plan: 'purchased_plan',
@@ -40512,6 +40608,7 @@ export namespace Prisma {
     method?: StringFilter<"Payment"> | string
     createdAt?: DateTimeFilter<"Payment"> | Date | string
     updatedAt?: DateTimeFilter<"Payment"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
   }
 
   export type PaymentOrderByWithRelationInput = {
@@ -40529,6 +40626,7 @@ export namespace Prisma {
     method?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    user?: UserOrderByWithRelationInput
   }
 
   export type PaymentWhereUniqueInput = Prisma.AtLeast<{
@@ -40549,6 +40647,7 @@ export namespace Prisma {
     method?: StringFilter<"Payment"> | string
     createdAt?: DateTimeFilter<"Payment"> | Date | string
     updatedAt?: DateTimeFilter<"Payment"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
   }, "id">
 
   export type PaymentOrderByWithAggregationInput = {
@@ -41468,6 +41567,7 @@ export namespace Prisma {
     customerId?: StringNullableFilter<"User"> | string | null
     role?: EnumUserRoleFilter<"User"> | $Enums.UserRole
     accessToken?: StringNullableFilter<"User"> | string | null
+    isActive?: BoolFilter<"User"> | boolean
     currentLevel?: IntFilter<"User"> | number
     voting_power?: IntFilter<"User"> | number
     purchased_plan?: EnumSubscriptionPlanEnumNullableFilter<"User"> | $Enums.SubscriptionPlanEnum | null
@@ -41488,6 +41588,7 @@ export namespace Prisma {
     ContestParticipant?: ContestParticipantListRelationFilter
     chat?: ChatListRelationFilter
     subscriptions?: SubscriptionListRelationFilter
+    payments?: PaymentListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -41508,6 +41609,7 @@ export namespace Prisma {
     customerId?: SortOrder
     role?: SortOrder
     accessToken?: SortOrder
+    isActive?: SortOrder
     currentLevel?: SortOrder
     voting_power?: SortOrder
     purchased_plan?: SortOrder
@@ -41528,6 +41630,7 @@ export namespace Prisma {
     ContestParticipant?: ContestParticipantOrderByRelationAggregateInput
     chat?: ChatOrderByRelationAggregateInput
     subscriptions?: SubscriptionOrderByRelationAggregateInput
+    payments?: PaymentOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -41551,6 +41654,7 @@ export namespace Prisma {
     customerId?: StringNullableFilter<"User"> | string | null
     role?: EnumUserRoleFilter<"User"> | $Enums.UserRole
     accessToken?: StringNullableFilter<"User"> | string | null
+    isActive?: BoolFilter<"User"> | boolean
     currentLevel?: IntFilter<"User"> | number
     voting_power?: IntFilter<"User"> | number
     purchased_plan?: EnumSubscriptionPlanEnumNullableFilter<"User"> | $Enums.SubscriptionPlanEnum | null
@@ -41571,6 +41675,7 @@ export namespace Prisma {
     ContestParticipant?: ContestParticipantListRelationFilter
     chat?: ChatListRelationFilter
     subscriptions?: SubscriptionListRelationFilter
+    payments?: PaymentListRelationFilter
   }, "id" | "email">
 
   export type UserOrderByWithAggregationInput = {
@@ -41591,6 +41696,7 @@ export namespace Prisma {
     customerId?: SortOrder
     role?: SortOrder
     accessToken?: SortOrder
+    isActive?: SortOrder
     currentLevel?: SortOrder
     voting_power?: SortOrder
     purchased_plan?: SortOrder
@@ -41624,6 +41730,7 @@ export namespace Prisma {
     customerId?: StringNullableWithAggregatesFilter<"User"> | string | null
     role?: EnumUserRoleWithAggregatesFilter<"User"> | $Enums.UserRole
     accessToken?: StringNullableWithAggregatesFilter<"User"> | string | null
+    isActive?: BoolWithAggregatesFilter<"User"> | boolean
     currentLevel?: IntWithAggregatesFilter<"User"> | number
     voting_power?: IntWithAggregatesFilter<"User"> | number
     purchased_plan?: EnumSubscriptionPlanEnumNullableWithAggregatesFilter<"User"> | $Enums.SubscriptionPlanEnum | null
@@ -43092,13 +43199,13 @@ export namespace Prisma {
     subscriptionId?: string | null
     planName?: $Enums.SubscriptionPlanEnum | null
     recurring?: $Enums.PlanRecurringType | null
-    userId: string
     stripe_sessino_id?: string | null
     amount: number
     currency: string
     method: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutPaymentsInput
   }
 
   export type PaymentUncheckedCreateInput = {
@@ -43125,13 +43232,13 @@ export namespace Prisma {
     subscriptionId?: NullableStringFieldUpdateOperationsInput | string | null
     planName?: NullableEnumSubscriptionPlanEnumFieldUpdateOperationsInput | $Enums.SubscriptionPlanEnum | null
     recurring?: NullableEnumPlanRecurringTypeFieldUpdateOperationsInput | $Enums.PlanRecurringType | null
-    userId?: StringFieldUpdateOperationsInput | string
     stripe_sessino_id?: NullableStringFieldUpdateOperationsInput | string | null
     amount?: FloatFieldUpdateOperationsInput | number
     currency?: StringFieldUpdateOperationsInput | string
     method?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutPaymentsNestedInput
   }
 
   export type PaymentUncheckedUpdateInput = {
@@ -43174,7 +43281,6 @@ export namespace Prisma {
     subscriptionId?: NullableStringFieldUpdateOperationsInput | string | null
     planName?: NullableEnumSubscriptionPlanEnumFieldUpdateOperationsInput | $Enums.SubscriptionPlanEnum | null
     recurring?: NullableEnumPlanRecurringTypeFieldUpdateOperationsInput | $Enums.PlanRecurringType | null
-    userId?: StringFieldUpdateOperationsInput | string
     stripe_sessino_id?: NullableStringFieldUpdateOperationsInput | string | null
     amount?: FloatFieldUpdateOperationsInput | number
     currency?: StringFieldUpdateOperationsInput | string
@@ -44093,6 +44199,7 @@ export namespace Prisma {
     customerId?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
+    isActive?: boolean
     currentLevel?: number
     voting_power?: number
     purchased_plan?: $Enums.SubscriptionPlanEnum | null
@@ -44113,6 +44220,7 @@ export namespace Prisma {
     ContestParticipant?: ContestParticipantCreateNestedManyWithoutUserInput
     chat?: ChatCreateNestedManyWithoutSenderInput
     subscriptions?: SubscriptionCreateNestedManyWithoutUserInput
+    payments?: PaymentCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -44133,6 +44241,7 @@ export namespace Prisma {
     customerId?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
+    isActive?: boolean
     currentLevel?: number
     voting_power?: number
     purchased_plan?: $Enums.SubscriptionPlanEnum | null
@@ -44153,6 +44262,7 @@ export namespace Prisma {
     ContestParticipant?: ContestParticipantUncheckedCreateNestedManyWithoutUserInput
     chat?: ChatUncheckedCreateNestedManyWithoutSenderInput
     subscriptions?: SubscriptionUncheckedCreateNestedManyWithoutUserInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserUpdateInput = {
@@ -44172,6 +44282,7 @@ export namespace Prisma {
     customerId?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     currentLevel?: IntFieldUpdateOperationsInput | number
     voting_power?: IntFieldUpdateOperationsInput | number
     purchased_plan?: NullableEnumSubscriptionPlanEnumFieldUpdateOperationsInput | $Enums.SubscriptionPlanEnum | null
@@ -44192,6 +44303,7 @@ export namespace Prisma {
     ContestParticipant?: ContestParticipantUpdateManyWithoutUserNestedInput
     chat?: ChatUpdateManyWithoutSenderNestedInput
     subscriptions?: SubscriptionUpdateManyWithoutUserNestedInput
+    payments?: PaymentUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -44211,6 +44323,7 @@ export namespace Prisma {
     customerId?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     currentLevel?: IntFieldUpdateOperationsInput | number
     voting_power?: IntFieldUpdateOperationsInput | number
     purchased_plan?: NullableEnumSubscriptionPlanEnumFieldUpdateOperationsInput | $Enums.SubscriptionPlanEnum | null
@@ -44231,6 +44344,7 @@ export namespace Prisma {
     ContestParticipant?: ContestParticipantUncheckedUpdateManyWithoutUserNestedInput
     chat?: ChatUncheckedUpdateManyWithoutSenderNestedInput
     subscriptions?: SubscriptionUncheckedUpdateManyWithoutUserNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -44251,6 +44365,7 @@ export namespace Prisma {
     customerId?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
+    isActive?: boolean
     currentLevel?: number
     voting_power?: number
     purchased_plan?: $Enums.SubscriptionPlanEnum | null
@@ -44275,6 +44390,7 @@ export namespace Prisma {
     customerId?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     currentLevel?: IntFieldUpdateOperationsInput | number
     voting_power?: IntFieldUpdateOperationsInput | number
     purchased_plan?: NullableEnumSubscriptionPlanEnumFieldUpdateOperationsInput | $Enums.SubscriptionPlanEnum | null
@@ -44299,6 +44415,7 @@ export namespace Prisma {
     customerId?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     currentLevel?: IntFieldUpdateOperationsInput | number
     voting_power?: IntFieldUpdateOperationsInput | number
     purchased_plan?: NullableEnumSubscriptionPlanEnumFieldUpdateOperationsInput | $Enums.SubscriptionPlanEnum | null
@@ -46633,6 +46750,12 @@ export namespace Prisma {
     none?: SubscriptionWhereInput
   }
 
+  export type PaymentListRelationFilter = {
+    every?: PaymentWhereInput
+    some?: PaymentWhereInput
+    none?: PaymentWhereInput
+  }
+
   export type TeamOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
@@ -46657,6 +46780,10 @@ export namespace Prisma {
     _count?: SortOrder
   }
 
+  export type PaymentOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
   export type UserCountOrderByAggregateInput = {
     id?: SortOrder
     cover?: SortOrder
@@ -46675,6 +46802,7 @@ export namespace Prisma {
     customerId?: SortOrder
     role?: SortOrder
     accessToken?: SortOrder
+    isActive?: SortOrder
     currentLevel?: SortOrder
     voting_power?: SortOrder
     purchased_plan?: SortOrder
@@ -46705,6 +46833,7 @@ export namespace Prisma {
     customerId?: SortOrder
     role?: SortOrder
     accessToken?: SortOrder
+    isActive?: SortOrder
     currentLevel?: SortOrder
     voting_power?: SortOrder
     purchased_plan?: SortOrder
@@ -46730,6 +46859,7 @@ export namespace Prisma {
     customerId?: SortOrder
     role?: SortOrder
     accessToken?: SortOrder
+    isActive?: SortOrder
     currentLevel?: SortOrder
     voting_power?: SortOrder
     purchased_plan?: SortOrder
@@ -48047,6 +48177,12 @@ export namespace Prisma {
     set?: $Enums.NotificationType
   }
 
+  export type UserCreateNestedOneWithoutPaymentsInput = {
+    create?: XOR<UserCreateWithoutPaymentsInput, UserUncheckedCreateWithoutPaymentsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutPaymentsInput
+    connect?: UserWhereUniqueInput
+  }
+
   export type EnumPaymentStatusFieldUpdateOperationsInput = {
     set?: $Enums.PaymentStatus
   }
@@ -48067,6 +48203,14 @@ export namespace Prisma {
     decrement?: number
     multiply?: number
     divide?: number
+  }
+
+  export type UserUpdateOneRequiredWithoutPaymentsNestedInput = {
+    create?: XOR<UserCreateWithoutPaymentsInput, UserUncheckedCreateWithoutPaymentsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutPaymentsInput
+    upsert?: UserUpsertWithoutPaymentsInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutPaymentsInput, UserUpdateWithoutPaymentsInput>, UserUncheckedUpdateWithoutPaymentsInput>
   }
 
   export type EnumSubscriptionPlanEnumFieldUpdateOperationsInput = {
@@ -48616,6 +48760,13 @@ export namespace Prisma {
     connect?: SubscriptionWhereUniqueInput | SubscriptionWhereUniqueInput[]
   }
 
+  export type PaymentCreateNestedManyWithoutUserInput = {
+    create?: XOR<PaymentCreateWithoutUserInput, PaymentUncheckedCreateWithoutUserInput> | PaymentCreateWithoutUserInput[] | PaymentUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: PaymentCreateOrConnectWithoutUserInput | PaymentCreateOrConnectWithoutUserInput[]
+    createMany?: PaymentCreateManyUserInputEnvelope
+    connect?: PaymentWhereUniqueInput | PaymentWhereUniqueInput[]
+  }
+
   export type UserLevelUncheckedCreateNestedOneWithoutUserInput = {
     create?: XOR<UserLevelCreateWithoutUserInput, UserLevelUncheckedCreateWithoutUserInput>
     connectOrCreate?: UserLevelCreateOrConnectWithoutUserInput
@@ -48715,6 +48866,13 @@ export namespace Prisma {
     connectOrCreate?: SubscriptionCreateOrConnectWithoutUserInput | SubscriptionCreateOrConnectWithoutUserInput[]
     createMany?: SubscriptionCreateManyUserInputEnvelope
     connect?: SubscriptionWhereUniqueInput | SubscriptionWhereUniqueInput[]
+  }
+
+  export type PaymentUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<PaymentCreateWithoutUserInput, PaymentUncheckedCreateWithoutUserInput> | PaymentCreateWithoutUserInput[] | PaymentUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: PaymentCreateOrConnectWithoutUserInput | PaymentCreateOrConnectWithoutUserInput[]
+    createMany?: PaymentCreateManyUserInputEnvelope
+    connect?: PaymentWhereUniqueInput | PaymentWhereUniqueInput[]
   }
 
   export type EnumUserRoleFieldUpdateOperationsInput = {
@@ -48915,6 +49073,20 @@ export namespace Prisma {
     deleteMany?: SubscriptionScalarWhereInput | SubscriptionScalarWhereInput[]
   }
 
+  export type PaymentUpdateManyWithoutUserNestedInput = {
+    create?: XOR<PaymentCreateWithoutUserInput, PaymentUncheckedCreateWithoutUserInput> | PaymentCreateWithoutUserInput[] | PaymentUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: PaymentCreateOrConnectWithoutUserInput | PaymentCreateOrConnectWithoutUserInput[]
+    upsert?: PaymentUpsertWithWhereUniqueWithoutUserInput | PaymentUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: PaymentCreateManyUserInputEnvelope
+    set?: PaymentWhereUniqueInput | PaymentWhereUniqueInput[]
+    disconnect?: PaymentWhereUniqueInput | PaymentWhereUniqueInput[]
+    delete?: PaymentWhereUniqueInput | PaymentWhereUniqueInput[]
+    connect?: PaymentWhereUniqueInput | PaymentWhereUniqueInput[]
+    update?: PaymentUpdateWithWhereUniqueWithoutUserInput | PaymentUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: PaymentUpdateManyWithWhereWithoutUserInput | PaymentUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: PaymentScalarWhereInput | PaymentScalarWhereInput[]
+  }
+
   export type UserLevelUncheckedUpdateOneWithoutUserNestedInput = {
     create?: XOR<UserLevelCreateWithoutUserInput, UserLevelUncheckedCreateWithoutUserInput>
     connectOrCreate?: UserLevelCreateOrConnectWithoutUserInput
@@ -49107,6 +49279,20 @@ export namespace Prisma {
     update?: SubscriptionUpdateWithWhereUniqueWithoutUserInput | SubscriptionUpdateWithWhereUniqueWithoutUserInput[]
     updateMany?: SubscriptionUpdateManyWithWhereWithoutUserInput | SubscriptionUpdateManyWithWhereWithoutUserInput[]
     deleteMany?: SubscriptionScalarWhereInput | SubscriptionScalarWhereInput[]
+  }
+
+  export type PaymentUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<PaymentCreateWithoutUserInput, PaymentUncheckedCreateWithoutUserInput> | PaymentCreateWithoutUserInput[] | PaymentUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: PaymentCreateOrConnectWithoutUserInput | PaymentCreateOrConnectWithoutUserInput[]
+    upsert?: PaymentUpsertWithWhereUniqueWithoutUserInput | PaymentUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: PaymentCreateManyUserInputEnvelope
+    set?: PaymentWhereUniqueInput | PaymentWhereUniqueInput[]
+    disconnect?: PaymentWhereUniqueInput | PaymentWhereUniqueInput[]
+    delete?: PaymentWhereUniqueInput | PaymentWhereUniqueInput[]
+    connect?: PaymentWhereUniqueInput | PaymentWhereUniqueInput[]
+    update?: PaymentUpdateWithWhereUniqueWithoutUserInput | PaymentUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: PaymentUpdateManyWithWhereWithoutUserInput | PaymentUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: PaymentScalarWhereInput | PaymentScalarWhereInput[]
   }
 
   export type UserCreateNestedOneWithoutStoreInput = {
@@ -50237,6 +50423,7 @@ export namespace Prisma {
     customerId?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
+    isActive?: boolean
     currentLevel?: number
     voting_power?: number
     purchased_plan?: $Enums.SubscriptionPlanEnum | null
@@ -50256,6 +50443,7 @@ export namespace Prisma {
     ContestParticipant?: ContestParticipantCreateNestedManyWithoutUserInput
     chat?: ChatCreateNestedManyWithoutSenderInput
     subscriptions?: SubscriptionCreateNestedManyWithoutUserInput
+    payments?: PaymentCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutCreatedContestsInput = {
@@ -50276,6 +50464,7 @@ export namespace Prisma {
     customerId?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
+    isActive?: boolean
     currentLevel?: number
     voting_power?: number
     purchased_plan?: $Enums.SubscriptionPlanEnum | null
@@ -50295,6 +50484,7 @@ export namespace Prisma {
     ContestParticipant?: ContestParticipantUncheckedCreateNestedManyWithoutUserInput
     chat?: ChatUncheckedCreateNestedManyWithoutSenderInput
     subscriptions?: SubscriptionUncheckedCreateNestedManyWithoutUserInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutCreatedContestsInput = {
@@ -50527,6 +50717,7 @@ export namespace Prisma {
     customerId?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     currentLevel?: IntFieldUpdateOperationsInput | number
     voting_power?: IntFieldUpdateOperationsInput | number
     purchased_plan?: NullableEnumSubscriptionPlanEnumFieldUpdateOperationsInput | $Enums.SubscriptionPlanEnum | null
@@ -50546,6 +50737,7 @@ export namespace Prisma {
     ContestParticipant?: ContestParticipantUpdateManyWithoutUserNestedInput
     chat?: ChatUpdateManyWithoutSenderNestedInput
     subscriptions?: SubscriptionUpdateManyWithoutUserNestedInput
+    payments?: PaymentUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCreatedContestsInput = {
@@ -50565,6 +50757,7 @@ export namespace Prisma {
     customerId?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     currentLevel?: IntFieldUpdateOperationsInput | number
     voting_power?: IntFieldUpdateOperationsInput | number
     purchased_plan?: NullableEnumSubscriptionPlanEnumFieldUpdateOperationsInput | $Enums.SubscriptionPlanEnum | null
@@ -50584,6 +50777,7 @@ export namespace Prisma {
     ContestParticipant?: ContestParticipantUncheckedUpdateManyWithoutUserNestedInput
     chat?: ChatUncheckedUpdateManyWithoutSenderNestedInput
     subscriptions?: SubscriptionUncheckedUpdateManyWithoutUserNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type ContestParticipantUpsertWithWhereUniqueWithoutContestInput = {
@@ -51505,6 +51699,7 @@ export namespace Prisma {
     customerId?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
+    isActive?: boolean
     currentLevel?: number
     voting_power?: number
     purchased_plan?: $Enums.SubscriptionPlanEnum | null
@@ -51524,6 +51719,7 @@ export namespace Prisma {
     userPhotos?: UserPhotoCreateNestedManyWithoutUserInput
     chat?: ChatCreateNestedManyWithoutSenderInput
     subscriptions?: SubscriptionCreateNestedManyWithoutUserInput
+    payments?: PaymentCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutContestParticipantInput = {
@@ -51544,6 +51740,7 @@ export namespace Prisma {
     customerId?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
+    isActive?: boolean
     currentLevel?: number
     voting_power?: number
     purchased_plan?: $Enums.SubscriptionPlanEnum | null
@@ -51563,6 +51760,7 @@ export namespace Prisma {
     userPhotos?: UserPhotoUncheckedCreateNestedManyWithoutUserInput
     chat?: ChatUncheckedCreateNestedManyWithoutSenderInput
     subscriptions?: SubscriptionUncheckedCreateNestedManyWithoutUserInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutContestParticipantInput = {
@@ -51783,6 +51981,7 @@ export namespace Prisma {
     customerId?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     currentLevel?: IntFieldUpdateOperationsInput | number
     voting_power?: IntFieldUpdateOperationsInput | number
     purchased_plan?: NullableEnumSubscriptionPlanEnumFieldUpdateOperationsInput | $Enums.SubscriptionPlanEnum | null
@@ -51802,6 +52001,7 @@ export namespace Prisma {
     userPhotos?: UserPhotoUpdateManyWithoutUserNestedInput
     chat?: ChatUpdateManyWithoutSenderNestedInput
     subscriptions?: SubscriptionUpdateManyWithoutUserNestedInput
+    payments?: PaymentUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutContestParticipantInput = {
@@ -51821,6 +52021,7 @@ export namespace Prisma {
     customerId?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     currentLevel?: IntFieldUpdateOperationsInput | number
     voting_power?: IntFieldUpdateOperationsInput | number
     purchased_plan?: NullableEnumSubscriptionPlanEnumFieldUpdateOperationsInput | $Enums.SubscriptionPlanEnum | null
@@ -51840,6 +52041,7 @@ export namespace Prisma {
     userPhotos?: UserPhotoUncheckedUpdateManyWithoutUserNestedInput
     chat?: ChatUncheckedUpdateManyWithoutSenderNestedInput
     subscriptions?: SubscriptionUncheckedUpdateManyWithoutUserNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type TeamMemberUpsertWithoutContestParticipantInput = {
@@ -52344,7 +52546,7 @@ export namespace Prisma {
     ContestWinner?: ContestWinnerUncheckedUpdateManyWithoutParticipantNestedInput
   }
 
-  export type UserCreateWithoutSubscriptionsInput = {
+  export type UserCreateWithoutPaymentsInput = {
     id?: string
     cover?: string | null
     avatar?: string | null
@@ -52362,6 +52564,7 @@ export namespace Prisma {
     customerId?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
+    isActive?: boolean
     currentLevel?: number
     voting_power?: number
     purchased_plan?: $Enums.SubscriptionPlanEnum | null
@@ -52381,6 +52584,185 @@ export namespace Prisma {
     userPhotos?: UserPhotoCreateNestedManyWithoutUserInput
     ContestParticipant?: ContestParticipantCreateNestedManyWithoutUserInput
     chat?: ChatCreateNestedManyWithoutSenderInput
+    subscriptions?: SubscriptionCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutPaymentsInput = {
+    id?: string
+    cover?: string | null
+    avatar?: string | null
+    socialId?: string | null
+    socialProvider?: string | null
+    firstName?: string | null
+    lastName?: string | null
+    fullName?: string | null
+    username?: string | null
+    phone?: string | null
+    email: string
+    location?: string | null
+    country?: string | null
+    password?: string | null
+    customerId?: string | null
+    role?: $Enums.UserRole
+    accessToken?: string | null
+    isActive?: boolean
+    currentLevel?: number
+    voting_power?: number
+    purchased_plan?: $Enums.SubscriptionPlanEnum | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    level?: UserLevelUncheckedCreateNestedOneWithoutUserInput
+    otps?: OtpUncheckedCreateNestedOneWithoutUserInput
+    store?: UserStoreUncheckedCreateNestedOneWithoutUserInput
+    createdTeam?: TeamUncheckedCreateNestedManyWithoutCreatorInput
+    joinedTeam?: TeamMemberUncheckedCreateNestedOneWithoutMemberInput
+    createdContests?: ContestUncheckedCreateNestedManyWithoutCreatorInput
+    commentProvides?: CommentUncheckedCreateNestedManyWithoutProviderInput
+    followers?: FollowUncheckedCreateNestedManyWithoutFollowerInput
+    followings?: FollowUncheckedCreateNestedManyWithoutFollowingInput
+    votes?: VoteUncheckedCreateNestedManyWithoutProviderInput
+    likes?: LikeUncheckedCreateNestedManyWithoutProviderInput
+    userPhotos?: UserPhotoUncheckedCreateNestedManyWithoutUserInput
+    ContestParticipant?: ContestParticipantUncheckedCreateNestedManyWithoutUserInput
+    chat?: ChatUncheckedCreateNestedManyWithoutSenderInput
+    subscriptions?: SubscriptionUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutPaymentsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutPaymentsInput, UserUncheckedCreateWithoutPaymentsInput>
+  }
+
+  export type UserUpsertWithoutPaymentsInput = {
+    update: XOR<UserUpdateWithoutPaymentsInput, UserUncheckedUpdateWithoutPaymentsInput>
+    create: XOR<UserCreateWithoutPaymentsInput, UserUncheckedCreateWithoutPaymentsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutPaymentsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutPaymentsInput, UserUncheckedUpdateWithoutPaymentsInput>
+  }
+
+  export type UserUpdateWithoutPaymentsInput = {
+    cover?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    socialId?: NullableStringFieldUpdateOperationsInput | string | null
+    socialProvider?: NullableStringFieldUpdateOperationsInput | string | null
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    fullName?: NullableStringFieldUpdateOperationsInput | string | null
+    username?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    customerId?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    accessToken?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    currentLevel?: IntFieldUpdateOperationsInput | number
+    voting_power?: IntFieldUpdateOperationsInput | number
+    purchased_plan?: NullableEnumSubscriptionPlanEnumFieldUpdateOperationsInput | $Enums.SubscriptionPlanEnum | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    level?: UserLevelUpdateOneWithoutUserNestedInput
+    otps?: OtpUpdateOneWithoutUserNestedInput
+    store?: UserStoreUpdateOneWithoutUserNestedInput
+    createdTeam?: TeamUpdateManyWithoutCreatorNestedInput
+    joinedTeam?: TeamMemberUpdateOneWithoutMemberNestedInput
+    createdContests?: ContestUpdateManyWithoutCreatorNestedInput
+    commentProvides?: CommentUpdateManyWithoutProviderNestedInput
+    followers?: FollowUpdateManyWithoutFollowerNestedInput
+    followings?: FollowUpdateManyWithoutFollowingNestedInput
+    votes?: VoteUpdateManyWithoutProviderNestedInput
+    likes?: LikeUpdateManyWithoutProviderNestedInput
+    userPhotos?: UserPhotoUpdateManyWithoutUserNestedInput
+    ContestParticipant?: ContestParticipantUpdateManyWithoutUserNestedInput
+    chat?: ChatUpdateManyWithoutSenderNestedInput
+    subscriptions?: SubscriptionUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutPaymentsInput = {
+    cover?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    socialId?: NullableStringFieldUpdateOperationsInput | string | null
+    socialProvider?: NullableStringFieldUpdateOperationsInput | string | null
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    fullName?: NullableStringFieldUpdateOperationsInput | string | null
+    username?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    customerId?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    accessToken?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    currentLevel?: IntFieldUpdateOperationsInput | number
+    voting_power?: IntFieldUpdateOperationsInput | number
+    purchased_plan?: NullableEnumSubscriptionPlanEnumFieldUpdateOperationsInput | $Enums.SubscriptionPlanEnum | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    level?: UserLevelUncheckedUpdateOneWithoutUserNestedInput
+    otps?: OtpUncheckedUpdateOneWithoutUserNestedInput
+    store?: UserStoreUncheckedUpdateOneWithoutUserNestedInput
+    createdTeam?: TeamUncheckedUpdateManyWithoutCreatorNestedInput
+    joinedTeam?: TeamMemberUncheckedUpdateOneWithoutMemberNestedInput
+    createdContests?: ContestUncheckedUpdateManyWithoutCreatorNestedInput
+    commentProvides?: CommentUncheckedUpdateManyWithoutProviderNestedInput
+    followers?: FollowUncheckedUpdateManyWithoutFollowerNestedInput
+    followings?: FollowUncheckedUpdateManyWithoutFollowingNestedInput
+    votes?: VoteUncheckedUpdateManyWithoutProviderNestedInput
+    likes?: LikeUncheckedUpdateManyWithoutProviderNestedInput
+    userPhotos?: UserPhotoUncheckedUpdateManyWithoutUserNestedInput
+    ContestParticipant?: ContestParticipantUncheckedUpdateManyWithoutUserNestedInput
+    chat?: ChatUncheckedUpdateManyWithoutSenderNestedInput
+    subscriptions?: SubscriptionUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserCreateWithoutSubscriptionsInput = {
+    id?: string
+    cover?: string | null
+    avatar?: string | null
+    socialId?: string | null
+    socialProvider?: string | null
+    firstName?: string | null
+    lastName?: string | null
+    fullName?: string | null
+    username?: string | null
+    phone?: string | null
+    email: string
+    location?: string | null
+    country?: string | null
+    password?: string | null
+    customerId?: string | null
+    role?: $Enums.UserRole
+    accessToken?: string | null
+    isActive?: boolean
+    currentLevel?: number
+    voting_power?: number
+    purchased_plan?: $Enums.SubscriptionPlanEnum | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    level?: UserLevelCreateNestedOneWithoutUserInput
+    otps?: OtpCreateNestedOneWithoutUserInput
+    store?: UserStoreCreateNestedOneWithoutUserInput
+    createdTeam?: TeamCreateNestedManyWithoutCreatorInput
+    joinedTeam?: TeamMemberCreateNestedOneWithoutMemberInput
+    createdContests?: ContestCreateNestedManyWithoutCreatorInput
+    commentProvides?: CommentCreateNestedManyWithoutProviderInput
+    followers?: FollowCreateNestedManyWithoutFollowerInput
+    followings?: FollowCreateNestedManyWithoutFollowingInput
+    votes?: VoteCreateNestedManyWithoutProviderInput
+    likes?: LikeCreateNestedManyWithoutProviderInput
+    userPhotos?: UserPhotoCreateNestedManyWithoutUserInput
+    ContestParticipant?: ContestParticipantCreateNestedManyWithoutUserInput
+    chat?: ChatCreateNestedManyWithoutSenderInput
+    payments?: PaymentCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutSubscriptionsInput = {
@@ -52401,6 +52783,7 @@ export namespace Prisma {
     customerId?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
+    isActive?: boolean
     currentLevel?: number
     voting_power?: number
     purchased_plan?: $Enums.SubscriptionPlanEnum | null
@@ -52420,6 +52803,7 @@ export namespace Prisma {
     userPhotos?: UserPhotoUncheckedCreateNestedManyWithoutUserInput
     ContestParticipant?: ContestParticipantUncheckedCreateNestedManyWithoutUserInput
     chat?: ChatUncheckedCreateNestedManyWithoutSenderInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutSubscriptionsInput = {
@@ -52455,6 +52839,7 @@ export namespace Prisma {
     customerId?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     currentLevel?: IntFieldUpdateOperationsInput | number
     voting_power?: IntFieldUpdateOperationsInput | number
     purchased_plan?: NullableEnumSubscriptionPlanEnumFieldUpdateOperationsInput | $Enums.SubscriptionPlanEnum | null
@@ -52474,6 +52859,7 @@ export namespace Prisma {
     userPhotos?: UserPhotoUpdateManyWithoutUserNestedInput
     ContestParticipant?: ContestParticipantUpdateManyWithoutUserNestedInput
     chat?: ChatUpdateManyWithoutSenderNestedInput
+    payments?: PaymentUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSubscriptionsInput = {
@@ -52493,6 +52879,7 @@ export namespace Prisma {
     customerId?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     currentLevel?: IntFieldUpdateOperationsInput | number
     voting_power?: IntFieldUpdateOperationsInput | number
     purchased_plan?: NullableEnumSubscriptionPlanEnumFieldUpdateOperationsInput | $Enums.SubscriptionPlanEnum | null
@@ -52512,6 +52899,7 @@ export namespace Prisma {
     userPhotos?: UserPhotoUncheckedUpdateManyWithoutUserNestedInput
     ContestParticipant?: ContestParticipantUncheckedUpdateManyWithoutUserNestedInput
     chat?: ChatUncheckedUpdateManyWithoutSenderNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type TeamCreateWithoutChatInput = {
@@ -52585,6 +52973,7 @@ export namespace Prisma {
     customerId?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
+    isActive?: boolean
     currentLevel?: number
     voting_power?: number
     purchased_plan?: $Enums.SubscriptionPlanEnum | null
@@ -52604,6 +52993,7 @@ export namespace Prisma {
     userPhotos?: UserPhotoCreateNestedManyWithoutUserInput
     ContestParticipant?: ContestParticipantCreateNestedManyWithoutUserInput
     subscriptions?: SubscriptionCreateNestedManyWithoutUserInput
+    payments?: PaymentCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutChatInput = {
@@ -52624,6 +53014,7 @@ export namespace Prisma {
     customerId?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
+    isActive?: boolean
     currentLevel?: number
     voting_power?: number
     purchased_plan?: $Enums.SubscriptionPlanEnum | null
@@ -52643,6 +53034,7 @@ export namespace Prisma {
     userPhotos?: UserPhotoUncheckedCreateNestedManyWithoutUserInput
     ContestParticipant?: ContestParticipantUncheckedCreateNestedManyWithoutUserInput
     subscriptions?: SubscriptionUncheckedCreateNestedManyWithoutUserInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutChatInput = {
@@ -52735,6 +53127,7 @@ export namespace Prisma {
     customerId?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     currentLevel?: IntFieldUpdateOperationsInput | number
     voting_power?: IntFieldUpdateOperationsInput | number
     purchased_plan?: NullableEnumSubscriptionPlanEnumFieldUpdateOperationsInput | $Enums.SubscriptionPlanEnum | null
@@ -52754,6 +53147,7 @@ export namespace Prisma {
     userPhotos?: UserPhotoUpdateManyWithoutUserNestedInput
     ContestParticipant?: ContestParticipantUpdateManyWithoutUserNestedInput
     subscriptions?: SubscriptionUpdateManyWithoutUserNestedInput
+    payments?: PaymentUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutChatInput = {
@@ -52773,6 +53167,7 @@ export namespace Prisma {
     customerId?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     currentLevel?: IntFieldUpdateOperationsInput | number
     voting_power?: IntFieldUpdateOperationsInput | number
     purchased_plan?: NullableEnumSubscriptionPlanEnumFieldUpdateOperationsInput | $Enums.SubscriptionPlanEnum | null
@@ -52792,6 +53187,7 @@ export namespace Prisma {
     userPhotos?: UserPhotoUncheckedUpdateManyWithoutUserNestedInput
     ContestParticipant?: ContestParticipantUncheckedUpdateManyWithoutUserNestedInput
     subscriptions?: SubscriptionUncheckedUpdateManyWithoutUserNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutCreatedTeamInput = {
@@ -52812,6 +53208,7 @@ export namespace Prisma {
     customerId?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
+    isActive?: boolean
     currentLevel?: number
     voting_power?: number
     purchased_plan?: $Enums.SubscriptionPlanEnum | null
@@ -52831,6 +53228,7 @@ export namespace Prisma {
     ContestParticipant?: ContestParticipantCreateNestedManyWithoutUserInput
     chat?: ChatCreateNestedManyWithoutSenderInput
     subscriptions?: SubscriptionCreateNestedManyWithoutUserInput
+    payments?: PaymentCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutCreatedTeamInput = {
@@ -52851,6 +53249,7 @@ export namespace Prisma {
     customerId?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
+    isActive?: boolean
     currentLevel?: number
     voting_power?: number
     purchased_plan?: $Enums.SubscriptionPlanEnum | null
@@ -52870,6 +53269,7 @@ export namespace Prisma {
     ContestParticipant?: ContestParticipantUncheckedCreateNestedManyWithoutUserInput
     chat?: ChatUncheckedCreateNestedManyWithoutSenderInput
     subscriptions?: SubscriptionUncheckedCreateNestedManyWithoutUserInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutCreatedTeamInput = {
@@ -53040,6 +53440,7 @@ export namespace Prisma {
     customerId?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     currentLevel?: IntFieldUpdateOperationsInput | number
     voting_power?: IntFieldUpdateOperationsInput | number
     purchased_plan?: NullableEnumSubscriptionPlanEnumFieldUpdateOperationsInput | $Enums.SubscriptionPlanEnum | null
@@ -53059,6 +53460,7 @@ export namespace Prisma {
     ContestParticipant?: ContestParticipantUpdateManyWithoutUserNestedInput
     chat?: ChatUpdateManyWithoutSenderNestedInput
     subscriptions?: SubscriptionUpdateManyWithoutUserNestedInput
+    payments?: PaymentUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCreatedTeamInput = {
@@ -53078,6 +53480,7 @@ export namespace Prisma {
     customerId?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     currentLevel?: IntFieldUpdateOperationsInput | number
     voting_power?: IntFieldUpdateOperationsInput | number
     purchased_plan?: NullableEnumSubscriptionPlanEnumFieldUpdateOperationsInput | $Enums.SubscriptionPlanEnum | null
@@ -53097,6 +53500,7 @@ export namespace Prisma {
     ContestParticipant?: ContestParticipantUncheckedUpdateManyWithoutUserNestedInput
     chat?: ChatUncheckedUpdateManyWithoutSenderNestedInput
     subscriptions?: SubscriptionUncheckedUpdateManyWithoutUserNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type TeamMemberUpsertWithWhereUniqueWithoutTeamInput = {
@@ -53621,6 +54025,7 @@ export namespace Prisma {
     customerId?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
+    isActive?: boolean
     currentLevel?: number
     voting_power?: number
     purchased_plan?: $Enums.SubscriptionPlanEnum | null
@@ -53640,6 +54045,7 @@ export namespace Prisma {
     ContestParticipant?: ContestParticipantCreateNestedManyWithoutUserInput
     chat?: ChatCreateNestedManyWithoutSenderInput
     subscriptions?: SubscriptionCreateNestedManyWithoutUserInput
+    payments?: PaymentCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutJoinedTeamInput = {
@@ -53660,6 +54066,7 @@ export namespace Prisma {
     customerId?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
+    isActive?: boolean
     currentLevel?: number
     voting_power?: number
     purchased_plan?: $Enums.SubscriptionPlanEnum | null
@@ -53679,6 +54086,7 @@ export namespace Prisma {
     ContestParticipant?: ContestParticipantUncheckedCreateNestedManyWithoutUserInput
     chat?: ChatUncheckedCreateNestedManyWithoutSenderInput
     subscriptions?: SubscriptionUncheckedCreateNestedManyWithoutUserInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutJoinedTeamInput = {
@@ -53810,6 +54218,7 @@ export namespace Prisma {
     customerId?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     currentLevel?: IntFieldUpdateOperationsInput | number
     voting_power?: IntFieldUpdateOperationsInput | number
     purchased_plan?: NullableEnumSubscriptionPlanEnumFieldUpdateOperationsInput | $Enums.SubscriptionPlanEnum | null
@@ -53829,6 +54238,7 @@ export namespace Prisma {
     ContestParticipant?: ContestParticipantUpdateManyWithoutUserNestedInput
     chat?: ChatUpdateManyWithoutSenderNestedInput
     subscriptions?: SubscriptionUpdateManyWithoutUserNestedInput
+    payments?: PaymentUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutJoinedTeamInput = {
@@ -53848,6 +54258,7 @@ export namespace Prisma {
     customerId?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     currentLevel?: IntFieldUpdateOperationsInput | number
     voting_power?: IntFieldUpdateOperationsInput | number
     purchased_plan?: NullableEnumSubscriptionPlanEnumFieldUpdateOperationsInput | $Enums.SubscriptionPlanEnum | null
@@ -53867,6 +54278,7 @@ export namespace Prisma {
     ContestParticipant?: ContestParticipantUncheckedUpdateManyWithoutUserNestedInput
     chat?: ChatUncheckedUpdateManyWithoutSenderNestedInput
     subscriptions?: SubscriptionUncheckedUpdateManyWithoutUserNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type ContestParticipantUpsertWithWhereUniqueWithoutMemberInput = {
@@ -54596,6 +55008,47 @@ export namespace Prisma {
     data: SubscriptionCreateManyUserInput | SubscriptionCreateManyUserInput[]
   }
 
+  export type PaymentCreateWithoutUserInput = {
+    id?: string
+    status?: $Enums.PaymentStatus
+    productId?: string | null
+    planId?: string | null
+    subscriptionId?: string | null
+    planName?: $Enums.SubscriptionPlanEnum | null
+    recurring?: $Enums.PlanRecurringType | null
+    stripe_sessino_id?: string | null
+    amount: number
+    currency: string
+    method: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PaymentUncheckedCreateWithoutUserInput = {
+    id?: string
+    status?: $Enums.PaymentStatus
+    productId?: string | null
+    planId?: string | null
+    subscriptionId?: string | null
+    planName?: $Enums.SubscriptionPlanEnum | null
+    recurring?: $Enums.PlanRecurringType | null
+    stripe_sessino_id?: string | null
+    amount: number
+    currency: string
+    method: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PaymentCreateOrConnectWithoutUserInput = {
+    where: PaymentWhereUniqueInput
+    create: XOR<PaymentCreateWithoutUserInput, PaymentUncheckedCreateWithoutUserInput>
+  }
+
+  export type PaymentCreateManyUserInputEnvelope = {
+    data: PaymentCreateManyUserInput | PaymentCreateManyUserInput[]
+  }
+
   export type UserLevelUpsertWithoutUserInput = {
     update: XOR<UserLevelUpdateWithoutUserInput, UserLevelUncheckedUpdateWithoutUserInput>
     create: XOR<UserLevelCreateWithoutUserInput, UserLevelUncheckedCreateWithoutUserInput>
@@ -54979,6 +55432,42 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Subscription"> | Date | string
   }
 
+  export type PaymentUpsertWithWhereUniqueWithoutUserInput = {
+    where: PaymentWhereUniqueInput
+    update: XOR<PaymentUpdateWithoutUserInput, PaymentUncheckedUpdateWithoutUserInput>
+    create: XOR<PaymentCreateWithoutUserInput, PaymentUncheckedCreateWithoutUserInput>
+  }
+
+  export type PaymentUpdateWithWhereUniqueWithoutUserInput = {
+    where: PaymentWhereUniqueInput
+    data: XOR<PaymentUpdateWithoutUserInput, PaymentUncheckedUpdateWithoutUserInput>
+  }
+
+  export type PaymentUpdateManyWithWhereWithoutUserInput = {
+    where: PaymentScalarWhereInput
+    data: XOR<PaymentUpdateManyMutationInput, PaymentUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type PaymentScalarWhereInput = {
+    AND?: PaymentScalarWhereInput | PaymentScalarWhereInput[]
+    OR?: PaymentScalarWhereInput[]
+    NOT?: PaymentScalarWhereInput | PaymentScalarWhereInput[]
+    id?: StringFilter<"Payment"> | string
+    status?: EnumPaymentStatusFilter<"Payment"> | $Enums.PaymentStatus
+    productId?: StringNullableFilter<"Payment"> | string | null
+    planId?: StringNullableFilter<"Payment"> | string | null
+    subscriptionId?: StringNullableFilter<"Payment"> | string | null
+    planName?: EnumSubscriptionPlanEnumNullableFilter<"Payment"> | $Enums.SubscriptionPlanEnum | null
+    recurring?: EnumPlanRecurringTypeNullableFilter<"Payment"> | $Enums.PlanRecurringType | null
+    userId?: StringFilter<"Payment"> | string
+    stripe_sessino_id?: StringNullableFilter<"Payment"> | string | null
+    amount?: FloatFilter<"Payment"> | number
+    currency?: StringFilter<"Payment"> | string
+    method?: StringFilter<"Payment"> | string
+    createdAt?: DateTimeFilter<"Payment"> | Date | string
+    updatedAt?: DateTimeFilter<"Payment"> | Date | string
+  }
+
   export type UserCreateWithoutStoreInput = {
     id?: string
     cover?: string | null
@@ -54997,6 +55486,7 @@ export namespace Prisma {
     customerId?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
+    isActive?: boolean
     currentLevel?: number
     voting_power?: number
     purchased_plan?: $Enums.SubscriptionPlanEnum | null
@@ -55016,6 +55506,7 @@ export namespace Prisma {
     ContestParticipant?: ContestParticipantCreateNestedManyWithoutUserInput
     chat?: ChatCreateNestedManyWithoutSenderInput
     subscriptions?: SubscriptionCreateNestedManyWithoutUserInput
+    payments?: PaymentCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutStoreInput = {
@@ -55036,6 +55527,7 @@ export namespace Prisma {
     customerId?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
+    isActive?: boolean
     currentLevel?: number
     voting_power?: number
     purchased_plan?: $Enums.SubscriptionPlanEnum | null
@@ -55055,6 +55547,7 @@ export namespace Prisma {
     ContestParticipant?: ContestParticipantUncheckedCreateNestedManyWithoutUserInput
     chat?: ChatUncheckedCreateNestedManyWithoutSenderInput
     subscriptions?: SubscriptionUncheckedCreateNestedManyWithoutUserInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutStoreInput = {
@@ -55090,6 +55583,7 @@ export namespace Prisma {
     customerId?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     currentLevel?: IntFieldUpdateOperationsInput | number
     voting_power?: IntFieldUpdateOperationsInput | number
     purchased_plan?: NullableEnumSubscriptionPlanEnumFieldUpdateOperationsInput | $Enums.SubscriptionPlanEnum | null
@@ -55109,6 +55603,7 @@ export namespace Prisma {
     ContestParticipant?: ContestParticipantUpdateManyWithoutUserNestedInput
     chat?: ChatUpdateManyWithoutSenderNestedInput
     subscriptions?: SubscriptionUpdateManyWithoutUserNestedInput
+    payments?: PaymentUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutStoreInput = {
@@ -55128,6 +55623,7 @@ export namespace Prisma {
     customerId?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     currentLevel?: IntFieldUpdateOperationsInput | number
     voting_power?: IntFieldUpdateOperationsInput | number
     purchased_plan?: NullableEnumSubscriptionPlanEnumFieldUpdateOperationsInput | $Enums.SubscriptionPlanEnum | null
@@ -55147,6 +55643,7 @@ export namespace Prisma {
     ContestParticipant?: ContestParticipantUncheckedUpdateManyWithoutUserNestedInput
     chat?: ChatUncheckedUpdateManyWithoutSenderNestedInput
     subscriptions?: SubscriptionUncheckedUpdateManyWithoutUserNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutUserPhotosInput = {
@@ -55167,6 +55664,7 @@ export namespace Prisma {
     customerId?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
+    isActive?: boolean
     currentLevel?: number
     voting_power?: number
     purchased_plan?: $Enums.SubscriptionPlanEnum | null
@@ -55186,6 +55684,7 @@ export namespace Prisma {
     ContestParticipant?: ContestParticipantCreateNestedManyWithoutUserInput
     chat?: ChatCreateNestedManyWithoutSenderInput
     subscriptions?: SubscriptionCreateNestedManyWithoutUserInput
+    payments?: PaymentCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutUserPhotosInput = {
@@ -55206,6 +55705,7 @@ export namespace Prisma {
     customerId?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
+    isActive?: boolean
     currentLevel?: number
     voting_power?: number
     purchased_plan?: $Enums.SubscriptionPlanEnum | null
@@ -55225,6 +55725,7 @@ export namespace Prisma {
     ContestParticipant?: ContestParticipantUncheckedCreateNestedManyWithoutUserInput
     chat?: ChatUncheckedCreateNestedManyWithoutSenderInput
     subscriptions?: SubscriptionUncheckedCreateNestedManyWithoutUserInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutUserPhotosInput = {
@@ -55331,6 +55832,7 @@ export namespace Prisma {
     customerId?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     currentLevel?: IntFieldUpdateOperationsInput | number
     voting_power?: IntFieldUpdateOperationsInput | number
     purchased_plan?: NullableEnumSubscriptionPlanEnumFieldUpdateOperationsInput | $Enums.SubscriptionPlanEnum | null
@@ -55350,6 +55852,7 @@ export namespace Prisma {
     ContestParticipant?: ContestParticipantUpdateManyWithoutUserNestedInput
     chat?: ChatUpdateManyWithoutSenderNestedInput
     subscriptions?: SubscriptionUpdateManyWithoutUserNestedInput
+    payments?: PaymentUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutUserPhotosInput = {
@@ -55369,6 +55872,7 @@ export namespace Prisma {
     customerId?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     currentLevel?: IntFieldUpdateOperationsInput | number
     voting_power?: IntFieldUpdateOperationsInput | number
     purchased_plan?: NullableEnumSubscriptionPlanEnumFieldUpdateOperationsInput | $Enums.SubscriptionPlanEnum | null
@@ -55388,6 +55892,7 @@ export namespace Prisma {
     ContestParticipant?: ContestParticipantUncheckedUpdateManyWithoutUserNestedInput
     chat?: ChatUncheckedUpdateManyWithoutSenderNestedInput
     subscriptions?: SubscriptionUncheckedUpdateManyWithoutUserNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type ContestPhotoUpsertWithWhereUniqueWithoutPhotoInput = {
@@ -55440,6 +55945,7 @@ export namespace Prisma {
     customerId?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
+    isActive?: boolean
     currentLevel?: number
     voting_power?: number
     purchased_plan?: $Enums.SubscriptionPlanEnum | null
@@ -55459,6 +55965,7 @@ export namespace Prisma {
     ContestParticipant?: ContestParticipantCreateNestedManyWithoutUserInput
     chat?: ChatCreateNestedManyWithoutSenderInput
     subscriptions?: SubscriptionCreateNestedManyWithoutUserInput
+    payments?: PaymentCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutLikesInput = {
@@ -55479,6 +55986,7 @@ export namespace Prisma {
     customerId?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
+    isActive?: boolean
     currentLevel?: number
     voting_power?: number
     purchased_plan?: $Enums.SubscriptionPlanEnum | null
@@ -55498,6 +56006,7 @@ export namespace Prisma {
     ContestParticipant?: ContestParticipantUncheckedCreateNestedManyWithoutUserInput
     chat?: ChatUncheckedCreateNestedManyWithoutSenderInput
     subscriptions?: SubscriptionUncheckedCreateNestedManyWithoutUserInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutLikesInput = {
@@ -55568,6 +56077,7 @@ export namespace Prisma {
     customerId?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     currentLevel?: IntFieldUpdateOperationsInput | number
     voting_power?: IntFieldUpdateOperationsInput | number
     purchased_plan?: NullableEnumSubscriptionPlanEnumFieldUpdateOperationsInput | $Enums.SubscriptionPlanEnum | null
@@ -55587,6 +56097,7 @@ export namespace Prisma {
     ContestParticipant?: ContestParticipantUpdateManyWithoutUserNestedInput
     chat?: ChatUpdateManyWithoutSenderNestedInput
     subscriptions?: SubscriptionUpdateManyWithoutUserNestedInput
+    payments?: PaymentUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutLikesInput = {
@@ -55606,6 +56117,7 @@ export namespace Prisma {
     customerId?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     currentLevel?: IntFieldUpdateOperationsInput | number
     voting_power?: IntFieldUpdateOperationsInput | number
     purchased_plan?: NullableEnumSubscriptionPlanEnumFieldUpdateOperationsInput | $Enums.SubscriptionPlanEnum | null
@@ -55625,6 +56137,7 @@ export namespace Prisma {
     ContestParticipant?: ContestParticipantUncheckedUpdateManyWithoutUserNestedInput
     chat?: ChatUncheckedUpdateManyWithoutSenderNestedInput
     subscriptions?: SubscriptionUncheckedUpdateManyWithoutUserNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserPhotoUpsertWithoutLikesInput = {
@@ -55684,6 +56197,7 @@ export namespace Prisma {
     customerId?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
+    isActive?: boolean
     currentLevel?: number
     voting_power?: number
     purchased_plan?: $Enums.SubscriptionPlanEnum | null
@@ -55703,6 +56217,7 @@ export namespace Prisma {
     ContestParticipant?: ContestParticipantCreateNestedManyWithoutUserInput
     chat?: ChatCreateNestedManyWithoutSenderInput
     subscriptions?: SubscriptionCreateNestedManyWithoutUserInput
+    payments?: PaymentCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutOtpsInput = {
@@ -55723,6 +56238,7 @@ export namespace Prisma {
     customerId?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
+    isActive?: boolean
     currentLevel?: number
     voting_power?: number
     purchased_plan?: $Enums.SubscriptionPlanEnum | null
@@ -55742,6 +56258,7 @@ export namespace Prisma {
     ContestParticipant?: ContestParticipantUncheckedCreateNestedManyWithoutUserInput
     chat?: ChatUncheckedCreateNestedManyWithoutSenderInput
     subscriptions?: SubscriptionUncheckedCreateNestedManyWithoutUserInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutOtpsInput = {
@@ -55777,6 +56294,7 @@ export namespace Prisma {
     customerId?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     currentLevel?: IntFieldUpdateOperationsInput | number
     voting_power?: IntFieldUpdateOperationsInput | number
     purchased_plan?: NullableEnumSubscriptionPlanEnumFieldUpdateOperationsInput | $Enums.SubscriptionPlanEnum | null
@@ -55796,6 +56314,7 @@ export namespace Prisma {
     ContestParticipant?: ContestParticipantUpdateManyWithoutUserNestedInput
     chat?: ChatUpdateManyWithoutSenderNestedInput
     subscriptions?: SubscriptionUpdateManyWithoutUserNestedInput
+    payments?: PaymentUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutOtpsInput = {
@@ -55815,6 +56334,7 @@ export namespace Prisma {
     customerId?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     currentLevel?: IntFieldUpdateOperationsInput | number
     voting_power?: IntFieldUpdateOperationsInput | number
     purchased_plan?: NullableEnumSubscriptionPlanEnumFieldUpdateOperationsInput | $Enums.SubscriptionPlanEnum | null
@@ -55834,6 +56354,7 @@ export namespace Prisma {
     ContestParticipant?: ContestParticipantUncheckedUpdateManyWithoutUserNestedInput
     chat?: ChatUncheckedUpdateManyWithoutSenderNestedInput
     subscriptions?: SubscriptionUncheckedUpdateManyWithoutUserNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutCommentProvidesInput = {
@@ -55854,6 +56375,7 @@ export namespace Prisma {
     customerId?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
+    isActive?: boolean
     currentLevel?: number
     voting_power?: number
     purchased_plan?: $Enums.SubscriptionPlanEnum | null
@@ -55873,6 +56395,7 @@ export namespace Prisma {
     ContestParticipant?: ContestParticipantCreateNestedManyWithoutUserInput
     chat?: ChatCreateNestedManyWithoutSenderInput
     subscriptions?: SubscriptionCreateNestedManyWithoutUserInput
+    payments?: PaymentCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutCommentProvidesInput = {
@@ -55893,6 +56416,7 @@ export namespace Prisma {
     customerId?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
+    isActive?: boolean
     currentLevel?: number
     voting_power?: number
     purchased_plan?: $Enums.SubscriptionPlanEnum | null
@@ -55912,6 +56436,7 @@ export namespace Prisma {
     ContestParticipant?: ContestParticipantUncheckedCreateNestedManyWithoutUserInput
     chat?: ChatUncheckedCreateNestedManyWithoutSenderInput
     subscriptions?: SubscriptionUncheckedCreateNestedManyWithoutUserInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutCommentProvidesInput = {
@@ -56040,6 +56565,7 @@ export namespace Prisma {
     customerId?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     currentLevel?: IntFieldUpdateOperationsInput | number
     voting_power?: IntFieldUpdateOperationsInput | number
     purchased_plan?: NullableEnumSubscriptionPlanEnumFieldUpdateOperationsInput | $Enums.SubscriptionPlanEnum | null
@@ -56059,6 +56585,7 @@ export namespace Prisma {
     ContestParticipant?: ContestParticipantUpdateManyWithoutUserNestedInput
     chat?: ChatUpdateManyWithoutSenderNestedInput
     subscriptions?: SubscriptionUpdateManyWithoutUserNestedInput
+    payments?: PaymentUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCommentProvidesInput = {
@@ -56078,6 +56605,7 @@ export namespace Prisma {
     customerId?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     currentLevel?: IntFieldUpdateOperationsInput | number
     voting_power?: IntFieldUpdateOperationsInput | number
     purchased_plan?: NullableEnumSubscriptionPlanEnumFieldUpdateOperationsInput | $Enums.SubscriptionPlanEnum | null
@@ -56097,6 +56625,7 @@ export namespace Prisma {
     ContestParticipant?: ContestParticipantUncheckedUpdateManyWithoutUserNestedInput
     chat?: ChatUncheckedUpdateManyWithoutSenderNestedInput
     subscriptions?: SubscriptionUncheckedUpdateManyWithoutUserNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type ContestPhotoUpsertWithoutCommentsInput = {
@@ -56205,6 +56734,7 @@ export namespace Prisma {
     customerId?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
+    isActive?: boolean
     currentLevel?: number
     voting_power?: number
     purchased_plan?: $Enums.SubscriptionPlanEnum | null
@@ -56224,6 +56754,7 @@ export namespace Prisma {
     ContestParticipant?: ContestParticipantCreateNestedManyWithoutUserInput
     chat?: ChatCreateNestedManyWithoutSenderInput
     subscriptions?: SubscriptionCreateNestedManyWithoutUserInput
+    payments?: PaymentCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutFollowersInput = {
@@ -56244,6 +56775,7 @@ export namespace Prisma {
     customerId?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
+    isActive?: boolean
     currentLevel?: number
     voting_power?: number
     purchased_plan?: $Enums.SubscriptionPlanEnum | null
@@ -56263,6 +56795,7 @@ export namespace Prisma {
     ContestParticipant?: ContestParticipantUncheckedCreateNestedManyWithoutUserInput
     chat?: ChatUncheckedCreateNestedManyWithoutSenderInput
     subscriptions?: SubscriptionUncheckedCreateNestedManyWithoutUserInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutFollowersInput = {
@@ -56288,6 +56821,7 @@ export namespace Prisma {
     customerId?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
+    isActive?: boolean
     currentLevel?: number
     voting_power?: number
     purchased_plan?: $Enums.SubscriptionPlanEnum | null
@@ -56307,6 +56841,7 @@ export namespace Prisma {
     ContestParticipant?: ContestParticipantCreateNestedManyWithoutUserInput
     chat?: ChatCreateNestedManyWithoutSenderInput
     subscriptions?: SubscriptionCreateNestedManyWithoutUserInput
+    payments?: PaymentCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutFollowingsInput = {
@@ -56327,6 +56862,7 @@ export namespace Prisma {
     customerId?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
+    isActive?: boolean
     currentLevel?: number
     voting_power?: number
     purchased_plan?: $Enums.SubscriptionPlanEnum | null
@@ -56346,6 +56882,7 @@ export namespace Prisma {
     ContestParticipant?: ContestParticipantUncheckedCreateNestedManyWithoutUserInput
     chat?: ChatUncheckedCreateNestedManyWithoutSenderInput
     subscriptions?: SubscriptionUncheckedCreateNestedManyWithoutUserInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutFollowingsInput = {
@@ -56381,6 +56918,7 @@ export namespace Prisma {
     customerId?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     currentLevel?: IntFieldUpdateOperationsInput | number
     voting_power?: IntFieldUpdateOperationsInput | number
     purchased_plan?: NullableEnumSubscriptionPlanEnumFieldUpdateOperationsInput | $Enums.SubscriptionPlanEnum | null
@@ -56400,6 +56938,7 @@ export namespace Prisma {
     ContestParticipant?: ContestParticipantUpdateManyWithoutUserNestedInput
     chat?: ChatUpdateManyWithoutSenderNestedInput
     subscriptions?: SubscriptionUpdateManyWithoutUserNestedInput
+    payments?: PaymentUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutFollowersInput = {
@@ -56419,6 +56958,7 @@ export namespace Prisma {
     customerId?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     currentLevel?: IntFieldUpdateOperationsInput | number
     voting_power?: IntFieldUpdateOperationsInput | number
     purchased_plan?: NullableEnumSubscriptionPlanEnumFieldUpdateOperationsInput | $Enums.SubscriptionPlanEnum | null
@@ -56438,6 +56978,7 @@ export namespace Prisma {
     ContestParticipant?: ContestParticipantUncheckedUpdateManyWithoutUserNestedInput
     chat?: ChatUncheckedUpdateManyWithoutSenderNestedInput
     subscriptions?: SubscriptionUncheckedUpdateManyWithoutUserNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserUpsertWithoutFollowingsInput = {
@@ -56468,6 +57009,7 @@ export namespace Prisma {
     customerId?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     currentLevel?: IntFieldUpdateOperationsInput | number
     voting_power?: IntFieldUpdateOperationsInput | number
     purchased_plan?: NullableEnumSubscriptionPlanEnumFieldUpdateOperationsInput | $Enums.SubscriptionPlanEnum | null
@@ -56487,6 +57029,7 @@ export namespace Prisma {
     ContestParticipant?: ContestParticipantUpdateManyWithoutUserNestedInput
     chat?: ChatUpdateManyWithoutSenderNestedInput
     subscriptions?: SubscriptionUpdateManyWithoutUserNestedInput
+    payments?: PaymentUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutFollowingsInput = {
@@ -56506,6 +57049,7 @@ export namespace Prisma {
     customerId?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     currentLevel?: IntFieldUpdateOperationsInput | number
     voting_power?: IntFieldUpdateOperationsInput | number
     purchased_plan?: NullableEnumSubscriptionPlanEnumFieldUpdateOperationsInput | $Enums.SubscriptionPlanEnum | null
@@ -56525,6 +57069,7 @@ export namespace Prisma {
     ContestParticipant?: ContestParticipantUncheckedUpdateManyWithoutUserNestedInput
     chat?: ChatUncheckedUpdateManyWithoutSenderNestedInput
     subscriptions?: SubscriptionUncheckedUpdateManyWithoutUserNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutVotesInput = {
@@ -56545,6 +57090,7 @@ export namespace Prisma {
     customerId?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
+    isActive?: boolean
     currentLevel?: number
     voting_power?: number
     purchased_plan?: $Enums.SubscriptionPlanEnum | null
@@ -56564,6 +57110,7 @@ export namespace Prisma {
     ContestParticipant?: ContestParticipantCreateNestedManyWithoutUserInput
     chat?: ChatCreateNestedManyWithoutSenderInput
     subscriptions?: SubscriptionCreateNestedManyWithoutUserInput
+    payments?: PaymentCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutVotesInput = {
@@ -56584,6 +57131,7 @@ export namespace Prisma {
     customerId?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
+    isActive?: boolean
     currentLevel?: number
     voting_power?: number
     purchased_plan?: $Enums.SubscriptionPlanEnum | null
@@ -56603,6 +57151,7 @@ export namespace Prisma {
     ContestParticipant?: ContestParticipantUncheckedCreateNestedManyWithoutUserInput
     chat?: ChatUncheckedCreateNestedManyWithoutSenderInput
     subscriptions?: SubscriptionUncheckedCreateNestedManyWithoutUserInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutVotesInput = {
@@ -56738,6 +57287,7 @@ export namespace Prisma {
     customerId?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     currentLevel?: IntFieldUpdateOperationsInput | number
     voting_power?: IntFieldUpdateOperationsInput | number
     purchased_plan?: NullableEnumSubscriptionPlanEnumFieldUpdateOperationsInput | $Enums.SubscriptionPlanEnum | null
@@ -56757,6 +57307,7 @@ export namespace Prisma {
     ContestParticipant?: ContestParticipantUpdateManyWithoutUserNestedInput
     chat?: ChatUpdateManyWithoutSenderNestedInput
     subscriptions?: SubscriptionUpdateManyWithoutUserNestedInput
+    payments?: PaymentUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutVotesInput = {
@@ -56776,6 +57327,7 @@ export namespace Prisma {
     customerId?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     currentLevel?: IntFieldUpdateOperationsInput | number
     voting_power?: IntFieldUpdateOperationsInput | number
     purchased_plan?: NullableEnumSubscriptionPlanEnumFieldUpdateOperationsInput | $Enums.SubscriptionPlanEnum | null
@@ -56795,6 +57347,7 @@ export namespace Prisma {
     ContestParticipant?: ContestParticipantUncheckedUpdateManyWithoutUserNestedInput
     chat?: ChatUncheckedUpdateManyWithoutSenderNestedInput
     subscriptions?: SubscriptionUncheckedUpdateManyWithoutUserNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type ContestPhotoUpsertWithoutVotesInput = {
@@ -56946,6 +57499,7 @@ export namespace Prisma {
     customerId?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
+    isActive?: boolean
     currentLevel?: number
     voting_power?: number
     purchased_plan?: $Enums.SubscriptionPlanEnum | null
@@ -56965,6 +57519,7 @@ export namespace Prisma {
     ContestParticipant?: ContestParticipantCreateNestedManyWithoutUserInput
     chat?: ChatCreateNestedManyWithoutSenderInput
     subscriptions?: SubscriptionCreateNestedManyWithoutUserInput
+    payments?: PaymentCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutLevelInput = {
@@ -56985,6 +57540,7 @@ export namespace Prisma {
     customerId?: string | null
     role?: $Enums.UserRole
     accessToken?: string | null
+    isActive?: boolean
     currentLevel?: number
     voting_power?: number
     purchased_plan?: $Enums.SubscriptionPlanEnum | null
@@ -57004,6 +57560,7 @@ export namespace Prisma {
     ContestParticipant?: ContestParticipantUncheckedCreateNestedManyWithoutUserInput
     chat?: ChatUncheckedCreateNestedManyWithoutSenderInput
     subscriptions?: SubscriptionUncheckedCreateNestedManyWithoutUserInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutLevelInput = {
@@ -57066,6 +57623,7 @@ export namespace Prisma {
     customerId?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     currentLevel?: IntFieldUpdateOperationsInput | number
     voting_power?: IntFieldUpdateOperationsInput | number
     purchased_plan?: NullableEnumSubscriptionPlanEnumFieldUpdateOperationsInput | $Enums.SubscriptionPlanEnum | null
@@ -57085,6 +57643,7 @@ export namespace Prisma {
     ContestParticipant?: ContestParticipantUpdateManyWithoutUserNestedInput
     chat?: ChatUpdateManyWithoutSenderNestedInput
     subscriptions?: SubscriptionUpdateManyWithoutUserNestedInput
+    payments?: PaymentUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutLevelInput = {
@@ -57104,6 +57663,7 @@ export namespace Prisma {
     customerId?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     currentLevel?: IntFieldUpdateOperationsInput | number
     voting_power?: IntFieldUpdateOperationsInput | number
     purchased_plan?: NullableEnumSubscriptionPlanEnumFieldUpdateOperationsInput | $Enums.SubscriptionPlanEnum | null
@@ -57123,6 +57683,7 @@ export namespace Prisma {
     ContestParticipant?: ContestParticipantUncheckedUpdateManyWithoutUserNestedInput
     chat?: ChatUncheckedUpdateManyWithoutSenderNestedInput
     subscriptions?: SubscriptionUncheckedUpdateManyWithoutUserNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserLevelCreateWithoutLevelInput = {
@@ -58023,6 +58584,22 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
+  export type PaymentCreateManyUserInput = {
+    id?: string
+    status?: $Enums.PaymentStatus
+    productId?: string | null
+    planId?: string | null
+    subscriptionId?: string | null
+    planName?: $Enums.SubscriptionPlanEnum | null
+    recurring?: $Enums.PlanRecurringType | null
+    stripe_sessino_id?: string | null
+    amount: number
+    currency: string
+    method: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
   export type TeamUpdateWithoutCreatorInput = {
     name?: StringFieldUpdateOperationsInput | string
     level?: StringFieldUpdateOperationsInput | string
@@ -58400,6 +58977,51 @@ export namespace Prisma {
     subscription_id?: NullableStringFieldUpdateOperationsInput | string | null
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     endDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PaymentUpdateWithoutUserInput = {
+    status?: EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
+    productId?: NullableStringFieldUpdateOperationsInput | string | null
+    planId?: NullableStringFieldUpdateOperationsInput | string | null
+    subscriptionId?: NullableStringFieldUpdateOperationsInput | string | null
+    planName?: NullableEnumSubscriptionPlanEnumFieldUpdateOperationsInput | $Enums.SubscriptionPlanEnum | null
+    recurring?: NullableEnumPlanRecurringTypeFieldUpdateOperationsInput | $Enums.PlanRecurringType | null
+    stripe_sessino_id?: NullableStringFieldUpdateOperationsInput | string | null
+    amount?: FloatFieldUpdateOperationsInput | number
+    currency?: StringFieldUpdateOperationsInput | string
+    method?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PaymentUncheckedUpdateWithoutUserInput = {
+    status?: EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
+    productId?: NullableStringFieldUpdateOperationsInput | string | null
+    planId?: NullableStringFieldUpdateOperationsInput | string | null
+    subscriptionId?: NullableStringFieldUpdateOperationsInput | string | null
+    planName?: NullableEnumSubscriptionPlanEnumFieldUpdateOperationsInput | $Enums.SubscriptionPlanEnum | null
+    recurring?: NullableEnumPlanRecurringTypeFieldUpdateOperationsInput | $Enums.PlanRecurringType | null
+    stripe_sessino_id?: NullableStringFieldUpdateOperationsInput | string | null
+    amount?: FloatFieldUpdateOperationsInput | number
+    currency?: StringFieldUpdateOperationsInput | string
+    method?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PaymentUncheckedUpdateManyWithoutUserInput = {
+    status?: EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
+    productId?: NullableStringFieldUpdateOperationsInput | string | null
+    planId?: NullableStringFieldUpdateOperationsInput | string | null
+    subscriptionId?: NullableStringFieldUpdateOperationsInput | string | null
+    planName?: NullableEnumSubscriptionPlanEnumFieldUpdateOperationsInput | $Enums.SubscriptionPlanEnum | null
+    recurring?: NullableEnumPlanRecurringTypeFieldUpdateOperationsInput | $Enums.PlanRecurringType | null
+    stripe_sessino_id?: NullableStringFieldUpdateOperationsInput | string | null
+    amount?: FloatFieldUpdateOperationsInput | number
+    currency?: StringFieldUpdateOperationsInput | string
+    method?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

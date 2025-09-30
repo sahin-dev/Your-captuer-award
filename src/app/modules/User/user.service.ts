@@ -315,8 +315,8 @@ const attachStoreToUser = async (userId:string)=>{
 
 }
 
-const searchUserByUserName = async (username:string) => {
-    const user = await prisma.user.findMany({where:{username:{contains:username}}, select:{id:true, avatar:true, firstName:true, username:true, lastName:true, fullName:true}})
+const searchUserByUserName = async (queryString:string) => {
+    const user = await prisma.user.findMany({where:{OR:[{username:{contains:queryString}}, {fullName:{contains:queryString}}]}, select:{id:true, avatar:true, firstName:true, username:true, lastName:true, fullName:true}})
 
     return user
 }

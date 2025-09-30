@@ -10,6 +10,7 @@ import globalEventHandler from "../../event/eventEmitter"
 import Events from "../../event/events.constant"
 import { UserRegistrationData, UserSignInData } from "./auth.types"
 import { userService } from "../User/user.service"
+import { UserRole } from "../../../prismaClient"
 
 
 
@@ -68,6 +69,39 @@ export const handleRegister = async (body:UserRegistrationData)=>{
 export const handleSignIn = async(body:UserSignInData)=>{
     
     const user = await prisma.user.findFirst({where:{email:body.email}})  
+    if (!user){
+        throw new ApiError(httpstatus.NOT_FOUND,"User not found")
+    }
+
+    if (await bcrypt.compare(body.password, user.password!)){
+        if (!(config.jwt.jwt_secret && config.jwt.expires_in)){
+            throw new Error("Jwt tokens are not valid")
+        }
+        let token = jwtHelpers.generateToken({id:user.id, role:user.role},config.jwt.jwt_secret as Secret, config.jwt.expires_in)
+
+        await prisma.user.update({where:{id:user.id}, data:{accessToken:token}})
+
+        // const userData = {
+        //     id:user.id,
+        //     firstName:user.firstName,
+        //     lastName: user.lastName,
+        //     username:user.username,
+        //     email: user.email,
+        //     role: user.role,
+        //     phone: user.phone
+        // }
+        
+        return {user:UserDto(user), token}
+    }else{
+        throw new ApiError(httpstatus.BAD_REQUEST, "Invalid credentials")
+    }
+}
+
+
+
+export const handleAdminSignIn = async(body:UserSignInData)=>{
+    
+    const user = await prisma.user.findFirst({where:{email:body.email, role:UserRole.ADMIN}})  
     if (!user){
         throw new ApiError(httpstatus.NOT_FOUND,"User not found")
     }

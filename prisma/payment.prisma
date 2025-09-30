@@ -11,6 +11,8 @@ model Payment {
     amount          Float
     currency        String
     method          String
+
+    user        User    @relation(references: [id], fields: [userId])
     createdAt  DateTime     @default(now())
     updatedAt DateTime      @updatedAt
 

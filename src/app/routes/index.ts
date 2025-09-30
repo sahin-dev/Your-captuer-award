@@ -16,6 +16,7 @@ import { storeRoutes } from "../modules/Store/store.route";
 import { levelRoutes } from "../modules/Level/level.route";
 import { notificationRoutes } from "../modules/Notification/notification.route";
 import { subscriptionRoutes } from "../modules/Subscription/subscription.route";
+import { dashboardRoutes } from "../modules/Dashboard/dashboard.route";
 
 
 
@@ -39,7 +40,8 @@ const moduleRoutes = [
     {path:"/stores", route:storeRoutes},
     {path: "/levels", route:levelRoutes},
     {path:"/notifications", route:notificationRoutes},
-    {path:"/subscriptions", route:subscriptionRoutes}
+    {path:"/subscriptions", route:subscriptionRoutes},
+    {path:"/dashboard", route:dashboardRoutes}
 
 ]
 
