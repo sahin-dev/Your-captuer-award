@@ -1,7 +1,6 @@
 import {Request, Response} from 'express'
 import { handleGetUserUploads, profileService } from './profile.service'
 import sendResponse from '../../../shared/ApiResponse'
-
 import httpStatus from 'http-status'
 import catchAsync from '../../../shared/catchAsync'
 
@@ -9,7 +8,12 @@ import catchAsync from '../../../shared/catchAsync'
 export const getMyUploads = async (req:Request, res:Response)=> {
     const userId = req.user.id
 
-    const uploads = await handleGetUserUploads(userId)
+    const {page, limit} = req.query as { page?: string; limit?: string }
+
+    let pageNum = page ? Number(page) : undefined
+    let limitNum = limit ? Number(limit) : undefined
+
+    const uploads = await handleGetUserUploads(userId, {page:pageNum, limit:limitNum})
 
     sendResponse(res, {
         statusCode:httpStatus.OK,
@@ -60,10 +64,25 @@ const getUserPhotoDetails = catchAsync(async (req:Request, res:Response) => {
         data:result
     })
 })
+
+const deleteUserPhoto = catchAsync(async (req:Request, res:Response) => {
+    const {photoId} = req.params
+    const userId = req.user.id
+
+    const result = await profileService.deleteUserPhoto(userId, photoId)
+
+    sendResponse(res, {
+        success:true,
+        statusCode:httpStatus.OK,
+        message:"User photo deleted successfully",
+        data:result
+    })
+})
 export const profileController = {
     getMyUploads,
     uploadUserPhoto,
     getUserStates,
-    getUserPhotoDetails
+    getUserPhotoDetails,
+    deleteUserPhoto
 
 }

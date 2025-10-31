@@ -29,6 +29,8 @@ router.get("/:contestId/prizes", auth(), contestPrizeController.getContestPrize)
 router.get("/:contestId/winners", auth(), contestController.getWinners)
 router.get("/:contestId/user-photos", auth(), contestController.getUserRemainingPhotos)
 
+router.delete("/:contestId/photos/:photoId", auth(), contestController.deleteContestPhoto)
+
 router.post("/:contestId/upload",fileUploader.userPhoto, auth(), contestController.uploadPhoto)
 router.route("/:contestId").get(auth(), contestController.getContestById).put(auth(UserRole.ADMIN), contestController.updateContestDetails).delete(auth(UserRole.ADMIN), contestController.deleteContest)
 router.route("/:contestId/join").post(auth(),contestController.joinContest)

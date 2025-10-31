@@ -4,12 +4,20 @@ import { userService } from "./user.service";
 import sendResponse from "../../../shared/ApiResponse";
 import httpstatus from 'http-status'
 import ApiError from "../../../errors/ApiError";
-import { UserRole } from "../../../prismaClient";
+
 
 
 
 const getUsers = catchAsync(async (req:Request, res:Response)=>{
-    const users = await userService.getUsers()
+    const {page, limit} = req.query as { page?: string; limit?: string }
+
+    let pageNum = page ? Number(page) : undefined
+    let limitNum = limit ? Number(limit) : undefined
+
+    if (typeof pageNum === 'number' && isNaN(pageNum)) pageNum = undefined
+    if (typeof limitNum === 'number' && isNaN(limitNum)) limitNum = undefined
+
+    const users = await userService.getUsers(pageNum, limitNum)
 
     sendResponse(res,{
         success:true,
@@ -130,8 +138,6 @@ const forgetPassword = catchAsync(async (req:Request, res:Response)=>{
         data:{}
     }) 
 })
-
-
 
 const verifyOtp = catchAsync(async (req:Request, res:Response)=>{
     const {email, code} = req.body

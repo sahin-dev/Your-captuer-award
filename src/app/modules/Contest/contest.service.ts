@@ -6,7 +6,7 @@ import { ContestMode, ContestParticipant, ContestPhoto, ContestStatus, PrizeType
 import { IContest } from './contest.interface';
 import { contestData } from './contest.type';
 import { contestRuleService } from './ContestRules/contestRules.service';
-import { addContestPrizes } from './ContestPrizes/contestPrize.service';
+import { addContestPrizes, getContestPrizes } from './ContestPrizes/contestPrize.service';
 import { ContestRule } from './ContestRules/contestRules.type';
 import { ContestPrize } from './ContestPrizes/contestPrize.type';
 import { profileService } from '../Profile/profile.service';
@@ -14,6 +14,7 @@ import agenda from '../Agenda';
 import { validateContestDate } from '../../../helpers/validateDate';
 import { userStoreService } from '../User/UserStore/userStore.service';
 import { voteService } from '../Vote/vote.service';
+import { use } from 'passport';
 
 
 
@@ -127,9 +128,9 @@ const createContest = async (creatorId: string, body: contestData, banner:Expres
         createdPrizes = await addContestPrizes(contest.id, prizes)
     }
 
-    await prisma.contest.update({where:{id:contest.id}, data:{rules:body.rules, prizes:body.prizes}})
+    const updatedContest = await prisma.contest.update({where:{id:contest.id}, data:{rules:body.rules, prizes:body.prizes}})
 
-    return {contest, rules:createdRules, prizes:createdPrizes};
+    return {contest, rules:updatedContest.rules, prizes:updatedContest.prizes};
 };
 
 
@@ -256,10 +257,13 @@ const joinContest = async (userId:string,contestId:string)=>{
 const getContestById = async (contestId: string) => {
     const contest = await prisma.contest.findUnique({
         where: { id: contestId },
-        include: { creator: true, participants: true }
+        include: { creator: {omit:{password:true, accessToken:true}}}
     });
 
-    return contest;
+    const rules = await contestRuleService.getContestRules(contestId)
+    const prizes = await getContestPrizes(contestId)
+
+    return {...contest, rules, prizes};
 }
 
 
@@ -282,6 +286,11 @@ const getContestsByStatus = async (userId:string,status: ContestStatus) => {
         where:{status},
         include: { creator: {select:{id:true, avatar:true,fullName:true,cover:true, firstName:true, lastName:true}}}
     });
+
+    if(status === ContestStatus.OPEN){
+        
+    }
+    
     
 
     return contests;
@@ -291,10 +300,32 @@ const getContestsByStatus = async (userId:string,status: ContestStatus) => {
 //Get all uploads of a user
 
 const getContestUploadsByUserId = async (contestId:string, userId:string)=>{
-    const userUploads = await prisma.contestPhoto.findMany({where:{contestId:contestId, photo:{userId}}})
+    const userUploads = await prisma.contestPhoto.findMany({where:{contestId:contestId, photo:{userId}}, include:{photo:{select:{url:true}}}})
+   const mappedPhotos  = userUploads.map(upload => {
 
-    return userUploads
+    const {photo,...rest} = upload
+    return {...rest,url:upload.photo.url}
+   })
+
+    return mappedPhotos
 }
+
+
+
+const deleteContestUploadById = async (contestId:string, userId:string, photoId:string)=>{  
+
+    const contestUpload = await prisma.contestPhoto.findUnique({where:{id:photoId, contestId}, include:{participant:true}})
+    if(!contestUpload){
+        throw new ApiError(httpstatus.NOT_FOUND, "Contest upload not found")
+    }
+    if (contestUpload.participant.userId !== userId){
+        throw new ApiError(httpstatus.FORBIDDEN, "You are not allowed to delete this contest upload")
+    }
+    await prisma.contestPhoto.delete({where:{id:photoId}})
+    return "Contest upload deleted successfully"    
+ }
+
+
 
 
 // Get all the contests
@@ -312,6 +343,7 @@ const getMyActiveContests = async (userId:string) => {
     const contestDetails = contests.map (async (contest) => {
         const levelData = await getParticipantLevelData(contest.id, userId)
         const photos = await getContestUploadsByUserId(contest.id,userId)
+        
         
         return {...contest, level_data:levelData, photos}
     })
@@ -334,6 +366,7 @@ const getUpcomingContest = async () => {
 //Get my contests which are completed
 
 const getMyCompletedContest = async (userId:string) => {
+
     if (!userId){
         throw new ApiError(httpstatus.BAD_REQUEST, "User id is not provided")
     }
@@ -659,7 +692,8 @@ const uploadPhotoToContest = async (contestId:string,userId:string, photoId:stri
             throw new ApiError(httpstatus.NOT_FOUND, "user photo not found")
         }
 
-        uploadImage = await prisma.contestPhoto.create({data:{contestId,participantId:contestParticipant.id,photoId:userPhoto?.id}})
+        uploadImage = await prisma.contestPhoto.create({data:{contestId,participantId:contestParticipant.id,photoId:userPhoto.id}, include:{photo:true} })
+        console.log(uploadImage)
     }
     //add watcher for exposure bonus
 
@@ -952,6 +986,7 @@ export const contestService = {
     getRemainingPhotos,
     awardTeams,
     tradePhoto,
-    chargePhoto
+    chargePhoto,
+    deleteContestUploadById
 
 }

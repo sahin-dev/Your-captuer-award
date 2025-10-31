@@ -10,16 +10,12 @@ import sendResponse from '../../../shared/ApiResponse';
 
 
 const googleCallback =  (req:Request, res:Response, next:NextFunction) => {
-  passport.authenticate(
-    "google",
-    { failureRedirect: failureRedirect },
+  passport.authenticate("google",{ failureRedirect: failureRedirect, session:false },
     async (err:any, user:any, info:any) => {
         
       if (err || !user) {
         throw new ApiError(httpStatus.NOT_FOUND, 'User not found')
       }
-      
-
      
       const token = generateToken({id:user.id, role:user.role})
 
@@ -30,12 +26,8 @@ const googleCallback =  (req:Request, res:Response, next:NextFunction) => {
         secure: true,
         maxAge: 365 * 24 * 60 * 60 * 1000,
       })
-      sendResponse(res, {
-        success:true,
-        statusCode:200,
-        message:"user logged in successfully",
-        data:user
-      })
+      
+      res.redirect(`https://your-capture-awards-frontend.vercel.app?token=${token}`)
     }
   )(req, res, next);
 };
@@ -52,7 +44,7 @@ const facebookCallback = (req:Request, res:Response, next:NextFunction) => {
       }
 
      
-      const token = await generateToken({id:user.id, role:user.role})
+      const token = generateToken({id:user.id, role:user.role})
 
       await prisma.user.update({where:{id:user.id}, data:{accessToken:token}})
       

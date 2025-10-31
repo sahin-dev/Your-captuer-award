@@ -3,22 +3,35 @@ import { fileUploader } from "../../../helpers/fileUploader"
 import prisma from "../../../shared/prisma"
 import httpStatus from 'http-status'
 import { achievementService } from "../Achievements/achievement.service"
-import { UserPhoto } from "../../../prismaClient"
 import { MappedPhoto } from "./profile.types"
 import { voteService } from "../Vote/vote.service"
 import { followService } from "../Follow/followe.service"
 
-export const handleGetUserUploads = async (userId:string)=>{
+export const handleGetUserUploads = async (userId:string, pagination:{page?:number, limit?:number})=>{
+    let page = pagination.page || 1
+
+    let limit = pagination.limit || 20
+
+    let skip = (page - 1) * limit
+
+    const totalUploads = await prisma.userPhoto.count({where:{userId}})
+
     const uploads = await prisma.userPhoto.findMany({
-        where:{userId},include:{contestUpload:{select:{achievements:{orderBy:{createdAt:'desc'}, take:1,select:{category:true},}, _count:{select:{votes:true}}}},_count:{select:{likes:true}}},
+        where:{userId},include:{
+            contestUpload:{select:{achievements:{orderBy:{createdAt:'desc'}, take:1,
+            select:{category:true},},
+            _count:{select:{votes:true}}}},_count:{select:{likes:true}}},
+            take:limit, skip
     })
+
     const newUploads = uploads.map( photo => {
         const totalVotes = photo.contestUpload.reduce ( (sum, contestUploads)=>{
             return sum + (contestUploads?._count?.votes ?? 0)
         },0)
         return { ...photo, totalVotes,likes:photo._count.likes,_count:undefined}
     })
-    return newUploads
+
+    return {photos:newUploads, count:totalUploads, page, limit}
 } 
 
 //Upload photo to cloud and then add to user profile
@@ -38,7 +51,9 @@ export const uploadUserPhoto = async (userId:string, file:Express.Multer.File)=>
 
     const addedPhoto =   await handleAddUpload(userId, uploadedFile.Location)
 
-    return addedPhoto
+    return {...addedPhoto, contestUpload: [],
+            totalVotes: 0,
+            likes: 0}
 }
 
 export const handleAddUpload = async (userId:string, photoUrl:string)=>{
@@ -192,6 +207,18 @@ const getUserPhotoDetails = async (userId:string, photoId:string) => {
     return {photo, votes, comments, achievememnts}
 }
 
+const deleteUserPhoto = async (userId:string, photoId:string)=> {
+    const photo = await prisma.userPhoto.findUnique({where:{id:photoId, userId}})
+
+    if(!photo){
+        throw new ApiError(httpStatus.NOT_FOUND, "photo not found")
+    }
+
+    const deletedPhoto = await prisma.userPhoto.delete({where:{id:photo.id}})
+
+    return deletedPhoto
+}
+
 export const profileService = {
     uploadUserPhoto,
     getStates,
@@ -200,6 +227,7 @@ export const profileService = {
     getPhotos,
     handleAddUpload,
     getUserProfileDetails,
-    getUserPhotoDetails
- 
+    getUserPhotoDetails,
+    deleteUserPhoto
+
 }

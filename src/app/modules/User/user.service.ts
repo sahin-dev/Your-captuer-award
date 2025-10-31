@@ -15,15 +15,16 @@ import { userStoreService } from "./UserStore/userStore.service"
 
 
 
-
-const getUsers = async ()=>{
-    const users = await prisma.user.findMany({omit:{password:true, createdAt:true, updatedAt:true,accessToken:true}})
+const getUsers = async (page: number = 1, limit: number = 20)=>{
+    const skip = (page - 1) * limit
+    const totalUsers = await prisma.user.count()
+    const users = await prisma.user.findMany({omit:{password:true, createdAt:true, updatedAt:true,accessToken:true}, take:limit, skip})
 
     // const mappedUsers = users.map((user)=>{
     //     return UserDto(user)
     // })
 
-    return users
+    return {page, limit,count:totalUsers,users}
 }
 
 
@@ -76,7 +77,6 @@ const updateUser = async (adminId:string,userId:string,userData:userAdminUpdateD
     if(!user){
         throw new ApiError(httpstatus.NOT_FOUND, "User not found")
     }
-
 
     const updatedUser = await prisma.user.update({where:{id:user.id}, data:{
         firstName: userData.firstName,
@@ -199,15 +199,12 @@ const forgetPassword = async ( email:string)=>{
     const otp = generateOtp()
     const expires_in = new Date(Date.now() + 5 * 60 * 1000)
 
-
-
     if(existingOtp){
         await prisma.otp.update({where:{userId:user.id}, data:{code:otp,expires_in, expiresAt:expires_in}})
     }else{
         await prisma.otp.create({data:{code:otp, expires_in,userId:user.id, expiresAt:expires_in}})
     }
-
-
+    
     const html = `<div class="email-body">
       <h2>Password Reset</h2>
       <p>We got a request to reset your password</p>
@@ -325,7 +322,9 @@ const checkLevelRequirement = async ()=>{
 
 }
 
-const checkUserLevel = async (userId:string)=> {}
+const checkUserLevel = async (userId:string)=> {
+
+}
 
 const getPhototAchievements = async (photoId:string) => {
     const achievements = await prisma.contestAchievement.findMany({where:{photo:{photoId}}})

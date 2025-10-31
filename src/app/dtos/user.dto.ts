@@ -14,7 +14,6 @@ export const UserDto = (user:User)=>{
         phone: user.phone,
         avatar: user.avatar,
         cover: user.cover,
-        level:user.level,
         location: user.location
     }
 }

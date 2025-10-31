@@ -10,5 +10,6 @@ route.post("/photos/upload",auth(), fileUploader.userPhoto, profileController.up
 route.get("/stats", auth(), profileController.getUserStates);
 
 route.get("/photos/:photoId", auth(), profileController.getUserPhotoDetails)
+route.delete("/photos/:photoId", auth(), profileController.deleteUserPhoto)
 
 export const profileRoutes = route;

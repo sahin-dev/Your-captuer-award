@@ -153,6 +153,19 @@ const getMyActiveContests = catchAsync(async (req:Request, res:Response) => {
     })
 })
 
+const deleteContestPhoto = catchAsync(async (req:Request, res:Response) => {
+    const {contestId, photoId} = req.params
+    const userId = req.user.id
+    const result = await contestService.deleteContestUploadById(contestId, userId, photoId)
+
+    sendResponse(res, {
+        success:true,
+        statusCode:httpStatus.OK,
+        message:"photo deleted successfully",
+        data:result
+    })
+})
+
 const promotePhoto = catchAsync(async (req:Request, res:Response) => {
     const {contestId,photoId} = req.body
     const userId = req.user.id
@@ -240,6 +253,7 @@ export const contestController = {
     getWinners,
     getUserRemainingPhotos,
     tradePhoto,
-    chargePhoto
+    chargePhoto,
+    deleteContestPhoto
 
 }
