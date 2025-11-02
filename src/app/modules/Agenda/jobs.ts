@@ -192,7 +192,7 @@ agenda.define("contest:watcher", async (job: Job) => {
     console.log(`Contest has ended ${contestId}`)
     
     await contestService.identifyWinner(contestId)
-    await contestService.awardTeams(contest.id)
+    // await contestService.awardTeams(contest.id)
 });
 
 agenda.define("exposure:watcher", async (job:Job) => {

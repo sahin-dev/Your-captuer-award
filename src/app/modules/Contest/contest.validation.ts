@@ -18,7 +18,8 @@ export const createContestSchema = z.object({
     endDate: z.string().nonempty('End Date is required'),
     isMoneyContest:z.enum(['true', 'false'], {invalid_type_error:'\'isMoneyContes\'t must be true or false'}).optional().transform((val)=> val === "true"),
     maxPrize:z.string().optional().transform(val=> Number(val)),
-    minPrize:z.string().optional().transform(val => Number(val))
+    minPrize:z.string().optional().transform(val => Number(val)),
+    maxUploads:z.string().optional().transform(val => Number(val)),
 });
 
  

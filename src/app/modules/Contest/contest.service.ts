@@ -82,13 +82,14 @@ const createContest = async (creatorId: string, body: contestData, banner:Expres
     let bannerUrl = banner? (await fileUploader.uploadToDigitalOcean(banner)).Location: null
 
     let levels = body.level_requirements.map(levels => parseInt(levels))
-
+    console.log(body)
     const contestData:any = {
         creatorId,
         title: body.title,
         description: body.description,
         status: ContestStatus.UPCOMING,
         level_requirements:levels,
+        maxUploads: Number(body.maxUploads),
         ...(bannerUrl && {banner:bannerUrl})
     }
     // If contest is money contest, add money contest data like max prize and min prize for the paerticipants
@@ -107,7 +108,7 @@ const createContest = async (creatorId: string, body: contestData, banner:Expres
 
     //If contest is recurring, Add recurring data to the contest object
     // By default every object is recurring false, so if conetest is not recurring, it will not have recurring data
-    contestData.startDate = new Date(body.startDate)
+    contestData.startDate = new Date(body.startDate) < new Date(Date.now()) ? new Date(Date.now()) : new Date(body.startDate)
     contestData.endDate = new Date(body.endDate)
 
     // Create a normal contest entry for all type of contest
@@ -303,13 +304,13 @@ const getContestUploadsByUserId = async (contestId:string, userId:string)=>{
     const userUploads = await prisma.contestPhoto.findMany({where:{contestId:contestId, photo:{userId}}, include:{photo:{select:{url:true}}}})
    const mappedPhotos  = userUploads.map(upload => {
 
-    const {photo,...rest} = upload
+    const {photo, ...rest} = upload
+
     return {...rest,url:upload.photo.url}
    })
 
     return mappedPhotos
 }
-
 
 
 const deleteContestUploadById = async (contestId:string, userId:string, photoId:string)=>{  
@@ -351,10 +352,6 @@ const getMyActiveContests = async (userId:string) => {
     return await Promise.all(contestDetails);
 };
 
-
-
-
-
 const getUpcomingContest = async () => {
     const contests = await prisma.contest.findMany({
         where: { status: ContestStatus.UPCOMING },
@@ -380,9 +377,10 @@ const getMyCompletedContest = async (userId:string) => {
 
     // const myCompletedContests = await prisma.contest.findMany({where:{status:ContestStatus.COMPLETED, participants:{some:{userId}}},include:{_count:{select:{votes:true}}}})
     
-
     return myParticipatedContest
 }
+
+
 
 const getContestWinners = async (contestId:string) => {
     const contest = await prisma.contest.findUnique({where:{id:contestId, status:ContestStatus.CLOSED}})
@@ -497,6 +495,7 @@ const awardTeams = async (contestId:string) => {
 
 const awardTeam = async (matchId:string) => {
     const teamMatch = await prisma.teamMatch.findUnique({where:{id:matchId}})
+
     if(!teamMatch){
         console.log("match not found")
         return
@@ -627,7 +626,7 @@ const getContestUploads = async (userId:string,contestId:string)=>{
     }
 
 
-    const contestUploads = await prisma.contestPhoto.findMany({where:{contestId, participantId:{not:participant.id}}})
+    const contestUploads = await prisma.contestPhoto.findMany({where:{contestId}, include:{photo:{select:{url:true}}}})
 
     if(contest.status === ContestStatus.ACTIVE){
         contestUploads.sort((a: ContestPhoto, b: ContestPhoto) => {
@@ -638,7 +637,7 @@ const getContestUploads = async (userId:string,contestId:string)=>{
             return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
         })
     }
-    return contestUploads
+    return contestUploads.map(upload => ({url:upload.photo.url, id:upload.id}))
 }   
 
 
@@ -683,10 +682,12 @@ const uploadPhotoToContest = async (contestId:string,userId:string, photoId:stri
         let uploadedPhoto = await profileService.uploadUserPhoto(userId, file)
 
         uploadImage = await prisma.contestPhoto.create({data:{contestId,participantId:contestParticipant.id,photoId:uploadedPhoto.id}})
+
     }else{
         if(!photoId){
             throw new ApiError(httpstatus.BAD_REQUEST,"photo is is required")
         }
+
         const userPhoto = await prisma.userPhoto.findUnique({where:{id:photoId}})
         if(!userPhoto){
             throw new ApiError(httpstatus.NOT_FOUND, "user photo not found")
@@ -701,7 +702,6 @@ const uploadPhotoToContest = async (contestId:string,userId:string, photoId:stri
         agenda.every("1 minute", "exposure:watcher",{contestPhotoId:uploadImage.id})
     }
 
-   
     return uploadImage
 }
 

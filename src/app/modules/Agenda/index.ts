@@ -5,7 +5,7 @@ agenda.on('ready', async () => {
     console.log("Agenda is ready"); 
     agenda.start();
     agenda.every("five minute", "contest:checkRecurring");   
-    agenda.every("one minute", "contest:active")
+    agenda.every("5 seconds", "contest:active")
 });
 agenda.on("error", (e) => {
     console.log(e);
