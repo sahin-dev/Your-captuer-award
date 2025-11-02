@@ -626,7 +626,7 @@ const getContestUploads = async (userId:string,contestId:string)=>{
     }
 
 
-    const contestUploads = await prisma.contestPhoto.findMany({where:{contestId}, include:{photo:{select:{url:true}}}})
+    const contestUploads = await prisma.contestPhoto.findMany({where:{contestId, votes:{none:{providerId:participant.userId}}}, include:{photo:{select:{url:true}}}})
 
     if(contest.status === ContestStatus.ACTIVE){
         contestUploads.sort((a: ContestPhoto, b: ContestPhoto) => {
