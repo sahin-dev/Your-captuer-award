@@ -28,6 +28,8 @@ router.get("/:contestId/rules", auth(), contestRuleController.getContestRules)
 router.get("/:contestId/prizes", auth(), contestPrizeController.getContestPrize)
 router.get("/:contestId/winners", auth(), contestController.getWinners)
 router.get("/:contestId/user-photos", auth(), contestController.getUserRemainingPhotos)
+router.get("/:contestId/rank-photos", auth(), contestController.getContestPhotosSortedByVote)
+router.get("/:contestId/rank-photographer", auth(), contestController.getContestPhotographers)
 
 router.delete("/:contestId/photos/:photoId", auth(), contestController.deleteContestPhoto)
 

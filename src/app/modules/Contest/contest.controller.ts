@@ -238,6 +238,35 @@ const chargePhoto = catchAsync(async (req:Request, res:Response) => {
     })
 })
 
+const getContestPhotosSortedByVote = catchAsync(async (req:Request, res:Response)=> {
+
+    const {contestId} = req.params
+    const {page, limit} = req.query as {page:string, limit:string}
+    const photos = await contestService.getContestPhotosSortedByVote(contestId, parseInt(page), parseInt(limit))
+
+    sendResponse(res, {
+        statusCode:200,
+        success:true,
+        message:'photos fetched successfully',
+        data:photos
+    })
+})
+
+
+
+const getContestPhotographers = catchAsync(async (req:Request, res:Response)=> {
+
+    const {contestId} = req.params
+    const {page =1, limit = 20} = req.query as {page:string, limit:string}
+    const photos = await contestService.getContestTopPhotographers(contestId, Number(page), Number(limit))
+
+    sendResponse(res, {
+        statusCode:200,
+        success:true,
+        message:'photographer fetched successfully',
+        data:photos
+    })
+})
 export const contestController = {
     createContest,
     uploadPhoto,
@@ -254,6 +283,8 @@ export const contestController = {
     getUserRemainingPhotos,
     tradePhoto,
     chargePhoto,
-    deleteContestPhoto
+    deleteContestPhoto,
+    getContestPhotosSortedByVote,
+    getContestPhotographers
 
 }

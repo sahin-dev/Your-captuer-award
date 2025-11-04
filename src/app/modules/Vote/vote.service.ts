@@ -4,6 +4,7 @@ import prisma from "../../../shared/prisma"
 import { ContestStatus, Vote, VoteType } from '../../../prismaClient'
 import globalEventHandler from '../../event/eventEmitter'
 import Events from '../../event/events.constant'
+import { ObjectId } from 'mongodb'
 
 const checkExistingVote = async (userId:string, contestId:string, photoId:string)=>{
     const exisitngVote = await prisma.vote.findFirst({where:{providerId:userId, contestId, photoId}})
@@ -28,8 +29,9 @@ const getVoteType = async (photoId:string)=>{
 
 
 export const addOneVote = async (userId:string, contestId:string, photoId:string)=>{
+    
     const user = await prisma.user.findUnique({where:{id:userId}})
-
+    
      if (!user){
         throw new ApiError(httpstatus.NOT_FOUND, 'User not found')
     }
@@ -77,16 +79,24 @@ export const addVotes = async (userId:string,contestId:string, photoIds:string[]
    
     let votes:Vote[] = [];
 
-    photoIds.forEach( async (photoId:string)=>{
-        
+    try{
+        photoIds.forEach( async (photoId:string)=>{
+       
        const vote = await addOneVote(userId,contestId,photoId)
        if(vote)
             votes.push(vote)
 
         //publish a event if new vote added 
+        return await Promise.all(votes)
     })
 
-    return await Promise.all(votes)
+    }catch(err){
+        throw err
+    }
+
+  
+
+    
 }
 
 
@@ -138,11 +148,32 @@ const getUserContestSpecificVote = async (contestId:string, userId:string) => {
     return totalVote
 }
 
+const getParticipantTotalVotes = async (photos:{id:string, url:string}[])=>{
+
+    const photosWithVotes = await Promise.all(photos.map(async photo => {
+        const vote = await getVoteCount(photo.id)
+        return {...photo, vote}
+    }))
+
+    const totalVotes = photosWithVotes.reduce((prev,curr) => prev + curr.vote,0)
+
+  
+
+    return totalVotes
+}
+
+const totalVotesOfParticipant = async (participantId:string, contestId:string)=> {
+    const totalVotes = await prisma.vote.count({where:{contestId, photo:{participantId}}})
+
+    return totalVotes
+}
+
 export const voteService = {
     getTotalPromotedVotes,
     getTotalOrganicVotes,
     getTeamTotalVotes,
     getVoteCount,
     getUserTotalVotes,
-    getUserContestSpecificVote
+    getUserContestSpecificVote,
+    totalVotesOfParticipant
 }

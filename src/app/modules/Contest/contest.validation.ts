@@ -1,4 +1,5 @@
 
+import { checkObjectId } from '../../../helpers/checkObjectId';
 import { PrizeType, RecurringType } from '../../../prismaClient';
 import { z } from 'zod';
 
@@ -28,6 +29,6 @@ export const createContestSchema = z.object({
 
 export const joinContestSchema = z.object({
     body: z.object({
-        contestId: z.string().min(1, 'Contest ID is required')
+        contestId: z.string().min(1, 'Contest ID is required').refine(checkObjectId, { message: 'Invalid Contest ID' }),
     })
 });

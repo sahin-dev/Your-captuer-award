@@ -963,6 +963,59 @@ const chargePhoto = async (userId:string, contestId:string, contestPhotoId:strin
     return newContestPhoto
 }
 
+const getContestPhotosSortedByVote = async (contestId:string, page?:number, limit?:number) => {
+
+    const contest = await prisma.contest.findUnique({where:{id:contestId, status:ContestStatus.ACTIVE}})
+
+    if(!contest){
+        throw new ApiError(httpstatus.NOT_FOUND, 'Contest not found')
+    }
+    const contestUploads = await prisma.contestPhoto.findMany({where:{contestId}, include:{participant:{include:{user:{select:{id:true, avatar:true, country:true}}}}, photo:{select:{id:true, url:true}}}})  
+
+    const uploadsWithVotes = await Promise.all(contestUploads.map( async upload => {
+        const voteCount = await voteService.getVoteCount(upload.id)
+
+        const user = upload.participant.user
+        const userPhoto = upload.photo
+        return {id:upload.id, voteCount, user,userPhoto:userPhoto}
+    }))
+
+    const sortedUploads = uploadsWithVotes.sort((a,b) => b.voteCount - a.voteCount)
+    return sortedUploads
+}
+
+const getContestTopPhotographers =  async (contestId:string, page?:number, limit?:number)=>{
+
+    const contest = await prisma.contest.findUnique({where:{id:contestId, status:ContestStatus.ACTIVE}})
+
+    if(!contest){
+        throw new ApiError(httpstatus.NOT_FOUND, "contest not found")
+    }
+
+
+    const contestParticipants = await prisma.contestParticipant.findMany({where:{contestId},take:limit,
+         include:{photos:{select:{photo:{select:{id:true, url:true}}, id:true}}, user:{select:{id:true, avatar:true}}}})
+
+    const participantWithVote =  await Promise.all(contestParticipants.map(async  participant => {
+        const photos = participant.photos
+        const totalVotes = await voteService.totalVotesOfParticipant(participant.id, contestId)
+
+        const user = participant.user
+
+
+        return {...participant,user,photos:Object.values(photos), totalVotes}
+    }))
+
+    const sortedParticipant = participantWithVote.sort((a,b) => b.totalVotes - a.totalVotes)
+
+
+
+    return sortedParticipant
+
+}
+
+
+
 
 export const contestService = {
     createContest,
@@ -987,6 +1040,8 @@ export const contestService = {
     awardTeams,
     tradePhoto,
     chargePhoto,
-    deleteContestUploadById
+    deleteContestUploadById,
+    getContestPhotosSortedByVote,
+    getContestTopPhotographers
 
 }
