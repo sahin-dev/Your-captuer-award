@@ -81,12 +81,12 @@ agenda.define("contest:active", async ()=>{
     upcomingContest.forEach(async  (contest) => {
         let contestStartDate = new Date(contest.startDate).getTime()
         let currentDate = new Date().getTime()
-
+        console.log(contestStartDate)
+        console.log(currentDate)
         if(currentDate >= contestStartDate){
             await prisma.contest.update({where:{id:contest.id}, data:{status:ContestStatus.ACTIVE}})
             agenda.schedule(contest.endDate,"contest:watcher", {contestId:contest.id})
         }
-
         
     })
 })

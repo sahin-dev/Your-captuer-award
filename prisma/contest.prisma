@@ -193,7 +193,6 @@ type RecurringData {
 enum PrizeType {
   TOP_PHOTO
   TOP_PHOTOGRAPHER
-  TOP_YC_PICK
 }
 
 

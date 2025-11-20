@@ -35,20 +35,28 @@ export const addOneVote = async (userId:string, contestId:string, photoId:string
      if (!user){
         throw new ApiError(httpstatus.NOT_FOUND, 'User not found')
     }
+
     const contest = await prisma.contest.findUnique({where:{id:contestId, status:ContestStatus.ACTIVE}})
     
-
     if (!contest){
         throw new  ApiError(httpstatus.NOT_FOUND, 'contest not found')
     }
-    const participant = await prisma.contestParticipant.findFirst({where:{contestId:contest.id, userId}})
 
+    const participant = await prisma.contestParticipant.findFirst({where:{contestId:contest.id, userId}})
+    
     if (!participant){
         throw new ApiError(httpstatus.NOT_FOUND, "participant not found")
     }
-    const contestPhoto = await prisma.contestPhoto.findFirst({where:{contestId, id:photoId}})
+
+    await prisma.contestParticipant.update({where:{id:participant.id},data:{exposure_bonus:{increment:2}}})
+
+    const contestPhoto = await prisma.contestPhoto.findFirst({where:{contestId, id:photoId}, include:{participant:true}})
     if(!contestPhoto){
         throw new ApiError(httpstatus.NOT_FOUND, "contest photo not found")
+    }
+
+    if(userId === contestPhoto.participant.userId){
+        throw new ApiError(httpstatus.BAD_REQUEST, "you are not allowed to vote yourself")
     }
 
     const type = await getVoteType(photoId)
@@ -168,6 +176,12 @@ const totalVotesOfParticipant = async (participantId:string, contestId:string)=>
     return totalVotes
 }
 
+
+const getContestTotalVotes = async (contestId:string)=> {
+    const votes = await prisma.vote.count({where:{contestId}})
+
+    return votes
+}
 export const voteService = {
     getTotalPromotedVotes,
     getTotalOrganicVotes,
@@ -175,5 +189,6 @@ export const voteService = {
     getVoteCount,
     getUserTotalVotes,
     getUserContestSpecificVote,
-    totalVotesOfParticipant
+    totalVotesOfParticipant,
+    getContestTotalVotes
 }

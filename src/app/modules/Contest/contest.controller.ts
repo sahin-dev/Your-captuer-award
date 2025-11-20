@@ -15,7 +15,6 @@ const createContest = catchAsync( async (req: any, res: Response) => {
     const creatorId = req.user.id; // Assuming user ID is stored in req.user
     const banner = req.file
     const body:contestData = req.body; // Parse the JSON data from the request body
-    console.log(body)
     const contest = await contestService.createContest(creatorId, body, banner);
 
     
@@ -42,7 +41,9 @@ const getAllContests = catchAsync(async (req:any, res:Response)=>{
 
 const getContestById = catchAsync(async (req:any, res:Response)=>{
     const {contestId} = req.params
-    const contest = await contestService.getContestById(contestId)
+    const userId = req.user.id
+
+    const contest = await contestService.getContestByUserId(userId, contestId)
 
     sendResponse(res, {
         statusCode:200,
@@ -94,16 +95,30 @@ const getUploadedPhotos =  catchAsync(async  (req:any, res: Response)=>{
     })
 })
 
+const getUploadedPhotosToVote =  catchAsync(async  (req:any, res: Response)=>{
+    const {contestId} = req.params
+    const user = req.user
+
+    const uploadedPhotos = await contestService.getContestUploadsToVote(user.id,contestId)
+
+     sendResponse(res, {
+        statusCode:200,
+        success:true,
+        message:"photos fetched successfully",
+        data:uploadedPhotos
+    })
+})
+
 
 
 const uploadPhoto = catchAsync(async (req:any, res:Response)=>{
     const user = req.user
-    const { photoId} = req.body
+    const { photoIds} = req.body
     const {contestId} = req.params
 
     const file = req.file as Express.Multer.File
 
-    const uploadedPhoto = await contestService.uploadPhotoToContest(contestId, user.id, photoId, file)
+    const uploadedPhoto = await contestService.uploadPhotoToContest(contestId, user.id, photoIds, file)
 
      sendResponse(res, {
         statusCode:200,
@@ -285,6 +300,7 @@ export const contestController = {
     chargePhoto,
     deleteContestPhoto,
     getContestPhotosSortedByVote,
-    getContestPhotographers
+    getContestPhotographers,
+    getUploadedPhotosToVote
 
 }
