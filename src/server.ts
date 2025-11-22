@@ -39,7 +39,7 @@ async function main() {
         console.info("Server closed!");
         agenda.stop();
         prisma.$disconnect()
-        // restartServer();
+        restartServer();
       });
     } else {
       process.exit(1);

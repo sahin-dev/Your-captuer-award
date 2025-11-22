@@ -99,7 +99,7 @@ export const addVotes = async (userId:string,contestId:string, photoIds:string[]
     })
 
     }catch(err){
-        throw err
+       throw err
     }
 
   
