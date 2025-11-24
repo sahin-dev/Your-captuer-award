@@ -130,12 +130,12 @@ const uploadCover = catchAsync(async (req:Request, res:Response)=>{
 const forgetPassword = catchAsync(async (req:Request, res:Response)=>{
     const {email} = req.body
 
-    await userService.forgetPassword(email)
+    const data = await userService.forgetPassword(email)
     sendResponse(res, {
         statusCode:httpstatus.OK,
         success:true,
         message:"Otp sent successfully",
-        data:{}
+        data
     }) 
 })
 

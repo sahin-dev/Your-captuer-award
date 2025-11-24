@@ -1,6 +1,6 @@
 import catchAsync from "../../../shared/catchAsync";
 import {Request, Response} from 'express'
-import { getAutheticatedUser, handleRegister, handleSignIn, handleSignout } from "./auth.service";
+import { getAutheticatedUser, handleAdminSignIn, handleRegister, handleSignIn, handleSignout } from "./auth.service";
 import sendResponse from "../../../shared/ApiResponse";
 import httpstatus from 'http-status'
 
@@ -48,9 +48,9 @@ export const SignIn = catchAsync(async (req:Request,res:Response)=>{
 
 export const AdminSignIn = catchAsync(async (req:Request,res:Response)=>{
     const body = req.body
-    console.log(body)
 
-    const data = await handleSignIn(body)
+
+    const data = await handleAdminSignIn(body)
 
       res.cookie("token", data.token, {
       httpOnly: true,

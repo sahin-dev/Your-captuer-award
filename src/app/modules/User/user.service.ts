@@ -215,7 +215,7 @@ const forgetPassword = async ( email:string)=>{
 
     mailer(email,html, "Your Capture Award")
     
-    return "Otp send successfully"
+    return `Otp send successfully `
 }
 
 const verifyOtp = async (email:string, otp:string)=>{

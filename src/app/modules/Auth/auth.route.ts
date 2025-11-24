@@ -7,11 +7,13 @@ import googleStrategy from "../../passportStrategies/google.strategy";
 import facebookStrategy from "../../passportStrategies/facebook.strategy";
 import validateRequest from "../../middlewares/validation.middleware";
 import { SignInSchema, userRegistrationSchema } from "./auth.validation";
+import { UserRole } from "../../../prismaClient";
 
 
 const router = Router()
 
 router.post("/signin", validateRequest(SignInSchema), SignIn)
+
 router.post("/admin/signin", validateRequest(SignInSchema), AdminSignIn)
 
 router.post('/signout',auth(), SignOut)

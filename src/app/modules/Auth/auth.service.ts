@@ -101,7 +101,9 @@ export const handleSignIn = async(body:UserSignInData)=>{
 
 export const handleAdminSignIn = async(body:UserSignInData)=>{
     
+    console.log(body)
     const user = await prisma.user.findFirst({where:{email:body.email, role:UserRole.ADMIN}})  
+
     if (!user){
         throw new ApiError(httpstatus.NOT_FOUND,"User not found")
     }
