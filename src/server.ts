@@ -33,6 +33,7 @@ async function startServer() {
 
 async function main() {
   await startServer();
+  // await agenda.start()
   const exitHandler = () => {
     if (server) {
       server.close(() => {
