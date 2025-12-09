@@ -1,11 +1,13 @@
+import {PrismaClient} from "../prismaClient/client";
+
 // import { PrismaClient } from "@prisma/client";
-import { PrismaClient } from "../prismaClient";
+
 // import { initiateSuperAdmin } from "../app/db/db";
 
-const prisma = new PrismaClient({
-  log: ['info', 'warn', 'error']
-});
 
+const prisma = new PrismaClient({
+  log: ['query', 'info', 'warn', 'error']
+})
 // async function connectPrisma() {
 //   try {
 //     await prisma.$connect();

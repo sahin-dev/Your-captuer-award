@@ -195,8 +195,7 @@ export type Level = $Result.DefaultSelection<Prisma.$LevelPayload>
 export namespace $Enums {
   export const PrizeType: {
   TOP_PHOTO: 'TOP_PHOTO',
-  TOP_PHOTOGRAPHER: 'TOP_PHOTOGRAPHER',
-  TOP_YC_PICK: 'TOP_YC_PICK'
+  TOP_PHOTOGRAPHER: 'TOP_PHOTOGRAPHER'
 };
 
 export type PrizeType = (typeof PrizeType)[keyof typeof PrizeType]
@@ -531,7 +530,7 @@ export const OtpStatus: typeof $Enums.OtpStatus
  */
 export class PrismaClient<
   ClientOptions extends Prisma.PrismaClientOptions = Prisma.PrismaClientOptions,
-  U = 'log' extends keyof ClientOptions ? ClientOptions['log'] extends Array<Prisma.LogLevel | Prisma.LogDefinition> ? Prisma.GetEvents<ClientOptions['log']> : never : never,
+  const U = 'log' extends keyof ClientOptions ? ClientOptions['log'] extends Array<Prisma.LogLevel | Prisma.LogDefinition> ? Prisma.GetEvents<ClientOptions['log']> : never : never,
   ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
 > {
   [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['other'] }
@@ -563,13 +562,6 @@ export class PrismaClient<
    * Disconnect from the database
    */
   $disconnect(): $Utils.JsPromise<void>;
-
-  /**
-   * Add a middleware
-   * @deprecated since 4.16.0. For new code, prefer client extensions instead.
-   * @see https://pris.ly/d/extensions
-   */
-  $use(cb: Prisma.Middleware): void
 
 /**
    * Allows the running of a sequence of read/write operations that are guaranteed to either succeed or fail as a whole.
@@ -984,8 +976,8 @@ export namespace Prisma {
   export import Exact = $Public.Exact
 
   /**
-   * Prisma Client JS version: 6.12.0
-   * Query Engine version: 8047c96bbd92db98a2abc7c9323ce77c02c89dbc
+   * Prisma Client JS version: 6.18.0
+   * Query Engine version: 34b5a692b7bd79939a9a2c3ef97d816e749cda2f
    */
   export type PrismaVersion = {
     client: string
@@ -998,6 +990,7 @@ export namespace Prisma {
    */
 
 
+  export import Bytes = runtime.Bytes
   export import JsonObject = runtime.JsonObject
   export import JsonArray = runtime.JsonArray
   export import JsonValue = runtime.JsonValue
@@ -3819,16 +3812,24 @@ export namespace Prisma {
     /**
      * @example
      * ```
-     * // Defaults to stdout
+     * // Shorthand for `emit: 'stdout'`
      * log: ['query', 'info', 'warn', 'error']
      * 
-     * // Emit as events
+     * // Emit as events only
      * log: [
-     *   { emit: 'stdout', level: 'query' },
-     *   { emit: 'stdout', level: 'info' },
-     *   { emit: 'stdout', level: 'warn' }
-     *   { emit: 'stdout', level: 'error' }
+     *   { emit: 'event', level: 'query' },
+     *   { emit: 'event', level: 'info' },
+     *   { emit: 'event', level: 'warn' }
+     *   { emit: 'event', level: 'error' }
      * ]
+     * 
+     * / Emit as events and log to stdout
+     * og: [
+     *  { emit: 'stdout', level: 'query' },
+     *  { emit: 'stdout', level: 'info' },
+     *  { emit: 'stdout', level: 'warn' }
+     *  { emit: 'stdout', level: 'error' }
+     * 
      * ```
      * Read more in our [docs](https://www.prisma.io/docs/reference/tools-and-interfaces/prisma-client/logging#the-log-option).
      */
@@ -3900,10 +3901,15 @@ export namespace Prisma {
     emit: 'stdout' | 'event'
   }
 
-  export type GetLogType<T extends LogLevel | LogDefinition> = T extends LogDefinition ? T['emit'] extends 'event' ? T['level'] : never : never
-  export type GetEvents<T extends any> = T extends Array<LogLevel | LogDefinition> ?
-    GetLogType<T[0]> | GetLogType<T[1]> | GetLogType<T[2]> | GetLogType<T[3]>
-    : never
+  export type CheckIsLogLevel<T> = T extends LogLevel ? T : never;
+
+  export type GetLogType<T> = CheckIsLogLevel<
+    T extends LogDefinition ? T['level'] : T
+  >;
+
+  export type GetEvents<T extends any[]> = T extends Array<LogLevel | LogDefinition>
+    ? GetLogType<T[number]>
+    : never;
 
   export type QueryEvent = {
     timestamp: Date
@@ -3943,25 +3949,6 @@ export namespace Prisma {
     | 'runCommandRaw'
     | 'findRaw'
     | 'groupBy'
-
-  /**
-   * These options are being passed into the middleware as "params"
-   */
-  export type MiddlewareParams = {
-    model?: ModelName
-    action: PrismaAction
-    args: any
-    dataPath: string[]
-    runInTransaction: boolean
-  }
-
-  /**
-   * The `T` type makes sure, that the `return proceed` is not forgotten in the middleware implementation
-   */
-  export type Middleware<T = any> = (
-    params: MiddlewareParams,
-    next: (params: MiddlewareParams) => $Utils.JsPromise<T>,
-  ) => $Utils.JsPromise<T>
 
   // tested in getLogLevel.test.ts
   export function getLogLevel(log: Array<LogLevel | LogDefinition>): LogLevel | undefined;
@@ -11601,83 +11588,101 @@ export namespace Prisma {
   }
 
   export type ContestPrizeAvgAggregateOutputType = {
-    trades: number | null
-    charges: number | null
-    keys: number | null
+    boost: number | null
+    swap: number | null
+    key: number | null
   }
 
   export type ContestPrizeSumAggregateOutputType = {
-    trades: number | null
-    charges: number | null
-    keys: number | null
+    boost: number | null
+    swap: number | null
+    key: number | null
   }
 
   export type ContestPrizeMinAggregateOutputType = {
     id: string | null
     category: $Enums.PrizeType | null
-    trades: number | null
-    charges: number | null
-    keys: number | null
+    icon: string | null
+    boost: number | null
+    swap: number | null
+    key: number | null
     contestId: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
   }
 
   export type ContestPrizeMaxAggregateOutputType = {
     id: string | null
     category: $Enums.PrizeType | null
-    trades: number | null
-    charges: number | null
-    keys: number | null
+    icon: string | null
+    boost: number | null
+    swap: number | null
+    key: number | null
     contestId: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
   }
 
   export type ContestPrizeCountAggregateOutputType = {
     id: number
     category: number
-    trades: number
-    charges: number
-    keys: number
+    icon: number
+    boost: number
+    swap: number
+    key: number
     contestId: number
+    createdAt: number
+    updatedAt: number
     _all: number
   }
 
 
   export type ContestPrizeAvgAggregateInputType = {
-    trades?: true
-    charges?: true
-    keys?: true
+    boost?: true
+    swap?: true
+    key?: true
   }
 
   export type ContestPrizeSumAggregateInputType = {
-    trades?: true
-    charges?: true
-    keys?: true
+    boost?: true
+    swap?: true
+    key?: true
   }
 
   export type ContestPrizeMinAggregateInputType = {
     id?: true
     category?: true
-    trades?: true
-    charges?: true
-    keys?: true
+    icon?: true
+    boost?: true
+    swap?: true
+    key?: true
     contestId?: true
+    createdAt?: true
+    updatedAt?: true
   }
 
   export type ContestPrizeMaxAggregateInputType = {
     id?: true
     category?: true
-    trades?: true
-    charges?: true
-    keys?: true
+    icon?: true
+    boost?: true
+    swap?: true
+    key?: true
     contestId?: true
+    createdAt?: true
+    updatedAt?: true
   }
 
   export type ContestPrizeCountAggregateInputType = {
     id?: true
     category?: true
-    trades?: true
-    charges?: true
-    keys?: true
+    icon?: true
+    boost?: true
+    swap?: true
+    key?: true
     contestId?: true
+    createdAt?: true
+    updatedAt?: true
     _all?: true
   }
 
@@ -11770,10 +11775,13 @@ export namespace Prisma {
   export type ContestPrizeGroupByOutputType = {
     id: string
     category: $Enums.PrizeType
-    trades: number
-    charges: number
-    keys: number
+    icon: string | null
+    boost: number
+    swap: number
+    key: number
     contestId: string
+    createdAt: Date
+    updatedAt: Date
     _count: ContestPrizeCountAggregateOutputType | null
     _avg: ContestPrizeAvgAggregateOutputType | null
     _sum: ContestPrizeSumAggregateOutputType | null
@@ -11798,10 +11806,13 @@ export namespace Prisma {
   export type ContestPrizeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     category?: boolean
-    trades?: boolean
-    charges?: boolean
-    keys?: boolean
+    icon?: boolean
+    boost?: boolean
+    swap?: boolean
+    key?: boolean
     contestId?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
     contest?: boolean | ContestDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["contestPrize"]>
 
@@ -11810,13 +11821,16 @@ export namespace Prisma {
   export type ContestPrizeSelectScalar = {
     id?: boolean
     category?: boolean
-    trades?: boolean
-    charges?: boolean
-    keys?: boolean
+    icon?: boolean
+    boost?: boolean
+    swap?: boolean
+    key?: boolean
     contestId?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
   }
 
-  export type ContestPrizeOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "category" | "trades" | "charges" | "keys" | "contestId", ExtArgs["result"]["contestPrize"]>
+  export type ContestPrizeOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "category" | "icon" | "boost" | "swap" | "key" | "contestId" | "createdAt" | "updatedAt", ExtArgs["result"]["contestPrize"]>
   export type ContestPrizeInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     contest?: boolean | ContestDefaultArgs<ExtArgs>
   }
@@ -11829,10 +11843,13 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       id: string
       category: $Enums.PrizeType
-      trades: number
-      charges: number
-      keys: number
+      icon: string | null
+      boost: number
+      swap: number
+      key: number
       contestId: string
+      createdAt: Date
+      updatedAt: Date
     }, ExtArgs["result"]["contestPrize"]>
     composites: {}
   }
@@ -12228,10 +12245,13 @@ export namespace Prisma {
   interface ContestPrizeFieldRefs {
     readonly id: FieldRef<"ContestPrize", 'String'>
     readonly category: FieldRef<"ContestPrize", 'PrizeType'>
-    readonly trades: FieldRef<"ContestPrize", 'Int'>
-    readonly charges: FieldRef<"ContestPrize", 'Int'>
-    readonly keys: FieldRef<"ContestPrize", 'Int'>
+    readonly icon: FieldRef<"ContestPrize", 'String'>
+    readonly boost: FieldRef<"ContestPrize", 'Int'>
+    readonly swap: FieldRef<"ContestPrize", 'Int'>
+    readonly key: FieldRef<"ContestPrize", 'Int'>
     readonly contestId: FieldRef<"ContestPrize", 'String'>
+    readonly createdAt: FieldRef<"ContestPrize", 'DateTime'>
+    readonly updatedAt: FieldRef<"ContestPrize", 'DateTime'>
   }
     
 
@@ -29608,23 +29628,23 @@ export namespace Prisma {
   }
 
   export type UserStoreAvgAggregateOutputType = {
-    promotes: number | null
-    trades: number | null
-    charges: number | null
+    key: number | null
+    boost: number | null
+    swap: number | null
   }
 
   export type UserStoreSumAggregateOutputType = {
-    promotes: number | null
-    trades: number | null
-    charges: number | null
+    key: number | null
+    boost: number | null
+    swap: number | null
   }
 
   export type UserStoreMinAggregateOutputType = {
     id: string | null
     userId: string | null
-    promotes: number | null
-    trades: number | null
-    charges: number | null
+    key: number | null
+    boost: number | null
+    swap: number | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -29632,9 +29652,9 @@ export namespace Prisma {
   export type UserStoreMaxAggregateOutputType = {
     id: string | null
     userId: string | null
-    promotes: number | null
-    trades: number | null
-    charges: number | null
+    key: number | null
+    boost: number | null
+    swap: number | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -29642,9 +29662,9 @@ export namespace Prisma {
   export type UserStoreCountAggregateOutputType = {
     id: number
     userId: number
-    promotes: number
-    trades: number
-    charges: number
+    key: number
+    boost: number
+    swap: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -29652,23 +29672,23 @@ export namespace Prisma {
 
 
   export type UserStoreAvgAggregateInputType = {
-    promotes?: true
-    trades?: true
-    charges?: true
+    key?: true
+    boost?: true
+    swap?: true
   }
 
   export type UserStoreSumAggregateInputType = {
-    promotes?: true
-    trades?: true
-    charges?: true
+    key?: true
+    boost?: true
+    swap?: true
   }
 
   export type UserStoreMinAggregateInputType = {
     id?: true
     userId?: true
-    promotes?: true
-    trades?: true
-    charges?: true
+    key?: true
+    boost?: true
+    swap?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -29676,9 +29696,9 @@ export namespace Prisma {
   export type UserStoreMaxAggregateInputType = {
     id?: true
     userId?: true
-    promotes?: true
-    trades?: true
-    charges?: true
+    key?: true
+    boost?: true
+    swap?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -29686,9 +29706,9 @@ export namespace Prisma {
   export type UserStoreCountAggregateInputType = {
     id?: true
     userId?: true
-    promotes?: true
-    trades?: true
-    charges?: true
+    key?: true
+    boost?: true
+    swap?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -29783,9 +29803,9 @@ export namespace Prisma {
   export type UserStoreGroupByOutputType = {
     id: string
     userId: string
-    promotes: number
-    trades: number
-    charges: number
+    key: number
+    boost: number
+    swap: number
     createdAt: Date
     updatedAt: Date
     _count: UserStoreCountAggregateOutputType | null
@@ -29812,9 +29832,9 @@ export namespace Prisma {
   export type UserStoreSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     userId?: boolean
-    promotes?: boolean
-    trades?: boolean
-    charges?: boolean
+    key?: boolean
+    boost?: boolean
+    swap?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     user?: boolean | UserStore$userArgs<ExtArgs>
@@ -29825,14 +29845,14 @@ export namespace Prisma {
   export type UserStoreSelectScalar = {
     id?: boolean
     userId?: boolean
-    promotes?: boolean
-    trades?: boolean
-    charges?: boolean
+    key?: boolean
+    boost?: boolean
+    swap?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type UserStoreOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "promotes" | "trades" | "charges" | "createdAt" | "updatedAt", ExtArgs["result"]["userStore"]>
+  export type UserStoreOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "key" | "boost" | "swap" | "createdAt" | "updatedAt", ExtArgs["result"]["userStore"]>
   export type UserStoreInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserStore$userArgs<ExtArgs>
   }
@@ -29845,9 +29865,9 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       id: string
       userId: string
-      promotes: number
-      trades: number
-      charges: number
+      key: number
+      boost: number
+      swap: number
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["userStore"]>
@@ -30245,9 +30265,9 @@ export namespace Prisma {
   interface UserStoreFieldRefs {
     readonly id: FieldRef<"UserStore", 'String'>
     readonly userId: FieldRef<"UserStore", 'String'>
-    readonly promotes: FieldRef<"UserStore", 'Int'>
-    readonly trades: FieldRef<"UserStore", 'Int'>
-    readonly charges: FieldRef<"UserStore", 'Int'>
+    readonly key: FieldRef<"UserStore", 'Int'>
+    readonly boost: FieldRef<"UserStore", 'Int'>
+    readonly swap: FieldRef<"UserStore", 'Int'>
     readonly createdAt: FieldRef<"UserStore", 'DateTime'>
     readonly updatedAt: FieldRef<"UserStore", 'DateTime'>
   }
@@ -39025,10 +39045,13 @@ export namespace Prisma {
   export const ContestPrizeScalarFieldEnum: {
     id: 'id',
     category: 'category',
-    trades: 'trades',
-    charges: 'charges',
-    keys: 'keys',
-    contestId: 'contestId'
+    icon: 'icon',
+    boost: 'boost',
+    swap: 'swap',
+    key: 'key',
+    contestId: 'contestId',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
   };
 
   export type ContestPrizeScalarFieldEnum = (typeof ContestPrizeScalarFieldEnum)[keyof typeof ContestPrizeScalarFieldEnum]
@@ -39281,9 +39304,9 @@ export namespace Prisma {
   export const UserStoreScalarFieldEnum: {
     id: 'id',
     userId: 'userId',
-    promotes: 'promotes',
-    trades: 'trades',
-    charges: 'charges',
+    key: 'key',
+    boost: 'boost',
+    swap: 'swap',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -40386,20 +40409,26 @@ export namespace Prisma {
     NOT?: ContestPrizeWhereInput | ContestPrizeWhereInput[]
     id?: StringFilter<"ContestPrize"> | string
     category?: EnumPrizeTypeFilter<"ContestPrize"> | $Enums.PrizeType
-    trades?: IntFilter<"ContestPrize"> | number
-    charges?: IntFilter<"ContestPrize"> | number
-    keys?: IntFilter<"ContestPrize"> | number
+    icon?: StringNullableFilter<"ContestPrize"> | string | null
+    boost?: IntFilter<"ContestPrize"> | number
+    swap?: IntFilter<"ContestPrize"> | number
+    key?: IntFilter<"ContestPrize"> | number
     contestId?: StringFilter<"ContestPrize"> | string
+    createdAt?: DateTimeFilter<"ContestPrize"> | Date | string
+    updatedAt?: DateTimeFilter<"ContestPrize"> | Date | string
     contest?: XOR<ContestScalarRelationFilter, ContestWhereInput>
   }
 
   export type ContestPrizeOrderByWithRelationInput = {
     id?: SortOrder
     category?: SortOrder
-    trades?: SortOrder
-    charges?: SortOrder
-    keys?: SortOrder
+    icon?: SortOrder
+    boost?: SortOrder
+    swap?: SortOrder
+    key?: SortOrder
     contestId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
     contest?: ContestOrderByWithRelationInput
   }
 
@@ -40409,20 +40438,26 @@ export namespace Prisma {
     OR?: ContestPrizeWhereInput[]
     NOT?: ContestPrizeWhereInput | ContestPrizeWhereInput[]
     category?: EnumPrizeTypeFilter<"ContestPrize"> | $Enums.PrizeType
-    trades?: IntFilter<"ContestPrize"> | number
-    charges?: IntFilter<"ContestPrize"> | number
-    keys?: IntFilter<"ContestPrize"> | number
+    icon?: StringNullableFilter<"ContestPrize"> | string | null
+    boost?: IntFilter<"ContestPrize"> | number
+    swap?: IntFilter<"ContestPrize"> | number
+    key?: IntFilter<"ContestPrize"> | number
     contestId?: StringFilter<"ContestPrize"> | string
+    createdAt?: DateTimeFilter<"ContestPrize"> | Date | string
+    updatedAt?: DateTimeFilter<"ContestPrize"> | Date | string
     contest?: XOR<ContestScalarRelationFilter, ContestWhereInput>
   }, "id">
 
   export type ContestPrizeOrderByWithAggregationInput = {
     id?: SortOrder
     category?: SortOrder
-    trades?: SortOrder
-    charges?: SortOrder
-    keys?: SortOrder
+    icon?: SortOrder
+    boost?: SortOrder
+    swap?: SortOrder
+    key?: SortOrder
     contestId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
     _count?: ContestPrizeCountOrderByAggregateInput
     _avg?: ContestPrizeAvgOrderByAggregateInput
     _max?: ContestPrizeMaxOrderByAggregateInput
@@ -40436,10 +40471,13 @@ export namespace Prisma {
     NOT?: ContestPrizeScalarWhereWithAggregatesInput | ContestPrizeScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"ContestPrize"> | string
     category?: EnumPrizeTypeWithAggregatesFilter<"ContestPrize"> | $Enums.PrizeType
-    trades?: IntWithAggregatesFilter<"ContestPrize"> | number
-    charges?: IntWithAggregatesFilter<"ContestPrize"> | number
-    keys?: IntWithAggregatesFilter<"ContestPrize"> | number
+    icon?: StringNullableWithAggregatesFilter<"ContestPrize"> | string | null
+    boost?: IntWithAggregatesFilter<"ContestPrize"> | number
+    swap?: IntWithAggregatesFilter<"ContestPrize"> | number
+    key?: IntWithAggregatesFilter<"ContestPrize"> | number
     contestId?: StringWithAggregatesFilter<"ContestPrize"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"ContestPrize"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"ContestPrize"> | Date | string
   }
 
   export type ContestAchievementWhereInput = {
@@ -41744,9 +41782,9 @@ export namespace Prisma {
     NOT?: UserStoreWhereInput | UserStoreWhereInput[]
     id?: StringFilter<"UserStore"> | string
     userId?: StringFilter<"UserStore"> | string
-    promotes?: IntFilter<"UserStore"> | number
-    trades?: IntFilter<"UserStore"> | number
-    charges?: IntFilter<"UserStore"> | number
+    key?: IntFilter<"UserStore"> | number
+    boost?: IntFilter<"UserStore"> | number
+    swap?: IntFilter<"UserStore"> | number
     createdAt?: DateTimeFilter<"UserStore"> | Date | string
     updatedAt?: DateTimeFilter<"UserStore"> | Date | string
     user?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
@@ -41755,9 +41793,9 @@ export namespace Prisma {
   export type UserStoreOrderByWithRelationInput = {
     id?: SortOrder
     userId?: SortOrder
-    promotes?: SortOrder
-    trades?: SortOrder
-    charges?: SortOrder
+    key?: SortOrder
+    boost?: SortOrder
+    swap?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     user?: UserOrderByWithRelationInput
@@ -41769,9 +41807,9 @@ export namespace Prisma {
     AND?: UserStoreWhereInput | UserStoreWhereInput[]
     OR?: UserStoreWhereInput[]
     NOT?: UserStoreWhereInput | UserStoreWhereInput[]
-    promotes?: IntFilter<"UserStore"> | number
-    trades?: IntFilter<"UserStore"> | number
-    charges?: IntFilter<"UserStore"> | number
+    key?: IntFilter<"UserStore"> | number
+    boost?: IntFilter<"UserStore"> | number
+    swap?: IntFilter<"UserStore"> | number
     createdAt?: DateTimeFilter<"UserStore"> | Date | string
     updatedAt?: DateTimeFilter<"UserStore"> | Date | string
     user?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
@@ -41780,9 +41818,9 @@ export namespace Prisma {
   export type UserStoreOrderByWithAggregationInput = {
     id?: SortOrder
     userId?: SortOrder
-    promotes?: SortOrder
-    trades?: SortOrder
-    charges?: SortOrder
+    key?: SortOrder
+    boost?: SortOrder
+    swap?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: UserStoreCountOrderByAggregateInput
@@ -41798,9 +41836,9 @@ export namespace Prisma {
     NOT?: UserStoreScalarWhereWithAggregatesInput | UserStoreScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"UserStore"> | string
     userId?: StringWithAggregatesFilter<"UserStore"> | string
-    promotes?: IntWithAggregatesFilter<"UserStore"> | number
-    trades?: IntWithAggregatesFilter<"UserStore"> | number
-    charges?: IntWithAggregatesFilter<"UserStore"> | number
+    key?: IntWithAggregatesFilter<"UserStore"> | number
+    boost?: IntWithAggregatesFilter<"UserStore"> | number
+    swap?: IntWithAggregatesFilter<"UserStore"> | number
     createdAt?: DateTimeWithAggregatesFilter<"UserStore"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"UserStore"> | Date | string
   }
@@ -42986,59 +43024,80 @@ export namespace Prisma {
   export type ContestPrizeCreateInput = {
     id?: string
     category: $Enums.PrizeType
-    trades?: number
-    charges?: number
-    keys?: number
+    icon?: string | null
+    boost?: number
+    swap?: number
+    key?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
     contest: ContestCreateNestedOneWithoutContestPrizesInput
   }
 
   export type ContestPrizeUncheckedCreateInput = {
     id?: string
     category: $Enums.PrizeType
-    trades?: number
-    charges?: number
-    keys?: number
+    icon?: string | null
+    boost?: number
+    swap?: number
+    key?: number
     contestId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type ContestPrizeUpdateInput = {
     category?: EnumPrizeTypeFieldUpdateOperationsInput | $Enums.PrizeType
-    trades?: IntFieldUpdateOperationsInput | number
-    charges?: IntFieldUpdateOperationsInput | number
-    keys?: IntFieldUpdateOperationsInput | number
+    icon?: NullableStringFieldUpdateOperationsInput | string | null
+    boost?: IntFieldUpdateOperationsInput | number
+    swap?: IntFieldUpdateOperationsInput | number
+    key?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     contest?: ContestUpdateOneRequiredWithoutContestPrizesNestedInput
   }
 
   export type ContestPrizeUncheckedUpdateInput = {
     category?: EnumPrizeTypeFieldUpdateOperationsInput | $Enums.PrizeType
-    trades?: IntFieldUpdateOperationsInput | number
-    charges?: IntFieldUpdateOperationsInput | number
-    keys?: IntFieldUpdateOperationsInput | number
+    icon?: NullableStringFieldUpdateOperationsInput | string | null
+    boost?: IntFieldUpdateOperationsInput | number
+    swap?: IntFieldUpdateOperationsInput | number
+    key?: IntFieldUpdateOperationsInput | number
     contestId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type ContestPrizeCreateManyInput = {
     id?: string
     category: $Enums.PrizeType
-    trades?: number
-    charges?: number
-    keys?: number
+    icon?: string | null
+    boost?: number
+    swap?: number
+    key?: number
     contestId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type ContestPrizeUpdateManyMutationInput = {
     category?: EnumPrizeTypeFieldUpdateOperationsInput | $Enums.PrizeType
-    trades?: IntFieldUpdateOperationsInput | number
-    charges?: IntFieldUpdateOperationsInput | number
-    keys?: IntFieldUpdateOperationsInput | number
+    icon?: NullableStringFieldUpdateOperationsInput | string | null
+    boost?: IntFieldUpdateOperationsInput | number
+    swap?: IntFieldUpdateOperationsInput | number
+    key?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type ContestPrizeUncheckedUpdateManyInput = {
     category?: EnumPrizeTypeFieldUpdateOperationsInput | $Enums.PrizeType
-    trades?: IntFieldUpdateOperationsInput | number
-    charges?: IntFieldUpdateOperationsInput | number
-    keys?: IntFieldUpdateOperationsInput | number
+    icon?: NullableStringFieldUpdateOperationsInput | string | null
+    boost?: IntFieldUpdateOperationsInput | number
+    swap?: IntFieldUpdateOperationsInput | number
+    key?: IntFieldUpdateOperationsInput | number
     contestId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type ContestAchievementCreateInput = {
@@ -44425,9 +44484,9 @@ export namespace Prisma {
 
   export type UserStoreCreateInput = {
     id?: string
-    promotes?: number
-    trades?: number
-    charges?: number
+    key?: number
+    boost?: number
+    swap?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     user?: UserCreateNestedOneWithoutStoreInput
@@ -44436,17 +44495,17 @@ export namespace Prisma {
   export type UserStoreUncheckedCreateInput = {
     id?: string
     userId: string
-    promotes?: number
-    trades?: number
-    charges?: number
+    key?: number
+    boost?: number
+    swap?: number
     createdAt?: Date | string
     updatedAt?: Date | string
   }
 
   export type UserStoreUpdateInput = {
-    promotes?: IntFieldUpdateOperationsInput | number
-    trades?: IntFieldUpdateOperationsInput | number
-    charges?: IntFieldUpdateOperationsInput | number
+    key?: IntFieldUpdateOperationsInput | number
+    boost?: IntFieldUpdateOperationsInput | number
+    swap?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneWithoutStoreNestedInput
@@ -44454,9 +44513,9 @@ export namespace Prisma {
 
   export type UserStoreUncheckedUpdateInput = {
     userId?: StringFieldUpdateOperationsInput | string
-    promotes?: IntFieldUpdateOperationsInput | number
-    trades?: IntFieldUpdateOperationsInput | number
-    charges?: IntFieldUpdateOperationsInput | number
+    key?: IntFieldUpdateOperationsInput | number
+    boost?: IntFieldUpdateOperationsInput | number
+    swap?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -44464,26 +44523,26 @@ export namespace Prisma {
   export type UserStoreCreateManyInput = {
     id?: string
     userId: string
-    promotes?: number
-    trades?: number
-    charges?: number
+    key?: number
+    boost?: number
+    swap?: number
     createdAt?: Date | string
     updatedAt?: Date | string
   }
 
   export type UserStoreUpdateManyMutationInput = {
-    promotes?: IntFieldUpdateOperationsInput | number
-    trades?: IntFieldUpdateOperationsInput | number
-    charges?: IntFieldUpdateOperationsInput | number
+    key?: IntFieldUpdateOperationsInput | number
+    boost?: IntFieldUpdateOperationsInput | number
+    swap?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type UserStoreUncheckedUpdateManyInput = {
     userId?: StringFieldUpdateOperationsInput | string
-    promotes?: IntFieldUpdateOperationsInput | number
-    trades?: IntFieldUpdateOperationsInput | number
-    charges?: IntFieldUpdateOperationsInput | number
+    key?: IntFieldUpdateOperationsInput | number
+    boost?: IntFieldUpdateOperationsInput | number
+    swap?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -45777,40 +45836,49 @@ export namespace Prisma {
   export type ContestPrizeCountOrderByAggregateInput = {
     id?: SortOrder
     category?: SortOrder
-    trades?: SortOrder
-    charges?: SortOrder
-    keys?: SortOrder
+    icon?: SortOrder
+    boost?: SortOrder
+    swap?: SortOrder
+    key?: SortOrder
     contestId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type ContestPrizeAvgOrderByAggregateInput = {
-    trades?: SortOrder
-    charges?: SortOrder
-    keys?: SortOrder
+    boost?: SortOrder
+    swap?: SortOrder
+    key?: SortOrder
   }
 
   export type ContestPrizeMaxOrderByAggregateInput = {
     id?: SortOrder
     category?: SortOrder
-    trades?: SortOrder
-    charges?: SortOrder
-    keys?: SortOrder
+    icon?: SortOrder
+    boost?: SortOrder
+    swap?: SortOrder
+    key?: SortOrder
     contestId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type ContestPrizeMinOrderByAggregateInput = {
     id?: SortOrder
     category?: SortOrder
-    trades?: SortOrder
-    charges?: SortOrder
-    keys?: SortOrder
+    icon?: SortOrder
+    boost?: SortOrder
+    swap?: SortOrder
+    key?: SortOrder
     contestId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type ContestPrizeSumOrderByAggregateInput = {
-    trades?: SortOrder
-    charges?: SortOrder
-    keys?: SortOrder
+    boost?: SortOrder
+    swap?: SortOrder
+    key?: SortOrder
   }
 
   export type EnumPrizeTypeWithAggregatesFilter<$PrismaModel = never> = {
@@ -46890,25 +46958,25 @@ export namespace Prisma {
   export type UserStoreCountOrderByAggregateInput = {
     id?: SortOrder
     userId?: SortOrder
-    promotes?: SortOrder
-    trades?: SortOrder
-    charges?: SortOrder
+    key?: SortOrder
+    boost?: SortOrder
+    swap?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
 
   export type UserStoreAvgOrderByAggregateInput = {
-    promotes?: SortOrder
-    trades?: SortOrder
-    charges?: SortOrder
+    key?: SortOrder
+    boost?: SortOrder
+    swap?: SortOrder
   }
 
   export type UserStoreMaxOrderByAggregateInput = {
     id?: SortOrder
     userId?: SortOrder
-    promotes?: SortOrder
-    trades?: SortOrder
-    charges?: SortOrder
+    key?: SortOrder
+    boost?: SortOrder
+    swap?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -46916,17 +46984,17 @@ export namespace Prisma {
   export type UserStoreMinOrderByAggregateInput = {
     id?: SortOrder
     userId?: SortOrder
-    promotes?: SortOrder
-    trades?: SortOrder
-    charges?: SortOrder
+    key?: SortOrder
+    boost?: SortOrder
+    swap?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
 
   export type UserStoreSumOrderByAggregateInput = {
-    promotes?: SortOrder
-    trades?: SortOrder
-    charges?: SortOrder
+    key?: SortOrder
+    boost?: SortOrder
+    swap?: SortOrder
   }
 
   export type PhotoStatsNullableCompositeFilter = {
@@ -50609,17 +50677,23 @@ export namespace Prisma {
   export type ContestPrizeCreateWithoutContestInput = {
     id?: string
     category: $Enums.PrizeType
-    trades?: number
-    charges?: number
-    keys?: number
+    icon?: string | null
+    boost?: number
+    swap?: number
+    key?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type ContestPrizeUncheckedCreateWithoutContestInput = {
     id?: string
     category: $Enums.PrizeType
-    trades?: number
-    charges?: number
-    keys?: number
+    icon?: string | null
+    boost?: number
+    swap?: number
+    key?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type ContestPrizeCreateOrConnectWithoutContestInput = {
@@ -50918,10 +50992,13 @@ export namespace Prisma {
     NOT?: ContestPrizeScalarWhereInput | ContestPrizeScalarWhereInput[]
     id?: StringFilter<"ContestPrize"> | string
     category?: EnumPrizeTypeFilter<"ContestPrize"> | $Enums.PrizeType
-    trades?: IntFilter<"ContestPrize"> | number
-    charges?: IntFilter<"ContestPrize"> | number
-    keys?: IntFilter<"ContestPrize"> | number
+    icon?: StringNullableFilter<"ContestPrize"> | string | null
+    boost?: IntFilter<"ContestPrize"> | number
+    swap?: IntFilter<"ContestPrize"> | number
+    key?: IntFilter<"ContestPrize"> | number
     contestId?: StringFilter<"ContestPrize"> | string
+    createdAt?: DateTimeFilter<"ContestPrize"> | Date | string
+    updatedAt?: DateTimeFilter<"ContestPrize"> | Date | string
   }
 
   export type ContestAchievementUpsertWithWhereUniqueWithoutContestInput = {
@@ -54575,18 +54652,18 @@ export namespace Prisma {
 
   export type UserStoreCreateWithoutUserInput = {
     id?: string
-    promotes?: number
-    trades?: number
-    charges?: number
+    key?: number
+    boost?: number
+    swap?: number
     createdAt?: Date | string
     updatedAt?: Date | string
   }
 
   export type UserStoreUncheckedCreateWithoutUserInput = {
     id?: string
-    promotes?: number
-    trades?: number
-    charges?: number
+    key?: number
+    boost?: number
+    swap?: number
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -55109,17 +55186,17 @@ export namespace Prisma {
   }
 
   export type UserStoreUpdateWithoutUserInput = {
-    promotes?: IntFieldUpdateOperationsInput | number
-    trades?: IntFieldUpdateOperationsInput | number
-    charges?: IntFieldUpdateOperationsInput | number
+    key?: IntFieldUpdateOperationsInput | number
+    boost?: IntFieldUpdateOperationsInput | number
+    swap?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type UserStoreUncheckedUpdateWithoutUserInput = {
-    promotes?: IntFieldUpdateOperationsInput | number
-    trades?: IntFieldUpdateOperationsInput | number
-    charges?: IntFieldUpdateOperationsInput | number
+    key?: IntFieldUpdateOperationsInput | number
+    boost?: IntFieldUpdateOperationsInput | number
+    swap?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -57785,9 +57862,12 @@ export namespace Prisma {
   export type ContestPrizeCreateManyContestInput = {
     id?: string
     category: $Enums.PrizeType
-    trades?: number
-    charges?: number
-    keys?: number
+    icon?: string | null
+    boost?: number
+    swap?: number
+    key?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type ContestAchievementCreateManyContestInput = {
@@ -57914,23 +57994,32 @@ export namespace Prisma {
 
   export type ContestPrizeUpdateWithoutContestInput = {
     category?: EnumPrizeTypeFieldUpdateOperationsInput | $Enums.PrizeType
-    trades?: IntFieldUpdateOperationsInput | number
-    charges?: IntFieldUpdateOperationsInput | number
-    keys?: IntFieldUpdateOperationsInput | number
+    icon?: NullableStringFieldUpdateOperationsInput | string | null
+    boost?: IntFieldUpdateOperationsInput | number
+    swap?: IntFieldUpdateOperationsInput | number
+    key?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type ContestPrizeUncheckedUpdateWithoutContestInput = {
     category?: EnumPrizeTypeFieldUpdateOperationsInput | $Enums.PrizeType
-    trades?: IntFieldUpdateOperationsInput | number
-    charges?: IntFieldUpdateOperationsInput | number
-    keys?: IntFieldUpdateOperationsInput | number
+    icon?: NullableStringFieldUpdateOperationsInput | string | null
+    boost?: IntFieldUpdateOperationsInput | number
+    swap?: IntFieldUpdateOperationsInput | number
+    key?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type ContestPrizeUncheckedUpdateManyWithoutContestInput = {
     category?: EnumPrizeTypeFieldUpdateOperationsInput | $Enums.PrizeType
-    trades?: IntFieldUpdateOperationsInput | number
-    charges?: IntFieldUpdateOperationsInput | number
-    keys?: IntFieldUpdateOperationsInput | number
+    icon?: NullableStringFieldUpdateOperationsInput | string | null
+    boost?: IntFieldUpdateOperationsInput | number
+    swap?: IntFieldUpdateOperationsInput | number
+    key?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type ContestAchievementUpdateWithoutContestInput = {

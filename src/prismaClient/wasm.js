@@ -5,13 +5,28 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 
 const {
+  PrismaClientKnownRequestError,
+  PrismaClientUnknownRequestError,
+  PrismaClientRustPanicError,
+  PrismaClientInitializationError,
+  PrismaClientValidationError,
+  getPrismaClient,
+  sqltag,
+  empty,
+  join,
+  raw,
+  skip,
   Decimal,
+  Debug,
   objectEnumValues,
   makeStrictEnum,
+  Extensions,
+  warnOnce,
+  defineDmmfProperty,
   Public,
   getRuntime,
-  skip
-} = require('./runtime/index-browser.js')
+  createParam,
+} = require('./runtime/wasm-engine-edge.js')
 
 
 const Prisma = {}
@@ -20,79 +35,35 @@ exports.Prisma = Prisma
 exports.$Enums = {}
 
 /**
- * Prisma Client JS version: 6.12.0
- * Query Engine version: 8047c96bbd92db98a2abc7c9323ce77c02c89dbc
+ * Prisma Client JS version: 6.18.0
+ * Query Engine version: 34b5a692b7bd79939a9a2c3ef97d816e749cda2f
  */
 Prisma.prismaVersion = {
-  client: "6.12.0",
-  engine: "8047c96bbd92db98a2abc7c9323ce77c02c89dbc"
+  client: "6.18.0",
+  engine: "34b5a692b7bd79939a9a2c3ef97d816e749cda2f"
 }
 
-Prisma.PrismaClientKnownRequestError = () => {
-  const runtimeName = getRuntime().prettyName;
-  throw new Error(`PrismaClientKnownRequestError is unable to run in this browser environment, or has been bundled for the browser (running in ${runtimeName}).
-In case this error is unexpected for you, please report it in https://pris.ly/prisma-prisma-bug-report`,
-)};
-Prisma.PrismaClientUnknownRequestError = () => {
-  const runtimeName = getRuntime().prettyName;
-  throw new Error(`PrismaClientUnknownRequestError is unable to run in this browser environment, or has been bundled for the browser (running in ${runtimeName}).
-In case this error is unexpected for you, please report it in https://pris.ly/prisma-prisma-bug-report`,
-)}
-Prisma.PrismaClientRustPanicError = () => {
-  const runtimeName = getRuntime().prettyName;
-  throw new Error(`PrismaClientRustPanicError is unable to run in this browser environment, or has been bundled for the browser (running in ${runtimeName}).
-In case this error is unexpected for you, please report it in https://pris.ly/prisma-prisma-bug-report`,
-)}
-Prisma.PrismaClientInitializationError = () => {
-  const runtimeName = getRuntime().prettyName;
-  throw new Error(`PrismaClientInitializationError is unable to run in this browser environment, or has been bundled for the browser (running in ${runtimeName}).
-In case this error is unexpected for you, please report it in https://pris.ly/prisma-prisma-bug-report`,
-)}
-Prisma.PrismaClientValidationError = () => {
-  const runtimeName = getRuntime().prettyName;
-  throw new Error(`PrismaClientValidationError is unable to run in this browser environment, or has been bundled for the browser (running in ${runtimeName}).
-In case this error is unexpected for you, please report it in https://pris.ly/prisma-prisma-bug-report`,
-)}
+Prisma.PrismaClientKnownRequestError = PrismaClientKnownRequestError;
+Prisma.PrismaClientUnknownRequestError = PrismaClientUnknownRequestError
+Prisma.PrismaClientRustPanicError = PrismaClientRustPanicError
+Prisma.PrismaClientInitializationError = PrismaClientInitializationError
+Prisma.PrismaClientValidationError = PrismaClientValidationError
 Prisma.Decimal = Decimal
 
 /**
  * Re-export of sql-template-tag
  */
-Prisma.sql = () => {
-  const runtimeName = getRuntime().prettyName;
-  throw new Error(`sqltag is unable to run in this browser environment, or has been bundled for the browser (running in ${runtimeName}).
-In case this error is unexpected for you, please report it in https://pris.ly/prisma-prisma-bug-report`,
-)}
-Prisma.empty = () => {
-  const runtimeName = getRuntime().prettyName;
-  throw new Error(`empty is unable to run in this browser environment, or has been bundled for the browser (running in ${runtimeName}).
-In case this error is unexpected for you, please report it in https://pris.ly/prisma-prisma-bug-report`,
-)}
-Prisma.join = () => {
-  const runtimeName = getRuntime().prettyName;
-  throw new Error(`join is unable to run in this browser environment, or has been bundled for the browser (running in ${runtimeName}).
-In case this error is unexpected for you, please report it in https://pris.ly/prisma-prisma-bug-report`,
-)}
-Prisma.raw = () => {
-  const runtimeName = getRuntime().prettyName;
-  throw new Error(`raw is unable to run in this browser environment, or has been bundled for the browser (running in ${runtimeName}).
-In case this error is unexpected for you, please report it in https://pris.ly/prisma-prisma-bug-report`,
-)}
+Prisma.sql = sqltag
+Prisma.empty = empty
+Prisma.join = join
+Prisma.raw = raw
 Prisma.validator = Public.validator
 
 /**
 * Extensions
 */
-Prisma.getExtensionContext = () => {
-  const runtimeName = getRuntime().prettyName;
-  throw new Error(`Extensions.getExtensionContext is unable to run in this browser environment, or has been bundled for the browser (running in ${runtimeName}).
-In case this error is unexpected for you, please report it in https://pris.ly/prisma-prisma-bug-report`,
-)}
-Prisma.defineExtension = () => {
-  const runtimeName = getRuntime().prettyName;
-  throw new Error(`Extensions.defineExtension is unable to run in this browser environment, or has been bundled for the browser (running in ${runtimeName}).
-In case this error is unexpected for you, please report it in https://pris.ly/prisma-prisma-bug-report`,
-)}
+Prisma.getExtensionContext = Extensions.getExtensionContext
+Prisma.defineExtension = Extensions.defineExtension
 
 /**
  * Shorthand utilities for JSON filtering
@@ -109,10 +80,11 @@ Prisma.NullTypes = {
 
 
 
+
+
 /**
  * Enums
  */
-
 exports.Prisma.ContestScalarFieldEnum = {
   id: 'id',
   title: 'title',
@@ -203,10 +175,13 @@ exports.Prisma.ContestParticipantScalarFieldEnum = {
 exports.Prisma.ContestPrizeScalarFieldEnum = {
   id: 'id',
   category: 'category',
-  trades: 'trades',
-  charges: 'charges',
-  keys: 'keys',
-  contestId: 'contestId'
+  icon: 'icon',
+  boost: 'boost',
+  swap: 'swap',
+  key: 'key',
+  contestId: 'contestId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.ContestAchievementScalarFieldEnum = {
@@ -408,9 +383,9 @@ exports.Prisma.UserScalarFieldEnum = {
 exports.Prisma.UserStoreScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
-  promotes: 'promotes',
-  trades: 'trades',
-  charges: 'charges',
+  key: 'key',
+  boost: 'boost',
+  swap: 'swap',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -499,6 +474,16 @@ exports.Prisma.QueryMode = {
   default: 'default',
   insensitive: 'insensitive'
 };
+exports.PrizeType = exports.$Enums.PrizeType = {
+  TOP_PHOTO: 'TOP_PHOTO',
+  TOP_PHOTOGRAPHER: 'TOP_PHOTOGRAPHER'
+};
+
+exports.ContestMode = exports.$Enums.ContestMode = {
+  SOLO: 'SOLO',
+  TEAM: 'TEAM'
+};
+
 exports.ContestStatus = exports.$Enums.ContestStatus = {
   JOINED: 'JOINED',
   OPEN: 'OPEN',
@@ -509,14 +494,23 @@ exports.ContestStatus = exports.$Enums.ContestStatus = {
   CLOSED: 'CLOSED'
 };
 
-exports.ContestMode = exports.$Enums.ContestMode = {
-  SOLO: 'SOLO',
-  TEAM: 'TEAM'
+exports.ContestType = exports.$Enums.ContestType = {
+  ONETIME: 'ONETIME',
+  RECURRING: 'RECURRING'
 };
 
-exports.ContestParticipantStatus = exports.$Enums.ContestParticipantStatus = {
-  ACTIVE: 'ACTIVE',
-  BLOCKED: 'BLOCKED'
+exports.RecurringType = exports.$Enums.RecurringType = {
+  DAILY: 'DAILY',
+  WEEKLY: 'WEEKLY',
+  MONTHLY: 'MONTHLY'
+};
+
+exports.ContestLevel = exports.$Enums.ContestLevel = {
+  POPULAR: 'POPULAR',
+  SKILLED: 'SKILLED',
+  PREMIER: 'PREMIER',
+  ELITE: 'ELITE',
+  ALL_STAR: 'ALL_STAR'
 };
 
 exports.YCLevel = exports.$Enums.YCLevel = {
@@ -528,10 +522,9 @@ exports.YCLevel = exports.$Enums.YCLevel = {
   TOP_NOTCH: 'TOP_NOTCH'
 };
 
-exports.PrizeType = exports.$Enums.PrizeType = {
-  TOP_PHOTO: 'TOP_PHOTO',
-  TOP_PHOTOGRAPHER: 'TOP_PHOTOGRAPHER',
-  TOP_YC_PICK: 'TOP_YC_PICK'
+exports.ContestParticipantStatus = exports.$Enums.ContestParticipantStatus = {
+  ACTIVE: 'ACTIVE',
+  BLOCKED: 'BLOCKED'
 };
 
 exports.NotificationType = exports.$Enums.NotificationType = {
@@ -542,16 +535,10 @@ exports.NotificationType = exports.$Enums.NotificationType = {
   LIKE: 'LIKE'
 };
 
-exports.PaymentStatus = exports.$Enums.PaymentStatus = {
+exports.SubscriptionStatus = exports.$Enums.SubscriptionStatus = {
   PENDING: 'PENDING',
-  SUCCEEDED: 'SUCCEEDED',
   VALID: 'VALID',
   EXPIRED: 'EXPIRED'
-};
-
-exports.SubscriptionPlanEnum = exports.$Enums.SubscriptionPlanEnum = {
-  PREMIUM: 'PREMIUM',
-  PRO: 'PRO'
 };
 
 exports.PlanRecurringType = exports.$Enums.PlanRecurringType = {
@@ -560,8 +547,14 @@ exports.PlanRecurringType = exports.$Enums.PlanRecurringType = {
   YEARLY: 'YEARLY'
 };
 
-exports.SubscriptionStatus = exports.$Enums.SubscriptionStatus = {
+exports.SubscriptionPlanEnum = exports.$Enums.SubscriptionPlanEnum = {
+  PREMIUM: 'PREMIUM',
+  PRO: 'PRO'
+};
+
+exports.PaymentStatus = exports.$Enums.PaymentStatus = {
   PENDING: 'PENDING',
+  SUCCEEDED: 'SUCCEEDED',
   VALID: 'VALID',
   EXPIRED: 'EXPIRED'
 };
@@ -583,6 +576,11 @@ exports.TeamAccessibility = exports.$Enums.TeamAccessibility = {
   PRIVATE: 'PRIVATE'
 };
 
+exports.InvitationStatus = exports.$Enums.InvitationStatus = {
+  ACTIVE: 'ACTIVE',
+  EXPIRED: 'EXPIRED'
+};
+
 exports.MatchStatus = exports.$Enums.MatchStatus = {
   ACTIVE: 'ACTIVE',
   CLOSED: 'CLOSED'
@@ -601,26 +599,6 @@ exports.MemberLevel = exports.$Enums.MemberLevel = {
   LEADER: 'LEADER'
 };
 
-exports.InvitationStatus = exports.$Enums.InvitationStatus = {
-  ACTIVE: 'ACTIVE',
-  EXPIRED: 'EXPIRED'
-};
-
-exports.UserRole = exports.$Enums.UserRole = {
-  USER: 'USER',
-  ADMIN: 'ADMIN'
-};
-
-exports.OtpStatus = exports.$Enums.OtpStatus = {
-  CREATED: 'CREATED',
-  VALIDATED: 'VALIDATED'
-};
-
-exports.VoteType = exports.$Enums.VoteType = {
-  Promoted: 'Promoted',
-  Organic: 'Organic'
-};
-
 exports.LevelName = exports.$Enums.LevelName = {
   APPRENTICE: 'APPRENTICE',
   STUDENT: 'STUDENT',
@@ -633,10 +611,19 @@ exports.LevelName = exports.$Enums.LevelName = {
   PRO: 'PRO'
 };
 
-exports.RecurringType = exports.$Enums.RecurringType = {
-  DAILY: 'DAILY',
-  WEEKLY: 'WEEKLY',
-  MONTHLY: 'MONTHLY'
+exports.VoteType = exports.$Enums.VoteType = {
+  Promoted: 'Promoted',
+  Organic: 'Organic'
+};
+
+exports.UserRole = exports.$Enums.UserRole = {
+  USER: 'USER',
+  ADMIN: 'ADMIN'
+};
+
+exports.OtpStatus = exports.$Enums.OtpStatus = {
+  CREATED: 'CREATED',
+  VALIDATED: 'VALIDATED'
 };
 
 exports.Prisma.ModelName = {
@@ -673,34 +660,83 @@ exports.Prisma.ModelName = {
   UserLevel: 'UserLevel',
   Level: 'Level'
 };
-
 /**
- * This is a stub Prisma Client that will error at runtime if called.
+ * Create the Client
  */
-class PrismaClient {
-  constructor() {
-    return new Proxy(this, {
-      get(target, prop) {
-        let message
-        const runtime = getRuntime()
-        if (runtime.isEdge) {
-          message = `PrismaClient is not configured to run in ${runtime.prettyName}. In order to run Prisma Client on edge runtime, either:
-- Use Prisma Accelerate: https://pris.ly/d/accelerate
-- Use Driver Adapters: https://pris.ly/d/driver-adapters
-`;
-        } else {
-          message = 'PrismaClient is unable to run in this browser environment, or has been bundled for the browser (running in `' + runtime.prettyName + '`).'
-        }
-
-        message += `
-If this is unexpected, please open an issue: https://pris.ly/prisma-prisma-bug-report`
-
-        throw new Error(message)
+const config = {
+  "generator": {
+    "name": "client",
+    "provider": {
+      "fromEnvVar": null,
+      "value": "prisma-client-js"
+    },
+    "output": {
+      "value": "D:\\projects\\ongoing\\Your-captuer-award\\src\\prismaClient",
+      "fromEnvVar": null
+    },
+    "config": {
+      "engineType": "library"
+    },
+    "binaryTargets": [
+      {
+        "fromEnvVar": null,
+        "value": "windows",
+        "native": true
       }
-    })
+    ],
+    "previewFeatures": [],
+    "sourceFilePath": "D:\\projects\\ongoing\\Your-captuer-award\\prisma\\schema.prisma",
+    "isCustomOutput": true
+  },
+  "relativeEnvPaths": {
+    "rootEnvPath": null,
+    "schemaEnvPath": "../../.env"
+  },
+  "relativePath": "../../prisma",
+  "clientVersion": "6.18.0",
+  "engineVersion": "34b5a692b7bd79939a9a2c3ef97d816e749cda2f",
+  "datasourceNames": [
+    "db"
+  ],
+  "activeProvider": "mongodb",
+  "postinstall": false,
+  "inlineDatasources": {
+    "db": {
+      "url": {
+        "fromEnvVar": "DATABASE_URL",
+        "value": null
+      }
+    }
+  },
+  "inlineSchema": "//Contest models\n\nmodel Contest {\n  id                 String        @id @default(auto()) @map(\"_id\") @db.ObjectId\n  title              String\n  description        String\n  banner             String?       @default(\"https://images.unsplash.com/photo-1689539137236-b68e436248de?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D\")\n  status             ContestStatus @default(UPCOMING)\n  mode               ContestMode   @default(SOLO)\n  maxUploads         Int           @default(1)\n  isMoneyContest     Boolean       @default(false)\n  maxPrize           Int?          @default(0)\n  minPrize           Int?          @default(0)\n  level_requirements Int[]\n\n  startDate DateTime\n  endDate   DateTime\n  startedAt DateTime?\n\n  creatorId String @db.ObjectId\n  rules     Json?\n  prizes    Json?\n\n  creator            User                 @relation(fields: [creatorId], references: [id])\n  participants       ContestParticipant[]\n  teamParticipations TeamParticipation[]\n  votes              Vote[]\n  contestRules       ContestRule[]\n  contestPrizes      ContestPrize[]\n  achievements       ContestAchievement[]\n  teamMatch          TeamMatch[]\n  createdAt          DateTime             @default(now())\n  updatedAt          DateTime             @updatedAt\n\n  @@map(\"contests\")\n}\n\nmodel RecurringContest {\n  id                 String  @id @default(auto()) @map(\"_id\") @db.ObjectId\n  title              String\n  description        String\n  banner             String? @default(\"https://images.unsplash.com/photo-1689539137236-b68e436248de?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D\")\n  maxUploads         Int     @default(1)\n  isMoneyContest     Boolean @default(false)\n  maxPrize           Int?    @default(0)\n  minPrize           Int?    @default(0)\n  level_requirements Int[]\n\n  startDate DateTime\n  endDate   DateTime\n\n  creatorId String        @db.ObjectId\n  recurring RecurringData\n\n  rules     Json\n  prizes    Json\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  @@map(\"recurring_contests\")\n}\n\nmodel ContestRule {\n  id          String  @id @default(auto()) @map(\"_id\") @db.ObjectId\n  icon        String?\n  name        String\n  description String\n  contestId   String  @db.ObjectId\n  contest     Contest @relation(fields: [contestId], references: [id], onDelete: Cascade)\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  @@map(\"contest_rules\")\n}\n\nmodel ContestPhoto {\n  id                 String               @id @default(auto()) @map(\"_id\") @db.ObjectId\n  title              String?\n  contestId          String               @db.ObjectId\n  participantId      String               @db.ObjectId\n  photoId            String               @db.ObjectId\n  rank               Int?                 @default(0)\n  promoted           Boolean              @default(false)\n  promotionExpiresAt DateTime?\n  initialVotes       Int                  @default(0)\n  // contest   Contest @relation(fields: [contestId],references: [id])\n  participant        ContestParticipant   @relation(fields: [participantId], references: [id], onDelete: Cascade)\n  votes              Vote[]\n  photo              UserPhoto            @relation(fields: [photoId], references: [id], onDelete: Cascade)\n  comments           Comment[]\n  achievements       ContestAchievement[]\n  ContestWinner      ContestWinner[]\n  createdAt          DateTime             @default(now())\n  updatedAt          DateTime             @updatedAt\n\n  @@map(\"contest_photos\")\n}\n\nmodel ContestWinner {\n  id             String @id @default(auto()) @map(\"_id\") @db.ObjectId\n  participantId  String @db.ObjectId\n  contestId      String @db.ObjectId\n  contestPhotoId String @db.ObjectId\n\n  participant ContestParticipant @relation(fields: [participantId], references: [id], onDelete: Cascade)\n  photo       ContestPhoto       @relation(fields: [contestPhotoId], references: [id])\n  createdAt   DateTime           @default(now())\n  updatedAt   DateTime           @updatedAt\n\n  @@map(\"contest_winners\")\n}\n\nmodel ContestParticipant {\n  id             String                   @id @default(auto()) @map(\"_id\") @db.ObjectId\n  status         ContestParticipantStatus @default(ACTIVE)\n  contestId      String                   @db.ObjectId\n  userId         String                   @db.ObjectId\n  memberId       String?                  @db.ObjectId\n  level          YCLevel                  @default(NEW)\n  rank           Int?                     @default(0)\n  exposure_bonus Int                      @default(100)\n\n  contest            Contest              @relation(fields: [contestId], references: [id], onDelete: Cascade)\n  user               User                 @relation(fields: [userId], references: [id])\n  member             TeamMember?          @relation(fields: [memberId], references: [id])\n  photos             ContestPhoto[]\n  ContestWinner      ContestWinner[]\n  contestAchievement ContestAchievement[]\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  @@unique([contestId, userId])\n  @@map(\"contest_participants\")\n}\n\nmodel ContestPrize {\n  id       String    @id @default(auto()) @map(\"_id\") @db.ObjectId\n  category PrizeType\n  icon     String?\n  boost    Int       @default(0)\n  swap     Int       @default(0)\n  key      Int       @default(0)\n\n  contestId String  @db.ObjectId\n  contest   Contest @relation(fields: [contestId], references: [id], onDelete: Cascade)\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  @@map(\"contest_prizes\")\n}\n\nmodel ContestAchievement {\n  id            String    @id @default(auto()) @map(\"_id\") @db.ObjectId\n  category      PrizeType\n  photoId       String?   @db.ObjectId\n  participantId String?   @db.ObjectId\n  contestId     String    @db.ObjectId\n\n  photo   ContestPhoto? @relation(fields: [photoId], references: [id])\n  contest Contest       @relation(fields: [contestId], references: [id])\n\n  participant ContestParticipant? @relation(fields: [participantId], references: [id])\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  @@map(\"contest_achievements\")\n}\n\ntype Rules {\n  name        String\n  icon        String\n  description String\n}\n\ntype RecurringData {\n  recurringType      RecurringType\n  previousOccurrence DateTime?\n  nextOccurrence     DateTime\n  duration           Int           @default(0)\n}\n\nenum PrizeType {\n  TOP_PHOTO\n  TOP_PHOTOGRAPHER\n}\n\nenum ContestMode {\n  SOLO\n  TEAM\n}\n\nenum ContestStatus {\n  JOINED\n  OPEN\n  NEW // Just created, not started yet\n  UPCOMING // Contest is upcoming, not started yet\n  ACTIVE // Contest is currently active\n  COMPLETED // Contest has ended and winners are announced\n  CLOSED // Contest is closed for new participants\n}\n\nenum ContestType {\n  ONETIME\n  RECURRING\n}\n\nenum RecurringType {\n  DAILY\n  WEEKLY\n  MONTHLY\n}\n\nenum ContestLevel {\n  POPULAR\n  SKILLED\n  PREMIER\n  ELITE\n  ALL_STAR\n}\n\nenum YCLevel {\n  NEW\n  AMATEUR\n  TALENTED\n  SUPREME\n  SUPERIOR\n  TOP_NOTCH\n}\n\nenum ContestParticipantStatus {\n  ACTIVE\n  BLOCKED\n}\n\nmodel Notification {\n  id         String           @id @default(auto()) @map(\"_id\") @db.ObjectId\n  title      String\n  message    String\n  type       NotificationType @default(DEFAULT)\n  isSent     Boolean          @default(false)\n  isRead     Boolean          @default(false)\n  receiverId String\n  data       Json?\n  createdAt  DateTime         @default(now())\n  updatedAT  DateTime         @updatedAt\n\n  @@map(\"notifications\")\n}\n\nenum NotificationType {\n  DEFAULT\n  INVITATION\n  PAYMENT\n  VOTE\n  LIKE\n}\n\nmodel Payment {\n  id                String                @id @default(auto()) @map(\"_id\") @db.ObjectId\n  status            PaymentStatus         @default(PENDING)\n  productId         String?               @db.ObjectId\n  planId            String?               @db.ObjectId\n  subscriptionId    String?               @db.ObjectId\n  planName          SubscriptionPlanEnum?\n  recurring         PlanRecurringType?\n  userId            String                @db.ObjectId\n  stripe_sessino_id String?\n  amount            Float\n  currency          String\n  method            String\n\n  user      User     @relation(references: [id], fields: [userId])\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  @@map(\"payments\")\n}\n\nmodel SubscriptionPlan {\n  id                String               @id @default(auto()) @map(\"_id\") @db.ObjectId\n  planName          SubscriptionPlanEnum\n  stripe_price_id   String\n  stripe_product_id String\n  amount            Float\n  recurring         PlanRecurringType\n  currency          String               @default(\"USD\")\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  @@map(\"subscription_plans\")\n}\n\nmodel Subscription {\n  id                String               @id @default(auto()) @map(\"_id\") @db.ObjectId\n  plan              SubscriptionPlanEnum\n  plan_id           String               @db.ObjectId\n  userId            String               @db.ObjectId\n  status            SubscriptionStatus   @default(PENDING)\n  stripe_session_id String?\n  subscription_id   String?\n  startDate         DateTime?\n  endDate           DateTime?\n  user              User                 @relation(references: [id], fields: [userId])\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  @@map(\"subscriptions\")\n}\n\nenum SubscriptionStatus {\n  PENDING\n  VALID\n  EXPIRED\n}\n\nenum PlanRecurringType {\n  ONETIME\n  MONTHLY\n  YEARLY\n}\n\nenum SubscriptionPlanEnum {\n  PREMIUM\n  PRO\n}\n\nenum PaymentStatus {\n  PENDING\n  SUCCEEDED\n  VALID\n  EXPIRED\n}\n\nmodel SitePolicy {\n  id      String         @id @default(auto()) @map(\"_id\") @db.ObjectId\n  type    SitePolicyType\n  content String\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  @@map(\"site_policies\")\n}\n\nenum SitePolicyType {\n  TERMS\n  POLICY\n  ABOUT\n}\n\nmodel Room {\n  id     String @id @default(auto()) @map(\"_id\") @db.ObjectId\n  teamId String @unique @db.ObjectId\n\n  @@map(\"rooms\")\n}\n\nmodel Chat {\n  id       String @id @default(auto()) @map(\"_id\") @db.ObjectId\n  teamId   String @db.ObjectId\n  senderId String @db.ObjectId\n  message  String\n\n  team      Team     @relation(fields: [teamId], references: [id])\n  sender    User     @relation(fields: [senderId], references: [id])\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  @@map(\"chats\")\n}\n\ngenerator client {\n  provider = \"prisma-client-js\"\n  output   = \"../src/prismaClient\"\n}\n\ndatasource db {\n  provider = \"mongodb\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel Product {\n  id          String      @id @default(auto()) @map(\"_id\") @db.ObjectId\n  productType ProductType\n  title       String\n  quantity    Int\n  amount      Float\n  currency    String      @default(\"USD\")\n  icon        String?\n  description String?\n  image       String?\n\n  @@index([id, productType])\n  @@map(\"products\")\n}\n\nmodel Price {\n  id         String @id @default(auto()) @map(\"_id\") @db.ObjectId\n  product_id String @db.ObjectId\n  name       String\n  amount     Float\n  quantity   Int\n  price_id   String\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  @@index([id, product_id])\n  @@map(\"prices\")\n}\n\nenum ProductType {\n  KEY\n  PROMOTE\n  CHARGE\n}\n\nmodel Team {\n  id                  String              @id @default(auto()) @map(\"_id\") @db.ObjectId\n  name                String\n  level               String\n  language            String\n  country             String\n  description         String\n  accessibility       TeamAccessibility   @default(PUBLIC)\n  member_count        Int                 @default(0)\n  score               Int                 @default(0)\n  win                 Int                 @default(0)\n  lost                Int                 @default(0)\n  badge               String              @default(\"https://www.freepik.com/free-photo/businesspeople-having-good-time-meeting_861800.htm#fromView=keyword&page=1&position=6&uuid=59ca936a-5c54-464c-a5ed-b579a1cd4afe&query=Team\") //Image file\n  min_requirement     Int\n  min_requirement_str String\n  creatorId           String              @db.ObjectId\n  creator             User                @relation(fields: [creatorId], references: [id])\n  members             TeamMember[]\n  chat                Chat[]\n  participations      TeamParticipation[]\n  MatchesAsTeam1      TeamMatch[]         @relation(name: \"team1\")\n  MatchesAsTeam2      TeamMatch[]         @relation(name: \"team2\")\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  @@map(\"teams\")\n}\n\nmodel TeamMatch {\n  id        String      @id @default(auto()) @map(\"_id\") @db.ObjectId\n  contestId String      @db.ObjectId\n  team1Id   String      @db.ObjectId\n  team2Id   String      @db.ObjectId\n  contest   Contest     @relation(references: [id], fields: [contestId])\n  team1     Team        @relation(name: \"team1\", references: [id], fields: [team1Id])\n  team2     Team        @relation(name: \"team2\", references: [id], fields: [team2Id])\n  status    MatchStatus @default(ACTIVE)\n  startedAt DateTime    @default(now())\n  endedAt   DateTime\n  createdAt DateTime    @default(now())\n  updatedAt DateTime    @updatedAt\n\n  @@map(\"team_mathces\")\n}\n\nmodel TeamMember {\n  id     String           @id @default(auto()) @map(\"_id\") @db.ObjectId\n  status TeamMemberStatus @default(ACTIVE)\n  level  MemberLevel      @default(NEW)\n\n  teamId             String               @db.ObjectId\n  memberId           String               @unique @db.ObjectId\n  team               Team                 @relation(fields: [teamId], references: [id])\n  member             User                 @relation(fields: [memberId], references: [id])\n  contestParticipant ContestParticipant[]\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  @@map(\"team_members\")\n}\n\nmodel TeamParticipation {\n  id String @id @default(auto()) @map(\"_id\") @db.ObjectId\n\n  teamId    String @db.ObjectId\n  contestId String @db.ObjectId\n\n  team    Team    @relation(references: [id], fields: [teamId])\n  contest Contest @relation(references: [id], fields: [contestId])\n\n  @@unique([teamId, contestId])\n  @@index([teamId])\n  @@map(\"team_participations\")\n}\n\nmodel TeamInvitation {\n  id String @id @default(auto()) @map(\"_id\") @db.ObjectId\n\n  teamId     String @db.ObjectId\n  receiverId String @db.ObjectId\n  senderId   String @db.ObjectId\n\n  status    InvitationStatus @default(ACTIVE)\n  expiredAt DateTime\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  @@map(\"team_invitations\")\n}\n\nenum TeamAccessibility {\n  PUBLIC\n  PRIVATE\n}\n\nenum InvitationStatus {\n  ACTIVE\n  EXPIRED\n}\n\nenum MatchStatus {\n  ACTIVE\n  CLOSED\n}\n\nenum TeamMemberStatus {\n  ACTIVE\n  REMOVED\n  BLOCKED\n}\n\nenum MemberLevel {\n  NEW\n  EXPERT\n  MASTER\n  LEADER\n}\n\nmodel User {\n  id                 String                @id @default(auto()) @map(\"_id\") @db.ObjectId\n  cover              String?               @default(\"https://images.unsplash.com/photo-1689539137236-b68e436248de?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D\")\n  avatar             String?               @default(\"https://plus.unsplash.com/premium_photo-1689539137236-b68e436248de?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D\")\n  socialId           String?\n  socialProvider     String?\n  firstName          String?\n  lastName           String?\n  fullName           String?\n  username           String?\n  phone              String?\n  email              String                @unique\n  location           String?\n  country            String?\n  password           String?\n  customerId         String?\n  role               UserRole              @default(USER)\n  accessToken        String?\n  isActive           Boolean               @default(false)\n  currentLevel       Int                   @default(-1)\n  voting_power       Int                   @default(1)\n  purchased_plan     SubscriptionPlanEnum?\n  level              UserLevel?\n  otps               Otp?\n  store              UserStore?\n  createdTeam        Team[]\n  joinedTeam         TeamMember?\n  createdContests    Contest[]\n  commentProvides    Comment[]             @relation(\"provider\")\n  followers          Follow[]              @relation(name: \"follower\")\n  followings         Follow[]              @relation(name: \"following\")\n  votes              Vote[]\n  likes              Like[]\n  userPhotos         UserPhoto[]\n  ContestParticipant ContestParticipant[]\n  chat               Chat[]\n  subscriptions      Subscription[]\n  payments           Payment[]\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  @@map(\"users\")\n}\n\nmodel UserStore {\n  id     String @id @default(auto()) @map(\"_id\") @db.ObjectId\n  userId String @unique @db.ObjectId\n  key    Int    @default(0)\n  boost  Int    @default(0)\n  swap   Int    @default(0)\n\n  user User? @relation(fields: [userId], references: [id])\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  @@map(\"user_stores\")\n}\n\nmodel UserPhoto {\n  id          String      @id @default(auto()) @map(\"_id\") @db.ObjectId\n  url         String\n  userId      String      @db.ObjectId\n  states      PhotoStats?\n  views       Int         @default(0)\n  labels      String[]    @default([])\n  title       String?\n  description String?\n  adult       Boolean     @default(false)\n\n  user          User           @relation(fields: [userId], references: [id])\n  contestUpload ContestPhoto[]\n  likes         Like[]\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  @@map(\"user_photos\")\n}\n\nmodel Like {\n  id         String @id @default(auto()) @map(\"_id\") @db.ObjectId\n  providerId String @db.ObjectId\n  photoId    String @db.ObjectId\n\n  provider User      @relation(fields: [providerId], references: [id])\n  photo    UserPhoto @relation(fields: [photoId], references: [id])\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  @@unique([photoId, providerId])\n  @@map(\"likes\")\n}\n\nmodel Otp {\n  id         String   @id @default(auto()) @map(\"_id\") @db.ObjectId\n  code       String\n  expires_in DateTime\n  userId     String   @unique @db.ObjectId\n\n  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)\n  otpStatus OtpStatus @default(CREATED)\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n  expiresAt DateTime\n\n  @@map(\"otps\")\n}\n\nmodel Comment {\n  id         String  @id @default(auto()) @map(\"_id\") @db.ObjectId\n  text       String\n  providerId String  @db.ObjectId\n  photoId    String? @db.ObjectId\n  parentId   String? @db.ObjectId\n\n  provider       User          @relation(name: \"provider\", fields: [providerId], references: [id])\n  photo          ContestPhoto? @relation(fields: [photoId], references: [id])\n  parent         Comment?      @relation(name: \"replies\", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)\n  commentReplies Comment[]     @relation(\"replies\")\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  @@map(\"comments\")\n}\n\nmodel Follow {\n  id          String @id @default(auto()) @map(\"_id\") @db.ObjectId\n  followerId  String @db.ObjectId\n  followingId String @db.ObjectId\n  follower    User   @relation(name: \"follower\", fields: [followerId], references: [id])\n  following   User   @relation(name: \"following\", fields: [followingId], references: [id])\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  @@unique([followerId, followingId])\n  @@map(\"follows\")\n}\n\nmodel Vote {\n  id         String   @id @default(auto()) @map(\"_id\") @db.ObjectId\n  providerId String   @db.ObjectId\n  photoId    String   @db.ObjectId\n  contestId  String   @db.ObjectId\n  type       VoteType\n  power      Int      @default(1)\n\n  provider User         @relation(fields: [providerId], references: [id])\n  photo    ContestPhoto @relation(fields: [photoId], references: [id], onDelete: Cascade)\n  contest  Contest      @relation(fields: [contestId], references: [id])\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  @@map(\"votes\")\n}\n\nmodel UserLevel {\n  id      String @id @default(auto()) @map(\"_id\") @db.ObjectId\n  userId  String @unique @db.ObjectId\n  levelId String @db.ObjectId\n\n  level Level @relation(references: [id], fields: [levelId])\n  user  User? @relation(references: [id], fields: [userId])\n\n  @@map(\"user_levels\")\n}\n\nmodel Level {\n  id           String             @id @default(auto()) @map(\"_id\") @db.ObjectId\n  level        Int\n  levelName    LevelName\n  requirements LevelRequirement[]\n  userLevel    UserLevel[]\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n\n// model Love {\n//   id         String @id @default(auto()) @map(\"_id\") @db.ObjectId\n//   providerId String @db.ObjectId\n//   photoId    String @db.ObjectId\n\n//   provider User      @relation(fields: [providerId], references: [id])\n//   photo    UserPhoto @relation(fields: [photoId], references: [id])\n\n//   createdAt DateTime @default(now())\n//   updatedAt DateTime @updatedAt\n\n//   @@map(\"loves\")\n// }\n\ntype LevelRequirement {\n  title    String\n  required Int\n}\n\ntype Badge {\n  type  String\n  param String\n}\n\nenum LevelName {\n  APPRENTICE\n  STUDENT\n  TRAINED\n  TALENTED\n  CONTENDER\n  VIRTUOSO\n  LEADER\n  AVANTGARDE\n  PRO\n}\n\nenum VoteType {\n  Promoted\n  Organic\n}\n\nenum UserRole {\n  USER\n  ADMIN\n}\n\nenum OtpStatus {\n  CREATED\n  VALIDATED\n}\n\ntype PhotoStats {\n  Composition Int @default(0)\n  Content     Int @default(0)\n  Creativity  Int @default(0)\n  Technique   Int @default(0)\n}\n",
+  "inlineSchemaHash": "eca17de3e2ce64fe84ecf7e89d4b4f855963b4234fce86f286cbf066eaae6000",
+  "copyEngine": true
+}
+config.dirname = '/'
+
+config.runtimeDataModel = JSON.parse("{\"models\":{\"Contest\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"_id\"},{\"name\":\"title\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"description\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"banner\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"status\",\"kind\":\"enum\",\"type\":\"ContestStatus\"},{\"name\":\"mode\",\"kind\":\"enum\",\"type\":\"ContestMode\"},{\"name\":\"maxUploads\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"isMoneyContest\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"maxPrize\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"minPrize\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"level_requirements\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"startDate\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"endDate\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"startedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"creatorId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"rules\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"prizes\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"creator\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"ContestToUser\"},{\"name\":\"participants\",\"kind\":\"object\",\"type\":\"ContestParticipant\",\"relationName\":\"ContestToContestParticipant\"},{\"name\":\"teamParticipations\",\"kind\":\"object\",\"type\":\"TeamParticipation\",\"relationName\":\"ContestToTeamParticipation\"},{\"name\":\"votes\",\"kind\":\"object\",\"type\":\"Vote\",\"relationName\":\"ContestToVote\"},{\"name\":\"contestRules\",\"kind\":\"object\",\"type\":\"ContestRule\",\"relationName\":\"ContestToContestRule\"},{\"name\":\"contestPrizes\",\"kind\":\"object\",\"type\":\"ContestPrize\",\"relationName\":\"ContestToContestPrize\"},{\"name\":\"achievements\",\"kind\":\"object\",\"type\":\"ContestAchievement\",\"relationName\":\"ContestToContestAchievement\"},{\"name\":\"teamMatch\",\"kind\":\"object\",\"type\":\"TeamMatch\",\"relationName\":\"ContestToTeamMatch\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":\"contests\"},\"RecurringContest\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"_id\"},{\"name\":\"title\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"description\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"banner\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"maxUploads\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"isMoneyContest\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"maxPrize\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"minPrize\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"level_requirements\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"startDate\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"endDate\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"creatorId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"recurring\",\"kind\":\"object\",\"type\":\"RecurringData\"},{\"name\":\"rules\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"prizes\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":\"recurring_contests\"},\"ContestRule\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"_id\"},{\"name\":\"icon\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"description\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"contestId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"contest\",\"kind\":\"object\",\"type\":\"Contest\",\"relationName\":\"ContestToContestRule\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":\"contest_rules\"},\"ContestPhoto\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"_id\"},{\"name\":\"title\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"contestId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"participantId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"photoId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"rank\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"promoted\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"promotionExpiresAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"initialVotes\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"participant\",\"kind\":\"object\",\"type\":\"ContestParticipant\",\"relationName\":\"ContestParticipantToContestPhoto\"},{\"name\":\"votes\",\"kind\":\"object\",\"type\":\"Vote\",\"relationName\":\"ContestPhotoToVote\"},{\"name\":\"photo\",\"kind\":\"object\",\"type\":\"UserPhoto\",\"relationName\":\"ContestPhotoToUserPhoto\"},{\"name\":\"comments\",\"kind\":\"object\",\"type\":\"Comment\",\"relationName\":\"CommentToContestPhoto\"},{\"name\":\"achievements\",\"kind\":\"object\",\"type\":\"ContestAchievement\",\"relationName\":\"ContestAchievementToContestPhoto\"},{\"name\":\"ContestWinner\",\"kind\":\"object\",\"type\":\"ContestWinner\",\"relationName\":\"ContestPhotoToContestWinner\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":\"contest_photos\"},\"ContestWinner\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"_id\"},{\"name\":\"participantId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"contestId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"contestPhotoId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"participant\",\"kind\":\"object\",\"type\":\"ContestParticipant\",\"relationName\":\"ContestParticipantToContestWinner\"},{\"name\":\"photo\",\"kind\":\"object\",\"type\":\"ContestPhoto\",\"relationName\":\"ContestPhotoToContestWinner\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":\"contest_winners\"},\"ContestParticipant\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"_id\"},{\"name\":\"status\",\"kind\":\"enum\",\"type\":\"ContestParticipantStatus\"},{\"name\":\"contestId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"memberId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"level\",\"kind\":\"enum\",\"type\":\"YCLevel\"},{\"name\":\"rank\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"exposure_bonus\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"contest\",\"kind\":\"object\",\"type\":\"Contest\",\"relationName\":\"ContestToContestParticipant\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"ContestParticipantToUser\"},{\"name\":\"member\",\"kind\":\"object\",\"type\":\"TeamMember\",\"relationName\":\"ContestParticipantToTeamMember\"},{\"name\":\"photos\",\"kind\":\"object\",\"type\":\"ContestPhoto\",\"relationName\":\"ContestParticipantToContestPhoto\"},{\"name\":\"ContestWinner\",\"kind\":\"object\",\"type\":\"ContestWinner\",\"relationName\":\"ContestParticipantToContestWinner\"},{\"name\":\"contestAchievement\",\"kind\":\"object\",\"type\":\"ContestAchievement\",\"relationName\":\"ContestAchievementToContestParticipant\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":\"contest_participants\"},\"ContestPrize\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"_id\"},{\"name\":\"category\",\"kind\":\"enum\",\"type\":\"PrizeType\"},{\"name\":\"icon\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"boost\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"swap\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"key\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"contestId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"contest\",\"kind\":\"object\",\"type\":\"Contest\",\"relationName\":\"ContestToContestPrize\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":\"contest_prizes\"},\"ContestAchievement\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"_id\"},{\"name\":\"category\",\"kind\":\"enum\",\"type\":\"PrizeType\"},{\"name\":\"photoId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"participantId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"contestId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"photo\",\"kind\":\"object\",\"type\":\"ContestPhoto\",\"relationName\":\"ContestAchievementToContestPhoto\"},{\"name\":\"contest\",\"kind\":\"object\",\"type\":\"Contest\",\"relationName\":\"ContestToContestAchievement\"},{\"name\":\"participant\",\"kind\":\"object\",\"type\":\"ContestParticipant\",\"relationName\":\"ContestAchievementToContestParticipant\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":\"contest_achievements\"},\"Notification\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"_id\"},{\"name\":\"title\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"message\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"type\",\"kind\":\"enum\",\"type\":\"NotificationType\"},{\"name\":\"isSent\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"isRead\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"receiverId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"data\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAT\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":\"notifications\"},\"Payment\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"_id\"},{\"name\":\"status\",\"kind\":\"enum\",\"type\":\"PaymentStatus\"},{\"name\":\"productId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"planId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"subscriptionId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"planName\",\"kind\":\"enum\",\"type\":\"SubscriptionPlanEnum\"},{\"name\":\"recurring\",\"kind\":\"enum\",\"type\":\"PlanRecurringType\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"stripe_sessino_id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"amount\",\"kind\":\"scalar\",\"type\":\"Float\"},{\"name\":\"currency\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"method\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"PaymentToUser\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":\"payments\"},\"SubscriptionPlan\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"_id\"},{\"name\":\"planName\",\"kind\":\"enum\",\"type\":\"SubscriptionPlanEnum\"},{\"name\":\"stripe_price_id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"stripe_product_id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"amount\",\"kind\":\"scalar\",\"type\":\"Float\"},{\"name\":\"recurring\",\"kind\":\"enum\",\"type\":\"PlanRecurringType\"},{\"name\":\"currency\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":\"subscription_plans\"},\"Subscription\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"_id\"},{\"name\":\"plan\",\"kind\":\"enum\",\"type\":\"SubscriptionPlanEnum\"},{\"name\":\"plan_id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"status\",\"kind\":\"enum\",\"type\":\"SubscriptionStatus\"},{\"name\":\"stripe_session_id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"subscription_id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"startDate\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"endDate\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"SubscriptionToUser\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":\"subscriptions\"},\"SitePolicy\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"_id\"},{\"name\":\"type\",\"kind\":\"enum\",\"type\":\"SitePolicyType\"},{\"name\":\"content\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":\"site_policies\"},\"Room\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"_id\"},{\"name\":\"teamId\",\"kind\":\"scalar\",\"type\":\"String\"}],\"dbName\":\"rooms\"},\"Chat\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"_id\"},{\"name\":\"teamId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"senderId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"message\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"team\",\"kind\":\"object\",\"type\":\"Team\",\"relationName\":\"ChatToTeam\"},{\"name\":\"sender\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"ChatToUser\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":\"chats\"},\"Product\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"_id\"},{\"name\":\"productType\",\"kind\":\"enum\",\"type\":\"ProductType\"},{\"name\":\"title\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"quantity\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"amount\",\"kind\":\"scalar\",\"type\":\"Float\"},{\"name\":\"currency\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"icon\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"description\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"image\",\"kind\":\"scalar\",\"type\":\"String\"}],\"dbName\":\"products\"},\"Price\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"_id\"},{\"name\":\"product_id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"amount\",\"kind\":\"scalar\",\"type\":\"Float\"},{\"name\":\"quantity\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"price_id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":\"prices\"},\"Team\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"_id\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"level\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"language\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"country\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"description\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"accessibility\",\"kind\":\"enum\",\"type\":\"TeamAccessibility\"},{\"name\":\"member_count\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"score\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"win\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"lost\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"badge\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"min_requirement\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"min_requirement_str\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"creatorId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"creator\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"TeamToUser\"},{\"name\":\"members\",\"kind\":\"object\",\"type\":\"TeamMember\",\"relationName\":\"TeamToTeamMember\"},{\"name\":\"chat\",\"kind\":\"object\",\"type\":\"Chat\",\"relationName\":\"ChatToTeam\"},{\"name\":\"participations\",\"kind\":\"object\",\"type\":\"TeamParticipation\",\"relationName\":\"TeamToTeamParticipation\"},{\"name\":\"MatchesAsTeam1\",\"kind\":\"object\",\"type\":\"TeamMatch\",\"relationName\":\"team1\"},{\"name\":\"MatchesAsTeam2\",\"kind\":\"object\",\"type\":\"TeamMatch\",\"relationName\":\"team2\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":\"teams\"},\"TeamMatch\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"_id\"},{\"name\":\"contestId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"team1Id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"team2Id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"contest\",\"kind\":\"object\",\"type\":\"Contest\",\"relationName\":\"ContestToTeamMatch\"},{\"name\":\"team1\",\"kind\":\"object\",\"type\":\"Team\",\"relationName\":\"team1\"},{\"name\":\"team2\",\"kind\":\"object\",\"type\":\"Team\",\"relationName\":\"team2\"},{\"name\":\"status\",\"kind\":\"enum\",\"type\":\"MatchStatus\"},{\"name\":\"startedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"endedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":\"team_mathces\"},\"TeamMember\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"_id\"},{\"name\":\"status\",\"kind\":\"enum\",\"type\":\"TeamMemberStatus\"},{\"name\":\"level\",\"kind\":\"enum\",\"type\":\"MemberLevel\"},{\"name\":\"teamId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"memberId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"team\",\"kind\":\"object\",\"type\":\"Team\",\"relationName\":\"TeamToTeamMember\"},{\"name\":\"member\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"TeamMemberToUser\"},{\"name\":\"contestParticipant\",\"kind\":\"object\",\"type\":\"ContestParticipant\",\"relationName\":\"ContestParticipantToTeamMember\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":\"team_members\"},\"TeamParticipation\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"_id\"},{\"name\":\"teamId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"contestId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"team\",\"kind\":\"object\",\"type\":\"Team\",\"relationName\":\"TeamToTeamParticipation\"},{\"name\":\"contest\",\"kind\":\"object\",\"type\":\"Contest\",\"relationName\":\"ContestToTeamParticipation\"}],\"dbName\":\"team_participations\"},\"TeamInvitation\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"_id\"},{\"name\":\"teamId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"receiverId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"senderId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"status\",\"kind\":\"enum\",\"type\":\"InvitationStatus\"},{\"name\":\"expiredAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":\"team_invitations\"},\"User\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"_id\"},{\"name\":\"cover\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"avatar\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"socialId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"socialProvider\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"firstName\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"lastName\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"fullName\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"username\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"phone\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"email\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"location\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"country\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"password\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"customerId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"role\",\"kind\":\"enum\",\"type\":\"UserRole\"},{\"name\":\"accessToken\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"isActive\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"currentLevel\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"voting_power\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"purchased_plan\",\"kind\":\"enum\",\"type\":\"SubscriptionPlanEnum\"},{\"name\":\"level\",\"kind\":\"object\",\"type\":\"UserLevel\",\"relationName\":\"UserToUserLevel\"},{\"name\":\"otps\",\"kind\":\"object\",\"type\":\"Otp\",\"relationName\":\"OtpToUser\"},{\"name\":\"store\",\"kind\":\"object\",\"type\":\"UserStore\",\"relationName\":\"UserToUserStore\"},{\"name\":\"createdTeam\",\"kind\":\"object\",\"type\":\"Team\",\"relationName\":\"TeamToUser\"},{\"name\":\"joinedTeam\",\"kind\":\"object\",\"type\":\"TeamMember\",\"relationName\":\"TeamMemberToUser\"},{\"name\":\"createdContests\",\"kind\":\"object\",\"type\":\"Contest\",\"relationName\":\"ContestToUser\"},{\"name\":\"commentProvides\",\"kind\":\"object\",\"type\":\"Comment\",\"relationName\":\"provider\"},{\"name\":\"followers\",\"kind\":\"object\",\"type\":\"Follow\",\"relationName\":\"follower\"},{\"name\":\"followings\",\"kind\":\"object\",\"type\":\"Follow\",\"relationName\":\"following\"},{\"name\":\"votes\",\"kind\":\"object\",\"type\":\"Vote\",\"relationName\":\"UserToVote\"},{\"name\":\"likes\",\"kind\":\"object\",\"type\":\"Like\",\"relationName\":\"LikeToUser\"},{\"name\":\"userPhotos\",\"kind\":\"object\",\"type\":\"UserPhoto\",\"relationName\":\"UserToUserPhoto\"},{\"name\":\"ContestParticipant\",\"kind\":\"object\",\"type\":\"ContestParticipant\",\"relationName\":\"ContestParticipantToUser\"},{\"name\":\"chat\",\"kind\":\"object\",\"type\":\"Chat\",\"relationName\":\"ChatToUser\"},{\"name\":\"subscriptions\",\"kind\":\"object\",\"type\":\"Subscription\",\"relationName\":\"SubscriptionToUser\"},{\"name\":\"payments\",\"kind\":\"object\",\"type\":\"Payment\",\"relationName\":\"PaymentToUser\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":\"users\"},\"UserStore\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"_id\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"key\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"boost\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"swap\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"UserToUserStore\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":\"user_stores\"},\"UserPhoto\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"_id\"},{\"name\":\"url\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"states\",\"kind\":\"object\",\"type\":\"PhotoStats\"},{\"name\":\"views\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"labels\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"title\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"description\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"adult\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"UserToUserPhoto\"},{\"name\":\"contestUpload\",\"kind\":\"object\",\"type\":\"ContestPhoto\",\"relationName\":\"ContestPhotoToUserPhoto\"},{\"name\":\"likes\",\"kind\":\"object\",\"type\":\"Like\",\"relationName\":\"LikeToUserPhoto\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":\"user_photos\"},\"Like\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"_id\"},{\"name\":\"providerId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"photoId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"provider\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"LikeToUser\"},{\"name\":\"photo\",\"kind\":\"object\",\"type\":\"UserPhoto\",\"relationName\":\"LikeToUserPhoto\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":\"likes\"},\"Otp\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"_id\"},{\"name\":\"code\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"expires_in\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"OtpToUser\"},{\"name\":\"otpStatus\",\"kind\":\"enum\",\"type\":\"OtpStatus\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"expiresAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":\"otps\"},\"Comment\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"_id\"},{\"name\":\"text\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"providerId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"photoId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"parentId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"provider\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"provider\"},{\"name\":\"photo\",\"kind\":\"object\",\"type\":\"ContestPhoto\",\"relationName\":\"CommentToContestPhoto\"},{\"name\":\"parent\",\"kind\":\"object\",\"type\":\"Comment\",\"relationName\":\"replies\"},{\"name\":\"commentReplies\",\"kind\":\"object\",\"type\":\"Comment\",\"relationName\":\"replies\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":\"comments\"},\"Follow\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"_id\"},{\"name\":\"followerId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"followingId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"follower\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"follower\"},{\"name\":\"following\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"following\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":\"follows\"},\"Vote\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"_id\"},{\"name\":\"providerId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"photoId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"contestId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"type\",\"kind\":\"enum\",\"type\":\"VoteType\"},{\"name\":\"power\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"provider\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"UserToVote\"},{\"name\":\"photo\",\"kind\":\"object\",\"type\":\"ContestPhoto\",\"relationName\":\"ContestPhotoToVote\"},{\"name\":\"contest\",\"kind\":\"object\",\"type\":\"Contest\",\"relationName\":\"ContestToVote\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":\"votes\"},\"UserLevel\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"_id\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"levelId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"level\",\"kind\":\"object\",\"type\":\"Level\",\"relationName\":\"LevelToUserLevel\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"UserToUserLevel\"}],\"dbName\":\"user_levels\"},\"Level\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"_id\"},{\"name\":\"level\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"levelName\",\"kind\":\"enum\",\"type\":\"LevelName\"},{\"name\":\"requirements\",\"kind\":\"object\",\"type\":\"LevelRequirement\"},{\"name\":\"userLevel\",\"kind\":\"object\",\"type\":\"UserLevel\",\"relationName\":\"LevelToUserLevel\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null}},\"enums\":{},\"types\":{}}")
+defineDmmfProperty(exports.Prisma, config.runtimeDataModel)
+config.engineWasm = {
+  getRuntime: async () => require('./query_engine_bg.js'),
+  getQueryEngineWasmModule: async () => {
+    const loader = (await import('#wasm-engine-loader')).default
+    const engine = (await loader).default
+    return engine
   }
 }
+config.compilerWasm = undefined
 
+config.injectableEdgeEnv = () => ({
+  parsed: {
+    DATABASE_URL: typeof globalThis !== 'undefined' && globalThis['DATABASE_URL'] || typeof process !== 'undefined' && process.env && process.env.DATABASE_URL || undefined
+  }
+})
+
+if (typeof globalThis !== 'undefined' && globalThis['DEBUG'] || typeof process !== 'undefined' && process.env && process.env.DEBUG || undefined) {
+  Debug.enable(typeof globalThis !== 'undefined' && globalThis['DEBUG'] || typeof process !== 'undefined' && process.env && process.env.DEBUG || undefined)
+}
+
+const PrismaClient = getPrismaClient(config)
 exports.PrismaClient = PrismaClient
-
 Object.assign(exports, Prisma)
+

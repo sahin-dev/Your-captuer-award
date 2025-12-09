@@ -39,7 +39,7 @@ const facebookCallback = async (accessToken:any, refreshToken:any, profile:Profi
                     avatar:userData.avatar
                 }})
 
-                await tx.userStore.create({data:{userId:user.id, promotes:0, charges:0, trades:0}})
+                await tx.userStore.create({data:{userId:user.id, key:0, boost:0, swap:0}})
 
                 return user
             })

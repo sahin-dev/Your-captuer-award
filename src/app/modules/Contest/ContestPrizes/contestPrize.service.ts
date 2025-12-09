@@ -16,7 +16,7 @@ export const addContestPrizes = async (contestId:string, prizes:ContestPrize[])=
         }
 
         prizes.forEach(async (prize)=>{
-            await prisma.contestPrize.create({data:{contestId:contestId, category:prize.category,keys:parseInt(prize.keys), trades:parseInt(prize.trades), charges:parseInt(prize.charges)}})
+            await prisma.contestPrize.create({data:{contestId:contestId, category:prize.category,key:prize.key, boost:prize.boost, swap:prize.swap}})
           
         })
 

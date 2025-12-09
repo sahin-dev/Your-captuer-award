@@ -138,12 +138,16 @@ model ContestParticipant {
 model ContestPrize {
   id       String    @id @default(auto()) @map("_id") @db.ObjectId
   category PrizeType
-  trades   Int       @default(0)
-  charges  Int       @default(0)
-  keys     Int       @default(0)
+  icon     String?
+  boost    Int       @default(0)
+  swap     Int       @default(0)
+  key      Int       @default(0)
 
   contestId String  @db.ObjectId
   contest   Contest @relation(fields: [contestId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("contest_prizes")
 }
@@ -182,7 +186,6 @@ type RecurringData {
 enum PrizeType {
   TOP_PHOTO
   TOP_PHOTOGRAPHER
-  TOP_YC_PICK
 }
 
 enum ContestMode {
@@ -374,7 +377,7 @@ model Chat {
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../src/prismaClient/"
+  output   = "../src/prismaClient"
 }
 
 datasource db {
@@ -585,11 +588,11 @@ model User {
 }
 
 model UserStore {
-  id       String @id @default(auto()) @map("_id") @db.ObjectId
-  userId   String @unique @db.ObjectId
-  promotes Int    @default(0)
-  trades   Int    @default(0)
-  charges  Int    @default(0)
+  id     String @id @default(auto()) @map("_id") @db.ObjectId
+  userId String @unique @db.ObjectId
+  key    Int    @default(0)
+  boost  Int    @default(0)
+  swap   Int    @default(0)
 
   user User? @relation(fields: [userId], references: [id])
 

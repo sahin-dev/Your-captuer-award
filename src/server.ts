@@ -10,7 +10,7 @@ import WebSocketHandler from "./socket";
 
 
 let server: Server;
-const PORT = config.port || 5002
+const PORT = config.port || 5003
 
 //Https options
 // const options = {
@@ -26,6 +26,7 @@ async function startServer() {
   server = app.listen(PORT, () => {
     console.log("Server is listiening on port ", config.port);
   });
+ 
   // await setupWebSocket(server);
   let webSocket = new WebSocketHandler(server)
   

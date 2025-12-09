@@ -13,6 +13,7 @@ const addContestRules = async (contestId:string,rules:ContestRule[])=>{
 
     
     await prisma.contestRule.createMany({data: rules.map (r => ({...r, contestId}))})
+    
     const createdRules = await prisma.contestRule.findMany({
         where: { contestId },
         orderBy: { createdAt: 'desc' }, 

@@ -48,9 +48,9 @@ model User {
 model UserStore {
   id      String    @id  @default(auto())  @map("_id") @db.ObjectId
   userId    String  @db.ObjectId @unique 
-  promotes      Int     @default(0)
-  trades    Int     @default(0)
-  charges   Int     @default(0)
+  key      Int     @default(0)
+  boost    Int     @default(0)
+  swap   Int     @default(0)
 
   user    User?      @relation(fields: [userId], references: [id])
 

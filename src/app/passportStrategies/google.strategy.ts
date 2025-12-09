@@ -44,7 +44,7 @@ const googleCallback = async (accessToken:any, refreshToken:any, profile:Profile
                     socialId:userData.socialId,
                     avatar:userData.avatar
                 }})
-                await tx.userStore.create({data:{userId:user.id, trades:0, charges:0, promotes:0}})
+                await tx.userStore.create({data:{userId:user.id, key:0, swap:0, boost:0}})
                 return user
         })
          

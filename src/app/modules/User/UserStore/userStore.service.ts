@@ -1,5 +1,5 @@
 
-import { UserStore } from "../../../../prismaClient";
+import { UserStore } from "../../../../prismaClient/client";
 import prisma from "../../../../shared/prisma";
 
 
@@ -9,13 +9,13 @@ const getStoreData = async (userId: string) => {
   
     const storeData = await prisma.userStore.findUnique({
       where: { userId },
-      select:{id:true,trades:true, promotes:true, charges:true}
+      select:{id:true,key:true, boost:true, swap:true}
     });
     return storeData;
   
 }   
 
-const addStoreData = async (userId: string, data: {trades:number, promotes:number, charges:number}) => {  
+const addStoreData = async (userId: string, data: {key:number, boost:number, swap:number}) => {  
     const store  = await prisma.userStore.findUnique({where:{userId}})
     if (store) {
         throw new Error("User store already exists");
@@ -23,9 +23,9 @@ const addStoreData = async (userId: string, data: {trades:number, promotes:numbe
     const newStore = await prisma.userStore.create({
       data: {
         userId,
-        promotes: data.promotes || 0,
-        trades: data.trades || 0,
-        charges: data.charges || 0
+        boost: data.boost || 0,
+        key: data.key || 0,
+        swap: data.swap || 0
       }
     });
     return newStore;
@@ -42,9 +42,9 @@ const updateStoreData = async (userId: string, data: Partial<UserStore>) => {
     const updatedStore = await prisma.userStore.update({
       where: { userId },
       data:{
-        promotes: {increment:(data.promotes || 0)},
-        trades: {increment:(data.trades || 0)},
-        charges: {increment: (data.charges || 0)}    
+        boost: {increment:(data.boost || 0)},
+        swap: {increment:(data.swap || 0)},
+        key: {increment: (data.key || 0)}    
       }
     });
 

@@ -24,7 +24,7 @@ const getUsers = async (page: number = 1, limit: number = 20)=>{
     //     return UserDto(user)
     // })
 
-    return {page, limit,count:totalUsers,users}
+    return {page, limit,total:totalUsers,users}
 }
 
 
@@ -79,9 +79,10 @@ const updateUser = async (adminId:string,userId:string,userData:userAdminUpdateD
     }
 
     const updatedUser = await prisma.user.update({where:{id:user.id}, data:{
-        firstName: userData.firstName,
-        lastName: userData.lastName,
-        location: userData.location,
+        firstName: userData.firstName as string,
+
+        lastName: userData.lastName as string,
+        location: userData.location as string,
     }})
 
     return UserDto(updatedUser)
@@ -109,7 +110,7 @@ const updateProfile = async (userId:string,userData:userUpdateData)=>{
 
 const getUserDetails = async (userId:string)=>{
 
-    const user = await prisma.user.findUnique({where:{id:userId},include:{store:{select:{trades:true, promotes:true, charges:true}}}, omit:{password:true, createdAt:true, updatedAt:true,accessToken:true}})
+    const user = await prisma.user.findUnique({where:{id:userId},include:{store:{select:{key:true, boost:true, swap:true}}}, omit:{password:true, createdAt:true, updatedAt:true,accessToken:true}})
     if(!user){
         throw new ApiError(httpstatus.NOT_FOUND, "User not found")
     }
@@ -308,7 +309,7 @@ const getUserCurrentLevel = async (userId:string)=>{
 
 
 const attachStoreToUser = async (userId:string)=>{
-    const store = await userStoreService.addStoreData(userId, {trades:0, promotes:0, charges:0})
+    const store = await userStoreService.addStoreData(userId, {key:0, boost:0, swap:0})
 
 }
 

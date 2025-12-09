@@ -8,7 +8,7 @@ import passport from 'passport'
 
 import router from "./app/routes";
 import ErrorHandler from "./app/middlewares/error.middleware";
-import { User } from "./prismaClient";
+import { User } from "./prismaClient/client";
 import './app/event'
 import stripeWebhook from "./helpers/stripeWebhook";
 

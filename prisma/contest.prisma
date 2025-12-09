@@ -145,12 +145,16 @@ model ContestParticipant {
 model ContestPrize {
   id      String      @id @default(auto()) @map("_id") @db.ObjectId
   category   PrizeType
-  trades   Int  @default(0)
-  charges    Int   @default(0)
-  keys     Int   @default(0)
+  icon   String?
+  boost   Int  @default(0)
+  swap    Int   @default(0)
+  key     Int   @default(0)
 
   contestId   String @db.ObjectId 
   contest   Contest  @relation(fields: [contestId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("contest_prizes")
 }

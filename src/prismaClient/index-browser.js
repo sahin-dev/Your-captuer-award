@@ -20,12 +20,12 @@ exports.Prisma = Prisma
 exports.$Enums = {}
 
 /**
- * Prisma Client JS version: 6.12.0
- * Query Engine version: 8047c96bbd92db98a2abc7c9323ce77c02c89dbc
+ * Prisma Client JS version: 6.18.0
+ * Query Engine version: 34b5a692b7bd79939a9a2c3ef97d816e749cda2f
  */
 Prisma.prismaVersion = {
-  client: "6.12.0",
-  engine: "8047c96bbd92db98a2abc7c9323ce77c02c89dbc"
+  client: "6.18.0",
+  engine: "34b5a692b7bd79939a9a2c3ef97d816e749cda2f"
 }
 
 Prisma.PrismaClientKnownRequestError = () => {
@@ -203,10 +203,13 @@ exports.Prisma.ContestParticipantScalarFieldEnum = {
 exports.Prisma.ContestPrizeScalarFieldEnum = {
   id: 'id',
   category: 'category',
-  trades: 'trades',
-  charges: 'charges',
-  keys: 'keys',
-  contestId: 'contestId'
+  icon: 'icon',
+  boost: 'boost',
+  swap: 'swap',
+  key: 'key',
+  contestId: 'contestId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.ContestAchievementScalarFieldEnum = {
@@ -408,9 +411,9 @@ exports.Prisma.UserScalarFieldEnum = {
 exports.Prisma.UserStoreScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
-  promotes: 'promotes',
-  trades: 'trades',
-  charges: 'charges',
+  key: 'key',
+  boost: 'boost',
+  swap: 'swap',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -530,8 +533,7 @@ exports.YCLevel = exports.$Enums.YCLevel = {
 
 exports.PrizeType = exports.$Enums.PrizeType = {
   TOP_PHOTO: 'TOP_PHOTO',
-  TOP_PHOTOGRAPHER: 'TOP_PHOTOGRAPHER',
-  TOP_YC_PICK: 'TOP_YC_PICK'
+  TOP_PHOTOGRAPHER: 'TOP_PHOTOGRAPHER'
 };
 
 exports.NotificationType = exports.$Enums.NotificationType = {

@@ -70,8 +70,8 @@ const createContestBuilderApproach = async (creatorId:string, body:contestData, 
 
 const createContest = async (creatorId: string, body: contestData, banner:Express.Multer.File) => {
 
-    
-    if(!validateContestDate(body.startDate, body.endDate)){
+    try{
+        if(!validateContestDate(body.startDate, body.endDate)){
         throw new ApiError(httpstatus.BAD_REQUEST, "Start date cannot be after end date");
     }
 
@@ -99,7 +99,7 @@ const createContest = async (creatorId: string, body: contestData, banner:Expres
 
      if (body.isMoneyContest) {
 
-        if((!body.minPrize) || (!body.maxPrize )|| (Number(body.minPrize) > Number(body.maxPrize))){
+        if( (Number(body.minPrize) > Number(body.maxPrize))){
             throw new ApiError(httpstatus.BAD_REQUEST, "Maximum price must be greater than minimum price.")
         } 
 
@@ -112,6 +112,8 @@ const createContest = async (creatorId: string, body: contestData, banner:Expres
     // By default every object is recurring false, so if conetest is not recurring, it will not have recurring data
     contestData.startDate = new Date(body.startDate) < new Date(Date.now()) ? new Date(Date.now()) : new Date(body.startDate)
     contestData.endDate = new Date(body.endDate)
+
+    console.log(contestData)
 
     // Create a normal contest entry for all type of contest
        let contest = await prisma.contest.create({
@@ -131,9 +133,14 @@ const createContest = async (creatorId: string, body: contestData, banner:Expres
         createdPrizes = await addContestPrizes(contest.id, prizes)
     }
 
-    const updatedContest = await prisma.contest.update({where:{id:contest.id}, data:{rules:body.rules, prizes:body.prizes}})
+    const updatedContest = await prisma.contest.update({where:{id:contest.id}, data:{rules:createdRules, prizes:createdPrizes}})
 
-    return {contest, rules:updatedContest.rules, prizes:updatedContest.prizes};
+    return updatedContest
+    }catch(err){
+        console.log(err)
+        throw new ApiError(httpstatus.BAD_REQUEST, 'contest creation failed')
+    }
+    
 };
 
 
@@ -154,6 +161,8 @@ const createRecurringContest  =  async (creatorId: string, body: contestData, ba
     const startDate = new Date(body.startDate)
     const endDate = new Date(body.endDate)
 
+    console.log(startDate)
+
     let levels = body.level_requirements.map(levels => parseInt(levels))
 
     const contestData:any = {
@@ -172,7 +181,7 @@ const createRecurringContest  =  async (creatorId: string, body: contestData, ba
     contestData.rules = JSON.stringify(body.rules)
     contestData.prizes = JSON.stringify(body.prizes)
    
-    let bannerUrl = null
+    let bannerUrl:string
     if (banner){
         bannerUrl = (await fileUploader.uploadToDigitalOcean(banner)).Location;
         contestData.banner = bannerUrl
@@ -195,21 +204,31 @@ const createRecurringContest  =  async (creatorId: string, body: contestData, ba
     }
     }
 
-    const recurringContest = await prisma.recurringContest.create({data:contestData})
+    try{
+         const recurringContest = await prisma.recurringContest.create({data:contestData})
+            return recurringContest
+    }catch(err:any){
+        throw new ApiError(httpstatus.BAD_REQUEST, " recurring Contest creation failed")
+    }
 
-    return recurringContest
-
-      
 }
 
 
-
-
 const updateContest = async (contestId:string, contestData:Partial<IContest>)=>{
+    const contest = await prisma.contest.findUnique({where:{id:contestId}})
+    if(!contest){
+        throw new ApiError(httpstatus.NOT_FOUND, "contest not found")
+    }
 
-    const updatedContest = await prisma.contest.update({where:{id:contestId}, data:contestData})
+    if(contest.status === ContestStatus.ACTIVE || ContestStatus.CLOSED){
+        throw new ApiError(httpstatus.BAD_REQUEST, "Editing contest not allowed")
+    }
 
-    return updatedContest
+    if(contest?.status === ContestStatus.UPCOMING || contest?.status === ContestStatus.NEW){
+        const updatedContest = await prisma.contest.update({where:{id:contestId}, data:contestData})
+
+        return updatedContest
+    }
 
 }
 
@@ -321,11 +340,21 @@ const getContestById = async ( contestId: string) => {
 
 
 //Return all the contests
-const getAllContests = async () => {
-    const contests = await prisma.contest.findMany({    
-        include: { creator: true}
-    });
-    return contests;
+const getAllContests = async (page:number = 1, limit:number = 20) => {
+
+    const skip = (page - 1) * limit
+
+    const [contests, total] = await Promise.all([
+        prisma.contest.findMany({    
+        include: { creator: {omit:{password:true}}},
+        skip,
+        take:limit,
+        orderBy:{startDate:"desc"}
+    }),
+    prisma.contest.count()
+    ])
+
+    return {contests, total, page,limit};
 };
 
 //Search contest by contest status
@@ -535,14 +564,14 @@ const getClosedContestsWithWinner = async () => {
     });
 
     // For each contest, fetch photos and determine the winner
-    const results = [];
+    const results:Array<any> = [];
     for (const contest of contests) {
         // Fetch all contest photos for this contest
         const contestPhotos = await prisma.contestPhoto.findMany({
             where: { contestId: contest.id },
             include: { photo: true }
         });
-        let winner = null;
+        let winner:any;
         if (contestPhotos && contestPhotos.length > 0) {
             let maxVotes = -1;
             for (const contestPhoto of contestPhotos) {
@@ -697,7 +726,9 @@ const awardWinner = async (winner:ContestParticipant, contestId:string, prizeTyp
         throw new Error('Winner store is not available')
     }
 
-    await prisma.userStore.update({where:{id:winnerStore.id}, data:{trades: winnerStore.trades + contestPrize.trades , charges: winnerStore.charges + contestPrize.charges, promotes: winnerStore.promotes + contestPrize.keys}})
+    await prisma.userStore.update({
+        where:{id:winnerStore.id}, 
+        data:{key: winnerStore.key + contestPrize.key , boost: winnerStore.boost + contestPrize.boost, swap: winnerStore.swap + contestPrize.swap}})
 
 }
 
@@ -853,11 +884,11 @@ const uploadPhotoToContest = async (contestId:string,userId:string, photoIds:str
     let contestParticipant:ContestParticipant | null = await prisma.contestParticipant.findUnique({where:{contestId_userId:{contestId,userId}}})
 
 
-     if(!contestParticipant){
+    if(!contestParticipant){
         contestParticipant = await prisma.contestParticipant.create({data:{contestId:contest.id,userId:userId}, include:{contest:true, _count:{select:{photos:true}}}})
     }
 
-    const contestPhotosCount = await prisma.contestPhoto.count({where:{contestId:contest.id, participantId:contestParticipant.id}})
+    const contestPhotosCount = await prisma.contestPhoto.count({where:{contestId:contest.id, participantId:contestParticipant!.id}})
 
     if (contestPhotosCount >= contest.maxUploads) {
         throw new ApiError(httpstatus.BAD_REQUEST, "maximum photo upload limit has reached!")
@@ -870,7 +901,7 @@ const uploadPhotoToContest = async (contestId:string,userId:string, photoIds:str
 
         let uploadedPhoto = await profileService.uploadUserPhoto(userId, file)
 
-        uploadImage = await prisma.contestPhoto.create({data:{contestId,participantId:contestParticipant.id,photoId:uploadedPhoto.id}})
+        uploadImage = await prisma.contestPhoto.create({data:{contestId,participantId:contestParticipant!.id,photoId:uploadedPhoto.id}})
 
     }else{
         if(!photoIds || photoIds.length <= 0){
@@ -886,10 +917,10 @@ const uploadPhotoToContest = async (contestId:string,userId:string, photoIds:str
         photoIds.forEach(async photoId => {
             const userPhoto = await prisma.userPhoto.findUnique({where:{id:photoId}})
             if(userPhoto){
-                uploadImage = await prisma.contestPhoto.create({data:{contestId,participantId:contestParticipant.id,photoId:userPhoto.id}, include:{photo:true} })
-                images.push(uploadImage)
-                if(uploadImage){
-                    agenda.every("1 minute", "exposure:watcher",{contestPhotoId:uploadImage.id})
+    uploadImage = await prisma.contestPhoto.create({data:{contestId,participantId:contestParticipant!.id,photoId:userPhoto.id}, include:{photo:true} })
+    if (uploadImage) {
+        images.push(uploadImage)
+        agenda.every("1 minute", "exposure:watcher",{contestPhotoId:uploadImage.id})
     }
                 }
         })
@@ -1041,14 +1072,14 @@ const promoteContestPhoto = async (contestId:string, photoId:string, userId:stri
     const promotionExpiresAt = new Date(Date.now() + 30 * 60 * 1000) //30 minutes from now
     const userStore = await userStoreService.getStoreData(userId)
 
-    if ( !userStore || userStore.promotes <= 0){
+    if ( !userStore || userStore.boost <= 0){
         throw new ApiError(httpstatus.BAD_REQUEST, "You don't have enough promotes")
     }
     await prisma.$transaction(async (tx) => {
         // Decrement the user's promotes count
         await tx.userStore.update({
             where: { userId },
-            data: { promotes: { decrement: 1 } }
+            data: { boost: { decrement: 1 } }
         });
 
         // Update the contest photo to mark it as promoted
@@ -1121,7 +1152,7 @@ const tradePhoto = async (userId:string,contestId:string, contestPhotoId:string,
     }
 
     const userStore = await userStoreService.getStoreData(userId)
-    if (!userStore || userStore.trades <= 0 ){
+    if (!userStore || userStore.swap <= 0 ){
         throw new ApiError(httpstatus.BAD_REQUEST, "you does not have enough trade")
     }
     const vote = await voteService.getVoteCount(contestPhoto.photo.id)
@@ -1129,7 +1160,7 @@ const tradePhoto = async (userId:string,contestId:string, contestPhotoId:string,
 
     const uploadedPhoto = await uploadPhotoToContest(contestId,userId,[photoId], file)
     //decrease trade by 1
-    await userStoreService.updateStoreData(userId,{trades:-1})
+    await userStoreService.updateStoreData(userId,{swap:-1})
 
     return await prisma.contestPhoto.update({where:{id:uploadedPhoto[0].id}, data:{initialVotes:vote}})
     
@@ -1144,7 +1175,7 @@ const chargePhoto = async (userId:string, contestId:string, contestPhotoId:strin
 
     const userStore = await userStoreService.getStoreData(userId)
 
-    if(!userStore || userStore.charges <= 0){
+    if(!userStore || userStore.key <= 0){
         throw new ApiError(httpstatus.NOT_FOUND, "you does not have enough charge")
     }
     const participant = await prisma.contestParticipant.findUnique({where:{id:contestPhoto.participant.id}})
@@ -1157,7 +1188,7 @@ const chargePhoto = async (userId:string, contestId:string, contestPhotoId:strin
    
     agenda.every("1 minute", "exposure:watcher",{contestPhotoId:contestPhoto.id})
     
-    await userStoreService.updateStoreData(userId, {charges:-1})
+    await userStoreService.updateStoreData(userId, {key:-1})
     return newContestPhoto
 }
 

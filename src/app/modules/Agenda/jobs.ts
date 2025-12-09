@@ -152,7 +152,7 @@ async function scheduleContest(rContest:RecurringContest){
         const prizes = JSON.parse(rContest.prizes as string) as ContestPrize[]
 
         prizes.forEach(async prize => {
-            await prisma.contestPrize.create({data:{contestId:newContest.id, category:prize.category, trades:parseInt(prize.trades), keys:parseInt( prize.trades), charges:parseInt(prize.charges)}})
+            await prisma.contestPrize.create({data:{contestId:newContest.id, category:prize.category, key:prize.key, boost:prize.boost, swap:(prize.swap)}})
         });
 
         const next = calculateNextOccurance(newContest.startDate, rContest.recurring.recurringType)
