@@ -248,6 +248,7 @@ exports.Prisma.PaymentScalarFieldEnum = {
   amount: 'amount',
   currency: 'currency',
   method: 'method',
+  type: 'type',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -257,9 +258,12 @@ exports.Prisma.SubscriptionPlanScalarFieldEnum = {
   planName: 'planName',
   stripe_price_id: 'stripe_price_id',
   stripe_product_id: 'stripe_product_id',
+  features: 'features',
   amount: 'amount',
+  description: 'description',
   recurring: 'recurring',
   currency: 'currency',
+  status: 'status',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -309,7 +313,8 @@ exports.Prisma.ProductScalarFieldEnum = {
   currency: 'currency',
   icon: 'icon',
   description: 'description',
-  image: 'image'
+  image: 'image',
+  status: 'status'
 };
 
 exports.Prisma.PriceScalarFieldEnum = {
@@ -401,6 +406,7 @@ exports.Prisma.UserScalarFieldEnum = {
   role: 'role',
   accessToken: 'accessToken',
   isActive: 'isActive',
+  isBlocked: 'isBlocked',
   currentLevel: 'currentLevel',
   voting_power: 'voting_power',
   purchased_plan: 'purchased_plan',
@@ -548,18 +554,31 @@ exports.PaymentStatus = exports.$Enums.PaymentStatus = {
   PENDING: 'PENDING',
   SUCCEEDED: 'SUCCEEDED',
   VALID: 'VALID',
-  EXPIRED: 'EXPIRED'
+  EXPIRED: 'EXPIRED',
+  FAILED: 'FAILED'
 };
 
 exports.SubscriptionPlanEnum = exports.$Enums.SubscriptionPlanEnum = {
   PREMIUM: 'PREMIUM',
-  PRO: 'PRO'
+  PRO: 'PRO',
+  FREE: 'FREE'
 };
 
 exports.PlanRecurringType = exports.$Enums.PlanRecurringType = {
   ONETIME: 'ONETIME',
   MONTHLY: 'MONTHLY',
   YEARLY: 'YEARLY'
+};
+
+exports.PaymentType = exports.$Enums.PaymentType = {
+  STORE: 'STORE',
+  SUBSCRIPTION: 'SUBSCRIPTION',
+  CONTEST: 'CONTEST'
+};
+
+exports.SubscriptionPlanStatus = exports.$Enums.SubscriptionPlanStatus = {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE'
 };
 
 exports.SubscriptionStatus = exports.$Enums.SubscriptionStatus = {
@@ -576,8 +595,14 @@ exports.SitePolicyType = exports.$Enums.SitePolicyType = {
 
 exports.ProductType = exports.$Enums.ProductType = {
   KEY: 'KEY',
-  PROMOTE: 'PROMOTE',
-  CHARGE: 'CHARGE'
+  BOOST: 'BOOST',
+  SWAP: 'SWAP'
+};
+
+exports.ProductStatus = exports.$Enums.ProductStatus = {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
+  DISCONTINUED: 'DISCONTINUED'
 };
 
 exports.TeamAccessibility = exports.$Enums.TeamAccessibility = {

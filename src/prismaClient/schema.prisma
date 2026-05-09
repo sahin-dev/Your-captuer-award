@@ -272,6 +272,7 @@ model Payment {
   amount            Float
   currency          String
   method            String
+  type              PaymentType
 
   user      User     @relation(references: [id], fields: [userId])
   createdAt DateTime @default(now())
@@ -281,13 +282,16 @@ model Payment {
 }
 
 model SubscriptionPlan {
-  id                String               @id @default(auto()) @map("_id") @db.ObjectId
+  id                String                 @id @default(auto()) @map("_id") @db.ObjectId
   planName          SubscriptionPlanEnum
-  stripe_price_id   String
-  stripe_product_id String
+  stripe_price_id   String?
+  stripe_product_id String?
+  features          String[]
   amount            Float
+  description       String
   recurring         PlanRecurringType
-  currency          String               @default("USD")
+  currency          String                 @default("USD")
+  status            SubscriptionPlanStatus @default(ACTIVE)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -313,6 +317,11 @@ model Subscription {
   @@map("subscriptions")
 }
 
+enum SubscriptionPlanStatus {
+  ACTIVE
+  INACTIVE
+}
+
 enum SubscriptionStatus {
   PENDING
   VALID
@@ -328,6 +337,7 @@ enum PlanRecurringType {
 enum SubscriptionPlanEnum {
   PREMIUM
   PRO
+  FREE
 }
 
 enum PaymentStatus {
@@ -335,6 +345,13 @@ enum PaymentStatus {
   SUCCEEDED
   VALID
   EXPIRED
+  FAILED
+}
+
+enum PaymentType {
+  STORE
+  SUBSCRIPTION
+  CONTEST
 }
 
 model SitePolicy {
@@ -386,15 +403,16 @@ datasource db {
 }
 
 model Product {
-  id          String      @id @default(auto()) @map("_id") @db.ObjectId
+  id          String        @id @default(auto()) @map("_id") @db.ObjectId
   productType ProductType
   title       String
   quantity    Int
   amount      Float
-  currency    String      @default("USD")
+  currency    String        @default("USD")
   icon        String?
   description String?
   image       String?
+  status      ProductStatus @default(ACTIVE)
 
   @@index([id, productType])
   @@map("products")
@@ -415,10 +433,16 @@ model Price {
   @@map("prices")
 }
 
+enum ProductStatus {
+  ACTIVE
+  INACTIVE
+  DISCONTINUED
+}
+
 enum ProductType {
   KEY
-  PROMOTE
-  CHARGE
+  BOOST
+  SWAP
 }
 
 model Team {
@@ -561,6 +585,7 @@ model User {
   role               UserRole              @default(USER)
   accessToken        String?
   isActive           Boolean               @default(false)
+  isBlocked          Boolean               @default(false)
   currentLevel       Int                   @default(-1)
   voting_power       Int                   @default(1)
   purchased_plan     SubscriptionPlanEnum?

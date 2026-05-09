@@ -9,6 +9,7 @@ model Product {
     icon            String?
     description     String?
     image           String?
+    status ProductStatus @default(ACTIVE)
 
     @@map("products")
     @@index([id,productType])
@@ -28,8 +29,14 @@ model Price {
     @@index([id,product_id])
 }
 
+enum ProductStatus {
+    ACTIVE
+    INACTIVE
+    DISCONTINUED
+}
+
 enum ProductType {
     KEY
-    PROMOTE
-    CHARGE
+    BOOST   
+    SWAP
 }

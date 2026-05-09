@@ -18,6 +18,7 @@ model User {
   role               UserRole             @default(USER)         
   accessToken        String?
   isActive          Boolean              @default(false) 
+  isBlocked         Boolean               @default(false)
   currentLevel       Int @default(-1)
   voting_power       Int @default(1)
   purchased_plan    SubscriptionPlanEnum?
