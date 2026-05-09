@@ -24,4 +24,16 @@ router.get("/members/:teamId", auth(), teamController.getAllTeamMembers)
 router.put('/:teamId',auth(UserRole.ADMIN), validateRequest(updateTeamValidationSchema), teamController.updateTeam);
 router.delete('/:teamId', auth(UserRole.ADMIN),teamController.deleteTeam);
 
+// NEW: Join Request System Routes
+router.post('/request/send/:teamId', auth(), teamController.sendJoinRequest);
+router.get('/request/pending/:teamId', auth(), teamController.getJoinRequests);
+router.post('/request/approve/:joinRequestId', auth(), teamController.approveJoinRequest);
+router.post('/request/reject/:joinRequestId', auth(), teamController.rejectJoinRequest);
+
+// NEW: Leaderboard & Match History Routes
+router.get('/leaderboard/all', auth(), teamController.getTeamLeaderboard);
+router.get('/history/:teamId', auth(), teamController.getTeamHistory);
+router.post('/match/record-result', auth(UserRole.ADMIN), teamController.recordMatchResult);
+router.get('/active-match/:teamId', auth(), teamController.getActiveMatch);
+
 export const teamRoutes = router;

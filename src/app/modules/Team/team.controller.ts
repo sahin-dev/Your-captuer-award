@@ -189,6 +189,118 @@ const getSuggestedTeams = catchAsync(async (req:Request, res:Response) => {
     })
 })
 
+// NEW: Join Request System Controllers
+
+const sendJoinRequest = catchAsync(async (req: Request, res: Response) => {
+    const userId = req.user.id
+    const { teamId } = req.params
+
+    const joinRequest = await teamService.sendJoinRequest(userId, teamId)
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpstatus.CREATED,
+        message: 'Join request sent successfully',
+        data: joinRequest
+    })
+})
+
+const getJoinRequests = catchAsync(async (req: Request, res: Response) => {
+    const userId = req.user.id
+    const { teamId } = req.params
+
+    const requests = await teamService.getJoinRequests(teamId, userId)
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpstatus.OK,
+        message: 'Join requests fetched successfully',
+        data: requests
+    })
+})
+
+const approveJoinRequest = catchAsync(async (req: Request, res: Response) => {
+    const userId = req.user.id
+    const { joinRequestId } = req.params
+
+    const result = await teamService.approveJoinRequest(joinRequestId, userId)
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpstatus.OK,
+        message: 'Join request approved successfully',
+        data: result
+    })
+})
+
+const rejectJoinRequest = catchAsync(async (req: Request, res: Response) => {
+    const userId = req.user.id
+    const { joinRequestId } = req.params
+
+    const result = await teamService.rejectJoinRequest(joinRequestId, userId)
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpstatus.OK,
+        message: 'Join request rejected successfully',
+        data: result
+    })
+})
+
+// NEW: Leaderboard & Matching Controllers
+
+const getTeamLeaderboard = catchAsync(async (req: Request, res: Response) => {
+    const { contestId } = req.query
+
+    const leaderboard = await teamService.getTeamLeaderboard(contestId as string | undefined)
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpstatus.OK,
+        message: 'Team leaderboard fetched successfully',
+        data: leaderboard
+    })
+})
+
+const getTeamHistory = catchAsync(async (req: Request, res: Response) => {
+    const { teamId } = req.params
+
+    const history = await teamService.getTeamHistory(teamId)
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpstatus.OK,
+        message: 'Team match history fetched successfully',
+        data: history
+    })
+})
+
+const recordMatchResult = catchAsync(async (req: Request, res: Response) => {
+    const { matchId, team1Score, team2Score } = req.body
+
+    const result = await teamService.recordMatchResult(matchId, team1Score, team2Score)
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpstatus.OK,
+        message: 'Match result recorded successfully',
+        data: result
+    })
+})
+
+const getActiveMatch = catchAsync(async (req: Request, res: Response) => {
+    const { teamId } = req.params
+
+    const activeMatch = await teamService.getActiveMatch(teamId)
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpstatus.OK,
+        message: 'Active match fetched successfully',
+        data: activeMatch
+    })
+})
+
 export const teamController = {
     createTeam,
     getTeams,
@@ -202,5 +314,15 @@ export const teamController = {
     joinByInvitation,
     leaveTeam,
     removeMemberFromTeam,
-    getSuggestedTeams
+    getSuggestedTeams,
+    // NEW: Join Request System
+    sendJoinRequest,
+    getJoinRequests,
+    approveJoinRequest,
+    rejectJoinRequest,
+    // NEW: Leaderboard & Matching
+    getTeamLeaderboard,
+    getTeamHistory,
+    recordMatchResult,
+    getActiveMatch
 };

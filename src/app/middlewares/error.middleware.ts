@@ -39,31 +39,8 @@ const ErrorHandler = (
     errorSources = [{ type: "ApiError", details: err.message }];
   }
   // handle prisma client validation errors
-  else if (err instanceof Prisma.PrismaClientValidationError) {
-    statusCode = httpStatus.BAD_REQUEST;
-    message = parsePrismaValidationError(err.message);
-    errorSources.push("Prisma Client Validation Error");
-  }
-  // Prisma Client Initialization Error
-  else if (err instanceof Prisma.PrismaClientInitializationError) {
-    statusCode = httpStatus.INTERNAL_SERVER_ERROR;
-    message =
-      "Failed to initialize Prisma Client. Check your database connection or Prisma configuration.";
-    errorSources.push("Prisma Client Initialization Error");
-  }
-  // Prisma Client Rust Panic Error
-  else if (err instanceof Prisma.PrismaClientRustPanicError) {
-    statusCode = httpStatus.INTERNAL_SERVER_ERROR;
-    message =
-      "A critical error occurred in the Prisma engine. Please try again later.";
-    errorSources.push("Prisma Client Rust Panic Error");
-  }
-  // Prisma Client Unknown Request Error
-  else if (err instanceof Prisma.PrismaClientUnknownRequestError) {
-    statusCode = httpStatus.INTERNAL_SERVER_ERROR;
-    message = "An unknown error occurred while processing the request.";
-    errorSources.push("Prisma Client Unknown Request Error");
-  }
+  // Note: These error types don't exist in @prisma/client v6.18.0
+  // Prisma error handling can be added here when using compatible versions
   // Generic Error Handling (e.g., JavaScript Errors)
   else if (err instanceof SyntaxError) {
     statusCode = httpStatus.BAD_REQUEST;

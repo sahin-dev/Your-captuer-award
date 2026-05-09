@@ -44,7 +44,7 @@ export class StripeProvider implements PaymentProvider {
     
       const intent = await this.stripe.paymentIntents.create({amount, currency,metadata:{}})
 
-      await prisma.payment.update({where:{id:paymentId}, data:{stripe_sessino_id:intent.id}})
+      await prisma.payment.update({where:{id:paymentId}, data:{stripe_payment_id:intent.id}})
 
       return intent.client_secret as string;
   }

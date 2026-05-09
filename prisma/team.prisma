@@ -8,12 +8,18 @@ model Team {
   description   String
   accessibility TeamAccessibility   @default(PUBLIC)
   member_count   Int  @default(0)
+  member_slots   Int  @default(10)
   score         Int   @default(0)
   win           Int   @default(0)
   lost          Int   @default(0)
+  draw          Int   @default(0)
   badge         String     @default("https://www.freepik.com/free-photo/businesspeople-having-good-time-meeting_861800.htm#fromView=keyword&page=1&position=6&uuid=59ca936a-5c54-464c-a5ed-b579a1cd4afe&query=Team")   //Image file
   min_requirement   Int
   min_requirement_str  String
+  active_match_id   String?  @db.ObjectId
+  leaderboard_rank  Int?
+  total_matches     Int  @default(0)
+  skill_level       SkillLevel  @default(INTERMEDIATE)
   creatorId     String            @db.ObjectId
   creator       User              @relation(fields: [creatorId], references: [id])
   members       TeamMember[]
@@ -21,6 +27,8 @@ model Team {
   participations    TeamParticipation[]
   MatchesAsTeam1     TeamMatch[]  @relation(name: "team1")
   MatchesAsTeam2     TeamMatch[]  @relation(name: "team2")
+  joinRequests      TeamJoinRequest[]
+  history           TeamMatchHistory[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -36,14 +44,20 @@ model TeamMatch {
   contest     Contest     @relation(references: [id], fields: [contestId])
   team1    Team         @relation(name: "team1",references: [id], fields: [team1Id])
   team2     Team        @relation(name: "team2",references: [id], fields: [team2Id])
+  
+  // NEW: Scoring and Result Fields
+  team1_score   Int       @default(0)
+  team2_score   Int       @default(0)
+  winner_id     String?   @db.ObjectId
+  result        MatchResult  @default(PENDING)
+  
   status      MatchStatus   @default(ACTIVE)
   startedAt   DateTime    @default(now())
-  endedAt     DateTime    
+  endedAt     DateTime?
   createdAt   DateTime @default(now())
   updatedAt   DateTime  @updatedAt
 
   @@map("team_mathces")
-
 }
 
 
@@ -94,6 +108,44 @@ model TeamInvitation {
   @@map("team_invitations")
 }
 
+// NEW: Team Join Request Model
+model TeamJoinRequest {
+  id    String    @id  @map("_id")  @default(auto())  @db.ObjectId
+
+  teamId  String    @db.ObjectId
+  requesterId   String     @db.ObjectId
+
+  team      Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  requester     User   @relation("sentJoinRequests", fields: [requesterId], references: [id], onDelete: Cascade)
+
+  status  JoinRequestStatus  @default(PENDING)
+
+  createdAt    DateTime   @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@map("team_join_requests")
+}
+
+// NEW: Team Match History Model
+model TeamMatchHistory {
+  id      String        @id  @default(auto())  @map("_id")  @db.ObjectId
+  teamId        String    @db.ObjectId
+  team          Team      @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  
+  matchId       String    @db.ObjectId  @unique
+  opponent_team_id    String    @db.ObjectId
+  team_score    Int
+  opponent_score    Int
+  result        HistoryResult
+  match_date    DateTime
+  contest_id    String?   @db.ObjectId
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("team_match_history")
+}
+
 enum TeamAccessibility {
   PUBLIC
   PRIVATE
@@ -120,4 +172,33 @@ enum MemberLevel {
   EXPERT
   MASTER
   LEADER
+}
+
+// NEW: Enums for Team Join Request System
+enum JoinRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+// NEW: Enums for Team Match Result Tracking
+enum MatchResult {
+  PENDING
+  TEAM1_WIN
+  TEAM2_WIN
+  DRAW
+}
+
+enum HistoryResult {
+  WIN
+  LOSS
+  DRAW
+}
+
+// NEW: Enums for Team Skill Level Classification
+enum SkillLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  EXPERT
 }

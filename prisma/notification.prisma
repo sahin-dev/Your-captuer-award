@@ -19,4 +19,7 @@ enum NotificationType {
    PAYMENT
    VOTE
    LIKE
+   TEAM_JOIN_REQUEST
+   TEAM_JOIN_APPROVED
+   TEAM_JOIN_REJECTED
 }

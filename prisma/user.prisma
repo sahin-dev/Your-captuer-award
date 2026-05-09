@@ -27,6 +27,7 @@ model User {
   store              UserStore?
   createdTeam        Team[]
   joinedTeam         TeamMember?
+  sentJoinRequests   TeamJoinRequest[] @relation("sentJoinRequests")
   createdContests    Contest[]
   commentProvides    Comment[]            @relation("provider")
   followers          Follow[]             @relation(name: "follower")
@@ -36,8 +37,8 @@ model User {
   userPhotos         UserPhoto[]
   ContestParticipant ContestParticipant[]
   chat               Chat[]
-  subscriptions     Subscription[]
-  payments          Payment[] 
+  subscriptions      Subscription[]
+  payments           Payment[] @relation("UserPayments")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

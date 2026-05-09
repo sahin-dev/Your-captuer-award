@@ -30,7 +30,7 @@ const stripeWebhook =  async (req: Request, res: Response) => {
         case 'checkout.session.completed':
             const session = event.data.object as Stripe.Checkout.Session;
             
-            const payment = await prisma.payment.findFirst({where:{stripe_sessino_id:session.id}})
+            const payment = await prisma.payment.findFirst({where:{stripe_session_id:session.id}})
             
             if(!payment){
               console.log("Payment not found")

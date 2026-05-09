@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import httpStatus from 'http-status'
-import { PaymentService, paymentSrevice } from "./payment.service";
+import { PaymentService, paymentService } from "./payment.service";
 import sendResponse from "../../../shared/ApiResponse";
 import catchAsync from "../../../shared/catchAsync";
 
@@ -9,7 +9,7 @@ export class PaymentController {
     private paymentService:PaymentService
 
     constructor (){
-        this.paymentService = paymentSrevice
+        this.paymentService = paymentService
     }
 
      pay = catchAsync(async (req:Request, res:Response)=>{

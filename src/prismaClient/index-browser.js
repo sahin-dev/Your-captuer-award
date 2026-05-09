@@ -244,11 +244,13 @@ exports.Prisma.PaymentScalarFieldEnum = {
   planName: 'planName',
   recurring: 'recurring',
   userId: 'userId',
-  stripe_sessino_id: 'stripe_sessino_id',
+  stripe_session_id: 'stripe_session_id',
+  stripe_payment_id: 'stripe_payment_id',
   amount: 'amount',
   currency: 'currency',
   method: 'method',
   type: 'type',
+  description: 'description',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -337,12 +339,18 @@ exports.Prisma.TeamScalarFieldEnum = {
   description: 'description',
   accessibility: 'accessibility',
   member_count: 'member_count',
+  member_slots: 'member_slots',
   score: 'score',
   win: 'win',
   lost: 'lost',
+  draw: 'draw',
   badge: 'badge',
   min_requirement: 'min_requirement',
   min_requirement_str: 'min_requirement_str',
+  active_match_id: 'active_match_id',
+  leaderboard_rank: 'leaderboard_rank',
+  total_matches: 'total_matches',
+  skill_level: 'skill_level',
   creatorId: 'creatorId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -353,6 +361,10 @@ exports.Prisma.TeamMatchScalarFieldEnum = {
   contestId: 'contestId',
   team1Id: 'team1Id',
   team2Id: 'team2Id',
+  team1_score: 'team1_score',
+  team2_score: 'team2_score',
+  winner_id: 'winner_id',
+  result: 'result',
   status: 'status',
   startedAt: 'startedAt',
   endedAt: 'endedAt',
@@ -383,6 +395,29 @@ exports.Prisma.TeamInvitationScalarFieldEnum = {
   senderId: 'senderId',
   status: 'status',
   expiredAt: 'expiredAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.TeamJoinRequestScalarFieldEnum = {
+  id: 'id',
+  teamId: 'teamId',
+  requesterId: 'requesterId',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.TeamMatchHistoryScalarFieldEnum = {
+  id: 'id',
+  teamId: 'teamId',
+  matchId: 'matchId',
+  opponent_team_id: 'opponent_team_id',
+  team_score: 'team_score',
+  opponent_score: 'opponent_score',
+  result: 'result',
+  match_date: 'match_date',
+  contest_id: 'contest_id',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -547,7 +582,10 @@ exports.NotificationType = exports.$Enums.NotificationType = {
   INVITATION: 'INVITATION',
   PAYMENT: 'PAYMENT',
   VOTE: 'VOTE',
-  LIKE: 'LIKE'
+  LIKE: 'LIKE',
+  TEAM_JOIN_REQUEST: 'TEAM_JOIN_REQUEST',
+  TEAM_JOIN_APPROVED: 'TEAM_JOIN_APPROVED',
+  TEAM_JOIN_REJECTED: 'TEAM_JOIN_REJECTED'
 };
 
 exports.PaymentStatus = exports.$Enums.PaymentStatus = {
@@ -610,6 +648,20 @@ exports.TeamAccessibility = exports.$Enums.TeamAccessibility = {
   PRIVATE: 'PRIVATE'
 };
 
+exports.SkillLevel = exports.$Enums.SkillLevel = {
+  BEGINNER: 'BEGINNER',
+  INTERMEDIATE: 'INTERMEDIATE',
+  ADVANCED: 'ADVANCED',
+  EXPERT: 'EXPERT'
+};
+
+exports.MatchResult = exports.$Enums.MatchResult = {
+  PENDING: 'PENDING',
+  TEAM1_WIN: 'TEAM1_WIN',
+  TEAM2_WIN: 'TEAM2_WIN',
+  DRAW: 'DRAW'
+};
+
 exports.MatchStatus = exports.$Enums.MatchStatus = {
   ACTIVE: 'ACTIVE',
   CLOSED: 'CLOSED'
@@ -631,6 +683,18 @@ exports.MemberLevel = exports.$Enums.MemberLevel = {
 exports.InvitationStatus = exports.$Enums.InvitationStatus = {
   ACTIVE: 'ACTIVE',
   EXPIRED: 'EXPIRED'
+};
+
+exports.JoinRequestStatus = exports.$Enums.JoinRequestStatus = {
+  PENDING: 'PENDING',
+  APPROVED: 'APPROVED',
+  REJECTED: 'REJECTED'
+};
+
+exports.HistoryResult = exports.$Enums.HistoryResult = {
+  WIN: 'WIN',
+  LOSS: 'LOSS',
+  DRAW: 'DRAW'
 };
 
 exports.UserRole = exports.$Enums.UserRole = {
@@ -689,6 +753,8 @@ exports.Prisma.ModelName = {
   TeamMember: 'TeamMember',
   TeamParticipation: 'TeamParticipation',
   TeamInvitation: 'TeamInvitation',
+  TeamJoinRequest: 'TeamJoinRequest',
+  TeamMatchHistory: 'TeamMatchHistory',
   User: 'User',
   UserStore: 'UserStore',
   UserPhoto: 'UserPhoto',
