@@ -9,23 +9,30 @@ export const addContestPrizes = async (contestId:string, prizes:ContestPrize[])=
     const contest = await prisma.contest.findUnique({where:{id:contestId}})
    
     try{
-        
-
         if(!contest){
             throw new ApiError(httpStatus.NOT_FOUND, "contest not found")
         }
 
-        prizes.forEach(async (prize)=>{
-            await prisma.contestPrize.create({data:{contestId:contestId, category:prize.category,key:prize.key, boost:prize.boost, swap:prize.swap}})
-          
-        })
+        // FIX: Use for loop instead of forEach to properly await async operations
+        for (const prize of prizes) {
+            await prisma.contestPrize.create({
+                data:{
+                    contestId:contestId, 
+                    category:prize.category,
+                    key:prize.key, 
+                    boost:prize.boost, 
+                    swap:prize.swap
+                }
+            })
+        }
 
-        return await prisma.contestPrize.findMany({where:{contestId}, })
+        const createdPrizes = await prisma.contestPrize.findMany({where:{contestId}})
+        console.log(`Successfully created ${createdPrizes.length} prizes for contest ${contestId}`)
+        return createdPrizes
     }catch(err){
+        console.error(`Error creating contest prizes: ${err}`)
         throw err
     }
-   
-    
 }
 
 export const getContestPrizes = async (contestId:string)=>{

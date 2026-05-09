@@ -603,35 +603,44 @@ const identifyWinner = async (contestId:string)=>{
     if(contest.mode === ContestMode.TEAM){
         return await identifyTeamWinner(contestId)
     }
-    let winners:ContestParticipant[];
 
     const participants = await getContestParticipants(contestId)
 
+    // Properly await all vote counts for each participant
     let participant = await Promise.all(participants.map(async participant => {
         const uploadedPhotos = await prisma.contestPhoto.findMany({where:{contestId,participantId:participant.id}})
-        let maxVote = Number.MIN_SAFE_INTEGER
+        let maxVote = 0
         let maxPhoto:ContestPhoto | null = null
 
-        uploadedPhotos.forEach(async photo => {
+        // FIX: Use for loop instead of forEach to properly await async operations
+        for (const photo of uploadedPhotos) {
             const votes = await prisma.vote.count({where:{contestId,photoId:photo.id}})
 
             if (votes > maxVote){
                 maxVote = votes
                 maxPhoto = photo
             }
-        })
+        }
 
         const totalVotes = await prisma.vote.count({where:{contestId, photo:{participantId:participant.id}}})
         return {...participant, totalVotes, singlePhotoVote:maxVote, maxPhoto}
     }))
 
-    let top_photographer = participant.sort((a, b) => b.totalVotes - a.totalVotes)[0]
+    // Award TOP_PHOTOGRAPHER - participant with most total votes
+    const top_photographer = participant.sort((a, b) => b.totalVotes - a.totalVotes)[0]
+    if (top_photographer && top_photographer.totalVotes > 0) {
+        await awardWinner(top_photographer, contestId, PrizeType.TOP_PHOTOGRAPHER, null)
+        console.log(`TOP_PHOTOGRAPHER award given to participant ${top_photographer.id}`)
+    }
 
-    await awardWinner(top_photographer, contestId, PrizeType.TOP_PHOTOGRAPHER)
-    let top_photo = participant.sort((a,b) => b.singlePhotoVote - a.singlePhotoVote)[0]
+    // Award TOP_PHOTO - participant with single photo having most votes
+    const top_photo_participant = participant.sort((a,b) => b.singlePhotoVote - a.singlePhotoVote)[0]
+    if (top_photo_participant && top_photo_participant.maxPhoto && top_photo_participant.singlePhotoVote > 0) {
+        await awardWinner(top_photo_participant, contestId, PrizeType.TOP_PHOTO, top_photo_participant.maxPhoto.id)
+        console.log(`TOP_PHOTO award given to photo ${top_photo_participant.maxPhoto.id} by participant ${top_photo_participant.id}`)
+    }
 
-    await awardWinner(top_photo, contestId, PrizeType.TOP_PHOTO)
-
+    console.log('Winner identification completed')
 }
 
 
@@ -643,9 +652,10 @@ const awardTeams = async (contestId:string) => {
         return
     }
 
-    teamMatches.forEach(async teamMatch => {
+    // FIX: Use for loop instead of forEach to properly await async operations
+    for (const teamMatch of teamMatches) {
        await awardTeam(teamMatch.id)
-    }) 
+    } 
 }
 
 const awardTeam = async (matchId:string) => {
@@ -713,23 +723,43 @@ const identifyTeamWinner = async (contestId:string)=>{
 
 //Award prize to the winners
 
-const awardWinner = async (winner:ContestParticipant, contestId:string, prizeType:PrizeType)=>{
+const awardWinner = async (winner:ContestParticipant, contestId:string, prizeType:PrizeType, photoId:string | null = null)=>{
 
-    const contestPrize = await prisma.contestPrize.findFirst({where:{contestId, category:prizeType}})
+    try {
+        const contestPrize = await prisma.contestPrize.findFirst({where:{contestId, category:prizeType}})
 
-    if(!contestPrize){
-        throw new Error("Prize is not available")
+        if(!contestPrize){
+            throw new ApiError(httpstatus.NOT_FOUND, "Prize is not available")
+        }
+
+        const winnerStore = await prisma.userStore.findFirst({where:{userId:winner.userId as string}})
+        if(!winnerStore){
+            throw new ApiError(httpstatus.NOT_FOUND, 'Winner store is not available')
+        }
+
+        // Award prize to winner's store
+        await prisma.userStore.update({
+            where:{id:winnerStore.id}, 
+            data:{
+                key: winnerStore.key + contestPrize.key , 
+                boost: winnerStore.boost + contestPrize.boost, 
+                swap: winnerStore.swap + contestPrize.swap
+            }
+        })
+
+        // FIX: Create achievement record for the winner
+        await achievementService.addAchievement(
+            winner.userId as string,
+            contestId,
+            prizeType,
+            photoId || ''
+        )
+
+        console.log(`Award given to user ${winner.userId}: ${prizeType} - Key: ${contestPrize.key}, Boost: ${contestPrize.boost}, Swap: ${contestPrize.swap}`)
+    } catch (err) {
+        console.error(`Error awarding winner: ${err}`)
+        throw err
     }
-
-    const winnerStore = await prisma.userStore.findFirst({where:{userId:winner.userId as string}})
-    if(!winnerStore){
-        throw new Error('Winner store is not available')
-    }
-
-    await prisma.userStore.update({
-        where:{id:winnerStore.id}, 
-        data:{key: winnerStore.key + contestPrize.key , boost: winnerStore.boost + contestPrize.boost, swap: winnerStore.swap + contestPrize.swap}})
-
 }
 
 const getRemainingPhotos = async (userId:string, contestId:string)=>{
@@ -914,16 +944,17 @@ const uploadPhotoToContest = async (contestId:string,userId:string, photoIds:str
             throw new ApiError(httpstatus.BAD_REQUEST, `maximum upload limit exceeded`)
         }
 
-        photoIds.forEach(async photoId => {
+        // FIX: Use for loop instead of forEach to properly await async operations
+        for (const photoId of photoIds) {
             const userPhoto = await prisma.userPhoto.findUnique({where:{id:photoId}})
             if(userPhoto){
-    uploadImage = await prisma.contestPhoto.create({data:{contestId,participantId:contestParticipant!.id,photoId:userPhoto.id}, include:{photo:true} })
-    if (uploadImage) {
-        images.push(uploadImage)
-        agenda.every("1 minute", "exposure:watcher",{contestPhotoId:uploadImage.id})
-    }
+                uploadImage = await prisma.contestPhoto.create({data:{contestId,participantId:contestParticipant!.id,photoId:userPhoto.id}, include:{photo:true} })
+                if (uploadImage) {
+                    images.push(uploadImage)
+                    agenda.every("1 minute", "exposure:watcher",{contestPhotoId:uploadImage.id})
                 }
-        })
+            }
+        }
 
  
     }

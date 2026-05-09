@@ -11,9 +11,19 @@ const addAchievement = async (userId:string,contestId:string, category:PrizeType
     if(!participant){
         throw new ApiError(httpStatus.NOT_FOUND, "user does not exist in this contest")
     }
-     const achievement = await prisma.contestAchievement.create({data:{photoId:photoId, contestId, category}})
+    
+    // FIX: Include participantId when creating achievement record
+    const achievement = await prisma.contestAchievement.create({
+        data:{
+            photoId: photoId || null,
+            participantId: participant.id,
+            contestId, 
+            category
+        }
+    })
 
-     return achievement
+    console.log(`Achievement created for user ${userId}: ${category} in contest ${contestId}`)
+    return achievement
 }
 
 //get the contest achievements for a specific user

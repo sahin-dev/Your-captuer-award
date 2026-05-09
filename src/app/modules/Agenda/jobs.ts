@@ -24,7 +24,8 @@ agenda.define('contest:checkUpcoming', async () => {
     if (contests.length <= 0){
         console.log("There is no upcoming contest")
     } 
-    contests.forEach(async(contest)=>{
+    // FIX: Use for loop instead of forEach to properly await async operations
+    for (const contest of contests) {
         const startDate = contest.startDate
         const currentDate = new Date()
         
@@ -33,7 +34,7 @@ agenda.define('contest:checkUpcoming', async () => {
             console.log(`Contest with id: ${contest.id} has started`)
             agenda.schedule(contest.endDate, "contest:watcher",{contestId:updatedContest.id})
         }
-    })
+    }
 
 });
 
@@ -78,7 +79,8 @@ agenda.define('contest:checkUpcoming', async () => {
 agenda.define("contest:active", async ()=>{
     const upcomingContest = await contestService.getUpcomingContest()
     console.log(`Found ${upcomingContest.length} upcoming contests`)
-    upcomingContest.forEach(async  (contest) => {
+    // FIX: Use for loop instead of forEach to properly await async operations
+    for (const contest of upcomingContest) {
         let contestStartDate = new Date(contest.startDate).getTime()
         let currentDate = new Date().getTime()
         console.log(contestStartDate)
@@ -87,8 +89,7 @@ agenda.define("contest:active", async ()=>{
             await prisma.contest.update({where:{id:contest.id}, data:{status:ContestStatus.ACTIVE}})
             agenda.schedule(contest.endDate,"contest:watcher", {contestId:contest.id})
         }
-        
-    })
+    }
 })
 
 
@@ -98,9 +99,10 @@ agenda.define("contest:checkRecurring", async ()=>{
     const recurringContests = await prisma.recurringContest.findMany();
     console.log(`Found ${recurringContests.length} recurring contests to process.`);
 
-    recurringContests.forEach(async (contest) => {
+    // FIX: Use for loop instead of forEach to properly await async operations
+    for (const contest of recurringContests) {
         await scheduleContest(contest);
-    });
+    }
 });
 
 
@@ -145,15 +147,17 @@ async function scheduleContest(rContest:RecurringContest){
 
         const rules = JSON.parse(rContest.rules as string) as ContestRule[]
 
-        rules.forEach(async rule => {
+        // FIX: Use for loop instead of forEach to properly await async operations
+        for (const rule of rules) {
             await prisma.contestRule.create({data:{contestId:newContest.id, name:rule.name, description:rule.name}})
-        })
+        }
 
         const prizes = JSON.parse(rContest.prizes as string) as ContestPrize[]
 
-        prizes.forEach(async prize => {
+        // FIX: Use for loop instead of forEach to properly await async operations
+        for (const prize of prizes) {
             await prisma.contestPrize.create({data:{contestId:newContest.id, category:prize.category, key:prize.key, boost:prize.boost, swap:(prize.swap)}})
-        });
+        }
 
         const next = calculateNextOccurance(newContest.startDate, rContest.recurring.recurringType)
        
