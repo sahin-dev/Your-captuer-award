@@ -2,6 +2,9 @@ import { TeamAccessibility } from '../../../prismaClient';
 import { z } from 'zod';
 
 export const createTeamValidationSchema = z.object({
+    name: z.string({
+        required_error: 'Name is required',
+    }),
     level: z.string({
         required_error: 'Level is required',
     }),
@@ -21,6 +24,7 @@ export const createTeamValidationSchema = z.object({
 });
 
 export const updateTeamValidationSchema = z.object({
+    name: z.string().optional(),    
     level: z.string().optional(),
     language: z.string().optional(),
     country: z.string().optional(),

@@ -1,18 +1,26 @@
 import prisma from "../../../shared/prisma"
 import ApiError from "../../../errors/ApiError"
 import httpStatus from 'http-status'
+import { paginationHelper } from "../../../helpers/paginationHelper"
 import { SubscriptionStatus, SubscriptionPlanEnum } from "../../../prismaClient"
 
 /**
  * Get all available subscription plans
  */
-const getAvailablePlans = async () => {
+const getAvailablePlans = async (page: number = 1, limit: number = 10) => {
+    const { skip, limit: paginationLimit } = paginationHelper.calculatePagination({ page, limit });
+    
     const plans = await prisma.subscriptionPlan.findMany({
         where: { status: 'ACTIVE' },
-        orderBy: { amount: 'asc' }
+        orderBy: { amount: 'asc' },
+        skip,
+        take: paginationLimit
     })
 
-    return plans
+    const total = await prisma.subscriptionPlan.count({where: { status: 'ACTIVE' }});
+    const paginationMetaData = paginationHelper.getPaginationMetaData(page, paginationLimit, total);
+
+    return { data: plans, meta: paginationMetaData };
 }
 
 /**
@@ -94,14 +102,21 @@ const getUserActiveSubscription = async (userId: string) => {
 /**
  * Get all user subscriptions
  */
-const getUserSubscriptions = async (userId: string) => {
+const getUserSubscriptions = async (userId: string, page: number = 1, limit: number = 10) => {
+    const { skip, limit: paginationLimit } = paginationHelper.calculatePagination({ page, limit });
+    
     const subscriptions = await prisma.subscription.findMany({
         where: { userId },
         orderBy: { createdAt: 'desc' },
+        skip,
+        take: paginationLimit,
         include: { user: { select: { id: true, email: true } } }
     })
 
-    return subscriptions
+    const total = await prisma.subscription.count({where: { userId }});
+    const paginationMetaData = paginationHelper.getPaginationMetaData(page, paginationLimit, total);
+
+    return { data: subscriptions, meta: paginationMetaData };
 }
 
 /**

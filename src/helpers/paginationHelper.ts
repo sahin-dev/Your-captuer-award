@@ -13,6 +13,15 @@ type IOptionsResult = {
     sortOrder: string
 }
 
+type IPaginationMetaData = {
+    page: number,
+    limit: number,
+    total: number,
+    totalPage: number,
+    hasNextPage: boolean,
+    hasPreviousPage: boolean
+}
+
 const calculatePagination = (options: IOptions): IOptionsResult => {
 
     const page: number = Number(options.page) || 1;
@@ -31,7 +40,21 @@ const calculatePagination = (options: IOptions): IOptionsResult => {
     }
 }
 
+const getPaginationMetaData = (page: number, limit: number, total: number): IPaginationMetaData => {
+    const totalPage = Math.ceil(total / limit);
+    
+    return {
+        page,
+        limit,
+        total,
+        totalPage,
+        hasNextPage: page < totalPage,
+        hasPreviousPage: page > 1
+    }
+}
+
 
 export const paginationHelper = {
-    calculatePagination
+    calculatePagination,
+    getPaginationMetaData
 }

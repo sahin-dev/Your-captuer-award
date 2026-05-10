@@ -1,6 +1,7 @@
 import { get } from "http"
 import { ContestStatus, PaymentStatus, PaymentType, PlanRecurringType, SubscriptionPlanEnum, SubscriptionPlanStatus } from "../../../prismaClient"
 import prisma from "../../../shared/prisma"
+import { paginationHelper } from "../../../helpers/paginationHelper"
 import { notificationService } from "../Notification/notification.service"
 import { voteService } from "../Vote/vote.service"
 import { contestService } from "../Contest/contest.service"
@@ -369,13 +370,33 @@ const getUserStats = async () => {
 }
 
 const getAllUsers = async (pagination: { page: string, limit: string }) => {
-    const users = await prisma.user.findMany({ select: { id: true, firstName: true, lastName: true, fullName: true, email: true, username: true, avatar: true, role: true, isActive: true, createdAt: true }, skip: (parseInt(pagination.page) - 1) * 10, take: parseInt(pagination.limit) })
-    let mappedUsers = users.map(async user => {
+    const { skip, limit: paginationLimit } = paginationHelper.calculatePagination({
+        page: parseInt(pagination.page) || 1,
+        limit: parseInt(pagination.limit) || 10
+    });
 
+    const users = await prisma.user.findMany({ 
+        select: { id: true, firstName: true, lastName: true, fullName: true, email: true, username: true, avatar: true, role: true, isActive: true, createdAt: true }, 
+        skip, 
+        take: paginationLimit,
+        orderBy: { createdAt: 'desc' }
+    });
+    
+    const total = await prisma.user.count();
+    const paginationMetaData = paginationHelper.getPaginationMetaData(
+        parseInt(pagination.page) || 1,
+        paginationLimit,
+        total
+    );
+    
+    let mappedUsers = users.map(async user => {
         let votes = await voteService.getUserTotalVotes(user.id)
         return { ...user, votes }
     })
-    return await Promise.all(mappedUsers)
+    return {
+        data: await Promise.all(mappedUsers),
+        meta: paginationMetaData
+    };
 }
 
 const toggleBlockStatus = async (userId: string) => {

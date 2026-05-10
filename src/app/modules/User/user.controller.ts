@@ -17,13 +17,14 @@ const getUsers = catchAsync(async (req:Request, res:Response)=>{
     if (typeof pageNum === 'number' && isNaN(pageNum)) pageNum = undefined
     if (typeof limitNum === 'number' && isNaN(limitNum)) limitNum = undefined
 
-    const users = await userService.getUsers(pageNum, limitNum)
+    const result = await userService.getUsers(pageNum, limitNum)
 
     sendResponse(res,{
         success:true,
         statusCode:httpstatus.OK,
         message:"Users fetched successfully",
-        data:users
+        data:result.data,
+        meta:result.meta
     })
 })
 

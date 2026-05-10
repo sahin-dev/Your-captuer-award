@@ -1,5 +1,6 @@
 import ApiError from "../../../errors/ApiError"
 import { userSockets } from "../../../helpers/websocketSetUp"
+import { paginationHelper } from "../../../helpers/paginationHelper"
 import { NotificationType, UserRole } from "../../../prismaClient"
 import prisma from "../../../shared/prisma"
 import httpStatus from 'http-status'
@@ -23,10 +24,15 @@ const postNotificationWithPayload = async (title:string, message:string, receive
     return notification
 }
 
-const getUserNotifications = async (receiverId:string)=>{
-    const notifications = await prisma.notification.findMany({where:{receiverId}})
+const getUserNotifications = async (receiverId:string, page: number = 1, limit: number = 10)=>{
+    const { skip, limit: paginationLimit } = paginationHelper.calculatePagination({ page, limit });
+    
+    const notifications = await prisma.notification.findMany({where:{receiverId}, skip, take: paginationLimit, orderBy: { createdAt: 'desc' }})
 
-    return notifications
+    const total = await prisma.notification.count({where:{receiverId}});
+    const paginationMetaData = paginationHelper.getPaginationMetaData(page, paginationLimit, total);
+    
+    return { data: notifications, meta: paginationMetaData };
 }
 
 const getNotificationDetails = async (notificationId:string)=>{
@@ -50,10 +56,15 @@ const getUnSentNotification = async ()=>{
 }
 
 
-const getAdminNotification = async () => {
-    const adminNotifications = await prisma.notification.findMany({where:{type:NotificationType.PAYMENT}})
+const getAdminNotification = async (page: number = 1, limit: number = 10) => {
+    const { skip, limit: paginationLimit } = paginationHelper.calculatePagination({ page, limit });
+    
+    const adminNotifications = await prisma.notification.findMany({where:{type:NotificationType.PAYMENT}, skip, take: paginationLimit, orderBy: { createdAt: 'desc' }})
 
-    return adminNotifications
+    const total = await prisma.notification.count({where:{type:NotificationType.PAYMENT}});
+    const paginationMetaData = paginationHelper.getPaginationMetaData(page, paginationLimit, total);
+
+    return { data: adminNotifications, meta: paginationMetaData };
 }
 
 const markAllRead = async (userId:string) => {

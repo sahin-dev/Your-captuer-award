@@ -359,7 +359,9 @@ export class PaymentService {
         page,
         limit,
         total,
-        totalPages
+        totalPage: totalPages,
+        hasNextPage: page < totalPages,
+        hasPreviousPage: page > 1
       },
       data: payments
     };

@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { PaymentController, paymentController } from "./payment.controller";
 import auth from "../../middlewares/auth.middleware";
+import { UserRole } from "../../../prismaClient";
 
 class PaymentRouter {
     public router:Router
@@ -13,7 +14,23 @@ class PaymentRouter {
     }
 
     private registerRoutes(){
-        this.router.post("/purchase",auth(), this.paymentController.pay)
+        // Payment initiation
+        this.router.post("/", auth(), this.paymentController.pay)
+        
+        // Get user's payment history
+        this.router.get("/history", auth(), this.paymentController.getUserPayments)
+        
+        // Get payment details
+        this.router.get("/:paymentId", auth(), this.paymentController.getPaymentDetails)
+        
+        // Cancel payment
+        this.router.post("/:paymentId/cancel", auth(), this.paymentController.cancelPayment)
+        
+        // Refund payment (admin only)
+        this.router.post("/:paymentId/refund", auth(UserRole.ADMIN), this.paymentController.refundPayment)
+        
+        // Capture payment (admin only)
+        this.router.post("/:paymentId/capture", auth(UserRole.ADMIN), this.paymentController.capturePayment)
     }
 }
 

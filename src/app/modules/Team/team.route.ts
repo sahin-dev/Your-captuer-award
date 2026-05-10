@@ -9,7 +9,8 @@ import { UserRole } from '../../../prismaClient';
 
 const router = express.Router();
 
-router.post('/',auth(UserRole.ADMIN),fileUploader.uploadBadge, validateRequest(createTeamValidationSchema), teamController.createTeam);
+router.post('/',auth(),fileUploader.uploadBadge, validateRequest(createTeamValidationSchema), teamController.createTeam);
+
 router.post("/invite", auth(), teamController.inviteUser)
 router.post("/leave", auth(), teamController.leaveTeam)
 router.post("/remove", auth(), teamController.removeMemberFromTeam)
@@ -35,5 +36,19 @@ router.get('/leaderboard/all', auth(), teamController.getTeamLeaderboard);
 router.get('/history/:teamId', auth(), teamController.getTeamHistory);
 router.post('/match/record-result', auth(UserRole.ADMIN), teamController.recordMatchResult);
 router.get('/active-match/:teamId', auth(), teamController.getActiveMatch);
+
+// NEW: Auto Match System Routes (Team Admin selects contest, system finds rival)
+/**
+ * GET /api/teams/:teamId/available-contests
+ * Get list of available TEAM contests for team admin to choose from
+ */
+router.get('/:teamId/available-contests', auth(), teamController.getAvailableTeamContests);
+
+/**
+ * POST /api/teams/:teamId/start-match-auto
+ * Team admin selects a contest, system automatically finds rival team and starts match
+ * Body: { contestId: string }
+ */
+router.post('/:teamId/start-match-auto', auth(), teamController.startTeamMatchWithAutoRival);
 
 export const teamRoutes = router;

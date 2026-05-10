@@ -2,6 +2,7 @@ import ApiError from "../../../errors/ApiError";
 import { PrizeType } from "../../../prismaClient";
 import prisma from "../../../shared/prisma";
 import httpStatus from 'http-status'
+import { paginationHelper } from "../../../helpers/paginationHelper";
 
 
 //Add achievements to the user
@@ -27,17 +28,42 @@ const addAchievement = async (userId:string,contestId:string, category:PrizeType
 }
 
 //get the contest achievements for a specific user
-const getContestAchievementsByUser = async (userId:string,type?:PrizeType)=>{
+const getContestAchievementsByUser = async (userId:string,type?:PrizeType, page: number = 1, limit: number = 10)=>{
     
     const contestParticipant =  await prisma.contestParticipant.findFirst({where:{userId}})
     if (!contestParticipant){
         throw new ApiError(httpStatus.NOT_FOUND, "participant not found")
     }
+
+    const { skip, limit: paginationLimit } = paginationHelper.calculatePagination({ page, limit });
+
     if(type){
-        return prisma.contestAchievement.findMany({where:{participantId:contestParticipant.id, category:type}, include:{contest:{select:{id:true,title:true, banner:true}}}})
+        const achievements = await prisma.contestAchievement.findMany({
+            where:{participantId:contestParticipant.id, category:type}, 
+            skip,
+            take: paginationLimit,
+            include:{contest:{select:{id:true,title:true, banner:true}}},
+            orderBy: { createdAt: 'desc' }
+        });
+        
+        const total = await prisma.contestAchievement.count({where:{participantId:contestParticipant.id, category:type}});
+        const meta = paginationHelper.getPaginationMetaData(page, paginationLimit, total);
+        
+        return { data: achievements, meta };
     }
-    const achievements = await prisma.contestAchievement.findMany({where:{participantId:contestParticipant.id}, include:{contest:{select:{id:true, title:true, banner:true}}}})
-    return achievements
+
+    const achievements = await prisma.contestAchievement.findMany({
+        where:{participantId:contestParticipant.id}, 
+        skip,
+        take: paginationLimit,
+        include:{contest:{select:{id:true, title:true, banner:true}}},
+        orderBy: { createdAt: 'desc' }
+    });
+    
+    const total = await prisma.contestAchievement.count({where:{participantId:contestParticipant.id}});
+    const meta = paginationHelper.getPaginationMetaData(page, paginationLimit, total);
+    
+    return { data: achievements, meta };
 }
 
 
@@ -60,10 +86,21 @@ const getContestAchievements = async (contestId:string)=>{
 }
 
 
-const getAchievements = async (contestId:string)=>{
-    const achievements = await prisma.contestAchievement.findMany({where:{contestId}, include:{photo:{select:{photo:{select:{id:true, url:true}}}}, participant:{select:{user:true}}}})
+const getAchievements = async (contestId:string, page: number = 1, limit: number = 10)=>{
+    const { skip, limit: paginationLimit } = paginationHelper.calculatePagination({ page, limit });
 
-    return achievements
+    const achievements = await prisma.contestAchievement.findMany({
+        where:{contestId}, 
+        skip,
+        take: paginationLimit,
+        include:{photo:{select:{photo:{select:{id:true, url:true}}}}, participant:{select:{user:true}}},
+        orderBy: { createdAt: 'desc' }
+    })
+
+    const total = await prisma.contestAchievement.count({where:{contestId}});
+    const meta = paginationHelper.getPaginationMetaData(page, paginationLimit, total);
+
+    return { data: achievements, meta };
 }
 
 const getAchievementCount = async (userId:string)=>{
@@ -74,14 +111,26 @@ const getAchievementCount = async (userId:string)=>{
     return {top_photo:top_photo_award_count,top_photographer:top_photographer_count}
 }
 
-const getContestByAchievementsType = async (userId:string,type:PrizeType)=>{
+const getContestByAchievementsType = async (userId:string,type:PrizeType, page: number = 1, limit: number = 10)=>{
     const contestParticipant = await prisma.contestParticipant.findFirst({where:{userId}})
     if(!contestParticipant){
         throw new ApiError(httpStatus.NOT_FOUND, "participant not found")
     }
-    const achievements = await prisma.contestAchievement.findMany({where:{participantId:contestParticipant.id,category:type}, include:{contest:{select:{banner:true, title:true}}}})
 
-    return achievements
+    const { skip, limit: paginationLimit } = paginationHelper.calculatePagination({ page, limit });
+
+    const achievements = await prisma.contestAchievement.findMany({
+        where:{participantId:contestParticipant.id,category:type}, 
+        skip,
+        take: paginationLimit,
+        include:{contest:{select:{banner:true, title:true}}},
+        orderBy: { createdAt: 'desc' }
+    })
+
+    const total = await prisma.contestAchievement.count({where:{participantId:contestParticipant.id,category:type}});
+    const meta = paginationHelper.getPaginationMetaData(page, paginationLimit, total);
+
+    return { data: achievements, meta };
 }
 
 const getUserPhotoAchievements = async (userId:string, photoId:string) => {

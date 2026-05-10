@@ -12,19 +12,23 @@ import { userAdminUpdateData, userUpdateData } from "./user.types"
 import bcrypt from 'bcryptjs'
 import { voteService } from "../Vote/vote.service"
 import { userStoreService } from "./UserStore/userStore.service"
+import { paginationHelper } from "../../../helpers/paginationHelper";
 
 
 
 const getUsers = async (page: number = 1, limit: number = 20)=>{
-    const skip = (page - 1) * limit
+    const { skip, limit: paginationLimit } = paginationHelper.calculatePagination({ page, limit });
+    
     const totalUsers = await prisma.user.count()
-    const users = await prisma.user.findMany({omit:{password:true, createdAt:true, updatedAt:true,accessToken:true}, take:limit, skip})
+    const users = await prisma.user.findMany({
+        omit:{password:true, createdAt:true, updatedAt:true,accessToken:true}, 
+        take: paginationLimit, 
+        skip
+    })
 
-    // const mappedUsers = users.map((user)=>{
-    //     return UserDto(user)
-    // })
+    const meta = paginationHelper.getPaginationMetaData(page, paginationLimit, totalUsers);
 
-    return {page, limit,total:totalUsers,users}
+    return {data: users, meta}
 }
 
 

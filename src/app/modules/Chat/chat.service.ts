@@ -2,6 +2,7 @@ import ApiError from "../../../errors/ApiError"
 import prisma from "../../../shared/prisma"
 import httpStatus from 'http-status'
 import { teamService } from "../Team/team.service"
+import { paginationHelper } from "../../../helpers/paginationHelper";
 
 
 const sendMessage = async (senderId:string,teamId:string, message:string)=>{
@@ -16,7 +17,7 @@ const sendMessage = async (senderId:string,teamId:string, message:string)=>{
     return chat
 }
 
-const getAllChats = async (userId:string,teamId:string)=>{
+const getAllChats = async (userId:string,teamId:string, page: number = 1, limit: number = 20)=>{
     console.log(teamId)
     const isExist = await teamService.isTeamMemberExist(userId, teamId)
     
@@ -29,9 +30,21 @@ const getAllChats = async (userId:string,teamId:string)=>{
     if(!team){
         throw new ApiError(httpStatus.NOT_FOUND, "team is not found")
     }
-    const chats = await prisma.chat.findMany({where:{teamId:team.id}, orderBy:{createdAt:"desc"}, include:{sender:{select:{avatar:true, fullName:true}}}})
 
-    return chats
+    const { skip, limit: paginationLimit } = paginationHelper.calculatePagination({ page, limit });
+
+    const chats = await prisma.chat.findMany({
+        where:{teamId:team.id}, 
+        skip,
+        take: paginationLimit,
+        orderBy:{createdAt:"desc"}, 
+        include:{sender:{select:{avatar:true, fullName:true}}}
+    })
+
+    const total = await prisma.chat.count({where:{teamId:team.id}});
+    const meta = paginationHelper.getPaginationMetaData(page, paginationLimit, total);
+
+    return { data: chats, meta };
 }
 
 export const chatService = {

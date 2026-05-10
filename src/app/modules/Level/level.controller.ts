@@ -19,13 +19,18 @@ const addLevel = catchAsync(async (req:Request, res:Response) => {
 })
 
 const getLevels =  catchAsync(async (req:Request, res: Response) => {
-    const levels = await levelService.getLevels()
+    const { page, limit } = req.query;
+    const result = await levelService.getLevels(
+        page ? Number(page) : undefined,
+        limit ? Number(limit) : undefined
+    )
 
     sendResponse(res, {
         success:true,
         statusCode:httpStatus.OK,
         message:"levels fetched successfully",
-        data:levels
+        data:result.data,
+        meta:result.meta
     })
 })
 

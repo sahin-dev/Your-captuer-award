@@ -1,5 +1,6 @@
 import ApiError from "../../../errors/ApiError"
 import { LevelName, LevelRequirement } from "../../../prismaClient"
+import { paginationHelper } from "../../../helpers/paginationHelper"
 import prisma from "../../../shared/prisma"
 import httpStatus from 'http-status'
 
@@ -48,10 +49,15 @@ const deleteLevl  =async (levelId:string)=> {
     return level
 }
 
-const getLevels = async ()=>{
-    const levels = await prisma.level.findMany()
+const getLevels = async (page: number = 1, limit: number = 10)=>{
+    const { skip, limit: paginationLimit } = paginationHelper.calculatePagination({ page, limit });
+    
+    const levels = await prisma.level.findMany({skip, take: paginationLimit, orderBy: { level: 'asc' }})
 
-    return levels
+    const total = await prisma.level.count();
+    const paginationMetaData = paginationHelper.getPaginationMetaData(page, paginationLimit, total);
+
+    return { data: levels, meta: paginationMetaData };
 }
 
 

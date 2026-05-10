@@ -6,13 +6,14 @@ import { achievementService } from "../Achievements/achievement.service"
 import { MappedPhoto } from "./profile.types"
 import { voteService } from "../Vote/vote.service"
 import { followService } from "../Follow/followe.service"
+import { paginationHelper } from "../../../helpers/paginationHelper";
 
 export const handleGetUserUploads = async (userId:string, pagination:{page?:number, limit?:number})=>{
     let page = pagination.page || 1
 
     let limit = pagination.limit || 20
 
-    let skip = (page - 1) * limit
+    const { skip, limit: paginationLimit } = paginationHelper.calculatePagination({ page, limit });
 
     const totalUploads = await prisma.userPhoto.count({where:{userId}})
 
@@ -21,7 +22,8 @@ export const handleGetUserUploads = async (userId:string, pagination:{page?:numb
             contestUpload:{select:{achievements:{orderBy:{createdAt:'desc'}, take:1,
             select:{category:true},},
             _count:{select:{votes:true}}}},_count:{select:{likes:true}}},
-            take:limit, skip
+            take: paginationLimit, 
+            skip
     })
 
     const newUploads = uploads.map( photo => {
@@ -31,7 +33,9 @@ export const handleGetUserUploads = async (userId:string, pagination:{page?:numb
         return { ...photo, totalVotes,likes:photo._count.likes,_count:undefined}
     })
 
-    return {photos:newUploads, count:totalUploads, page, limit}
+    const meta = paginationHelper.getPaginationMetaData(page, paginationLimit, totalUploads);
+
+    return {data: newUploads, meta}
 } 
 
 //Upload photo to cloud and then add to user profile

@@ -23,13 +23,14 @@ const addStoreProduct = catchAsync(async (req:Request, res:Response) => {
 const getAllProducts = catchAsync(async (req:Request, res:Response) => {
 
     const {type, page, limit} = req.query as {type?:ProductType, page?: string, limit?: string}
-    const products = await storeService.getAllProduct(type, Number(page), Number(limit))
+    const result = await storeService.getAllProduct(type, Number(page), Number(limit))
 
     sendResponse(res, {
         success:true,
         statusCode:httpStatus.OK,
         message:"store products fetched successfully",
-        data:products
+        data:result.data,
+        meta:result.meta
    
 })
 })
@@ -74,10 +75,72 @@ const deleteStoreProduct = catchAsync(async (req:Request, res:Response) => {
     })
 })
 
+/**
+ * Search products by title or type
+ */
+const searchProducts = catchAsync(async (req:Request, res:Response) => {
+    const {query, type, page = 1, limit = 10} = req.query
+    
+    const result = await storeService.searchProducts(
+        query as string,
+        type as ProductType | undefined,
+        Number(page),
+        Number(limit)
+    )
+
+    sendResponse(res, {
+        success:true,
+        statusCode:httpStatus.OK,
+        message:"Products search completed successfully",
+        data:result.data,
+        meta:result.meta
+    })
+})
+
+/**
+ * Restore deleted product
+ */
+const restoreProduct = catchAsync(async (req:Request, res:Response) => {
+    const { productId } = req.params
+    const restoredProduct = await storeService.restoreProduct(productId)
+
+    sendResponse(res, {
+        success:true,
+        statusCode:httpStatus.OK,
+        message:"Product restored successfully",
+        data:restoredProduct
+    })
+})
+
+/**
+ * Get products by type with pagination
+ */
+const getProductsByType = catchAsync(async (req:Request, res:Response) => {
+    const {type} = req.params
+    const {page = 1, limit = 10} = req.query
+
+    const result = await storeService.getAllProductByType(
+        type as ProductType,
+        Number(page),
+        Number(limit)
+    )
+
+    sendResponse(res, {
+        success:true,
+        statusCode:httpStatus.OK,
+        message:"Products fetched by type successfully",
+        data:result.data,
+        meta:result.meta
+    })
+})
+
 export const storeController =  {
     addStoreProduct,
     getAllProducts,
     getProductDetails,
     updateStoreProduct,
-    deleteStoreProduct
+    deleteStoreProduct,
+    searchProducts,
+    restoreProduct,
+    getProductsByType
 }

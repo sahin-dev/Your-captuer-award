@@ -13,13 +13,14 @@ export const getMyUploads = async (req:Request, res:Response)=> {
     let pageNum = page ? Number(page) : undefined
     let limitNum = limit ? Number(limit) : undefined
 
-    const uploads = await handleGetUserUploads(userId, {page:pageNum, limit:limitNum})
+    const result = await handleGetUserUploads(userId, {page:pageNum, limit:limitNum})
 
     sendResponse(res, {
         statusCode:httpStatus.OK,
         success:true,
         message:"user uploads fetched successfully",
-        data:uploads
+        data:result.data,
+        meta:result.meta
     })
 }
 

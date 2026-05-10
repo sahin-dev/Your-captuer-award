@@ -7,25 +7,37 @@ import httpStatus from 'http-status'
 
 const getUserNotifications = catchAsync(async (req:Request, res:Response) => {
     const userId = req.user.id
+    const { page, limit } = req.query;
 
-    const myNotifications = await notificationService.getUserNotifications(userId)
+    const result = await notificationService.getUserNotifications(
+        userId,
+        page ? Number(page) : undefined,
+        limit ? Number(limit) : undefined
+    )
 
     sendResponse(res, {
         success:true,
         statusCode:httpStatus.OK,
         message:"notifications fetched successfully",
-        data:myNotifications
+        data:result.data,
+        meta:result.meta
     })
 })
 
 const getAdminNotification = catchAsync(async (req:Request, res:Response) => {
-    const notifications = await notificationService.getAdminNotification()
+    const { page, limit } = req.query;
+
+    const result = await notificationService.getAdminNotification(
+        page ? Number(page) : undefined,
+        limit ? Number(limit) : undefined
+    )
 
     sendResponse(res, {
         success:true,
         statusCode:httpStatus.OK,
         message:"admin notifications fetched successfully",
-        data:notifications
+        data:result.data,
+        meta:result.meta
     })
 })
 

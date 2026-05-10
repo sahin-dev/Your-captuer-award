@@ -88,29 +88,33 @@ const joinContest = catchAsync(async (req:any, res:Response)=>{
 
 const getUploadedPhotos =  catchAsync(async  (req:any, res: Response)=>{
     const {contestId} = req.params
+    const {page = 1, limit = 10} = req.query
     const user = req.user
 
-    const uploadedPhotos = await contestService.getContestUploads(user.id,contestId)
+    const uploadedPhotos = await contestService.getContestUploads(user.id, contestId, parseInt(page), parseInt(limit))
 
      sendResponse(res, {
         statusCode:200,
         success:true,
         message:"photos fetched successfully",
-        data:uploadedPhotos
+        data:uploadedPhotos.data,
+        meta:uploadedPhotos.meta
     })
 })
 
 const getUploadedPhotosToVote =  catchAsync(async  (req:any, res: Response)=>{
     const {contestId} = req.params
+    const {page = 1, limit = 10} = req.query
     const user = req.user
 
-    const uploadedPhotos = await contestService.getContestUploadsToVote(user.id,contestId)
+    const uploadedPhotos = await contestService.getContestUploadsToVote(user.id, contestId, parseInt(page), parseInt(limit))
 
      sendResponse(res, {
         statusCode:200,
         success:true,
         message:"photos fetched successfully",
-        data:uploadedPhotos
+        data:uploadedPhotos.data,
+        meta:uploadedPhotos.meta
     })
 })
 
@@ -201,30 +205,34 @@ const promotePhoto = catchAsync(async (req:Request, res:Response) => {
 
 const getWinners = catchAsync(async (req:Request, res:Response) => {
     const {contestId} = req.params
+    const {page = 1, limit = 10} = req.query
     const userId = req.user.id
 
-    const winners = await contestService.getContestWinners(contestId)
+    const winners = await contestService.getContestWinners(contestId, parseInt(page), parseInt(limit))
 
     sendResponse(res, {
         success:true,
         statusCode:httpStatus.OK,
         message:"contest winners fetched successfully",
-        data:winners
+        data:winners.data,
+        meta:winners.meta
     })
 })
 
 
 const getUserRemainingPhotos = catchAsync(async (req:Request, res:Response) => {
     const {contestId} = req.params
+    const {page = 1, limit = 10} = req.query
     const userId = req.user.id
 
-    const remainingPhotos = await contestService.getRemainingPhotos(userId, contestId)
+    const remainingPhotos = await contestService.getRemainingPhotos(userId, contestId, parseInt(page), parseInt(limit))
 
     sendResponse(res, {
         success:true,
         statusCode:httpStatus.OK,
         message:"remaining photos found successfully",
-        data:remainingPhotos
+        data:remainingPhotos.data,
+        meta:remainingPhotos.meta
     })
 })
 
@@ -261,14 +269,15 @@ const chargePhoto = catchAsync(async (req:Request, res:Response) => {
 const getContestPhotosSortedByVote = catchAsync(async (req:Request, res:Response)=> {
 
     const {contestId} = req.params
-    const {page, limit} = req.query as {page:string, limit:string}
-    const photos = await contestService.getContestPhotosSortedByVote(contestId, parseInt(page), parseInt(limit))
+    const {page = 1, limit = 10} = req.query as {page?:string, limit?:string}
+    const photos = await contestService.getContestPhotosSortedByVote(contestId, parseInt(page || '1'), parseInt(limit || '10'))
 
     sendResponse(res, {
         statusCode:200,
         success:true,
         message:'photos fetched successfully',
-        data:photos
+        data:photos.data,
+        meta:photos.meta
     })
 })
 
@@ -277,14 +286,15 @@ const getContestPhotosSortedByVote = catchAsync(async (req:Request, res:Response
 const getContestPhotographers = catchAsync(async (req:Request, res:Response)=> {
 
     const {contestId} = req.params
-    const {page =1, limit = 20} = req.query as {page:string, limit:string}
-    const photos = await contestService.getContestTopPhotographers(contestId, Number(page), Number(limit))
+    const {page = 1, limit = 20} = req.query as {page?:string, limit?:string}
+    const photos = await contestService.getContestTopPhotographers(contestId, parseInt(page || '1'), parseInt(limit || '20'))
 
     sendResponse(res, {
         statusCode:200,
         success:true,
         message:'photographer fetched successfully',
-        data:photos
+        data:photos.data,
+        meta:photos.meta
     })
 })
 export const contestController = {

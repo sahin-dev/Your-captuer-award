@@ -70,12 +70,14 @@ export const editComment = catchAsync(async (req:Request, res:Response)=>{
 
 export const getComments = catchAsync(async (req:Request, res:Response)=>{
     const {photoId} = req.params
-    const allComments = await handleGetUserComments(photoId)
+    const { page, limit } = req.query;
+    const result = await handleGetUserComments(photoId, page ? Number(page) : undefined, limit ? Number(limit) : undefined)
 
     sendResponse(res, {
         success:true,
         statusCode:httpStatus.OK,
         message:"comments fetched successfully",
-        data:allComments
+        data:result.data,
+        meta:result.meta
     })
 })

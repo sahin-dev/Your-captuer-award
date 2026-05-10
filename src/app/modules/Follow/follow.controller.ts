@@ -23,27 +23,31 @@ export const toggoleFollow = catchAsync(async ( req:Request, res:Response)=>{
 
 export const getFollowers = catchAsync(async (req:Request, res:Response)=>{
     const userId = req.user.id
+    const { page, limit } = req.query;
     
-    const followers = await handleGetMyFollowers(userId)
+    const result = await handleGetMyFollowers(userId, page ? Number(page) : undefined, limit ? Number(limit) : undefined)
 
     sendResponse(res, {
         success:true,
         statusCode:httpStatus.OK,
         message:"Followers fetched successfully",
-        data:followers
+        data:result.data,
+        meta:result.meta
     })
 })
 
 
 export const getFollowings = catchAsync(async (req:Request, res:Response)=>{
     const userId = req.user.id
+    const { page, limit } = req.query;
     
-    const followings = await handleGetMyFollowings(userId)
+    const result = await handleGetMyFollowings(userId, page ? Number(page) : undefined, limit ? Number(limit) : undefined)
 
     sendResponse(res, {
         success:true,
         statusCode:httpStatus.OK,
         message:"Followings fetched successfully",
-        data:followings
+        data:result.data,
+        meta:result.meta
     })
 })
