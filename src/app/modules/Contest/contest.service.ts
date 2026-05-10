@@ -657,20 +657,19 @@ const identifyWinner = async (contestId:string)=>{
 
 
 const awardTeams = async (contestId:string) => {
-    const teamMatches = await prisma.teamMatch.findMany({where:{contestId}})
+    const teamMatches = await prisma.teamMatch.findMany({where:{contestId, status:'ACTIVE'}})
 
     if(!teamMatches || teamMatches.length <= 0){
         console.log("No team match found for this contest")
         return
     }
 
-    // FIX: Use for loop instead of forEach to properly await async operations
     for (const teamMatch of teamMatches) {
-       await awardTeam(teamMatch.id)
+       await awardTeam(teamMatch.id, contestId)
     } 
 }
 
-const awardTeam = async (matchId:string) => {
+const awardTeam = async (matchId:string, contestId:string) => {
     const teamMatch = await prisma.teamMatch.findUnique({where:{id:matchId}})
 
     if(!teamMatch){
@@ -678,23 +677,17 @@ const awardTeam = async (matchId:string) => {
         return
     }
 
-    const team1Votes = await voteService.getTeamTotalVotes(teamMatch.contestId, teamMatch.team1Id)
-    const team2Votes = await voteService.getTeamTotalVotes(teamMatch.contestId, teamMatch.team2Id)
+    const team1Votes = await voteService.getTeamTotalVotes(contestId, teamMatch.team1Id)
+    const team2Votes = await voteService.getTeamTotalVotes(contestId, teamMatch.team2Id)
 
-    await prisma.team.update({where:{id:teamMatch.team1Id}, data:{score:{increment:team1Votes}, }})
-    await prisma.team.update({where:{id:teamMatch.team2Id}, data:{score:{increment:team2Votes}}})
-
-    if(team1Votes > team2Votes){
-        await prisma.team.update({where:{id:teamMatch.team1Id}, data:{win:{increment:1}}})
-        await prisma.team.update({where:{id:teamMatch.team2Id}, data:{ lost:{increment:1}}})
-    }else if(team1Votes === team2Votes) {
-        await prisma.team.update({where:{id:teamMatch.team1Id}, data:{ win:{increment:1}}})
-        await prisma.team.update({where:{id:teamMatch.team2Id}, data:{ win:{increment:1}}})
-    }else {
-        await prisma.team.update({where:{id:teamMatch.team1Id}, data:{ lost:{increment:1}}})
-        await prisma.team.update({where:{id:teamMatch.team2Id}, data:{ win:{increment:1}}})       
-    }
-
+    // Delegate to teamService.recordMatchResult() which properly handles:
+    // - TeamMatch status, scores, result, winner_id
+    // - TeamMatchHistory for both teams
+    // - Win/loss/draw correctly (not counting ties as wins)
+    // - Clearing active_match_id
+    // - Incrementing total_matches
+    await teamService.recordMatchResult(matchId, team1Votes, team2Votes)
+    console.log(`Team match ${matchId} result recorded: Team1=${team1Votes} vs Team2=${team2Votes}`)
 }
 
 const getTeamParticipant = async (contestId:string, teamId:string) => {
@@ -726,11 +719,39 @@ const identifyTeamWinner = async (contestId:string)=>{
 
     const participants = await getContestParticipants(contestId)
 
-    let participantVote = await Promise.all(participants.map( async participant => {
-        let votes = await prisma.vote.count({where:{contestId, photo:{participant:{id:participant.id}}}})
+    // Calculate votes for each participant (same pattern as solo identifyWinner)
+    let participantData = await Promise.all(participants.map(async participant => {
+        const uploadedPhotos = await prisma.contestPhoto.findMany({where:{contestId, participantId:participant.id}})
+        let maxVote = 0
+        let maxPhoto:ContestPhoto | null = null
 
-        return {id:participant.id, voteCount:votes}
+        for (const photo of uploadedPhotos) {
+            const votes = await prisma.vote.count({where:{contestId, photoId:photo.id}})
+            if (votes > maxVote){
+                maxVote = votes
+                maxPhoto = photo
+            }
+        }
+
+        const totalVotes = await prisma.vote.count({where:{contestId, photo:{participantId:participant.id}}})
+        return {...participant, totalVotes, singlePhotoVote:maxVote, maxPhoto}
     }))
+
+    // Award TOP_PHOTOGRAPHER - participant with most total votes
+    const top_photographer = participantData.sort((a, b) => b.totalVotes - a.totalVotes)[0]
+    if (top_photographer && top_photographer.totalVotes > 0) {
+        await awardWinner(top_photographer, contestId, PrizeType.TOP_PHOTOGRAPHER, null)
+        console.log(`[TEAM] TOP_PHOTOGRAPHER award given to participant ${top_photographer.id}`)
+    }
+
+    // Award TOP_PHOTO - participant with single photo having most votes
+    const top_photo_participant = participantData.sort((a, b) => b.singlePhotoVote - a.singlePhotoVote)[0]
+    if (top_photo_participant && top_photo_participant.maxPhoto && top_photo_participant.singlePhotoVote > 0) {
+        await awardWinner(top_photo_participant, contestId, PrizeType.TOP_PHOTO, top_photo_participant.maxPhoto.id)
+        console.log(`[TEAM] TOP_PHOTO award given to photo ${top_photo_participant.maxPhoto.id} by participant ${top_photo_participant.id}`)
+    }
+
+    console.log('[TEAM] Winner identification completed')
 }
 
 //Award prize to the winners
@@ -978,7 +999,9 @@ const uploadPhotoToContest = async (contestId:string,userId:string, photoIds:str
                 uploadImage = await prisma.contestPhoto.create({data:{contestId,participantId:contestParticipant!.id,photoId:userPhoto.id}, include:{photo:true} })
                 if (uploadImage) {
                     images.push(uploadImage)
-                    agenda.every("1 minute", "exposure:watcher",{contestPhotoId:uploadImage.id})
+                    const exposureJob = agenda.create("exposure:watcher", {contestPhotoId: uploadImage.id})
+                    exposureJob.repeatEvery("1 minute")
+                    await exposureJob.save()
                 }
             }
         }
@@ -1244,7 +1267,9 @@ const chargePhoto = async (userId:string, contestId:string, contestPhotoId:strin
     const newContestPhoto = await prisma.contestParticipant.update({where:{id:participant.id}, data:{exposure_bonus:100}})
 
    
-    agenda.every("1 minute", "exposure:watcher",{contestPhotoId:contestPhoto.id})
+    const exposureJob = agenda.create("exposure:watcher", {contestPhotoId: contestPhoto.id})
+    exposureJob.repeatEvery("1 minute")
+    await exposureJob.save()
     
     await userStoreService.updateStoreData(userId, {key:-1})
     return newContestPhoto

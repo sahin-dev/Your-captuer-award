@@ -87,24 +87,15 @@ export const addVotes = async (userId:string,contestId:string, photoIds:string[]
    
     let votes:Vote[] = [];
 
-    try{
-        photoIds.forEach( async (photoId:string)=>{
-       
-       const vote = await addOneVote(userId,contestId,photoId)
-       if(vote)
+    // FIX: Use for...of instead of forEach to properly await async operations
+    for (const photoId of photoIds) {
+        const vote = await addOneVote(userId, contestId, photoId)
+        if (vote) {
             votes.push(vote)
-
-        //publish a event if new vote added 
-        return await Promise.all(votes)
-    })
-
-    }catch(err){
-       throw err
+        }
     }
 
-  
-
-    
+    return votes
 }
 
 

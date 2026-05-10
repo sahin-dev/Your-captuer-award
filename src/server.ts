@@ -35,12 +35,12 @@ async function startServer() {
 async function main() {
   await startServer();
   // await agenda.start()
-  const exitHandler = () => {
+  const exitHandler = async () => {
     if (server) {
-      server.close(() => {
+      server.close(async () => {
         console.info("Server closed!");
-        agenda.stop();
-        prisma.$disconnect()
+        await agenda.stop();
+        await prisma.$disconnect()
         restartServer();
       });
     } else {

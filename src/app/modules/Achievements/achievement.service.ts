@@ -141,17 +141,24 @@ const getUserPhotoAchievements = async (userId:string, photoId:string) => {
 }
 
 const getMyAchievementsByContest = async (userId:string, contestId:string) => {
-    const achievements = await getAchievements(contestId)
-    const myAchievements:Array<any> = []
-
-    achievements.forEach(achievement => {
-        if(achievement.participant?.user.id === userId){
-            myAchievements.push(achievement)
-        }
+    const participant = await prisma.contestParticipant.findUnique({
+        where: { contestId_userId: { contestId, userId } }
     })
 
-    return myAchievements
-    
+    if (!participant) {
+        return []
+    }
+
+    const achievements = await prisma.contestAchievement.findMany({
+        where: { contestId, participantId: participant.id },
+        include: {
+            photo: { select: { photo: { select: { id: true, url: true } } } },
+            participant: { select: { user: true } }
+        },
+        orderBy: { createdAt: 'desc' }
+    })
+
+    return achievements
 }
 
 // const getContestAchievements

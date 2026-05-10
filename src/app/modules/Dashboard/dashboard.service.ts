@@ -375,20 +375,20 @@ const getAllUsers = async (pagination: { page: string, limit: string }) => {
         limit: parseInt(pagination.limit) || 10
     });
 
-    const users = await prisma.user.findMany({ 
-        select: { id: true, firstName: true, lastName: true, fullName: true, email: true, username: true, avatar: true, role: true, isActive: true, createdAt: true }, 
-        skip, 
+    const users = await prisma.user.findMany({
+        select: { id: true, firstName: true, lastName: true, fullName: true, email: true, username: true, avatar: true, role: true, isActive: true, createdAt: true },
+        skip,
         take: paginationLimit,
         orderBy: { createdAt: 'desc' }
     });
-    
+
     const total = await prisma.user.count();
     const paginationMetaData = paginationHelper.getPaginationMetaData(
         parseInt(pagination.page) || 1,
         paginationLimit,
         total
     );
-    
+
     let mappedUsers = users.map(async user => {
         let votes = await voteService.getUserTotalVotes(user.id)
         return { ...user, votes }
@@ -516,7 +516,6 @@ const getTransactionStats = async () => {
 
     // Current year for date filtering
     const currentYear = new Date().getFullYear()
-
 
     // Store revenue
     const totalStoreRevenue = allSuccessfulPayments

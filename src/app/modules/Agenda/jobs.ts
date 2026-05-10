@@ -1,8 +1,8 @@
-import { ContestStatus, RecurringContest } from '../../../prismaClient';
+import { ContestMode, ContestStatus, RecurringContest } from '../../../prismaClient';
 import { Job } from "agenda";
 import prisma from '../../../shared/prisma';
 import agenda from "./init";
-import {contestService } from '../Contest/contest.service';
+import { contestService } from '../Contest/contest.service';
 import { calculateNextOccurance } from '../../../helpers/nextOccurance';
 import { ContestRule } from '../Contest/ContestRules/contestRules.type';
 import { ContestPrize } from '../Contest/ContestPrizes/contestPrize.type';
@@ -18,21 +18,21 @@ import Events from '../../event/events.constant';
 agenda.define('contest:checkUpcoming', async () => {
 
     const contests = await prisma.contest.findMany({
-        where: { status:ContestStatus.UPCOMING },
+        where: { status: ContestStatus.UPCOMING },
     });
 
-    if (contests.length <= 0){
+    if (contests.length <= 0) {
         console.log("There is no upcoming contest")
-    } 
+    }
     // FIX: Use for loop instead of forEach to properly await async operations
     for (const contest of contests) {
         const startDate = contest.startDate
         const currentDate = new Date()
-        
-        if (startDate <= currentDate){
-            const updatedContest = await prisma.contest.update({where:{id:contest.id}, data:{status:ContestStatus.ACTIVE, startedAt:new Date(Date.now())}})
+
+        if (startDate <= currentDate) {
+            const updatedContest = await prisma.contest.update({ where: { id: contest.id }, data: { status: ContestStatus.ACTIVE, startedAt: new Date(Date.now()) } })
             console.log(`Contest with id: ${contest.id} has started`)
-            agenda.schedule(contest.endDate, "contest:watcher",{contestId:updatedContest.id})
+            agenda.schedule(contest.endDate, "contest:watcher", { contestId: updatedContest.id })
         }
     }
 
@@ -76,38 +76,48 @@ agenda.define('contest:checkUpcoming', async () => {
 //     }
 // });
 
-agenda.define("contest:active", async ()=>{
+agenda.define("contest:active", async () => {
     const upcomingContest = await contestService.getUpcomingContest()
-    console.log(`Found ${upcomingContest.length} upcoming contests`)
-    // FIX: Use for loop instead of forEach to properly await async operations
+    if (upcomingContest.length > 0) {
+        console.log(`Found ${upcomingContest.length} upcoming contests`)
+    }
+
     for (const contest of upcomingContest) {
         let contestStartDate = new Date(contest.startDate).getTime()
         let currentDate = new Date().getTime()
-        console.log(contestStartDate)
-        console.log(currentDate)
-        if(currentDate >= contestStartDate){
-            await prisma.contest.update({where:{id:contest.id}, data:{status:ContestStatus.ACTIVE}})
-            agenda.schedule(contest.endDate,"contest:watcher", {contestId:contest.id})
+
+        if (currentDate >= contestStartDate) {
+            // Atomic update: only update if still UPCOMING to prevent double-scheduling
+            const updated = await prisma.contest.updateMany({
+                where: { id: contest.id, status: ContestStatus.UPCOMING },
+                data: { status: ContestStatus.ACTIVE, startedAt: new Date() }
+            })
+
+            // Only schedule the watcher if we actually transitioned the status
+            if (updated.count > 0) {
+                agenda.schedule(contest.endDate, "contest:watcher", { contestId: contest.id })
+                console.log(`Contest ${contest.id} activated, watcher scheduled for ${contest.endDate}`)
+            }
         }
     }
 })
 
 
 
-agenda.define("contest:checkRecurring", async ()=>{
+agenda.define("contest:checkRecurring", async () => {
 
     const recurringContests = await prisma.recurringContest.findMany();
-    console.log(`Found ${recurringContests.length} recurring contests to process.`);
+    if (recurringContests.length > 0) {
+        console.log(`Found ${recurringContests.length} recurring contests to process.`);
+    }
 
-    // FIX: Use for loop instead of forEach to properly await async operations
     for (const contest of recurringContests) {
         await scheduleContest(contest);
     }
 });
 
 
-async function scheduleContest(rContest:RecurringContest){
- 
+async function scheduleContest(rContest: RecurringContest) {
 
 
     const previousOccurrence = rContest.recurring.previousOccurrence || rContest.createdAt;
@@ -117,50 +127,48 @@ async function scheduleContest(rContest:RecurringContest){
     const passedTimeSpan = Math.abs(new Date().getTime() - previousOccurrence.getTime());
 
     const time_ratio = 0.2
-   
+
 
     if (passedTimeSpan >= (totalTimeSpan * time_ratio)) {
-       
+
 
         let duration = rContest.endDate.getTime() - rContest.startDate.getTime()
 
-        
+
 
         const newContest = await prisma.contest.create({
             data: {
-        
+
                 title: rContest.title,
-                banner:rContest.banner,
-                maxUploads:rContest.maxUploads,
+                banner: rContest.banner,
+                maxUploads: rContest.maxUploads,
                 isMoneyContest: rContest.isMoneyContest,
-                maxPrize:rContest.maxPrize,
-                minPrize:rContest.minPrize,
-                level_requirements:rContest.level_requirements,
+                maxPrize: rContest.maxPrize,
+                minPrize: rContest.minPrize,
+                level_requirements: rContest.level_requirements,
                 description: rContest.description,
                 creatorId: rContest.creatorId,
                 startDate: nextOccurrence,
                 endDate: new Date(nextOccurrence.getTime() + duration),
                 status: ContestStatus.UPCOMING,
             }
-        
+
         })
 
         const rules = JSON.parse(rContest.rules as string) as ContestRule[]
 
-        // FIX: Use for loop instead of forEach to properly await async operations
         for (const rule of rules) {
-            await prisma.contestRule.create({data:{contestId:newContest.id, name:rule.name, description:rule.name}})
+            await prisma.contestRule.create({ data: { contestId: newContest.id, name: rule.name, description: rule.description } })
         }
 
         const prizes = JSON.parse(rContest.prizes as string) as ContestPrize[]
 
-        // FIX: Use for loop instead of forEach to properly await async operations
         for (const prize of prizes) {
-            await prisma.contestPrize.create({data:{contestId:newContest.id, category:prize.category, key:prize.key, boost:prize.boost, swap:(prize.swap)}})
+            await prisma.contestPrize.create({ data: { contestId: newContest.id, category: prize.category, key: prize.key, boost: prize.boost, swap: (prize.swap) } })
         }
 
         const next = calculateNextOccurance(newContest.startDate, rContest.recurring.recurringType)
-       
+
         await prisma.recurringContest.update({
             where: { id: rContest.id },
             data: {
@@ -181,45 +189,60 @@ async function scheduleContest(rContest:RecurringContest){
 //contest closed if the contest endtime has passed.
 //closed status means contest is ended
 //completed contests are ended contests and the user is participated those contests
-//so, there is not seaparte completed contest in the database
+//so, there is not separate completed contest in the database
 
 agenda.define("contest:watcher", async (job: Job) => {
-    const { contestId} = job.attrs.data as {  contestId:string };
+    const { contestId } = job.attrs.data as { contestId: string };
 
     const contest = await contestService.getContestById(contestId)
-    if (!contest){
-        throw new Error("'Contest:watcher, contest not found")
+    if (!contest) {
+        console.error(`Contest:watcher - contest ${contestId} not found, skipping`)
+        return
     }
-    
-    await prisma.contest.update({where:{id:contestId}, data:{status:ContestStatus.CLOSED}})
-    globalEventHandler.emit(Events.CONTEST_ENDED,contestId)
+
+    await prisma.contest.update({ where: { id: contestId }, data: { status: ContestStatus.CLOSED } })
+    globalEventHandler.emit(Events.CONTEST_ENDED, contestId)
     console.log(`Contest has ended ${contestId}`)
-    
-    await contestService.identifyWinner(contestId)
-    // await contestService.awardTeams(contest.id)
+
+    // Wrap awarding in try-catch so the contest still closes even if awarding fails
+    try {
+        await contestService.identifyWinner(contestId)
+
+        // Score team matches if contest is TEAM mode
+        if (contest.mode === ContestMode.TEAM) {
+            await contestService.awardTeams(contestId)
+        }
+        console.log(`Contest ${contestId} awards completed successfully`)
+    } catch (err) {
+        console.error(`Contest ${contestId} awarding failed:`, err)
+        // Contest is already CLOSED — the error is logged for manual investigation
+        // Do not re-throw so Agenda doesn't retry and re-run the entire job
+    }
 });
 
-agenda.define("exposure:watcher", async (job:Job) => {
-    const {contestPhotoId}  = job.attrs.data as {contestPhotoId:string}
+agenda.define("exposure:watcher", async (job: Job) => {
+    const { contestPhotoId } = job.attrs.data as { contestPhotoId: string }
 
-    const contestPhoto = await prisma.contestPhoto.findUnique({where:{id:contestPhotoId},include:{participant:true}})
-    if(!contestPhoto){
-        console.log("photo not found")
-        await agenda.cancel({name: "exposure:watcher"})
+    const contestPhoto = await prisma.contestPhoto.findUnique({ where: { id: contestPhotoId }, include: { participant: true } })
+    if (!contestPhoto) {
+        console.log(`Exposure watcher: photo ${contestPhotoId} not found, cancelling this job`)
+        // Cancel only THIS specific job, not all exposure:watcher jobs
+        await job.remove()
         return
     }
 
     const updatedBonus = contestPhoto.participant.exposure_bonus - 10
-    await prisma.contestParticipant.update({where:{id:contestPhoto.participant.id}, data:{exposure_bonus:updatedBonus < 0? 0: updatedBonus}})
+    await prisma.contestParticipant.update({ where: { id: contestPhoto.participant.id }, data: { exposure_bonus: updatedBonus < 0 ? 0 : updatedBonus } })
 
-     if(updatedBonus <= 0){
-        await agenda.cancel({name: "exposure:watcher"})
+    if (updatedBonus <= 0) {
+        // Cancel only THIS specific job, not all exposure:watcher jobs
+        await job.remove()
     }
 })
 
 
 agenda.define("promotion:remove", async (job: Job) => {
-    const { photoId } = job.attrs.data as { photoId: string };  
+    const { photoId } = job.attrs.data as { photoId: string };
     const contestPhoto = await prisma.contestPhoto.findUnique({ where: { id: photoId } });
     if (contestPhoto) {
         await prisma.contestPhoto.update({
