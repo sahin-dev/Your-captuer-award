@@ -1,6 +1,6 @@
 
 import { checkObjectId } from '../../../helpers/checkObjectId';
-import { PrizeType, RecurringType } from '../../../prismaClient';
+import { ContestMode, PrizeType, RecurringType } from '../../../prismaClient';
 import { z } from 'zod';
 
 
@@ -11,6 +11,7 @@ export const createContestSchema = z.object({
     title: z.string().nonempty("title must not be empty"),
     description: z.string().nonempty('description must not be empty'),
     level_requirements:z.string().array().default(["50","200","400"]),
+    mode:z.nativeEnum(ContestMode),
     recurring: z.enum(['true', 'false'],{invalid_type_error: "'recurring' must be true or false"}).optional().transform( v => v && v === 'true'),
     recurringType: z.nativeEnum(RecurringType, {invalid_type_error:"Invalid recurring type"}).optional(),
     prizes: z.preprocess((val) => {
@@ -23,9 +24,9 @@ export const createContestSchema = z.object({
         z.array(
             z.object({
                 category: z.nativeEnum(PrizeType),
-                boost: z.number(),
-                key: z.number(),
-                swap: z.number(),
+                boost: z.string().transform(val => Number(val)),
+                key: z.string().transform(val => Number(val)),
+                swap: z.string().transform(val => Number(val)),
             })
         )
     ),

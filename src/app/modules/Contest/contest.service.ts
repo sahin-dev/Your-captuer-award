@@ -92,6 +92,7 @@ const createContest = async (creatorId: string, body: contestData, banner:Expres
         title: body.title,
         description: body.description,
         status: ContestStatus.UPCOMING,
+        mode: body.mode || ContestMode.SOLO,
         level_requirements:levels,
         maxUploads: Number(body.maxUploads),
         ...(bannerUrl && {banner:bannerUrl})
@@ -171,6 +172,7 @@ const createRecurringContest  =  async (creatorId: string, body: contestData, ba
         creatorId,
         title: body.title,
         description: body.description,
+        mode: body.mode || ContestMode.SOLO,
         level_requirements: levels,
         startDate,
         endDate

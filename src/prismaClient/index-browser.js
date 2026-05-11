@@ -677,7 +677,9 @@ exports.MemberLevel = exports.$Enums.MemberLevel = {
   NEW: 'NEW',
   EXPERT: 'EXPERT',
   MASTER: 'MASTER',
-  LEADER: 'LEADER'
+  LEADER: 'LEADER',
+  MEMBER: 'MEMBER',
+  MODERATOR: 'MODERATOR'
 };
 
 exports.InvitationStatus = exports.$Enums.InvitationStatus = {

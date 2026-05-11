@@ -413,7 +413,9 @@ export const MemberLevel: {
   NEW: 'NEW',
   EXPERT: 'EXPERT',
   MASTER: 'MASTER',
-  LEADER: 'LEADER'
+  LEADER: 'LEADER',
+  MEMBER: 'MEMBER',
+  MODERATOR: 'MODERATOR'
 };
 
 export type MemberLevel = (typeof MemberLevel)[keyof typeof MemberLevel]
@@ -46993,7 +46995,7 @@ export namespace Prisma {
   export type TeamCreateInput = {
     id?: string
     name: string
-    level: string
+    level?: string
     language: string
     country: string
     description: string
@@ -47005,8 +47007,8 @@ export namespace Prisma {
     lost?: number
     draw?: number
     badge?: string
-    min_requirement: number
-    min_requirement_str: string
+    min_requirement?: number
+    min_requirement_str?: string
     active_match_id?: string | null
     leaderboard_rank?: number | null
     total_matches?: number
@@ -47026,7 +47028,7 @@ export namespace Prisma {
   export type TeamUncheckedCreateInput = {
     id?: string
     name: string
-    level: string
+    level?: string
     language: string
     country: string
     description: string
@@ -47038,8 +47040,8 @@ export namespace Prisma {
     lost?: number
     draw?: number
     badge?: string
-    min_requirement: number
-    min_requirement_str: string
+    min_requirement?: number
+    min_requirement_str?: string
     active_match_id?: string | null
     leaderboard_rank?: number | null
     total_matches?: number
@@ -47123,7 +47125,7 @@ export namespace Prisma {
   export type TeamCreateManyInput = {
     id?: string
     name: string
-    level: string
+    level?: string
     language: string
     country: string
     description: string
@@ -47135,8 +47137,8 @@ export namespace Prisma {
     lost?: number
     draw?: number
     badge?: string
-    min_requirement: number
-    min_requirement_str: string
+    min_requirement?: number
+    min_requirement_str?: string
     active_match_id?: string | null
     leaderboard_rank?: number | null
     total_matches?: number
@@ -57037,7 +57039,7 @@ export namespace Prisma {
   export type TeamCreateWithoutChatInput = {
     id?: string
     name: string
-    level: string
+    level?: string
     language: string
     country: string
     description: string
@@ -57049,8 +57051,8 @@ export namespace Prisma {
     lost?: number
     draw?: number
     badge?: string
-    min_requirement: number
-    min_requirement_str: string
+    min_requirement?: number
+    min_requirement_str?: string
     active_match_id?: string | null
     leaderboard_rank?: number | null
     total_matches?: number
@@ -57069,7 +57071,7 @@ export namespace Prisma {
   export type TeamUncheckedCreateWithoutChatInput = {
     id?: string
     name: string
-    level: string
+    level?: string
     language: string
     country: string
     description: string
@@ -57081,8 +57083,8 @@ export namespace Prisma {
     lost?: number
     draw?: number
     badge?: string
-    min_requirement: number
-    min_requirement_str: string
+    min_requirement?: number
+    min_requirement_str?: string
     active_match_id?: string | null
     leaderboard_rank?: number | null
     total_matches?: number
@@ -57989,7 +57991,7 @@ export namespace Prisma {
   export type TeamCreateWithoutMatchesAsTeam1Input = {
     id?: string
     name: string
-    level: string
+    level?: string
     language: string
     country: string
     description: string
@@ -58001,8 +58003,8 @@ export namespace Prisma {
     lost?: number
     draw?: number
     badge?: string
-    min_requirement: number
-    min_requirement_str: string
+    min_requirement?: number
+    min_requirement_str?: string
     active_match_id?: string | null
     leaderboard_rank?: number | null
     total_matches?: number
@@ -58021,7 +58023,7 @@ export namespace Prisma {
   export type TeamUncheckedCreateWithoutMatchesAsTeam1Input = {
     id?: string
     name: string
-    level: string
+    level?: string
     language: string
     country: string
     description: string
@@ -58033,8 +58035,8 @@ export namespace Prisma {
     lost?: number
     draw?: number
     badge?: string
-    min_requirement: number
-    min_requirement_str: string
+    min_requirement?: number
+    min_requirement_str?: string
     active_match_id?: string | null
     leaderboard_rank?: number | null
     total_matches?: number
@@ -58058,7 +58060,7 @@ export namespace Prisma {
   export type TeamCreateWithoutMatchesAsTeam2Input = {
     id?: string
     name: string
-    level: string
+    level?: string
     language: string
     country: string
     description: string
@@ -58070,8 +58072,8 @@ export namespace Prisma {
     lost?: number
     draw?: number
     badge?: string
-    min_requirement: number
-    min_requirement_str: string
+    min_requirement?: number
+    min_requirement_str?: string
     active_match_id?: string | null
     leaderboard_rank?: number | null
     total_matches?: number
@@ -58090,7 +58092,7 @@ export namespace Prisma {
   export type TeamUncheckedCreateWithoutMatchesAsTeam2Input = {
     id?: string
     name: string
-    level: string
+    level?: string
     language: string
     country: string
     description: string
@@ -58102,8 +58104,8 @@ export namespace Prisma {
     lost?: number
     draw?: number
     badge?: string
-    min_requirement: number
-    min_requirement_str: string
+    min_requirement?: number
+    min_requirement_str?: string
     active_match_id?: string | null
     leaderboard_rank?: number | null
     total_matches?: number
@@ -58338,7 +58340,7 @@ export namespace Prisma {
   export type TeamCreateWithoutMembersInput = {
     id?: string
     name: string
-    level: string
+    level?: string
     language: string
     country: string
     description: string
@@ -58350,8 +58352,8 @@ export namespace Prisma {
     lost?: number
     draw?: number
     badge?: string
-    min_requirement: number
-    min_requirement_str: string
+    min_requirement?: number
+    min_requirement_str?: string
     active_match_id?: string | null
     leaderboard_rank?: number | null
     total_matches?: number
@@ -58370,7 +58372,7 @@ export namespace Prisma {
   export type TeamUncheckedCreateWithoutMembersInput = {
     id?: string
     name: string
-    level: string
+    level?: string
     language: string
     country: string
     description: string
@@ -58382,8 +58384,8 @@ export namespace Prisma {
     lost?: number
     draw?: number
     badge?: string
-    min_requirement: number
-    min_requirement_str: string
+    min_requirement?: number
+    min_requirement_str?: string
     active_match_id?: string | null
     leaderboard_rank?: number | null
     total_matches?: number
@@ -58721,7 +58723,7 @@ export namespace Prisma {
   export type TeamCreateWithoutParticipationsInput = {
     id?: string
     name: string
-    level: string
+    level?: string
     language: string
     country: string
     description: string
@@ -58733,8 +58735,8 @@ export namespace Prisma {
     lost?: number
     draw?: number
     badge?: string
-    min_requirement: number
-    min_requirement_str: string
+    min_requirement?: number
+    min_requirement_str?: string
     active_match_id?: string | null
     leaderboard_rank?: number | null
     total_matches?: number
@@ -58753,7 +58755,7 @@ export namespace Prisma {
   export type TeamUncheckedCreateWithoutParticipationsInput = {
     id?: string
     name: string
-    level: string
+    level?: string
     language: string
     country: string
     description: string
@@ -58765,8 +58767,8 @@ export namespace Prisma {
     lost?: number
     draw?: number
     badge?: string
-    min_requirement: number
-    min_requirement_str: string
+    min_requirement?: number
+    min_requirement_str?: string
     active_match_id?: string | null
     leaderboard_rank?: number | null
     total_matches?: number
@@ -58989,7 +58991,7 @@ export namespace Prisma {
   export type TeamCreateWithoutJoinRequestsInput = {
     id?: string
     name: string
-    level: string
+    level?: string
     language: string
     country: string
     description: string
@@ -59001,8 +59003,8 @@ export namespace Prisma {
     lost?: number
     draw?: number
     badge?: string
-    min_requirement: number
-    min_requirement_str: string
+    min_requirement?: number
+    min_requirement_str?: string
     active_match_id?: string | null
     leaderboard_rank?: number | null
     total_matches?: number
@@ -59021,7 +59023,7 @@ export namespace Prisma {
   export type TeamUncheckedCreateWithoutJoinRequestsInput = {
     id?: string
     name: string
-    level: string
+    level?: string
     language: string
     country: string
     description: string
@@ -59033,8 +59035,8 @@ export namespace Prisma {
     lost?: number
     draw?: number
     badge?: string
-    min_requirement: number
-    min_requirement_str: string
+    min_requirement?: number
+    min_requirement_str?: string
     active_match_id?: string | null
     leaderboard_rank?: number | null
     total_matches?: number
@@ -59317,7 +59319,7 @@ export namespace Prisma {
   export type TeamCreateWithoutHistoryInput = {
     id?: string
     name: string
-    level: string
+    level?: string
     language: string
     country: string
     description: string
@@ -59329,8 +59331,8 @@ export namespace Prisma {
     lost?: number
     draw?: number
     badge?: string
-    min_requirement: number
-    min_requirement_str: string
+    min_requirement?: number
+    min_requirement_str?: string
     active_match_id?: string | null
     leaderboard_rank?: number | null
     total_matches?: number
@@ -59349,7 +59351,7 @@ export namespace Prisma {
   export type TeamUncheckedCreateWithoutHistoryInput = {
     id?: string
     name: string
-    level: string
+    level?: string
     language: string
     country: string
     description: string
@@ -59361,8 +59363,8 @@ export namespace Prisma {
     lost?: number
     draw?: number
     badge?: string
-    min_requirement: number
-    min_requirement_str: string
+    min_requirement?: number
+    min_requirement_str?: string
     active_match_id?: string | null
     leaderboard_rank?: number | null
     total_matches?: number
@@ -59522,7 +59524,7 @@ export namespace Prisma {
   export type TeamCreateWithoutCreatorInput = {
     id?: string
     name: string
-    level: string
+    level?: string
     language: string
     country: string
     description: string
@@ -59534,8 +59536,8 @@ export namespace Prisma {
     lost?: number
     draw?: number
     badge?: string
-    min_requirement: number
-    min_requirement_str: string
+    min_requirement?: number
+    min_requirement_str?: string
     active_match_id?: string | null
     leaderboard_rank?: number | null
     total_matches?: number
@@ -59554,7 +59556,7 @@ export namespace Prisma {
   export type TeamUncheckedCreateWithoutCreatorInput = {
     id?: string
     name: string
-    level: string
+    level?: string
     language: string
     country: string
     description: string
@@ -59566,8 +59568,8 @@ export namespace Prisma {
     lost?: number
     draw?: number
     badge?: string
-    min_requirement: number
-    min_requirement_str: string
+    min_requirement?: number
+    min_requirement_str?: string
     active_match_id?: string | null
     leaderboard_rank?: number | null
     total_matches?: number
@@ -63666,7 +63668,7 @@ export namespace Prisma {
   export type TeamCreateManyCreatorInput = {
     id?: string
     name: string
-    level: string
+    level?: string
     language: string
     country: string
     description: string
@@ -63678,8 +63680,8 @@ export namespace Prisma {
     lost?: number
     draw?: number
     badge?: string
-    min_requirement: number
-    min_requirement_str: string
+    min_requirement?: number
+    min_requirement_str?: string
     active_match_id?: string | null
     leaderboard_rank?: number | null
     total_matches?: number

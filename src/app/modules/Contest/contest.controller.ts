@@ -104,7 +104,7 @@ const getUploadedPhotos =  catchAsync(async  (req:any, res: Response)=>{
 
 const getUploadedPhotosToVote =  catchAsync(async  (req:any, res: Response)=>{
     const {contestId} = req.params
-    const {page = 1, limit = 10} = req.query
+    const {page = "1", limit = "10"} = req.query as {page?:string, limit?:string}
     const user = req.user
 
     const uploadedPhotos = await contestService.getContestUploadsToVote(user.id, contestId, parseInt(page), parseInt(limit))
@@ -205,7 +205,7 @@ const promotePhoto = catchAsync(async (req:Request, res:Response) => {
 
 const getWinners = catchAsync(async (req:Request, res:Response) => {
     const {contestId} = req.params
-    const {page = 1, limit = 10} = req.query
+    const {page = "1", limit = "10"} = req.query as {page?:string, limit?:string}
     const userId = req.user.id
 
     const winners = await contestService.getContestWinners(contestId, parseInt(page), parseInt(limit))
@@ -222,7 +222,7 @@ const getWinners = catchAsync(async (req:Request, res:Response) => {
 
 const getUserRemainingPhotos = catchAsync(async (req:Request, res:Response) => {
     const {contestId} = req.params
-    const {page = 1, limit = 10} = req.query
+    const {page = "1", limit = "10"} = req.query as {page?:string, limit?:string}
     const userId = req.user.id
 
     const remainingPhotos = await contestService.getRemainingPhotos(userId, contestId, parseInt(page), parseInt(limit))
@@ -269,8 +269,8 @@ const chargePhoto = catchAsync(async (req:Request, res:Response) => {
 const getContestPhotosSortedByVote = catchAsync(async (req:Request, res:Response)=> {
 
     const {contestId} = req.params
-    const {page = 1, limit = 10} = req.query as {page?:string, limit?:string}
-    const photos = await contestService.getContestPhotosSortedByVote(contestId, parseInt(page || '1'), parseInt(limit || '10'))
+    const {page = "1", limit = "10"} = req.query as {page?:string, limit?:string}
+    const photos = await contestService.getContestPhotosSortedByVote(contestId, parseInt(page), parseInt(limit))
 
     sendResponse(res, {
         statusCode:200,
@@ -286,8 +286,8 @@ const getContestPhotosSortedByVote = catchAsync(async (req:Request, res:Response
 const getContestPhotographers = catchAsync(async (req:Request, res:Response)=> {
 
     const {contestId} = req.params
-    const {page = 1, limit = 20} = req.query as {page?:string, limit?:string}
-    const photos = await contestService.getContestTopPhotographers(contestId, parseInt(page || '1'), parseInt(limit || '20'))
+    const {page = "1", limit = "20"} = req.query as {page?:string, limit?:string}
+    const photos = await contestService.getContestTopPhotographers(contestId, parseInt(page), parseInt(limit))
 
     sendResponse(res, {
         statusCode:200,

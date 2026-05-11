@@ -13,11 +13,30 @@ import { paginationHelper } from '../../../helpers/paginationHelper';
 
 
 //create a team
-//Now, only admin can create  a team
+//Only subscribed users can create a team
 
 export const createTeam = async (creatorId: string, body: ITeam, file:Express.Multer.File) => {
 
-   
+    // Check if user has an active subscription
+    const user = await prisma.user.findUnique({
+        where: { id: creatorId },
+        include: { subscriptions: true }
+    });
+
+    if (!user) {
+        throw new ApiError(httpstatus.NOT_FOUND, "User not found")
+    }
+
+    // Check if user has an active subscription plan
+    const hasActiveSubscription = user.subscriptions && user.subscriptions.some(sub => {
+        const now = new Date();
+        return sub.status === 'VALID' && sub.endDate && sub.endDate > now;
+    });
+
+    if (!hasActiveSubscription) {
+        throw new ApiError(httpstatus.FORBIDDEN, "Only subscribed users can create a team. Please subscribe first.")
+    }
+
     if (await hasTeam(creatorId)) {
         throw new ApiError(httpstatus.BAD_REQUEST, "You are already joined a team!")
     }
@@ -360,8 +379,9 @@ const getAllTeamMember = async (teamId:string, page?: number, limit?: number)=>{
 
 /**
  * Get list of available TEAM contests for a team to participate in
+ * Only shows contests with 5-24 hours remaining
  * @param teamId - The team ID
- * @returns List of active TEAM contests with participant count
+ * @returns List of active TEAM contests with participant count and time remaining
  */
 const getAvailableTeamContests = async (teamId: string, page?: number, limit?: number) => {
     // Verify team exists
@@ -378,13 +398,11 @@ const getAvailableTeamContests = async (teamId: string, page?: number, limit?: n
     });
 
     // Get all active TEAM mode contests
-    const contests = await prisma.contest.findMany({
+    const allContests = await prisma.contest.findMany({
         where: {
             status: ContestStatus.ACTIVE,
             mode: ContestMode.TEAM
         },
-        skip: paginationOptions.skip,
-        take: paginationOptions.limit,
         select: {
             id: true,
             title: true,
@@ -403,9 +421,22 @@ const getAvailableTeamContests = async (teamId: string, page?: number, limit?: n
         orderBy: { [paginationOptions.sortBy]: paginationOptions.sortOrder as any }
     })
 
+    // Filter contests by time remaining (5-24 hours only)
+    const now = new Date();
+    const fiveHoursFromNow = new Date(now.getTime() + 5 * 60 * 60 * 1000);
+    const twentyFourHoursFromNow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+
+    const contestsWithinTimeWindow = allContests.filter(contest => {
+        const timeRemaining = contest.endDate.getTime() - now.getTime();
+        const fiveHoursInMs = 5 * 60 * 60 * 1000;
+        const twentyFourHoursInMs = 24 * 60 * 60 * 1000;
+        
+        return timeRemaining >= fiveHoursInMs && timeRemaining <= twentyFourHoursInMs;
+    });
+
     // Filter contests where team hasn't already participated
     const participatingMembers = await prisma.contestParticipant.findMany({
-        where: { contestId: { in: contests.map(c => c.id) } },
+        where: { contestId: { in: contestsWithinTimeWindow.map(c => c.id) } },
         include: { member: { select: { teamId: true } } }
     })
 
@@ -415,40 +446,58 @@ const getAvailableTeamContests = async (teamId: string, page?: number, limit?: n
             .map(p => p.contestId)
     )
 
-    const availableContests = contests.filter(contest => !teamContestParticipations.has(contest.id))
+    const availableContests = contestsWithinTimeWindow.filter(contest => !teamContestParticipations.has(contest.id))
 
-    const total = await prisma.contest.count({
-        where: {
-            status: ContestStatus.ACTIVE,
-            mode: ContestMode.TEAM
-        }
-    });
+    // Apply pagination
+    const paginatedContests = availableContests.slice(
+        (paginationOptions.page - 1) * paginationOptions.limit,
+        paginationOptions.page * paginationOptions.limit
+    );
 
+    const total = availableContests.length;
     const meta = paginationHelper.getPaginationMetaData(paginationOptions.page, paginationOptions.limit, total);
 
-    const mappedContests = contests.map(contest => ({
-        id: contest.id,
-        title: contest.title,
-        description: contest.description,
-        banner: contest.banner,
-        startDate: contest.startDate,
-        endDate: contest.endDate,
-        maxUploads: contest.maxUploads,
-        totalParticipants: contest._count.participants,
-        participantDetails: contest.participants
-    }));
+    const mappedContests = paginatedContests.map(contest => {
+        const timeRemaining = contest.endDate.getTime() - now.getTime();
+        const hoursRemaining = Math.floor(timeRemaining / (60 * 60 * 1000));
+        
+        return {
+            id: contest.id,
+            title: contest.title,
+            description: contest.description,
+            banner: contest.banner,
+            startDate: contest.startDate,
+            endDate: contest.endDate,
+            maxUploads: contest.maxUploads,
+            hoursRemaining,
+            totalParticipants: contest._count.participants,
+            participantDetails: contest.participants
+        };
+    });
 
     return { data: mappedContests, meta }
 }
 
 /**
  * Start team match with automatic rival team finding
+ * Only LEADER and MODERATOR can start matches
  * Team admin selects a contest, system finds rival team with similar skill level and starts match
  * @param teamId - The team ID (team admin's team)
  * @param contestId - The selected contest ID
  * @returns Created team match with rival team details
  */
-const startTeamMatchWithAutoRival = async (teamId: string, contestId: string) => {
+const startTeamMatchWithAutoRival = async (teamId: string, contestId: string, userId?: string) => {
+    // Verify user has permission to start match (LEADER or MODERATOR only)
+    if (userId) {
+        const userTeamMember = await prisma.teamMember.findFirst({
+            where: { teamId, memberId: userId }
+        })
+
+        if (!userTeamMember || (userTeamMember.level !== MemberLevel.LEADER && userTeamMember.level !== MemberLevel.MODERATOR)) {
+            throw new ApiError(httpstatus.FORBIDDEN, "Only team leader or moderator can start matches")
+        }
+    }
+
     // Verify contest exists and is active
     const contest = await prisma.contest.findUnique({
         where: { id: contestId, status: ContestStatus.ACTIVE },
@@ -469,23 +518,23 @@ const startTeamMatchWithAutoRival = async (teamId: string, contestId: string) =>
         throw new ApiError(httpstatus.NOT_FOUND, "Your team not found")
     }
 
-    // Verify team has already registered for the contest
-    const teamMembers = await prisma.teamMember.findMany({
-        where: { teamId }
-    })
+    // // Verify team has already registered for the contest
+    // const teamMembers = await prisma.teamMember.findMany({
+    //     where: { teamId }
+    // })
 
-    const memberIds = teamMembers.map(m => m.id)
+    // const memberIds = teamMembers.map(m => m.id)
 
-    const teamParticipation = await prisma.contestParticipant.findFirst({
-        where: {
-            contestId,
-            memberId: { in: memberIds }
-        }
-    })
+    // const teamParticipation = await prisma.contestParticipant.findFirst({
+    //     where: {
+    //         contestId,
+    //         memberId: { in: memberIds }
+    //     }
+    // })
 
-    if (!teamParticipation) {
-        throw new ApiError(httpstatus.BAD_REQUEST, "Your team must register for this contest before starting a match")
-    }
+    // if (!teamParticipation) {
+    //     throw new ApiError(httpstatus.BAD_REQUEST, "Your team must register for this contest before starting a match")
+    // }
 
     // Check if team already has an active match in this contest
     const existingActiveMatch = await prisma.teamMatch.findFirst({
@@ -588,9 +637,20 @@ const startTeamMatchWithAutoRival = async (teamId: string, contestId: string) =>
 
 /**
  * Original startTeamMatch - kept for backward compatibility
- * Manually specify both teams for a match
+ * Only LEADER and MODERATOR can manually specify both teams for a match
  */
-const startTeamMatch = async (contestId:string, ownTeamId:string, otherTeamId:string) => {
+const startTeamMatch = async (contestId:string, ownTeamId:string, otherTeamId:string, userId?: string) => {
+    // Verify user has permission to start match (LEADER or MODERATOR only)
+    if (userId) {
+        const userTeamMember = await prisma.teamMember.findFirst({
+            where: { teamId: ownTeamId, memberId: userId }
+        })
+
+        if (!userTeamMember || (userTeamMember.level !== MemberLevel.LEADER && userTeamMember.level !== MemberLevel.MODERATOR)) {
+            throw new ApiError(httpstatus.FORBIDDEN, "Only team leader or moderator can start matches")
+        }
+    }
+
     const contest = await prisma.contest.findUnique({where:{id:contestId, status:ContestStatus.ACTIVE}})
 
     if(!contest){
@@ -615,8 +675,9 @@ const inviteUser = async (senderId:string, teamId:string, receiverId:string) => 
     }
 
     const teamMember = await isTeamMemberExist(senderId, team.id)
+    console.log(teamMember)
 
-    if(!teamMember || (teamMember.level !== MemberLevel.LEADER)){
+    if(!teamMember){
         throw new ApiError(httpstatus.BAD_REQUEST, "you are not allowed to invite any user")
     }
    
@@ -625,11 +686,12 @@ const inviteUser = async (senderId:string, teamId:string, receiverId:string) => 
     await notificationService.postNotification("Invitation Sent", "Your invitation sent successfully", senderId, NotificationType.DEFAULT)
     return teamInvitation
 }
-const joinByInvitation = async (invitationId:string) => {
-    const invitation = await prisma.teamInvitation.findUnique({where:{id:invitationId}})
+
+const joinByInvitation = async (receiverId:string,invitationId:string) => {
+    const invitation = await prisma.teamInvitation.findFirst({where:{id:invitationId, receiverId}})
 
     if(!invitation || (invitation.expiredAt < new Date())){
-        throw new ApiError(httpstatus.BAD_REQUEST, "invitation expired")
+        throw new ApiError(httpstatus.BAD_REQUEST, "invalid invitation or invitation expired")
     }
     try{
         const joinedTeam = await joinATeam(invitation.receiverId, invitation.teamId)
@@ -645,6 +707,13 @@ const joinByInvitation = async (invitationId:string) => {
 
 const leaveATeam = async (userId:string, teamId:string) => {
     const member = await prisma.teamMember.findFirst({where:{memberId:userId,teamId}})
+    if(member?.level === MemberLevel.LEADER){
+        const leaderCount = await prisma.teamMember.count({where:{teamId,level:MemberLevel.LEADER,NOT:{id:member.id}}})
+        if (leaderCount === 0){
+            await selectAndAssignNewLeader(teamId)
+        }
+    }
+
     if(!member){
         throw new ApiError(httpstatus.NOT_FOUND, "member not found")
     }
@@ -653,15 +722,140 @@ const leaveATeam = async (userId:string, teamId:string) => {
 
 }
 
+const selectAndAssignNewLeader = async (teamId:string) => {
+    const members = await prisma.teamMember.findFirst({where:{teamId, level:MemberLevel.MEMBER}, orderBy:{createdAt:"asc"}})
+    if(members){
+        await prisma.teamMember.update({where:{id:members.id}, data:{level:MemberLevel.LEADER}})
+    }
+
+}
+
 const removeFromTeam = async (userId:string,memberId:string, teamId:string) => {
 
     const teamMember = await isTeamMemberExist(userId, teamId)
 
-    if(!teamMember || (teamMember.level !== MemberLevel.LEADER)){
-        throw new ApiError(httpstatus.BAD_REQUEST, 'Sorry, You are not allowed to remove member')
+    if(!teamMember || teamMember.level !== MemberLevel.LEADER){
+        throw new ApiError(httpstatus.FORBIDDEN, 'Only team leader can remove members. Moderators can only start matches.')
     }
 
     return await prisma.teamMember.delete({where:{id:memberId}})
+}
+
+/**
+ * Assign a role to a team member
+ * Only LEADER can assign MODERATOR or LEADER roles
+ * @param userId - The user assigning the role (must be LEADER)
+ * @param memberId - The team member ID to assign role to
+ * @param teamId - The team ID
+ * @param newRole - The role to assign (MODERATOR or LEADER)
+ */
+const assignMemberRole = async (userId: string, memberId: string, teamId: string, newRole: MemberLevel) => {
+    // Verify requester is team leader
+    const requesterMember = await prisma.teamMember.findFirst({
+        where: { memberId: userId, teamId }
+    })
+
+    if (!requesterMember || requesterMember.level !== MemberLevel.LEADER) {
+        throw new ApiError(httpstatus.FORBIDDEN, "Only team leader can assign roles")
+    }
+
+    // Verify target member exists
+    const targetMember = await prisma.teamMember.findUnique({
+        where: { id: memberId }
+    })
+
+    if (!targetMember) {
+        throw new ApiError(httpstatus.NOT_FOUND, "Team member not found")
+    }
+
+    if (targetMember.teamId !== teamId) {
+        throw new ApiError(httpstatus.BAD_REQUEST, "Member does not belong to this team")
+    }
+
+    // Validate role assignment (can only assign MODERATOR or LEADER)
+    if (newRole !== MemberLevel.MODERATOR && newRole !== MemberLevel.LEADER) {
+        throw new ApiError(httpstatus.BAD_REQUEST, "Can only assign MODERATOR or LEADER roles")
+    }
+
+    // Update member role
+    const updatedMember = await prisma.teamMember.update({
+        where: { id: memberId },
+        data: { level: newRole },
+        include: { member: { select: { id: true, firstName: true, lastName: true, fullName: true } } }
+    })
+
+    // Send notification to the member
+    await notificationService.postNotification(
+        'Role Assigned',
+        `You have been promoted to ${newRole} in your team`,
+        targetMember.memberId,
+        NotificationType.DEFAULT
+    )
+
+    return updatedMember
+}
+
+/**
+ * Revoke a member's role and downgrade them to regular MEMBER
+ * Only LEADER can revoke roles
+ * @param userId - The user revoking the role (must be LEADER)
+ * @param memberId - The team member ID to revoke role from
+ * @param teamId - The team ID
+ */
+const revokeMemberRole = async (userId: string, memberId: string, teamId: string) => {
+    // Verify requester is team leader
+    const requesterMember = await prisma.teamMember.findFirst({
+        where: { memberId: userId, teamId }
+    })
+
+    if (!requesterMember || requesterMember.level !== MemberLevel.LEADER) {
+        throw new ApiError(httpstatus.FORBIDDEN, "Only team leader can revoke roles")
+    }
+
+    // Verify target member exists
+    const targetMember = await prisma.teamMember.findUnique({
+        where: { id: memberId }
+    })
+
+    if (!targetMember) {
+        throw new ApiError(httpstatus.NOT_FOUND, "Team member not found")
+    }
+
+    if (targetMember.teamId !== teamId) {
+        throw new ApiError(httpstatus.BAD_REQUEST, "Member does not belong to this team")
+    }
+
+    // Cannot revoke role from another leader
+    if (targetMember.level === MemberLevel.LEADER && targetMember.memberId !== userId) {
+        throw new ApiError(httpstatus.BAD_REQUEST, "Cannot revoke role from another leader")
+    }
+
+    // Cannot revoke your own leader role (team must have at least one leader)
+    if (targetMember.memberId === userId && targetMember.level === MemberLevel.LEADER) {
+        const otherLeaders = await prisma.teamMember.count({
+            where: { teamId, level: MemberLevel.LEADER, id: { not: memberId } }
+        })
+        if (otherLeaders === 0) {
+            throw new ApiError(httpstatus.BAD_REQUEST, "Team must have at least one leader. Assign another leader before revoking your role.")
+        }
+    }
+
+    // Update member role back to MEMBER
+    const updatedMember = await prisma.teamMember.update({
+        where: { id: memberId },
+        data: { level: MemberLevel.MEMBER },
+        include: { member: { select: { id: true, firstName: true, lastName: true, fullName: true } } }
+    })
+
+    // Send notification to the member
+    await notificationService.postNotification(
+        'Role Revoked',
+        `Your ${targetMember.level} role has been revoked in your team`,
+        targetMember.memberId,
+        NotificationType.DEFAULT
+    )
+
+    return updatedMember
 }
 
 const getMyTeamMatches = async (userId:string ) => {
@@ -849,7 +1043,7 @@ const approveJoinRequest = async (joinRequestId: string, userId: string) => {
     })
 
     if (!leader) {
-        throw new ApiError(httpstatus.FORBIDDEN, "Only team leader can approve join requests")
+        throw new ApiError(httpstatus.FORBIDDEN, "Only team leader can approve join requests. Moderators can only start matches.")
     }
 
     // Check team member slots
@@ -992,10 +1186,10 @@ const findRivalTeam = async (ownTeamId: string, contestId: string) => {
         where: {
             id: { not: ownTeamId },
             skill_level: ownTeam.skill_level,
-            participations: {
-                some: { contestId }
-            },
-            active_match_id: null, // No active match
+            // participations: {
+            //     some: { contestId }
+            // },
+            // active_match_id: null, // No active match
             MatchesAsTeam1: { none: { contestId } }, // No existing match in this contest
             MatchesAsTeam2: { none: { contestId } }
         },
@@ -1259,6 +1453,9 @@ export const teamService = {
     leaveATeam,
     removeFromTeam,
     getSuggestedTeams,
+    // Role management
+    assignMemberRole,
+    revokeMemberRole,
     // Join Request System
     sendJoinRequest,
     getJoinRequests,

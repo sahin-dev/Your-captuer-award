@@ -18,8 +18,23 @@ router.get("/my-team", auth(), teamController.getMyTeamDetails)
 router.get("/suggests", auth(), teamController.getSuggestedTeams)
 router.post("/join-by-invitation", auth(), teamController.joinByInvitation)
 router.post("/join/:teamId", auth(), teamController.joinTeam)
+
+// NEW: Role Management Routes
+/**
+ * POST /api/teams/:teamId/members/:memberId/assign-role
+ * Leader can assign MODERATOR or LEADER role to a member
+ * Body: { role: 'MODERATOR' | 'LEADER' }
+ */
+router.post('/:teamId/members/:memberId/assign-role', auth(), teamController.assignMemberRole)
+
+/**
+ * POST /api/teams/:teamId/members/:memberId/revoke-role
+ * Leader can revoke roles and downgrade member back to MEMBER level
+ */
+router.post('/:teamId/members/:memberId/revoke-role', auth(), teamController.revokeMemberRole)
+
 router.get('/', auth(),teamController.getTeams);
-router.get('/:teamId',auth(UserRole.ADMIN), teamController.getTeamDetails);
+router.get('/:teamId',auth(), teamController.getTeamDetails);
 
 router.get("/members/:teamId", auth(), teamController.getAllTeamMembers)
 router.put('/:teamId',auth(UserRole.ADMIN), validateRequest(updateTeamValidationSchema), teamController.updateTeam);

@@ -150,7 +150,8 @@ const inviteUser = catchAsync(async (req:Request, res:Response) => {
 
 const joinByInvitation = catchAsync(async (req:Request, res:Response) => {
     const {code} = req.body
-    const result =  await teamService.joinByInvitation(code)
+    const userId = req.user.id
+    const result =  await teamService.joinByInvitation(userId,code)
 
     sendResponse(res, {
         success:true,
@@ -186,6 +187,39 @@ const removeMemberFromTeam =  catchAsync(async (req:Request, res:Response) => {
         statusCode:httpstatus.OK,
         message:"member removed successfully",
         data:result
+    })
+})
+
+const assignMemberRole = catchAsync(async (req: Request, res: Response) => {
+    const { memberId, teamId } = req.params
+    const { role } = req.body
+    const userId = req.user.id
+
+    if (!role) {
+        throw new ApiError(httpstatus.BAD_REQUEST, 'Role is required (MODERATOR or LEADER)')
+    }
+
+    const result = await teamService.assignMemberRole(userId, memberId, teamId, role)
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpstatus.OK,
+        message: `Member promoted to ${role} successfully`,
+        data: result
+    })
+})
+
+const revokeMemberRole = catchAsync(async (req: Request, res: Response) => {
+    const { memberId, teamId } = req.params
+    const userId = req.user.id
+
+    const result = await teamService.revokeMemberRole(userId, memberId, teamId)
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpstatus.OK,
+        message: 'Member role revoked successfully',
+        data: result
     })
 })
 
@@ -362,18 +396,20 @@ const getAvailableTeamContests = catchAsync(async (req: Request, res: Response) 
 
 /**
  * Start team match with automatic rival finding
+ * Only LEADER and MODERATOR can start matches
  * Admin selects a contest, system automatically finds a rival team and starts the match
  * @body { contestId: string }
  */
 const startTeamMatchWithAutoRival = catchAsync(async (req: Request, res: Response) => {
     const { teamId } = req.params
     const { contestId } = req.body
+    const userId = req.user.id
 
     if (!contestId) {
         throw new ApiError(httpstatus.BAD_REQUEST, 'Contest ID is required')
     }
 
-    const match = await teamService.startTeamMatchWithAutoRival(teamId, contestId)
+    const match = await teamService.startTeamMatchWithAutoRival(teamId, contestId, userId)
 
     sendResponse(res, {
         success: true,
@@ -397,6 +433,9 @@ export const teamController = {
     leaveTeam,
     removeMemberFromTeam,
     getSuggestedTeams,
+    // NEW: Role Management
+    assignMemberRole,
+    revokeMemberRole,
     // NEW: Join Request System
     sendJoinRequest,
     getJoinRequests,
