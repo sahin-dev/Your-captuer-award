@@ -149,7 +149,7 @@ const getMyTeamDetails = async (userId:string)=>{
     if(!member){
         throw new ApiError(httpstatus.NOT_FOUND, "member does not found")
     }
-    const team = await prisma.team.findUnique({where:{id:member.teamId}})
+    const team = await prisma.team.findUnique({where:{id:member.teamId}, include:{creator:true}})
 
     if(!team){
         throw new ApiError(httpstatus.NOT_FOUND, "team not found")
