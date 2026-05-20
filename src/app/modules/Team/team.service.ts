@@ -257,12 +257,23 @@ const isTeamExist = async (teamId:string)=>{
 
 
 //Delete a team
-export const deleteTeam = async (teamId: string) => {
+export const deleteTeam = async (userId:string, teamId: string) => {
     const existingTeam = await prisma.team.findUnique({ where: { id: teamId } });
 
+   
     if (!existingTeam) {
         throw new ApiError(httpstatus.NOT_FOUND, 'Team not found');
     }
+
+    const member = await prisma.teamMember.findFirst({where:{teamId:teamId, memberId:userId}})
+    if(!member){
+        throw new ApiError(httpstatus.BAD_REQUEST, "you are not member of this team.")
+    }
+
+    if(!member || member.level !== MemberLevel.LEADER){
+        throw new ApiError(httpstatus.BAD_REQUEST, "You are not allowed to delete this team.")
+    }
+
 
     await prisma.team.delete({ where: { id: teamId } });
 

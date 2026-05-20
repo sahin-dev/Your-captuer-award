@@ -91,8 +91,9 @@ const updateTeam = catchAsync(async (req: Request, res: Response) => {
 
 const deleteTeam = catchAsync(async (req: Request, res: Response) => {
     const { teamId } = req.params;
-    console.log(teamId)
-    const result = await teamService.deleteTeam(teamId);
+    const userId = req.user.id
+
+    const result = await teamService.deleteTeam(userId, teamId);
 
     sendResponse(res, {
         success: true,
