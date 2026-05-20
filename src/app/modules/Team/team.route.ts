@@ -37,8 +37,8 @@ router.get('/', auth(),teamController.getTeams);
 router.get('/:teamId',auth(), teamController.getTeamDetails);
 
 router.get("/members/:teamId", auth(), teamController.getAllTeamMembers)
-router.put('/:teamId',auth(UserRole.ADMIN), validateRequest(updateTeamValidationSchema), teamController.updateTeam);
-router.delete('/:teamId', auth(UserRole.ADMIN),teamController.deleteTeam);
+router.put('/:teamId',auth(UserRole.USER), validateRequest(updateTeamValidationSchema), teamController.updateTeam);
+router.delete('/:teamId', auth(UserRole.USER),teamController.deleteTeam);
 
 // NEW: Join Request System Routes
 router.post('/request/send/:teamId', auth(), teamController.sendJoinRequest);
@@ -49,7 +49,7 @@ router.post('/request/reject/:joinRequestId', auth(), teamController.rejectJoinR
 // NEW: Leaderboard & Match History Routes
 router.get('/leaderboard/all', auth(), teamController.getTeamLeaderboard);
 router.get('/history/:teamId', auth(), teamController.getTeamHistory);
-router.post('/match/record-result', auth(UserRole.ADMIN), teamController.recordMatchResult);
+router.post('/match/record-result', auth(UserRole.USER), teamController.recordMatchResult);
 router.get('/active-match/:teamId', auth(), teamController.getActiveMatch);
 
 // NEW: Auto Match System Routes (Team Admin selects contest, system finds rival)
