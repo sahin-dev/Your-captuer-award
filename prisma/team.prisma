@@ -42,8 +42,8 @@ model TeamMatch {
   team1Id         String    @db.ObjectId
   team2Id         String    @db.ObjectId
   contest     Contest     @relation(references: [id], fields: [contestId])
-  team1    Team         @relation(name: "team1",references: [id], fields: [team1Id])
-  team2     Team        @relation(name: "team2",references: [id], fields: [team2Id])
+  team1    Team         @relation(name: "team1",references: [id], fields: [team1Id], onDelete:NoAction)
+  team2     Team        @relation(name: "team2",references: [id], fields: [team2Id], onDelete:NoAction)
   
   // NEW: Scoring and Result Fields
   team1_score   Int       @default(0)
@@ -68,7 +68,7 @@ model TeamMember {
 
   teamId   String @db.ObjectId
   memberId String @unique @db.ObjectId
-  team     Team   @relation(fields: [teamId], references: [id])
+  team     Team   @relation(fields: [teamId], references: [id], onDelete:Cascade)
   member   User   @relation(fields: [memberId], references: [id])
   contestParticipant   ContestParticipant[]
 
