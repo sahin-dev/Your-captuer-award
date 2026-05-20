@@ -721,8 +721,10 @@ const leaveATeam = async (userId:string, teamId:string, memberId?:string) => {
         throw new ApiError(httpstatus.NOT_FOUND, "member not found")
     }
 
-    await prisma.teamMember.delete({where:{id:member.id}})
-
+  prisma.$transaction([   
+    prisma.teamMember.delete({where:{id:member.id}}),
+    prisma.team.update({where:{id:teamId}, data:{member_count:{decrement:1}}})
+    ])
 }
 
 const selectAndAssignNewLeader = async (memberId:string) => {
@@ -1062,7 +1064,7 @@ const approveJoinRequest = async (joinRequestId: string, userId: string) => {
         data: {
             teamId: joinRequest.teamId,
             memberId: joinRequest.requesterId,
-            level: MemberLevel.NEW
+            level: MemberLevel.MEMBER
         }
     })
 
