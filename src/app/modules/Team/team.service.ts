@@ -705,13 +705,16 @@ const joinByInvitation = async (receiverId:string,invitationId:string) => {
 }
 
 
-const leaveATeam = async (userId:string, teamId:string) => {
+const leaveATeam = async (userId:string, teamId:string, memberId?:string) => {
     const member = await prisma.teamMember.findFirst({where:{memberId:userId,teamId}})
     if(member?.level === MemberLevel.LEADER){
-        const leaderCount = await prisma.teamMember.count({where:{teamId,level:MemberLevel.LEADER,NOT:{id:member.id}}})
-        if (leaderCount === 0){
-            await selectAndAssignNewLeader(teamId)
+        // const leaderCount = await prisma.teamMember.count({where:{teamId,level:MemberLevel.LEADER,NOT:{id:member.id}}})
+        if (!memberId){
+            throw new ApiError(httpstatus.BAD_REQUEST,"member id required for team leader")
         }
+    
+        await selectAndAssignNewLeader(memberId)
+        
     }
 
     if(!member){
@@ -722,12 +725,11 @@ const leaveATeam = async (userId:string, teamId:string) => {
 
 }
 
-const selectAndAssignNewLeader = async (teamId:string) => {
-    const members = await prisma.teamMember.findFirst({where:{teamId, level:MemberLevel.MEMBER}, orderBy:{createdAt:"asc"}})
+const selectAndAssignNewLeader = async (memberId:string) => {
+    const members = await prisma.teamMember.findFirst({where:{id:memberId}, orderBy:{createdAt:"asc"}})
     if(members){
         await prisma.teamMember.update({where:{id:members.id}, data:{level:MemberLevel.LEADER}})
     }
-
 }
 
 const removeFromTeam = async (userId:string,memberId:string, teamId:string) => {
