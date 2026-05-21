@@ -55,7 +55,7 @@ export const createTeam = async (creatorId: string, body: ITeam, file:Express.Mu
             language: body.language,
             country: body.country,
             description: body.description,
-            min_requirement,
+            min_requirement:`${min_requirement}`,
             min_requirement_str: level?.levelName ?? 'None',
             accessibility: body.accessibility as TeamAccessibility,
             badge: file.path,
@@ -90,6 +90,7 @@ export const updateTeam = async (teamId: string, body: Partial<ITeam>, file?:Exp
             country: body.country || existingTeam.country,
             description: body.description || existingTeam.description,
             accessibility: (body.accessibility || existingTeam.accessibility) as TeamAccessibility,
+            min_requirement: body.min_requirement || existingTeam.min_requirement,
             badge: badgeUrl,
         },
     });
@@ -238,14 +239,14 @@ const getSuggestedTeams = async (userId:string, page?: number, limit?: number) =
     });
 
     const teams = await prisma.team.findMany({
-        where:{OR:[{country}, {min_requirement:user.currentLevel}]},
+        where:{OR:[{country}, {min_requirement:`${user.currentLevel}`}]},
         skip: paginationOptions.skip,
         take: paginationOptions.limit,
         orderBy: { [paginationOptions.sortBy]: paginationOptions.sortOrder as any }
     })
 
     const total = await prisma.team.count({
-        where:{OR:[{country}, {min_requirement:user.currentLevel}]}
+        where:{OR:[{country}, {min_requirement:`${user.currentLevel}`}]}
     });
 
     const meta = paginationHelper.getPaginationMetaData(paginationOptions.page, paginationOptions.limit, total);
@@ -742,7 +743,7 @@ const leaveATeam = async (userId:string, teamId:string, memberId?:string) => {
 }
 
 const selectAndAssignNewLeader = async (memberId:string) => {
-    const member = await prisma.teamMember.findFirst({where:{id:memberId}, orderBy:{createdAt:"asc"}})
+    const member = await prisma.teamMember.findFirst({where:{memberId:memberId}, orderBy:{createdAt:"asc"}})
     if(!member){
        throw new ApiError(httpstatus.BAD_REQUEST, "member not found")
     }

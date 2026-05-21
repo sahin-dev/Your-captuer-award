@@ -14,7 +14,7 @@ model Team {
   lost          Int   @default(0)
   draw          Int   @default(0)
   badge         String     @default("https://www.freepik.com/free-photo/businesspeople-having-good-time-meeting_861800.htm#fromView=keyword&page=1&position=6&uuid=59ca936a-5c54-464c-a5ed-b579a1cd4afe&query=Team")   //Image file
-  min_requirement   Int @default(0) 
+  min_requirement   String?
   min_requirement_str  String @default("No minimum requirement")
   active_match_id   String?  @db.ObjectId
   leaderboard_rank  Int?

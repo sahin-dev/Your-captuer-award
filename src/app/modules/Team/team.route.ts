@@ -37,7 +37,7 @@ router.get('/', auth(),teamController.getTeams);
 router.get('/:teamId',auth(), teamController.getTeamDetails);
 
 router.get("/members/:teamId", auth(), teamController.getAllTeamMembers)
-router.put('/:teamId',auth(UserRole.USER), validateRequest(updateTeamValidationSchema), teamController.updateTeam);
+router.put('/:teamId',auth(),fileUploader.uploadBadge, validateRequest(updateTeamValidationSchema), teamController.updateTeam);
 router.delete('/:teamId', auth(UserRole.USER),teamController.deleteTeam);
 
 // NEW: Join Request System Routes

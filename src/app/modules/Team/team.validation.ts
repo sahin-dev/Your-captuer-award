@@ -29,6 +29,7 @@ export const updateTeamValidationSchema = z.object({
     language: z.string().optional(),
     country: z.string().optional(),
     description: z.string().optional(),
+    min_requirement: z.string({required_error:"min requirement is required"}).optional(),
     accessibility: z.nativeEnum(TeamAccessibility, {
         invalid_type_error: 'Accessibility must be PUBLIC or PRIVATE'
     }).optional(),

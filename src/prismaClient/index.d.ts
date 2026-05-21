@@ -23079,7 +23079,6 @@ export namespace Prisma {
     win: number | null
     lost: number | null
     draw: number | null
-    min_requirement: number | null
     leaderboard_rank: number | null
     total_matches: number | null
   }
@@ -23091,7 +23090,6 @@ export namespace Prisma {
     win: number | null
     lost: number | null
     draw: number | null
-    min_requirement: number | null
     leaderboard_rank: number | null
     total_matches: number | null
   }
@@ -23111,7 +23109,7 @@ export namespace Prisma {
     lost: number | null
     draw: number | null
     badge: string | null
-    min_requirement: number | null
+    min_requirement: string | null
     min_requirement_str: string | null
     active_match_id: string | null
     leaderboard_rank: number | null
@@ -23137,7 +23135,7 @@ export namespace Prisma {
     lost: number | null
     draw: number | null
     badge: string | null
-    min_requirement: number | null
+    min_requirement: string | null
     min_requirement_str: string | null
     active_match_id: string | null
     leaderboard_rank: number | null
@@ -23183,7 +23181,6 @@ export namespace Prisma {
     win?: true
     lost?: true
     draw?: true
-    min_requirement?: true
     leaderboard_rank?: true
     total_matches?: true
   }
@@ -23195,7 +23192,6 @@ export namespace Prisma {
     win?: true
     lost?: true
     draw?: true
-    min_requirement?: true
     leaderboard_rank?: true
     total_matches?: true
   }
@@ -23380,7 +23376,7 @@ export namespace Prisma {
     lost: number
     draw: number
     badge: string
-    min_requirement: number
+    min_requirement: string | null
     min_requirement_str: string
     active_match_id: string | null
     leaderboard_rank: number | null
@@ -23513,7 +23509,7 @@ export namespace Prisma {
       lost: number
       draw: number
       badge: string
-      min_requirement: number
+      min_requirement: string | null
       min_requirement_str: string
       active_match_id: string | null
       leaderboard_rank: number | null
@@ -23936,7 +23932,7 @@ export namespace Prisma {
     readonly lost: FieldRef<"Team", 'Int'>
     readonly draw: FieldRef<"Team", 'Int'>
     readonly badge: FieldRef<"Team", 'String'>
-    readonly min_requirement: FieldRef<"Team", 'Int'>
+    readonly min_requirement: FieldRef<"Team", 'String'>
     readonly min_requirement_str: FieldRef<"Team", 'String'>
     readonly active_match_id: FieldRef<"Team", 'String'>
     readonly leaderboard_rank: FieldRef<"Team", 'Int'>
@@ -44099,7 +44095,7 @@ export namespace Prisma {
     lost?: IntFilter<"Team"> | number
     draw?: IntFilter<"Team"> | number
     badge?: StringFilter<"Team"> | string
-    min_requirement?: IntFilter<"Team"> | number
+    min_requirement?: StringNullableFilter<"Team"> | string | null
     min_requirement_str?: StringFilter<"Team"> | string
     active_match_id?: StringNullableFilter<"Team"> | string | null
     leaderboard_rank?: IntNullableFilter<"Team"> | number | null
@@ -44170,7 +44166,7 @@ export namespace Prisma {
     lost?: IntFilter<"Team"> | number
     draw?: IntFilter<"Team"> | number
     badge?: StringFilter<"Team"> | string
-    min_requirement?: IntFilter<"Team"> | number
+    min_requirement?: StringNullableFilter<"Team"> | string | null
     min_requirement_str?: StringFilter<"Team"> | string
     active_match_id?: StringNullableFilter<"Team"> | string | null
     leaderboard_rank?: IntNullableFilter<"Team"> | number | null
@@ -44238,7 +44234,7 @@ export namespace Prisma {
     lost?: IntWithAggregatesFilter<"Team"> | number
     draw?: IntWithAggregatesFilter<"Team"> | number
     badge?: StringWithAggregatesFilter<"Team"> | string
-    min_requirement?: IntWithAggregatesFilter<"Team"> | number
+    min_requirement?: StringNullableWithAggregatesFilter<"Team"> | string | null
     min_requirement_str?: StringWithAggregatesFilter<"Team"> | string
     active_match_id?: StringNullableWithAggregatesFilter<"Team"> | string | null
     leaderboard_rank?: IntNullableWithAggregatesFilter<"Team"> | number | null
@@ -47007,7 +47003,7 @@ export namespace Prisma {
     lost?: number
     draw?: number
     badge?: string
-    min_requirement?: number
+    min_requirement?: string | null
     min_requirement_str?: string
     active_match_id?: string | null
     leaderboard_rank?: number | null
@@ -47040,7 +47036,7 @@ export namespace Prisma {
     lost?: number
     draw?: number
     badge?: string
-    min_requirement?: number
+    min_requirement?: string | null
     min_requirement_str?: string
     active_match_id?: string | null
     leaderboard_rank?: number | null
@@ -47072,7 +47068,7 @@ export namespace Prisma {
     lost?: IntFieldUpdateOperationsInput | number
     draw?: IntFieldUpdateOperationsInput | number
     badge?: StringFieldUpdateOperationsInput | string
-    min_requirement?: IntFieldUpdateOperationsInput | number
+    min_requirement?: NullableStringFieldUpdateOperationsInput | string | null
     min_requirement_str?: StringFieldUpdateOperationsInput | string
     active_match_id?: NullableStringFieldUpdateOperationsInput | string | null
     leaderboard_rank?: NullableIntFieldUpdateOperationsInput | number | null
@@ -47104,7 +47100,7 @@ export namespace Prisma {
     lost?: IntFieldUpdateOperationsInput | number
     draw?: IntFieldUpdateOperationsInput | number
     badge?: StringFieldUpdateOperationsInput | string
-    min_requirement?: IntFieldUpdateOperationsInput | number
+    min_requirement?: NullableStringFieldUpdateOperationsInput | string | null
     min_requirement_str?: StringFieldUpdateOperationsInput | string
     active_match_id?: NullableStringFieldUpdateOperationsInput | string | null
     leaderboard_rank?: NullableIntFieldUpdateOperationsInput | number | null
@@ -47137,7 +47133,7 @@ export namespace Prisma {
     lost?: number
     draw?: number
     badge?: string
-    min_requirement?: number
+    min_requirement?: string | null
     min_requirement_str?: string
     active_match_id?: string | null
     leaderboard_rank?: number | null
@@ -47162,7 +47158,7 @@ export namespace Prisma {
     lost?: IntFieldUpdateOperationsInput | number
     draw?: IntFieldUpdateOperationsInput | number
     badge?: StringFieldUpdateOperationsInput | string
-    min_requirement?: IntFieldUpdateOperationsInput | number
+    min_requirement?: NullableStringFieldUpdateOperationsInput | string | null
     min_requirement_str?: StringFieldUpdateOperationsInput | string
     active_match_id?: NullableStringFieldUpdateOperationsInput | string | null
     leaderboard_rank?: NullableIntFieldUpdateOperationsInput | number | null
@@ -47186,7 +47182,7 @@ export namespace Prisma {
     lost?: IntFieldUpdateOperationsInput | number
     draw?: IntFieldUpdateOperationsInput | number
     badge?: StringFieldUpdateOperationsInput | string
-    min_requirement?: IntFieldUpdateOperationsInput | number
+    min_requirement?: NullableStringFieldUpdateOperationsInput | string | null
     min_requirement_str?: StringFieldUpdateOperationsInput | string
     active_match_id?: NullableStringFieldUpdateOperationsInput | string | null
     leaderboard_rank?: NullableIntFieldUpdateOperationsInput | number | null
@@ -50023,7 +50019,6 @@ export namespace Prisma {
     win?: SortOrder
     lost?: SortOrder
     draw?: SortOrder
-    min_requirement?: SortOrder
     leaderboard_rank?: SortOrder
     total_matches?: SortOrder
   }
@@ -50087,7 +50082,6 @@ export namespace Prisma {
     win?: SortOrder
     lost?: SortOrder
     draw?: SortOrder
-    min_requirement?: SortOrder
     leaderboard_rank?: SortOrder
     total_matches?: SortOrder
   }
@@ -57051,7 +57045,7 @@ export namespace Prisma {
     lost?: number
     draw?: number
     badge?: string
-    min_requirement?: number
+    min_requirement?: string | null
     min_requirement_str?: string
     active_match_id?: string | null
     leaderboard_rank?: number | null
@@ -57083,7 +57077,7 @@ export namespace Prisma {
     lost?: number
     draw?: number
     badge?: string
-    min_requirement?: number
+    min_requirement?: string | null
     min_requirement_str?: string
     active_match_id?: string | null
     leaderboard_rank?: number | null
@@ -57221,7 +57215,7 @@ export namespace Prisma {
     lost?: IntFieldUpdateOperationsInput | number
     draw?: IntFieldUpdateOperationsInput | number
     badge?: StringFieldUpdateOperationsInput | string
-    min_requirement?: IntFieldUpdateOperationsInput | number
+    min_requirement?: NullableStringFieldUpdateOperationsInput | string | null
     min_requirement_str?: StringFieldUpdateOperationsInput | string
     active_match_id?: NullableStringFieldUpdateOperationsInput | string | null
     leaderboard_rank?: NullableIntFieldUpdateOperationsInput | number | null
@@ -57252,7 +57246,7 @@ export namespace Prisma {
     lost?: IntFieldUpdateOperationsInput | number
     draw?: IntFieldUpdateOperationsInput | number
     badge?: StringFieldUpdateOperationsInput | string
-    min_requirement?: IntFieldUpdateOperationsInput | number
+    min_requirement?: NullableStringFieldUpdateOperationsInput | string | null
     min_requirement_str?: StringFieldUpdateOperationsInput | string
     active_match_id?: NullableStringFieldUpdateOperationsInput | string | null
     leaderboard_rank?: NullableIntFieldUpdateOperationsInput | number | null
@@ -58003,7 +57997,7 @@ export namespace Prisma {
     lost?: number
     draw?: number
     badge?: string
-    min_requirement?: number
+    min_requirement?: string | null
     min_requirement_str?: string
     active_match_id?: string | null
     leaderboard_rank?: number | null
@@ -58035,7 +58029,7 @@ export namespace Prisma {
     lost?: number
     draw?: number
     badge?: string
-    min_requirement?: number
+    min_requirement?: string | null
     min_requirement_str?: string
     active_match_id?: string | null
     leaderboard_rank?: number | null
@@ -58072,7 +58066,7 @@ export namespace Prisma {
     lost?: number
     draw?: number
     badge?: string
-    min_requirement?: number
+    min_requirement?: string | null
     min_requirement_str?: string
     active_match_id?: string | null
     leaderboard_rank?: number | null
@@ -58104,7 +58098,7 @@ export namespace Prisma {
     lost?: number
     draw?: number
     badge?: string
-    min_requirement?: number
+    min_requirement?: string | null
     min_requirement_str?: string
     active_match_id?: string | null
     leaderboard_rank?: number | null
@@ -58216,7 +58210,7 @@ export namespace Prisma {
     lost?: IntFieldUpdateOperationsInput | number
     draw?: IntFieldUpdateOperationsInput | number
     badge?: StringFieldUpdateOperationsInput | string
-    min_requirement?: IntFieldUpdateOperationsInput | number
+    min_requirement?: NullableStringFieldUpdateOperationsInput | string | null
     min_requirement_str?: StringFieldUpdateOperationsInput | string
     active_match_id?: NullableStringFieldUpdateOperationsInput | string | null
     leaderboard_rank?: NullableIntFieldUpdateOperationsInput | number | null
@@ -58247,7 +58241,7 @@ export namespace Prisma {
     lost?: IntFieldUpdateOperationsInput | number
     draw?: IntFieldUpdateOperationsInput | number
     badge?: StringFieldUpdateOperationsInput | string
-    min_requirement?: IntFieldUpdateOperationsInput | number
+    min_requirement?: NullableStringFieldUpdateOperationsInput | string | null
     min_requirement_str?: StringFieldUpdateOperationsInput | string
     active_match_id?: NullableStringFieldUpdateOperationsInput | string | null
     leaderboard_rank?: NullableIntFieldUpdateOperationsInput | number | null
@@ -58289,7 +58283,7 @@ export namespace Prisma {
     lost?: IntFieldUpdateOperationsInput | number
     draw?: IntFieldUpdateOperationsInput | number
     badge?: StringFieldUpdateOperationsInput | string
-    min_requirement?: IntFieldUpdateOperationsInput | number
+    min_requirement?: NullableStringFieldUpdateOperationsInput | string | null
     min_requirement_str?: StringFieldUpdateOperationsInput | string
     active_match_id?: NullableStringFieldUpdateOperationsInput | string | null
     leaderboard_rank?: NullableIntFieldUpdateOperationsInput | number | null
@@ -58320,7 +58314,7 @@ export namespace Prisma {
     lost?: IntFieldUpdateOperationsInput | number
     draw?: IntFieldUpdateOperationsInput | number
     badge?: StringFieldUpdateOperationsInput | string
-    min_requirement?: IntFieldUpdateOperationsInput | number
+    min_requirement?: NullableStringFieldUpdateOperationsInput | string | null
     min_requirement_str?: StringFieldUpdateOperationsInput | string
     active_match_id?: NullableStringFieldUpdateOperationsInput | string | null
     leaderboard_rank?: NullableIntFieldUpdateOperationsInput | number | null
@@ -58352,7 +58346,7 @@ export namespace Prisma {
     lost?: number
     draw?: number
     badge?: string
-    min_requirement?: number
+    min_requirement?: string | null
     min_requirement_str?: string
     active_match_id?: string | null
     leaderboard_rank?: number | null
@@ -58384,7 +58378,7 @@ export namespace Prisma {
     lost?: number
     draw?: number
     badge?: string
-    min_requirement?: number
+    min_requirement?: string | null
     min_requirement_str?: string
     active_match_id?: string | null
     leaderboard_rank?: number | null
@@ -58561,7 +58555,7 @@ export namespace Prisma {
     lost?: IntFieldUpdateOperationsInput | number
     draw?: IntFieldUpdateOperationsInput | number
     badge?: StringFieldUpdateOperationsInput | string
-    min_requirement?: IntFieldUpdateOperationsInput | number
+    min_requirement?: NullableStringFieldUpdateOperationsInput | string | null
     min_requirement_str?: StringFieldUpdateOperationsInput | string
     active_match_id?: NullableStringFieldUpdateOperationsInput | string | null
     leaderboard_rank?: NullableIntFieldUpdateOperationsInput | number | null
@@ -58592,7 +58586,7 @@ export namespace Prisma {
     lost?: IntFieldUpdateOperationsInput | number
     draw?: IntFieldUpdateOperationsInput | number
     badge?: StringFieldUpdateOperationsInput | string
-    min_requirement?: IntFieldUpdateOperationsInput | number
+    min_requirement?: NullableStringFieldUpdateOperationsInput | string | null
     min_requirement_str?: StringFieldUpdateOperationsInput | string
     active_match_id?: NullableStringFieldUpdateOperationsInput | string | null
     leaderboard_rank?: NullableIntFieldUpdateOperationsInput | number | null
@@ -58735,7 +58729,7 @@ export namespace Prisma {
     lost?: number
     draw?: number
     badge?: string
-    min_requirement?: number
+    min_requirement?: string | null
     min_requirement_str?: string
     active_match_id?: string | null
     leaderboard_rank?: number | null
@@ -58767,7 +58761,7 @@ export namespace Prisma {
     lost?: number
     draw?: number
     badge?: string
-    min_requirement?: number
+    min_requirement?: string | null
     min_requirement_str?: string
     active_match_id?: string | null
     leaderboard_rank?: number | null
@@ -58875,7 +58869,7 @@ export namespace Prisma {
     lost?: IntFieldUpdateOperationsInput | number
     draw?: IntFieldUpdateOperationsInput | number
     badge?: StringFieldUpdateOperationsInput | string
-    min_requirement?: IntFieldUpdateOperationsInput | number
+    min_requirement?: NullableStringFieldUpdateOperationsInput | string | null
     min_requirement_str?: StringFieldUpdateOperationsInput | string
     active_match_id?: NullableStringFieldUpdateOperationsInput | string | null
     leaderboard_rank?: NullableIntFieldUpdateOperationsInput | number | null
@@ -58906,7 +58900,7 @@ export namespace Prisma {
     lost?: IntFieldUpdateOperationsInput | number
     draw?: IntFieldUpdateOperationsInput | number
     badge?: StringFieldUpdateOperationsInput | string
-    min_requirement?: IntFieldUpdateOperationsInput | number
+    min_requirement?: NullableStringFieldUpdateOperationsInput | string | null
     min_requirement_str?: StringFieldUpdateOperationsInput | string
     active_match_id?: NullableStringFieldUpdateOperationsInput | string | null
     leaderboard_rank?: NullableIntFieldUpdateOperationsInput | number | null
@@ -59003,7 +58997,7 @@ export namespace Prisma {
     lost?: number
     draw?: number
     badge?: string
-    min_requirement?: number
+    min_requirement?: string | null
     min_requirement_str?: string
     active_match_id?: string | null
     leaderboard_rank?: number | null
@@ -59035,7 +59029,7 @@ export namespace Prisma {
     lost?: number
     draw?: number
     badge?: string
-    min_requirement?: number
+    min_requirement?: string | null
     min_requirement_str?: string
     active_match_id?: string | null
     leaderboard_rank?: number | null
@@ -59173,7 +59167,7 @@ export namespace Prisma {
     lost?: IntFieldUpdateOperationsInput | number
     draw?: IntFieldUpdateOperationsInput | number
     badge?: StringFieldUpdateOperationsInput | string
-    min_requirement?: IntFieldUpdateOperationsInput | number
+    min_requirement?: NullableStringFieldUpdateOperationsInput | string | null
     min_requirement_str?: StringFieldUpdateOperationsInput | string
     active_match_id?: NullableStringFieldUpdateOperationsInput | string | null
     leaderboard_rank?: NullableIntFieldUpdateOperationsInput | number | null
@@ -59204,7 +59198,7 @@ export namespace Prisma {
     lost?: IntFieldUpdateOperationsInput | number
     draw?: IntFieldUpdateOperationsInput | number
     badge?: StringFieldUpdateOperationsInput | string
-    min_requirement?: IntFieldUpdateOperationsInput | number
+    min_requirement?: NullableStringFieldUpdateOperationsInput | string | null
     min_requirement_str?: StringFieldUpdateOperationsInput | string
     active_match_id?: NullableStringFieldUpdateOperationsInput | string | null
     leaderboard_rank?: NullableIntFieldUpdateOperationsInput | number | null
@@ -59331,7 +59325,7 @@ export namespace Prisma {
     lost?: number
     draw?: number
     badge?: string
-    min_requirement?: number
+    min_requirement?: string | null
     min_requirement_str?: string
     active_match_id?: string | null
     leaderboard_rank?: number | null
@@ -59363,7 +59357,7 @@ export namespace Prisma {
     lost?: number
     draw?: number
     badge?: string
-    min_requirement?: number
+    min_requirement?: string | null
     min_requirement_str?: string
     active_match_id?: string | null
     leaderboard_rank?: number | null
@@ -59410,7 +59404,7 @@ export namespace Prisma {
     lost?: IntFieldUpdateOperationsInput | number
     draw?: IntFieldUpdateOperationsInput | number
     badge?: StringFieldUpdateOperationsInput | string
-    min_requirement?: IntFieldUpdateOperationsInput | number
+    min_requirement?: NullableStringFieldUpdateOperationsInput | string | null
     min_requirement_str?: StringFieldUpdateOperationsInput | string
     active_match_id?: NullableStringFieldUpdateOperationsInput | string | null
     leaderboard_rank?: NullableIntFieldUpdateOperationsInput | number | null
@@ -59441,7 +59435,7 @@ export namespace Prisma {
     lost?: IntFieldUpdateOperationsInput | number
     draw?: IntFieldUpdateOperationsInput | number
     badge?: StringFieldUpdateOperationsInput | string
-    min_requirement?: IntFieldUpdateOperationsInput | number
+    min_requirement?: NullableStringFieldUpdateOperationsInput | string | null
     min_requirement_str?: StringFieldUpdateOperationsInput | string
     active_match_id?: NullableStringFieldUpdateOperationsInput | string | null
     leaderboard_rank?: NullableIntFieldUpdateOperationsInput | number | null
@@ -59536,7 +59530,7 @@ export namespace Prisma {
     lost?: number
     draw?: number
     badge?: string
-    min_requirement?: number
+    min_requirement?: string | null
     min_requirement_str?: string
     active_match_id?: string | null
     leaderboard_rank?: number | null
@@ -59568,7 +59562,7 @@ export namespace Prisma {
     lost?: number
     draw?: number
     badge?: string
-    min_requirement?: number
+    min_requirement?: string | null
     min_requirement_str?: string
     active_match_id?: string | null
     leaderboard_rank?: number | null
@@ -60130,7 +60124,7 @@ export namespace Prisma {
     lost?: IntFilter<"Team"> | number
     draw?: IntFilter<"Team"> | number
     badge?: StringFilter<"Team"> | string
-    min_requirement?: IntFilter<"Team"> | number
+    min_requirement?: StringNullableFilter<"Team"> | string | null
     min_requirement_str?: StringFilter<"Team"> | string
     active_match_id?: StringNullableFilter<"Team"> | string | null
     leaderboard_rank?: IntNullableFilter<"Team"> | number | null
@@ -63680,7 +63674,7 @@ export namespace Prisma {
     lost?: number
     draw?: number
     badge?: string
-    min_requirement?: number
+    min_requirement?: string | null
     min_requirement_str?: string
     active_match_id?: string | null
     leaderboard_rank?: number | null
@@ -63838,7 +63832,7 @@ export namespace Prisma {
     lost?: IntFieldUpdateOperationsInput | number
     draw?: IntFieldUpdateOperationsInput | number
     badge?: StringFieldUpdateOperationsInput | string
-    min_requirement?: IntFieldUpdateOperationsInput | number
+    min_requirement?: NullableStringFieldUpdateOperationsInput | string | null
     min_requirement_str?: StringFieldUpdateOperationsInput | string
     active_match_id?: NullableStringFieldUpdateOperationsInput | string | null
     leaderboard_rank?: NullableIntFieldUpdateOperationsInput | number | null
@@ -63869,7 +63863,7 @@ export namespace Prisma {
     lost?: IntFieldUpdateOperationsInput | number
     draw?: IntFieldUpdateOperationsInput | number
     badge?: StringFieldUpdateOperationsInput | string
-    min_requirement?: IntFieldUpdateOperationsInput | number
+    min_requirement?: NullableStringFieldUpdateOperationsInput | string | null
     min_requirement_str?: StringFieldUpdateOperationsInput | string
     active_match_id?: NullableStringFieldUpdateOperationsInput | string | null
     leaderboard_rank?: NullableIntFieldUpdateOperationsInput | number | null
@@ -63900,7 +63894,7 @@ export namespace Prisma {
     lost?: IntFieldUpdateOperationsInput | number
     draw?: IntFieldUpdateOperationsInput | number
     badge?: StringFieldUpdateOperationsInput | string
-    min_requirement?: IntFieldUpdateOperationsInput | number
+    min_requirement?: NullableStringFieldUpdateOperationsInput | string | null
     min_requirement_str?: StringFieldUpdateOperationsInput | string
     active_match_id?: NullableStringFieldUpdateOperationsInput | string | null
     leaderboard_rank?: NullableIntFieldUpdateOperationsInput | number | null
