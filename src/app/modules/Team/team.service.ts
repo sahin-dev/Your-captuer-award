@@ -739,10 +739,12 @@ const leaveATeam = async (userId:string, teamId:string, memberId?:string) => {
 }
 
 const selectAndAssignNewLeader = async (memberId:string) => {
-    const members = await prisma.teamMember.findFirst({where:{id:memberId}, orderBy:{createdAt:"asc"}})
-    if(members){
-        await prisma.teamMember.update({where:{id:members.id}, data:{level:MemberLevel.LEADER}})
+    const member = await prisma.teamMember.findFirst({where:{id:memberId}, orderBy:{createdAt:"asc"}})
+    if(!member){
+       throw new ApiError(httpstatus.BAD_REQUEST, "member not found")
     }
+     await prisma.teamMember.update({where:{id:member.id}, data:{level:MemberLevel.LEADER}})
+
 }
 
 const removeFromTeam = async (userId:string,memberId:string, teamId:string) => {
