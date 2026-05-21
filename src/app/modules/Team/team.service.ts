@@ -99,7 +99,7 @@ export const updateTeam = async (teamId: string, body: Partial<ITeam>, file?:Exp
 
 //Get all the teams
 
-export const getTeams = async (page?: number, limit?: number) => {
+export const getTeams = async (s?:string, page?: number, limit?: number) => {
     const paginationOptions = paginationHelper.calculatePagination({
         page: page || 1,
         limit: limit || 10,
@@ -108,13 +108,16 @@ export const getTeams = async (page?: number, limit?: number) => {
     });
 
     const teams = await prisma.team.findMany({
+        where:{name:{contains:s, mode:"insensitive"}},
         skip: paginationOptions.skip,
         take: paginationOptions.limit,
         include: { creator: true, members: { include: { member: true } } },
         orderBy: { [paginationOptions.sortBy]: paginationOptions.sortOrder as any }
     });
 
-    const total = await prisma.team.count();
+    const total = await prisma.team.count({
+        where:{name:{contains:s, mode:"insensitive"}}
+    });
     const meta = paginationHelper.getPaginationMetaData(paginationOptions.page, paginationOptions.limit, total);
 
     return { data: teams, meta };
@@ -134,7 +137,7 @@ const getTeam = async (teamId:string)=>{
 export const getTeamDetails = async (teamId: string) => {
     const team = await prisma.team.findUnique({
         where: { id: teamId },
-        include: { creator: {select:{id:true, avatar:true, fullName:true, firstName:true, lastName:true}} },
+        include: { creator: {select:{id:true, avatar:true, fullName:true, firstName:true, lastName:true}}, members:true },
     });
 
     if (!team) {
@@ -411,8 +414,8 @@ const getAvailableTeamContests = async (teamId: string, page?: number, limit?: n
     // Get all active TEAM mode contests
     const allContests = await prisma.contest.findMany({
         where: {
-            status: ContestStatus.ACTIVE,
-            mode: ContestMode.TEAM
+            status: ContestStatus.ACTIVE
+            // mode: ContestMode.TEAM
         },
         select: {
             id: true,
@@ -427,7 +430,7 @@ const getAvailableTeamContests = async (teamId: string, page?: number, limit?: n
                 where: { status: 'ACTIVE' },
                 select: { userId: true }
             },
-            _count: { select: { participants: true } }
+            _count: { select: { participants: {where:{user:{joinedTeam:{id:teamId}}}} } }
         },
         orderBy: { [paginationOptions.sortBy]: paginationOptions.sortOrder as any }
     })
