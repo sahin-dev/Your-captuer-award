@@ -28,14 +28,14 @@ export const createTeam = async (creatorId: string, body: ITeam, file:Express.Mu
     }
 
     // Check if user has an active subscription plan
-    const hasActiveSubscription = user.subscriptions && user.subscriptions.some(sub => {
-        const now = new Date();
-        return sub.status === 'VALID' && sub.endDate && sub.endDate > now;
-    });
+    // const hasActiveSubscription = user.subscriptions && user.subscriptions.some(sub => {
+    //     const now = new Date();
+    //     return sub.status === 'VALID' && sub.endDate && sub.endDate > now;
+    // });
 
-    if (!hasActiveSubscription) {
-        throw new ApiError(httpstatus.FORBIDDEN, "Only subscribed users can create a team. Please subscribe first.")
-    }
+    // if (!hasActiveSubscription) {
+    //     throw new ApiError(httpstatus.FORBIDDEN, "Only subscribed users can create a team. Please subscribe first.")
+    // }
 
     if (await hasTeam(creatorId)) {
         throw new ApiError(httpstatus.BAD_REQUEST, "You are already joined a team!")
@@ -264,7 +264,7 @@ const isTeamExist = async (teamId:string)=>{
 export const deleteTeam = async (userId:string, teamId: string) => {
     const existingTeam = await prisma.team.findUnique({ where: { id: teamId } });
 
-   
+
     if (!existingTeam) {
         throw new ApiError(httpstatus.NOT_FOUND, 'Team not found');
     }
@@ -301,7 +301,7 @@ const joinATeam = async (userId:string, teamId:string)=>{
         throw new ApiError(httpstatus.BAD_REQUEST, "You are already joined a team!")
     }
 
-    if(team.accessibility === TeamAccessibility.PRIVATE){   
+    if(team.accessibility === TeamAccessibility.PRIVATE){
         throw new ApiError(httpstatus.BAD_REQUEST, "Sorry, you can not join this team without invitation")
     }
 
@@ -379,7 +379,7 @@ const getAllTeamMember = async (teamId:string, page?: number, limit?: number)=>{
     });
 
     const members = await prisma.teamMember.findMany({
-        where:{teamId}, 
+        where:{teamId},
         skip: paginationOptions.skip,
         take: paginationOptions.limit,
         include:{member:{select:{id:true, avatar:true, firstName:true, lastName:true, fullName:true}}},
@@ -445,7 +445,7 @@ const getAvailableTeamContests = async (teamId: string, page?: number, limit?: n
         const timeRemaining = contest.endDate.getTime() - now.getTime();
         const fiveHoursInMs = 5 * 60 * 60 * 1000;
         const twentyFourHoursInMs = 24 * 60 * 60 * 1000;
-        
+
         return timeRemaining >= fiveHoursInMs && timeRemaining <= twentyFourHoursInMs;
     });
 
@@ -475,7 +475,7 @@ const getAvailableTeamContests = async (teamId: string, page?: number, limit?: n
     const mappedContests = paginatedContests.map(contest => {
         const timeRemaining = contest.endDate.getTime() - now.getTime();
         const hoursRemaining = Math.floor(timeRemaining / (60 * 60 * 1000));
-        
+
         return {
             id: contest.id,
             title: contest.title,
@@ -695,7 +695,7 @@ const inviteUser = async (senderId:string, teamId:string, receiverId:string) => 
     if(!teamMember){
         throw new ApiError(httpstatus.BAD_REQUEST, "you are not allowed to invite any user")
     }
-   
+
     const teamInvitation = await prisma.teamInvitation.create({data:{teamId,senderId,receiverId,expiredAt: new Date(Date.now() + 30*60*1000)}})
     await notificationService.postNotificationWithPayload("Team Invitation",`You recieve an invitatino to join ${team.name} team`,receiverId,{code:teamInvitation.id}, NotificationType.INVITATION)
     await notificationService.postNotification("Invitation Sent", "Your invitation sent successfully", senderId, NotificationType.DEFAULT)
@@ -716,7 +716,7 @@ const joinByInvitation = async (receiverId:string,invitationId:string) => {
         console.log(err)
         throw new ApiError(httpstatus.BAD_REQUEST, err.message)
     }
-    
+
 }
 
 
@@ -727,16 +727,16 @@ const leaveATeam = async (userId:string, teamId:string, memberId?:string) => {
         if (!memberId){
             throw new ApiError(httpstatus.BAD_REQUEST,"member id required for team leader")
         }
-    
+
         await selectAndAssignNewLeader(memberId)
-        
+
     }
 
     if(!member){
         throw new ApiError(httpstatus.NOT_FOUND, "member not found")
     }
 
-  prisma.$transaction([   
+  prisma.$transaction([
     prisma.teamMember.delete({where:{id:member.id}}),
     prisma.team.update({where:{id:teamId}, data:{member_count:{decrement:1}}})
     ])
@@ -881,7 +881,7 @@ const revokeMemberRole = async (userId: string, memberId: string, teamId: string
 
 const getMyTeamMatches = async (userId:string ) => {
     const teamMember = await prisma.teamMember.findFirst({where:{memberId:userId}})
-    
+
     if(!teamMember){
         throw new ApiError(httpstatus.NOT_FOUND, "team not found")
     }
@@ -909,7 +909,7 @@ const getMembers = async (teamId:string, contestId?:string) => {
              return {...member, totalVote:memberTotalVotes}
         })
     }
-   
+
     return await Promise.all(mappedMember)
 
 }
