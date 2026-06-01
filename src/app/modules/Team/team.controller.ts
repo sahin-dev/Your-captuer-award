@@ -400,18 +400,25 @@ const getAvailableTeamContests = catchAsync(async (req: Request, res: Response) 
  * Start team match with automatic rival finding
  * Only LEADER and MODERATOR can start matches
  * Admin selects a contest, system automatically finds a rival team and starts the match
+ * Requires minimum 1 photo and maximum based on contest's maxUploads
  * @body { contestId: string }
+ * @files photo files required (minimum 1, maximum = contest.maxUploads)
  */
 const startTeamMatchWithAutoRival = catchAsync(async (req: Request, res: Response) => {
     const { teamId } = req.params
     const { contestId } = req.body
     const userId = req.user.id
+    const files = req.files as Express.Multer.File[] || []
 
     if (!contestId) {
         throw new ApiError(httpstatus.BAD_REQUEST, 'Contest ID is required')
     }
 
-    const match = await teamService.startTeamMatchWithAutoRival(teamId, contestId, userId)
+    if (!files || files.length === 0) {
+        throw new ApiError(httpstatus.BAD_REQUEST, 'Minimum 1 photo file is required to start a team match')
+    }
+
+    const match = await teamService.startTeamMatchWithAutoRival(teamId, contestId, userId, files)
 
     sendResponse(res, {
         success: true,

@@ -62,8 +62,10 @@ router.get('/:teamId/available-contests', auth(), teamController.getAvailableTea
 /**
  * POST /api/teams/:teamId/start-match-auto
  * Team admin selects a contest, system automatically finds rival team and starts match
+ * Requires multiple photo files (minimum 1, maximum = contest.maxUploads)
  * Body: { contestId: string }
+ * Files: Upload via 'files' field (array)
  */
-router.post('/:teamId/start-match-auto', auth(), teamController.startTeamMatchWithAutoRival);
+router.post('/:teamId/start-match-auto', auth(), fileUploader.uploadTeamMatchPhotos, teamController.startTeamMatchWithAutoRival);
 
 export const teamRoutes = router;

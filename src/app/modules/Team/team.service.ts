@@ -10,6 +10,7 @@ import { levelService } from '../Level/level.service';
 import { voteService } from '../Vote/vote.service';
 import { userService } from '../User/user.service';
 import { paginationHelper } from '../../../helpers/paginationHelper';
+import { profileService } from '../Profile/profile.service';
 
 
 //create a team
@@ -241,7 +242,7 @@ const getSuggestedTeams = async (userId:string, page?: number, limit?: number) =
     });
 
     const teams = await prisma.team.findMany({
-        where:{OR:[{country}, {min_requirement:`${user.currentLevel}`}]},
+        where:{OR:[{country}, {min_requirement:`${user.currentLevel}`}],members:{none:{memberId:userId}}},
         skip: paginationOptions.skip,
         take: paginationOptions.limit,
         orderBy: { [paginationOptions.sortBy]: paginationOptions.sortOrder as any }
@@ -493,11 +494,18 @@ const getAvailableTeamContests = async (teamId: string, page?: number, limit?: n
  * Start team match with automatic rival team finding
  * Only LEADER and MODERATOR can start matches
  * Team admin selects a contest, system finds rival team with similar skill level and starts match
+ * Requires minimum 1 photo and maximum based on contest's maxUploads
  * @param teamId - The team ID (team admin's team)
  * @param contestId - The selected contest ID
+ * @param userId - The user starting the match (must be LEADER or MODERATOR)
+ * @param files - Photo/proof file uploads (minimum 1, maximum = contest.maxUploads)
  * @returns Created team match with rival team details
  */
-const startTeamMatchWithAutoRival = async (teamId: string, contestId: string, userId?: string) => {
+const startTeamMatchWithAutoRival = async (teamId: string, contestId: string, userId?: string, files?: Express.Multer.File[]) => {
+    // Validate files upload - minimum 1
+    if (!files || files.length === 0) {
+        throw new ApiError(httpstatus.BAD_REQUEST, 'Minimum 1 photo file is required to start a team match')
+    }
     // Verify user has permission to start match (LEADER or MODERATOR only)
     if (userId) {
         const userTeamMember = await prisma.teamMember.findFirst({
@@ -517,6 +525,11 @@ const startTeamMatchWithAutoRival = async (teamId: string, contestId: string, us
 
     if (!contest) {
         throw new ApiError(httpstatus.NOT_FOUND, "Contest not found or not active")
+    }
+
+    // Validate files count against contest maxUploads
+    if (files.length > contest.maxUploads) {
+        throw new ApiError(httpstatus.BAD_REQUEST, `Maximum ${contest.maxUploads} photo files allowed. You uploaded ${files.length}`)
     }
 
     // if (contest.mode !== ContestMode.TEAM) {
@@ -570,7 +583,57 @@ const startTeamMatchWithAutoRival = async (teamId: string, contestId: string, us
         throw new ApiError(httpstatus.NOT_FOUND, "No rival team found with similar skill level. Please try again later.")
     }
 
-    // Create the match
+    // STEP 1: Join the user in the contest WITH uploaded photos
+    let contestParticipant;
+    if (userId) {
+        // Check if user is already a contest participant
+        contestParticipant = await prisma.contestParticipant.findUnique({
+            where: { contestId_userId: { contestId, userId } }
+        })
+
+        // If not, create participant entry
+        if (!contestParticipant) {
+            contestParticipant = await prisma.contestParticipant.create({
+                data: { contestId, userId }
+            })
+        }
+
+        // Upload files to contest
+        for (const file of files) {
+            // Check current upload count
+            const currentUploadCount = await prisma.contestPhoto.count({
+                where: { contestId, participantId: contestParticipant.id }
+            })
+
+            if (currentUploadCount >= contest.maxUploads) {
+                throw new ApiError(
+                    httpstatus.BAD_REQUEST,
+                    `Maximum ${contest.maxUploads} photos already uploaded. Cannot upload more.`
+                )
+            }
+
+            try {
+                // Upload the photo file
+                const uploadedPhoto = await profileService.uploadUserPhoto(userId, file)
+
+                // Create contestPhoto entry linking the photo to the participant
+                await prisma.contestPhoto.create({
+                    data: {
+                        contestId,
+                        participantId: contestParticipant.id,
+                        photoId: uploadedPhoto.id
+                    }
+                })
+            } catch (error) {
+                throw new ApiError(
+                    httpstatus.INTERNAL_SERVER_ERROR,
+                    `Failed to upload photo: ${error instanceof Error ? error.message : 'Unknown error'}`
+                )
+            }
+        }
+    }
+
+    // STEP 2: Create the match after user joins with photos
     const teamMatch = await prisma.teamMatch.create({
         data: {
             contestId,
@@ -649,8 +712,14 @@ const startTeamMatchWithAutoRival = async (teamId: string, contestId: string, us
 /**
  * Original startTeamMatch - kept for backward compatibility
  * Only LEADER and MODERATOR can manually specify both teams for a match
+ * Requires minimum 1 photo and maximum based on contest's maxUploads
  */
-const startTeamMatch = async (contestId:string, ownTeamId:string, otherTeamId:string, userId?: string) => {
+const startTeamMatch = async (contestId:string, ownTeamId:string, otherTeamId:string, userId?: string, files?: Express.Multer.File[]) => {
+    // Validate files upload - minimum 1
+    if (!files || files.length === 0) {
+        throw new ApiError(httpstatus.BAD_REQUEST, 'Minimum 1 photo file is required to start a team match')
+    }
+
     // Verify user has permission to start match (LEADER or MODERATOR only)
     if (userId) {
         const userTeamMember = await prisma.teamMember.findFirst({
@@ -668,10 +737,66 @@ const startTeamMatch = async (contestId:string, ownTeamId:string, otherTeamId:st
         throw new ApiError(httpstatus.NOT_FOUND, "contest not found")
     }
 
+    // Validate files count against contest maxUploads
+    if (files.length > contest.maxUploads) {
+        throw new ApiError(httpstatus.BAD_REQUEST, `Maximum ${contest.maxUploads} photo files allowed. You uploaded ${files.length}`)
+    }
+
     const ownTeam = await prisma.team.findUnique({where:{id:ownTeamId}})
     const otherTeam = await prisma.team.findUnique({where:{id:otherTeamId}})
 
-   const teamMatch =  await prisma.teamMatch.create({data:{contestId, team1Id:ownTeamId, team2Id:otherTeamId, endedAt:contest.endDate}})
+    // STEP 1: Join the user in the contest WITH uploaded photos
+    let contestParticipant;
+    if (userId) {
+        // Check if user is already a contest participant
+        contestParticipant = await prisma.contestParticipant.findUnique({
+            where: { contestId_userId: { contestId, userId } }
+        })
+
+        // If not, create participant entry
+        if (!contestParticipant) {
+            contestParticipant = await prisma.contestParticipant.create({
+                data: { contestId, userId }
+            })
+        }
+
+        // Upload files to contest
+        for (const file of files) {
+            // Check current upload count
+            const currentUploadCount = await prisma.contestPhoto.count({
+                where: { contestId, participantId: contestParticipant.id }
+            })
+
+            if (currentUploadCount >= contest.maxUploads) {
+                throw new ApiError(
+                    httpstatus.BAD_REQUEST,
+                    `Maximum ${contest.maxUploads} photos already uploaded. Cannot upload more.`
+                )
+            }
+
+            try {
+                // Upload the photo file
+                const uploadedPhoto = await profileService.uploadUserPhoto(userId, file)
+
+                // Create contestPhoto entry linking the photo to the participant
+                await prisma.contestPhoto.create({
+                    data: {
+                        contestId,
+                        participantId: contestParticipant.id,
+                        photoId: uploadedPhoto.id
+                    }
+                })
+            } catch (error) {
+                throw new ApiError(
+                    httpstatus.INTERNAL_SERVER_ERROR,
+                    `Failed to upload photo: ${error instanceof Error ? error.message : 'Unknown error'}`
+                )
+            }
+        }
+    }
+
+    // STEP 2: Create the match after user joins with photos
+    const teamMatch = await prisma.teamMatch.create({data:{contestId, team1Id:ownTeamId, team2Id:otherTeamId, endedAt:contest.endDate}})
 
    return teamMatch
 }
@@ -1218,6 +1343,7 @@ const findRivalTeam = async (ownTeamId: string, contestId: string) => {
 
 /**
  * Check if team has an active match
+ * Enhanced with team details, scores, and member information with votes
  * @param teamId - The team ID
  */
 const getActiveMatch = async (teamId: string) => {
@@ -1236,11 +1362,64 @@ const getActiveMatch = async (teamId: string) => {
         },
         include: {
             team1: true,
-            team2: true
+            team2: true,
+            contest: true
         }
     })
 
-    return match || null
+    if (!match) {
+        return null
+    }
+
+    // Get team total votes
+    const team1Vote = await voteService.getTeamTotalVotes(match.contestId, match.team1Id)
+    const team2Vote = await voteService.getTeamTotalVotes(match.contestId, match.team2Id)
+
+    // Get members with their individual votes
+    const team1Members = await getMembers(match.team1Id, match.contestId)
+    const team2Members = await getMembers(match.team2Id, match.contestId)
+
+    // Structure the response based on which team the user belongs to
+    const matchResponse = {
+        id: match.id,
+        contestId: match.contestId,
+        contest: match.contest,
+        status: match.status,
+        createdAt: match.createdAt,
+        endedAt: match.endedAt,
+        team1_score: match.team1_score || 0,
+        team2_score: match.team2_score || 0,
+        result: match.result,
+        team1: {
+            details: match.team1,
+            totalVote: team1Vote,
+            members: team1Members
+        },
+        team2: {
+            details: match.team2,
+            totalVote: team2Vote,
+            members: team2Members
+        }
+    }
+
+    // Reorder if user's team is team2 to show own team first
+    if (match.team2Id === teamId) {
+        return {
+            ...matchResponse,
+            own: matchResponse.team2,
+            opposition: matchResponse.team1,
+            own_team_id: match.team2Id,
+            opposition_team_id: match.team1Id
+        }
+    }
+
+    return {
+   
+        own: matchResponse.team1,
+        opposition: matchResponse.team2,
+        own_team_id: match.team1Id,
+        opposition_team_id: match.team2Id
+    }
 }
 
 /**

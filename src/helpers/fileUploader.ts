@@ -51,6 +51,9 @@ const tradePhoto = upload.single("tradePhoto")
 // Upload multiple images
 const uploadMultipleImage = upload.fields([{ name: "images", maxCount: 15 }]);
 
+// Upload team match photos (multiple files, limit validated in service)
+const uploadTeamMatchPhotos = upload.array('files', 4);
+
 // Upload profile and banner images
 const updateProfile = upload.fields([
   { name: "profile", maxCount: 1 },
@@ -152,5 +155,6 @@ export const fileUploader = {
   contestBanner,
   uploadCover,
   userPhoto,
-  tradePhoto
+  tradePhoto,
+  uploadTeamMatchPhotos
 };
