@@ -61,7 +61,7 @@ export const createTeam = async (creatorId: string, body: ITeam, file:Express.Mu
         },
     });
 
-    const member = await prisma.teamMember.create({data:{memberId:creatorId,teamId:team.id, level:MemberLevel.LEADER}})
+    await prisma.teamMember.create({data:{memberId:creatorId,teamId:team.id, level:MemberLevel.LEADER}})
     return team;
 };
 
