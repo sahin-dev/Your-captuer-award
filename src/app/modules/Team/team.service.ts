@@ -62,6 +62,7 @@ export const createTeam = async (creatorId: string, body: ITeam, file:Express.Mu
     });
 
     await prisma.teamMember.create({data:{memberId:creatorId,teamId:team.id, level:MemberLevel.LEADER}})
+    await prisma.team.update({where:{id:team.id}, data:{member_count:{increment:1}}})
     return team;
 };
 
