@@ -418,15 +418,7 @@ const getAvailableTeamContests = async (teamId: string, page?: number, limit?: n
             status: ContestStatus.ACTIVE
             // mode: ContestMode.TEAM
         },
-        select: {
-            id: true,
-            title: true,
-            description: true,
-            banner: true,
-            startDate: true,
-            endDate: true,
-            maxUploads: true,
-            mode: true,
+        include: {
             participants: {
                 where: { status: 'ACTIVE' },
                 select: { userId: true }
@@ -436,6 +428,8 @@ const getAvailableTeamContests = async (teamId: string, page?: number, limit?: n
         orderBy: { [paginationOptions.sortBy]: paginationOptions.sortOrder as any }
     })
 
+
+    console.log("All active contests:", allContests)
     // Filter contests by time remaining (5-24 hours only)
     const now = new Date();
     const fiveHoursFromNow = new Date(now.getTime() + 5 * 60 * 60 * 1000);
@@ -448,7 +442,7 @@ const getAvailableTeamContests = async (teamId: string, page?: number, limit?: n
 
         return timeRemaining >= fiveHoursInMs && timeRemaining <= twentyFourHoursInMs;
     });
-
+    console.log("Contests within time window:", contestsWithinTimeWindow);
     // Filter contests where team hasn't already participated
     const participatingMembers = await prisma.contestParticipant.findMany({
         where: { contestId: { in: contestsWithinTimeWindow.map(c => c.id) } },
@@ -523,9 +517,9 @@ const startTeamMatchWithAutoRival = async (teamId: string, contestId: string, us
         throw new ApiError(httpstatus.NOT_FOUND, "Contest not found or not active")
     }
 
-    if (contest.mode !== ContestMode.TEAM) {
-        throw new ApiError(httpstatus.BAD_REQUEST, "This contest is not a team competition")
-    }
+    // if (contest.mode !== ContestMode.TEAM) {
+    //     throw new ApiError(httpstatus.BAD_REQUEST, "This contest is not a team competition")
+    // }
 
     // Verify team exists
     const ownTeam = await isTeamExist(teamId)
@@ -1225,6 +1219,11 @@ const findRivalTeam = async (ownTeamId: string, contestId: string) => {
  * @param teamId - The team ID
  */
 const getActiveMatch = async (teamId: string) => {
+
+    const team = await isTeamExist(teamId)
+    if(!team){
+        throw new ApiError(httpstatus.NOT_FOUND, "team not found")
+    }
     const match = await prisma.teamMatch.findFirst({
         where: {
             status: 'ACTIVE',
@@ -1425,6 +1424,10 @@ const recordMatchResult = async (matchId: string, team1Score: number, team2Score
  * @param teamId - The team ID
  */
 const getTeamHistory = async (teamId: string, page?: number, limit?: number) => {
+    const team = await isTeamExist(teamId)
+    if(!team){
+        throw new ApiError(httpstatus.NOT_FOUND, "team not found")
+    }
     const paginationOptions = paginationHelper.calculatePagination({
         page: page || 1,
         limit: limit || 10,
