@@ -138,7 +138,9 @@ const getTeam = async (teamId:string)=>{
 export const getTeamDetails = async (teamId: string) => {
     const team = await prisma.team.findUnique({
         where: { id: teamId },
-        include: { creator: {select:{id:true, avatar:true, fullName:true, firstName:true, lastName:true}}, members:true },
+        include: { creator: {select:{id:true, avatar:true, fullName:true, firstName:true, lastName:true}}, members:{
+            include:{member:{select:{id:true, avatar:true, fullName:true, firstName:true, lastName:true}}}
+        } },
     });
 
     if (!team) {
