@@ -42,10 +42,9 @@ export const createTeam = async (creatorId: string, body: ITeam, file:Express.Mu
     }
 
     // const badgeUrl = await fileUploader.upload.single("badge")
-    const min_requirement = parseInt(body.min_requirement)
+    // const min_requirement = parseInt(body.min_requirement)
 
-    const level = await levelService.getLevelByOrder(min_requirement)
-    console.log(body)
+    // const level = await levelService.getLevelByOrder(min_requirement)
 
     const team = await prisma.team.create({
         data: {
@@ -55,8 +54,8 @@ export const createTeam = async (creatorId: string, body: ITeam, file:Express.Mu
             language: body.language,
             country: body.country,
             description: body.description,
-            min_requirement:`${min_requirement}`,
-            min_requirement_str: level?.levelName ?? 'None',
+            min_requirement:`${body.min_requirement}`,
+            min_requirement_str: 'None',
             accessibility: body.accessibility as TeamAccessibility,
             badge: file.path,
         },
