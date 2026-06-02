@@ -1363,7 +1363,9 @@ const getActiveMatch = async (teamId: string) => {
         include: {
             team1: true,
             team2: true,
-            contest: true
+            contest: {
+                select:{id:true, title:true, banner:true, maxUploads:true}
+            }
         }
     })
 
@@ -1414,7 +1416,7 @@ const getActiveMatch = async (teamId: string) => {
     }
 
     return {
-   
+        ...matchResponse,
         own: matchResponse.team1,
         opposition: matchResponse.team2,
         own_team_id: match.team1Id,
@@ -1425,7 +1427,7 @@ const getActiveMatch = async (teamId: string) => {
 /**
  * Get team leaderboard ranking
  */
-const getTeamLeaderboard = async (contestId?: string, page?: number, limit?: number) => {
+const getTeamLeaderboard = async (contestId?: string, page?: number, limit?: number, period: 'weekly' | 'monthly' | 'yearly' = 'weekly') => {
     const paginationOptions = paginationHelper.calculatePagination({
         page: page || 1,
         limit: limit || 10,
@@ -1433,49 +1435,159 @@ const getTeamLeaderboard = async (contestId?: string, page?: number, limit?: num
         sortOrder: 'desc'
     });
 
-    const teams = await prisma.team.findMany({
-        where: contestId ? {
-            participations: {
-                some: { contestId }
-            }
-        } : {},
-        skip: paginationOptions.skip,
-        take: paginationOptions.limit,
-        select: {
-            id: true,
-            name: true,
-            level: true,
-            skill_level: true,
-            leaderboard_rank: true,
-            total_matches: true,
-            win: true,
-            lost: true,
-            draw: true,
-            score: true,
-            creator: { select: { id: true, firstName: true, lastName: true } }
-        },
-        orderBy: {
-            score: 'desc'
+    // Helper function to get date range for a period
+    const getDateRange = (periodType: 'week' | 'month' | 'year') => {
+        const now = new Date();
+        let startDate: Date;
+        let endDate: Date;
+
+        if (periodType === 'week') {
+            // Get current week (Monday to Sunday)
+            const day = now.getDay();
+            const diff = now.getDate() - day + (day === 0 ? -6 : 1); // Adjust for Sunday
+            startDate = new Date(now.setDate(diff));
+            startDate.setHours(0, 0, 0, 0);
+            endDate = new Date(startDate);
+            endDate.setDate(endDate.getDate() + 6);
+            endDate.setHours(23, 59, 59, 999);
+        } else if (periodType === 'month') {
+            // Get current month
+            startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+            startDate.setHours(0, 0, 0, 0);
+            endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+            endDate.setHours(23, 59, 59, 999);
+        } else {
+            // Get current year
+            startDate = new Date(now.getFullYear(), 0, 1);
+            startDate.setHours(0, 0, 0, 0);
+            endDate = new Date(now.getFullYear(), 11, 31);
+            endDate.setHours(23, 59, 59, 999);
         }
-    })
 
-    const total = await prisma.team.count({
-        where: contestId ? {
-            participations: {
-                some: { contestId }
+        return { startDate, endDate };
+    };
+
+    // Helper function to get period leaderboard
+    const getPeriodLeaderboard = async (periodType: 'week' | 'month' | 'year', skip: number, take: number) => {
+        const { startDate, endDate } = getDateRange(periodType);
+
+        const matches = await prisma.teamMatch.findMany({
+            where: {
+                ...(contestId && { contestId }),
+                createdAt: {
+                    gte: startDate,
+                    lte: endDate
+                }
+            },
+            select: {
+                id: true,
+                team1Id: true,
+                team2Id: true,
+                team1_score: true,
+                team2_score: true,
+                status: true,
+                team1: { select: { id: true, name: true, badge: true, skill_level: true } },
+                team2: { select: { id: true, name: true, badge: true, skill_level: true } }
             }
-        } : {}
-    });
+        });
 
-    const meta = paginationHelper.getPaginationMetaData(paginationOptions.page, paginationOptions.limit, total);
+        // Calculate scores for each team
+        const teamScores = new Map<string, any>();
 
-    // Add rank with current order
-    const rankedTeams = teams.map((team, index) => ({
-        ...team,
-        current_rank: ((paginationOptions.page - 1) * paginationOptions.limit) + index + 1
-    }));
+        matches.forEach(match => {
+            const team1Id = match.team1Id;
+            const team2Id = match.team2Id;
+            const team1Score = match.team1_score || 0;
+            const team2Score = match.team2_score || 0;
 
-    return { data: rankedTeams, meta }
+            // Initialize team stats if not exists
+            if (!teamScores.has(team1Id)) {
+                teamScores.set(team1Id, {
+                    id: team1Id,
+                    name: match.team1.name,
+                    badge: match.team1.badge,
+                    skill_level: match.team1.skill_level,
+                    wins: 0,
+                    losses: 0,
+                    draws: 0,
+                    matches: 0,
+                    score: 0
+                });
+            }
+
+            if (!teamScores.has(team2Id)) {
+                teamScores.set(team2Id, {
+                    id: team2Id,
+                    name: match.team2.name,
+                    badge: match.team2.badge,
+                    skill_level: match.team2.skill_level,
+                    wins: 0,
+                    losses: 0,
+                    draws: 0,
+                    matches: 0,
+                    score: 0
+                });
+            }
+
+            const team1Stats = teamScores.get(team1Id);
+            const team2Stats = teamScores.get(team2Id);
+
+            team1Stats.matches++;
+            team2Stats.matches++;
+
+            if (team1Score > team2Score) {
+                team1Stats.wins++;
+                team1Stats.score += 3;
+                team2Stats.losses++;
+            } else if (team2Score > team1Score) {
+                team2Stats.wins++;
+                team2Stats.score += 3;
+                team1Stats.losses++;
+            } else {
+                team1Stats.draws++;
+                team2Stats.draws++;
+                team1Stats.score += 1;
+                team2Stats.score += 1;
+            }
+        });
+
+        // Sort by score and apply pagination
+        const sortedTeams = Array.from(teamScores.values())
+            .sort((a, b) => b.score - a.score)
+            .slice(skip, skip + take);
+
+        const total = teamScores.size;
+
+        // Add rank
+        const rankedTeams = sortedTeams.map((team, index) => ({
+            ...team,
+            rank: skip + index + 1
+        }));
+
+        return {
+            data: rankedTeams,
+            meta: paginationHelper.getPaginationMetaData(
+                Math.floor(skip / take) + 1,
+                take,
+                total
+            )
+        };
+    };
+
+    // Convert period parameter to internal format
+    const periodMap = {
+        'weekly': 'week' as const,
+        'monthly': 'month' as const,
+        'yearly': 'year' as const
+    };
+
+    const periodType = periodMap[period];
+    const leaderboard = await getPeriodLeaderboard(periodType, paginationOptions.skip, paginationOptions.limit);
+
+    return {
+        period,
+        ...leaderboard
+    };
 }
 
 /**

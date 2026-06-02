@@ -190,6 +190,7 @@ async function scheduleContest(rContest: RecurringContest) {
 //closed status means contest is ended
 //completed contests are ended contests and the user is participated those contests
 //so, there is not separate completed contest in the database
+//When contest ends: TEAM MODE contests will have all active matches ended and moved to match history
 
 agenda.define("contest:watcher", async (job: Job) => {
     const { contestId } = job.attrs.data as { contestId: string };
@@ -200,18 +201,23 @@ agenda.define("contest:watcher", async (job: Job) => {
         return
     }
 
+    // Update contest status to CLOSED
     await prisma.contest.update({ where: { id: contestId }, data: { status: ContestStatus.CLOSED } })
     globalEventHandler.emit(Events.CONTEST_ENDED, contestId)
-    console.log(`Contest has ended ${contestId}`)
+    console.log(`Contest ${contestId} has ended and moved to CLOSED status`)
 
     // Wrap awarding in try-catch so the contest still closes even if awarding fails
     try {
+        // Award individual winners
         await contestService.identifyWinner(contestId)
+        console.log(`Contest ${contestId} - Individual winners identified`)
 
-        // Score team matches if contest is TEAM mode
+        // For TEAM mode contests: End all active team matches and move them to history
         if (contest.mode === ContestMode.TEAM) {
             await contestService.awardTeams(contestId)
+            console.log(`Contest ${contestId} - All active team matches ended and moved to history`)
         }
+        
         console.log(`Contest ${contestId} awards completed successfully`)
     } catch (err) {
         console.error(`Contest ${contestId} awarding failed:`, err)

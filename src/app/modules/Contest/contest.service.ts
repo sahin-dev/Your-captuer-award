@@ -658,6 +658,7 @@ const identifyWinner = async (contestId:string)=>{
 }
 
 
+
 const awardTeams = async (contestId:string) => {
     const teamMatches = await prisma.teamMatch.findMany({where:{contestId, status:'ACTIVE'}})
 
@@ -683,13 +684,13 @@ const awardTeam = async (matchId:string, contestId:string) => {
     const team2Votes = await voteService.getTeamTotalVotes(contestId, teamMatch.team2Id)
 
     // Delegate to teamService.recordMatchResult() which properly handles:
-    // - TeamMatch status, scores, result, winner_id
+    // - TeamMatch status to CLOSED, scores, result, winner_id
     // - TeamMatchHistory for both teams
     // - Win/loss/draw correctly (not counting ties as wins)
-    // - Clearing active_match_id
+    // - Clearing active_match_id from teams
     // - Incrementing total_matches
     await teamService.recordMatchResult(matchId, team1Votes, team2Votes)
-    console.log(`Team match ${matchId} result recorded: Team1=${team1Votes} vs Team2=${team2Votes}`)
+    console.log(`Team match ${matchId} ended and moved to history: Team1=${team1Votes} vs Team2=${team2Votes}`)
 }
 
 const getTeamParticipant = async (contestId:string, teamId:string) => {

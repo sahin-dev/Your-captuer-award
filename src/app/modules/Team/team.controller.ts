@@ -311,18 +311,23 @@ const rejectJoinRequest = catchAsync(async (req: Request, res: Response) => {
 // NEW: Leaderboard & Matching Controllers
 
 const getTeamLeaderboard = catchAsync(async (req: Request, res: Response) => {
-    const { contestId, page, limit } = req.query
+    const { contestId, page, limit, period } = req.query
+
+    if (period && !['weekly', 'monthly', 'yearly'].includes(period as string)) {
+        throw new ApiError(httpstatus.BAD_REQUEST, 'Period must be weekly, monthly, or yearly')
+    }
 
     const result = await teamService.getTeamLeaderboard(
         contestId as string | undefined,
         page ? Number(page) : undefined,
-        limit ? Number(limit) : undefined
+        limit ? Number(limit) : undefined,
+        (period as 'weekly' | 'monthly' | 'yearly') || 'weekly'
     )
 
     sendResponse(res, {
         success: true,
         statusCode: httpstatus.OK,
-        message: 'Team leaderboard fetched successfully',
+        message: `Team ${result.period} leaderboard fetched successfully`,
         data: result.data,
         meta: result.meta
     })
