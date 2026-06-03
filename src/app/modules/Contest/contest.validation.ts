@@ -11,7 +11,7 @@ export const createContestSchema = z.object({
     title: z.string().nonempty("title must not be empty"),
     description: z.string().nonempty('description must not be empty'),
     level_requirements:z.string().array().default(["50","200","400"]),
-    mode:z.nativeEnum(ContestMode),
+    mode:z.nativeEnum(ContestMode).default(ContestMode.SOLO),
     recurring: z.enum(['true', 'false'],{invalid_type_error: "'recurring' must be true or false"}).optional().transform( v => v && v === 'true'),
     recurringType: z.nativeEnum(RecurringType, {invalid_type_error:"Invalid recurring type"}).optional(),
     prizes: z.preprocess((val) => {

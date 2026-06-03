@@ -29,6 +29,7 @@ model Contest {
   contestPrizes      ContestPrize[]
   achievements       ContestAchievement[]
   teamMatch          TeamMatch[]
+  matchHistory       TeamMatchHistory[]
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @updatedAt
 
@@ -66,7 +67,7 @@ model ContestRule {
   name        String
   description String
   contestId   String  @db.ObjectId
-  contest     Contest @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  contest     Contest @relation(fields: [contestId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -85,9 +86,9 @@ model ContestPhoto {
   promotionExpiresAt DateTime?
   initialVotes       Int                  @default(0)
   // contest   Contest @relation(fields: [contestId],references: [id])
-  participant        ContestParticipant   @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  participant        ContestParticipant   @relation(fields: [participantId], references: [id])
   votes              Vote[]
-  photo              UserPhoto            @relation(fields: [photoId], references: [id], onDelete: Cascade)
+  photo              UserPhoto            @relation(fields: [photoId], references: [id])
   comments           Comment[]
   achievements       ContestAchievement[]
   ContestWinner      ContestWinner[]
@@ -103,7 +104,7 @@ model ContestWinner {
   contestId      String @db.ObjectId
   contestPhotoId String @db.ObjectId
 
-  participant ContestParticipant @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  participant ContestParticipant @relation(fields: [participantId], references: [id])
   photo       ContestPhoto       @relation(fields: [contestPhotoId], references: [id])
   createdAt   DateTime           @default(now())
   updatedAt   DateTime           @updatedAt
@@ -120,8 +121,9 @@ model ContestParticipant {
   level          YCLevel                  @default(NEW)
   rank           Int?                     @default(0)
   exposure_bonus Int                      @default(100)
+  member_score   Int                      @default(0) // For team matches: tracks votes received by this team member
 
-  contest            Contest              @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  contest            Contest              @relation(fields: [contestId], references: [id])
   user               User                 @relation(fields: [userId], references: [id])
   member             TeamMember?          @relation(fields: [memberId], references: [id])
   photos             ContestPhoto[]
@@ -144,7 +146,7 @@ model ContestPrize {
   key      Int       @default(0)
 
   contestId String  @db.ObjectId
-  contest   Contest @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  contest   Contest @relation(fields: [contestId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -279,7 +281,7 @@ model Payment {
   type              PaymentType
   description       String?
 
-  user      User     @relation("UserPayments", fields: [userId], references: [id], onDelete: Cascade)
+  user      User     @relation("UserPayments", fields: [userId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -480,6 +482,7 @@ model Team {
   MatchesAsTeam2      TeamMatch[]         @relation(name: "team2")
   joinRequests        TeamJoinRequest[]
   history             TeamMatchHistory[]
+  opponentHistory     TeamMatchHistory[]  @relation("opponentTeam")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -518,7 +521,7 @@ model TeamMember {
 
   teamId             String               @db.ObjectId
   memberId           String               @unique @db.ObjectId
-  team               Team                 @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  team               Team                 @relation(fields: [teamId], references: [id])
   member             User                 @relation(fields: [memberId], references: [id])
   contestParticipant ContestParticipant[]
 
@@ -565,8 +568,8 @@ model TeamJoinRequest {
   teamId      String @db.ObjectId
   requesterId String @db.ObjectId
 
-  team      Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  requester User @relation("sentJoinRequests", fields: [requesterId], references: [id], onDelete: Cascade)
+  team      Team @relation(fields: [teamId], references: [id])
+  requester User @relation("sentJoinRequests", fields: [requesterId], references: [id])
 
   status JoinRequestStatus @default(PENDING)
 
@@ -580,9 +583,9 @@ model TeamJoinRequest {
 model TeamMatchHistory {
   id     String @id @default(auto()) @map("_id") @db.ObjectId
   teamId String @db.ObjectId
-  team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  team   Team   @relation(fields: [teamId], references: [id])
 
-  matchId          String        @unique @db.ObjectId
+  matchId          String        @db.ObjectId
   opponent_team_id String        @db.ObjectId
   team_score       Int
   opponent_score   Int
@@ -590,9 +593,12 @@ model TeamMatchHistory {
   match_date       DateTime
   contest_id       String?       @db.ObjectId
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  opponent_team Team?    @relation("opponentTeam", fields: [opponent_team_id], references: [id])
+  contest       Contest? @relation(fields: [contest_id], references: [id])
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
+  @@unique([teamId, matchId])
   @@map("team_match_history")
 }
 
@@ -759,7 +765,7 @@ model Otp {
   expires_in DateTime
   userId     String   @unique @db.ObjectId
 
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id])
   otpStatus OtpStatus @default(CREATED)
 
   createdAt DateTime @default(now())
@@ -810,7 +816,7 @@ model Vote {
   power      Int      @default(1)
 
   provider User         @relation(fields: [providerId], references: [id])
-  photo    ContestPhoto @relation(fields: [photoId], references: [id], onDelete: Cascade)
+  photo    ContestPhoto @relation(fields: [photoId], references: [id])
   contest  Contest      @relation(fields: [contestId], references: [id])
 
   createdAt DateTime @default(now())

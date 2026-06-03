@@ -196,6 +196,7 @@ exports.Prisma.ContestParticipantScalarFieldEnum = {
   level: 'level',
   rank: 'rank',
   exposure_bonus: 'exposure_bonus',
+  member_score: 'member_score',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };

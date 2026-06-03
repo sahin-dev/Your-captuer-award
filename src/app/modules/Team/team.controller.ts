@@ -181,7 +181,7 @@ const leaveTeam = catchAsync(async (req:Request, res:Response) => {
 const removeMemberFromTeam =  catchAsync(async (req:Request, res:Response) => {
     const {memberId, teamId} = req.body
     const userId = req.user.id
-
+    
     const result = await teamService.removeFromTeam(userId, memberId, teamId)
     
     sendResponse(res, {
@@ -433,9 +433,32 @@ const startTeamMatchWithAutoRival = catchAsync(async (req: Request, res: Respons
     })
 })
 
+const searchTeamsByName = catchAsync(async (req: Request, res: Response) => {
+    const { name, page, limit } = req.query;
+
+    if (!name || name.toString().trim() === '') {
+        throw new ApiError(httpstatus.BAD_REQUEST, 'Team name is required for search');
+    }
+
+    const result = await teamService.getTeams(
+        name.toString(),
+        page ? Number(page) : undefined,
+        limit ? Number(limit) : undefined
+    );
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpstatus.OK,
+        message: 'Teams searched successfully',
+        data: result.data,
+        meta: result.meta
+    });
+});
+
 export const teamController = {
     createTeam,
     getTeams,
+    searchTeamsByName,
     getTeamDetails,
     updateTeam,
     deleteTeam,

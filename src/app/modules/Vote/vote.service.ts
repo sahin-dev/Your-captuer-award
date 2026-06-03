@@ -50,7 +50,7 @@ export const addOneVote = async (userId:string, contestId:string, photoId:string
 
     await prisma.contestParticipant.update({where:{id:participant.id},data:{exposure_bonus:{increment:2}}})
 
-    const contestPhoto = await prisma.contestPhoto.findFirst({where:{contestId, id:photoId}, include:{participant:true}})
+    const contestPhoto = await prisma.contestPhoto.findFirst({where:{contestId, photo:{id:photoId}}, include:{participant:true}})
     if(!contestPhoto){
         throw new ApiError(httpstatus.NOT_FOUND, "contest photo not found")
     }
@@ -61,9 +61,55 @@ export const addOneVote = async (userId:string, contestId:string, photoId:string
 
     const type = await getVoteType(photoId)
 
-    if(!(await checkExistingVote(userId, contestId,photoId))){
-        const vote = await prisma.vote.create({data:{providerId:userId, contestId, photoId, type}})
+    if(!(await checkExistingVote(userId, contestId,contestPhoto.id))){
+    
+        const vote = await prisma.vote.create({data:{providerId:userId, contestId, photoId:contestPhoto.id, type}})
         await prisma.contestParticipant.update({where:{id:participant.id}, data:{exposure_bonus:{increment:2}}})
+        
+        // For team matches: increment team member's individual score and team's match score
+        // This counts votes received by team members in team contests
+        if (contestPhoto.participant.memberId) {
+            await prisma.contestParticipant.update({
+                where: { id: contestPhoto.participant.id },
+                data: { member_score: { increment: 1 } }
+            })
+
+            // Also increment the team's score in the active match
+            // Find the team member to get their team
+            const teamMember = await prisma.teamMember.findUnique({
+                where: { id: contestPhoto.participant.memberId }
+            })
+
+            if (teamMember) {
+                // Find the active team match for this team in this contest
+                const activeMatch = await prisma.teamMatch.findFirst({
+                    where: {
+                        contestId,
+                        status: 'ACTIVE',
+                        OR: [
+                            { team1Id: teamMember.teamId },
+                            { team2Id: teamMember.teamId }
+                        ]
+                    }
+                })
+
+                // Increment the appropriate team's score
+                if (activeMatch) {
+                    if (activeMatch.team1Id === teamMember.teamId) {
+                        await prisma.teamMatch.update({
+                            where: { id: activeMatch.id },
+                            data: { team1_score: { increment: 1 } }
+                        })
+                    } else {
+                        await prisma.teamMatch.update({
+                            where: { id: activeMatch.id },
+                            data: { team2_score: { increment: 1 } }
+                        })
+                    }
+                }
+            }
+        }
+        
         globalEventHandler.publish(Events.NEW_VOTE,{photoId, contestId})
         return vote
     }
@@ -128,10 +174,46 @@ const getTotalOrganicVotes = async (userId:string)=>{
 }
 
 const getTeamTotalVotes = async (contestId:string , teamId:string) => {
+    /**
+     * TEAM MATCH SCORING SYSTEM
+     * 
+     * Calculates total team votes by directly counting from Vote collection.
+     * 
+     * Logic:
+     * 1. Find all TeamMembers belonging to this team
+     * 2. Find all ContestParticipants in this contest where memberId links to a team member
+     * 3. Count all votes received by these participants
+     * 4. Returns the sum of all votes = Team's Total Score
+     */
+    
+    // Get all team members
+    const teamMembers = await prisma.teamMember.findMany({
+        where: { teamId },
+        select: { id: true }
+    })
 
-    const votes = await prisma.vote.count({where:{contestId, photo:{photo:{user:{joinedTeam:{id:teamId}}}}}})
+    if (!teamMembers || teamMembers.length === 0) {
+        return 0
+    }
 
-    return votes
+    const memberIds = teamMembers.map(m => m.id)
+    console.log(`[getTeamTotalVotes] Team ${teamId} members:`, memberIds)
+    
+    // Count all votes on photos by contest participants who are team members
+    // Direct query: Vote -> ContestPhoto -> ContestParticipant (check memberId)
+    const totalVotes = await prisma.vote.count({
+        where: {
+            contestId,
+            photo: {
+                participant: {
+                    memberId: { in: memberIds }
+                }
+            }
+        }
+    })
+
+    console.log(`[getTeamTotalVotes] Total votes for team ${teamId} in contest ${contestId}:`, totalVotes)
+    return totalVotes
 }
 
 const getUserTotalVotes = async (userId:string) => {
@@ -173,6 +255,21 @@ const getContestTotalVotes = async (contestId:string)=> {
 
     return votes
 }
+
+/**
+ * Get individual team member's score in a contest
+ * Only applicable when memberId is set (team matches)
+ * Returns the member_score field which tracks votes received by this team member
+ */
+const getTeamMemberScore = async (participantId: string): Promise<number> => {
+    const participant = await prisma.contestParticipant.findUnique({
+        where: { id: participantId },
+        select: { member_score: true }
+    })
+    
+    return participant?.member_score ?? 0
+}
+
 export const voteService = {
     getTotalPromotedVotes,
     getTotalOrganicVotes,
@@ -181,5 +278,6 @@ export const voteService = {
     getUserTotalVotes,
     getUserContestSpecificVote,
     totalVotesOfParticipant,
-    getContestTotalVotes
+    getContestTotalVotes,
+    getTeamMemberScore
 }

@@ -4260,6 +4260,7 @@ export namespace Prisma {
     contestPrizes: number
     achievements: number
     teamMatch: number
+    matchHistory: number
   }
 
   export type ContestCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -4270,6 +4271,7 @@ export namespace Prisma {
     contestPrizes?: boolean | ContestCountOutputTypeCountContestPrizesArgs
     achievements?: boolean | ContestCountOutputTypeCountAchievementsArgs
     teamMatch?: boolean | ContestCountOutputTypeCountTeamMatchArgs
+    matchHistory?: boolean | ContestCountOutputTypeCountMatchHistoryArgs
   }
 
   // Custom InputTypes
@@ -4330,6 +4332,13 @@ export namespace Prisma {
    */
   export type ContestCountOutputTypeCountTeamMatchArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: TeamMatchWhereInput
+  }
+
+  /**
+   * ContestCountOutputType without action
+   */
+  export type ContestCountOutputTypeCountMatchHistoryArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TeamMatchHistoryWhereInput
   }
 
 
@@ -4452,6 +4461,7 @@ export namespace Prisma {
     MatchesAsTeam2: number
     joinRequests: number
     history: number
+    opponentHistory: number
   }
 
   export type TeamCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -4462,6 +4472,7 @@ export namespace Prisma {
     MatchesAsTeam2?: boolean | TeamCountOutputTypeCountMatchesAsTeam2Args
     joinRequests?: boolean | TeamCountOutputTypeCountJoinRequestsArgs
     history?: boolean | TeamCountOutputTypeCountHistoryArgs
+    opponentHistory?: boolean | TeamCountOutputTypeCountOpponentHistoryArgs
   }
 
   // Custom InputTypes
@@ -4521,6 +4532,13 @@ export namespace Prisma {
    * TeamCountOutputType without action
    */
   export type TeamCountOutputTypeCountHistoryArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TeamMatchHistoryWhereInput
+  }
+
+  /**
+   * TeamCountOutputType without action
+   */
+  export type TeamCountOutputTypeCountOpponentHistoryArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: TeamMatchHistoryWhereInput
   }
 
@@ -5324,6 +5342,7 @@ export namespace Prisma {
     contestPrizes?: boolean | Contest$contestPrizesArgs<ExtArgs>
     achievements?: boolean | Contest$achievementsArgs<ExtArgs>
     teamMatch?: boolean | Contest$teamMatchArgs<ExtArgs>
+    matchHistory?: boolean | Contest$matchHistoryArgs<ExtArgs>
     _count?: boolean | ContestCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["contest"]>
 
@@ -5361,6 +5380,7 @@ export namespace Prisma {
     contestPrizes?: boolean | Contest$contestPrizesArgs<ExtArgs>
     achievements?: boolean | Contest$achievementsArgs<ExtArgs>
     teamMatch?: boolean | Contest$teamMatchArgs<ExtArgs>
+    matchHistory?: boolean | Contest$matchHistoryArgs<ExtArgs>
     _count?: boolean | ContestCountOutputTypeDefaultArgs<ExtArgs>
   }
 
@@ -5375,6 +5395,7 @@ export namespace Prisma {
       contestPrizes: Prisma.$ContestPrizePayload<ExtArgs>[]
       achievements: Prisma.$ContestAchievementPayload<ExtArgs>[]
       teamMatch: Prisma.$TeamMatchPayload<ExtArgs>[]
+      matchHistory: Prisma.$TeamMatchHistoryPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -5767,6 +5788,7 @@ export namespace Prisma {
     contestPrizes<T extends Contest$contestPrizesArgs<ExtArgs> = {}>(args?: Subset<T, Contest$contestPrizesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ContestPrizePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     achievements<T extends Contest$achievementsArgs<ExtArgs> = {}>(args?: Subset<T, Contest$achievementsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ContestAchievementPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     teamMatch<T extends Contest$teamMatchArgs<ExtArgs> = {}>(args?: Subset<T, Contest$teamMatchArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TeamMatchPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    matchHistory<T extends Contest$matchHistoryArgs<ExtArgs> = {}>(args?: Subset<T, Contest$matchHistoryArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TeamMatchHistoryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -6350,6 +6372,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: TeamMatchScalarFieldEnum | TeamMatchScalarFieldEnum[]
+  }
+
+  /**
+   * Contest.matchHistory
+   */
+  export type Contest$matchHistoryArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TeamMatchHistory
+     */
+    select?: TeamMatchHistorySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TeamMatchHistory
+     */
+    omit?: TeamMatchHistoryOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TeamMatchHistoryInclude<ExtArgs> | null
+    where?: TeamMatchHistoryWhereInput
+    orderBy?: TeamMatchHistoryOrderByWithRelationInput | TeamMatchHistoryOrderByWithRelationInput[]
+    cursor?: TeamMatchHistoryWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: TeamMatchHistoryScalarFieldEnum | TeamMatchHistoryScalarFieldEnum[]
   }
 
   /**
@@ -10713,11 +10759,13 @@ export namespace Prisma {
   export type ContestParticipantAvgAggregateOutputType = {
     rank: number | null
     exposure_bonus: number | null
+    member_score: number | null
   }
 
   export type ContestParticipantSumAggregateOutputType = {
     rank: number | null
     exposure_bonus: number | null
+    member_score: number | null
   }
 
   export type ContestParticipantMinAggregateOutputType = {
@@ -10729,6 +10777,7 @@ export namespace Prisma {
     level: $Enums.YCLevel | null
     rank: number | null
     exposure_bonus: number | null
+    member_score: number | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -10742,6 +10791,7 @@ export namespace Prisma {
     level: $Enums.YCLevel | null
     rank: number | null
     exposure_bonus: number | null
+    member_score: number | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -10755,6 +10805,7 @@ export namespace Prisma {
     level: number
     rank: number
     exposure_bonus: number
+    member_score: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -10764,11 +10815,13 @@ export namespace Prisma {
   export type ContestParticipantAvgAggregateInputType = {
     rank?: true
     exposure_bonus?: true
+    member_score?: true
   }
 
   export type ContestParticipantSumAggregateInputType = {
     rank?: true
     exposure_bonus?: true
+    member_score?: true
   }
 
   export type ContestParticipantMinAggregateInputType = {
@@ -10780,6 +10833,7 @@ export namespace Prisma {
     level?: true
     rank?: true
     exposure_bonus?: true
+    member_score?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -10793,6 +10847,7 @@ export namespace Prisma {
     level?: true
     rank?: true
     exposure_bonus?: true
+    member_score?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -10806,6 +10861,7 @@ export namespace Prisma {
     level?: true
     rank?: true
     exposure_bonus?: true
+    member_score?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -10906,6 +10962,7 @@ export namespace Prisma {
     level: $Enums.YCLevel
     rank: number | null
     exposure_bonus: number
+    member_score: number
     createdAt: Date
     updatedAt: Date
     _count: ContestParticipantCountAggregateOutputType | null
@@ -10938,6 +10995,7 @@ export namespace Prisma {
     level?: boolean
     rank?: boolean
     exposure_bonus?: boolean
+    member_score?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     contest?: boolean | ContestDefaultArgs<ExtArgs>
@@ -10960,11 +11018,12 @@ export namespace Prisma {
     level?: boolean
     rank?: boolean
     exposure_bonus?: boolean
+    member_score?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type ContestParticipantOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "status" | "contestId" | "userId" | "memberId" | "level" | "rank" | "exposure_bonus" | "createdAt" | "updatedAt", ExtArgs["result"]["contestParticipant"]>
+  export type ContestParticipantOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "status" | "contestId" | "userId" | "memberId" | "level" | "rank" | "exposure_bonus" | "member_score" | "createdAt" | "updatedAt", ExtArgs["result"]["contestParticipant"]>
   export type ContestParticipantInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     contest?: boolean | ContestDefaultArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -10994,6 +11053,7 @@ export namespace Prisma {
       level: $Enums.YCLevel
       rank: number | null
       exposure_bonus: number
+      member_score: number
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["contestParticipant"]>
@@ -11402,6 +11462,7 @@ export namespace Prisma {
     readonly level: FieldRef<"ContestParticipant", 'YCLevel'>
     readonly rank: FieldRef<"ContestParticipant", 'Int'>
     readonly exposure_bonus: FieldRef<"ContestParticipant", 'Int'>
+    readonly member_score: FieldRef<"ContestParticipant", 'Int'>
     readonly createdAt: FieldRef<"ContestParticipant", 'DateTime'>
     readonly updatedAt: FieldRef<"ContestParticipant", 'DateTime'>
   }
@@ -23438,6 +23499,7 @@ export namespace Prisma {
     MatchesAsTeam2?: boolean | Team$MatchesAsTeam2Args<ExtArgs>
     joinRequests?: boolean | Team$joinRequestsArgs<ExtArgs>
     history?: boolean | Team$historyArgs<ExtArgs>
+    opponentHistory?: boolean | Team$opponentHistoryArgs<ExtArgs>
     _count?: boolean | TeamCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["team"]>
 
@@ -23479,6 +23541,7 @@ export namespace Prisma {
     MatchesAsTeam2?: boolean | Team$MatchesAsTeam2Args<ExtArgs>
     joinRequests?: boolean | Team$joinRequestsArgs<ExtArgs>
     history?: boolean | Team$historyArgs<ExtArgs>
+    opponentHistory?: boolean | Team$opponentHistoryArgs<ExtArgs>
     _count?: boolean | TeamCountOutputTypeDefaultArgs<ExtArgs>
   }
 
@@ -23493,6 +23556,7 @@ export namespace Prisma {
       MatchesAsTeam2: Prisma.$TeamMatchPayload<ExtArgs>[]
       joinRequests: Prisma.$TeamJoinRequestPayload<ExtArgs>[]
       history: Prisma.$TeamMatchHistoryPayload<ExtArgs>[]
+      opponentHistory: Prisma.$TeamMatchHistoryPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -23889,6 +23953,7 @@ export namespace Prisma {
     MatchesAsTeam2<T extends Team$MatchesAsTeam2Args<ExtArgs> = {}>(args?: Subset<T, Team$MatchesAsTeam2Args<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TeamMatchPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     joinRequests<T extends Team$joinRequestsArgs<ExtArgs> = {}>(args?: Subset<T, Team$joinRequestsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TeamJoinRequestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     history<T extends Team$historyArgs<ExtArgs> = {}>(args?: Subset<T, Team$historyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TeamMatchHistoryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    opponentHistory<T extends Team$opponentHistoryArgs<ExtArgs> = {}>(args?: Subset<T, Team$opponentHistoryArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TeamMatchHistoryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -24458,6 +24523,30 @@ export namespace Prisma {
    * Team.history
    */
   export type Team$historyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TeamMatchHistory
+     */
+    select?: TeamMatchHistorySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TeamMatchHistory
+     */
+    omit?: TeamMatchHistoryOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TeamMatchHistoryInclude<ExtArgs> | null
+    where?: TeamMatchHistoryWhereInput
+    orderBy?: TeamMatchHistoryOrderByWithRelationInput | TeamMatchHistoryOrderByWithRelationInput[]
+    cursor?: TeamMatchHistoryWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: TeamMatchHistoryScalarFieldEnum | TeamMatchHistoryScalarFieldEnum[]
+  }
+
+  /**
+   * Team.opponentHistory
+   */
+  export type Team$opponentHistoryArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the TeamMatchHistory
      */
@@ -29816,6 +29905,8 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     team?: boolean | TeamDefaultArgs<ExtArgs>
+    opponent_team?: boolean | TeamMatchHistory$opponent_teamArgs<ExtArgs>
+    contest?: boolean | TeamMatchHistory$contestArgs<ExtArgs>
   }, ExtArgs["result"]["teamMatchHistory"]>
 
 
@@ -29837,12 +29928,16 @@ export namespace Prisma {
   export type TeamMatchHistoryOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "teamId" | "matchId" | "opponent_team_id" | "team_score" | "opponent_score" | "result" | "match_date" | "contest_id" | "createdAt" | "updatedAt", ExtArgs["result"]["teamMatchHistory"]>
   export type TeamMatchHistoryInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     team?: boolean | TeamDefaultArgs<ExtArgs>
+    opponent_team?: boolean | TeamMatchHistory$opponent_teamArgs<ExtArgs>
+    contest?: boolean | TeamMatchHistory$contestArgs<ExtArgs>
   }
 
   export type $TeamMatchHistoryPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "TeamMatchHistory"
     objects: {
       team: Prisma.$TeamPayload<ExtArgs>
+      opponent_team: Prisma.$TeamPayload<ExtArgs> | null
+      contest: Prisma.$ContestPayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -30220,6 +30315,8 @@ export namespace Prisma {
   export interface Prisma__TeamMatchHistoryClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     team<T extends TeamDefaultArgs<ExtArgs> = {}>(args?: Subset<T, TeamDefaultArgs<ExtArgs>>): Prisma__TeamClient<$Result.GetResult<Prisma.$TeamPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    opponent_team<T extends TeamMatchHistory$opponent_teamArgs<ExtArgs> = {}>(args?: Subset<T, TeamMatchHistory$opponent_teamArgs<ExtArgs>>): Prisma__TeamClient<$Result.GetResult<Prisma.$TeamPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    contest<T extends TeamMatchHistory$contestArgs<ExtArgs> = {}>(args?: Subset<T, TeamMatchHistory$contestArgs<ExtArgs>>): Prisma__ContestClient<$Result.GetResult<Prisma.$ContestPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -30627,6 +30724,44 @@ export namespace Prisma {
      * Additional options to pass to the `aggregate` command ${@link https://docs.mongodb.com/manual/reference/command/aggregate/#command-fields MongoDB Docs}.
      */
     options?: InputJsonValue
+  }
+
+  /**
+   * TeamMatchHistory.opponent_team
+   */
+  export type TeamMatchHistory$opponent_teamArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Team
+     */
+    select?: TeamSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Team
+     */
+    omit?: TeamOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TeamInclude<ExtArgs> | null
+    where?: TeamWhereInput
+  }
+
+  /**
+   * TeamMatchHistory.contest
+   */
+  export type TeamMatchHistory$contestArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Contest
+     */
+    select?: ContestSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Contest
+     */
+    omit?: ContestOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContestInclude<ExtArgs> | null
+    where?: ContestWhereInput
   }
 
   /**
@@ -41748,6 +41883,7 @@ export namespace Prisma {
     level: 'level',
     rank: 'rank',
     exposure_bonus: 'exposure_bonus',
+    member_score: 'member_score',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -42704,6 +42840,7 @@ export namespace Prisma {
     contestPrizes?: ContestPrizeListRelationFilter
     achievements?: ContestAchievementListRelationFilter
     teamMatch?: TeamMatchListRelationFilter
+    matchHistory?: TeamMatchHistoryListRelationFilter
   }
 
   export type ContestOrderByWithRelationInput = {
@@ -42734,6 +42871,7 @@ export namespace Prisma {
     contestPrizes?: ContestPrizeOrderByRelationAggregateInput
     achievements?: ContestAchievementOrderByRelationAggregateInput
     teamMatch?: TeamMatchOrderByRelationAggregateInput
+    matchHistory?: TeamMatchHistoryOrderByRelationAggregateInput
   }
 
   export type ContestWhereUniqueInput = Prisma.AtLeast<{
@@ -42767,6 +42905,7 @@ export namespace Prisma {
     contestPrizes?: ContestPrizeListRelationFilter
     achievements?: ContestAchievementListRelationFilter
     teamMatch?: TeamMatchListRelationFilter
+    matchHistory?: TeamMatchHistoryListRelationFilter
   }, "id">
 
   export type ContestOrderByWithAggregationInput = {
@@ -43175,6 +43314,7 @@ export namespace Prisma {
     level?: EnumYCLevelFilter<"ContestParticipant"> | $Enums.YCLevel
     rank?: IntNullableFilter<"ContestParticipant"> | number | null
     exposure_bonus?: IntFilter<"ContestParticipant"> | number
+    member_score?: IntFilter<"ContestParticipant"> | number
     createdAt?: DateTimeFilter<"ContestParticipant"> | Date | string
     updatedAt?: DateTimeFilter<"ContestParticipant"> | Date | string
     contest?: XOR<ContestScalarRelationFilter, ContestWhereInput>
@@ -43194,6 +43334,7 @@ export namespace Prisma {
     level?: SortOrder
     rank?: SortOrder
     exposure_bonus?: SortOrder
+    member_score?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     contest?: ContestOrderByWithRelationInput
@@ -43217,6 +43358,7 @@ export namespace Prisma {
     level?: EnumYCLevelFilter<"ContestParticipant"> | $Enums.YCLevel
     rank?: IntNullableFilter<"ContestParticipant"> | number | null
     exposure_bonus?: IntFilter<"ContestParticipant"> | number
+    member_score?: IntFilter<"ContestParticipant"> | number
     createdAt?: DateTimeFilter<"ContestParticipant"> | Date | string
     updatedAt?: DateTimeFilter<"ContestParticipant"> | Date | string
     contest?: XOR<ContestScalarRelationFilter, ContestWhereInput>
@@ -43236,6 +43378,7 @@ export namespace Prisma {
     level?: SortOrder
     rank?: SortOrder
     exposure_bonus?: SortOrder
+    member_score?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: ContestParticipantCountOrderByAggregateInput
@@ -43257,6 +43400,7 @@ export namespace Prisma {
     level?: EnumYCLevelWithAggregatesFilter<"ContestParticipant"> | $Enums.YCLevel
     rank?: IntNullableWithAggregatesFilter<"ContestParticipant"> | number | null
     exposure_bonus?: IntWithAggregatesFilter<"ContestParticipant"> | number
+    member_score?: IntWithAggregatesFilter<"ContestParticipant"> | number
     createdAt?: DateTimeWithAggregatesFilter<"ContestParticipant"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"ContestParticipant"> | Date | string
   }
@@ -44112,6 +44256,7 @@ export namespace Prisma {
     MatchesAsTeam2?: TeamMatchListRelationFilter
     joinRequests?: TeamJoinRequestListRelationFilter
     history?: TeamMatchHistoryListRelationFilter
+    opponentHistory?: TeamMatchHistoryListRelationFilter
   }
 
   export type TeamOrderByWithRelationInput = {
@@ -44146,6 +44291,7 @@ export namespace Prisma {
     MatchesAsTeam2?: TeamMatchOrderByRelationAggregateInput
     joinRequests?: TeamJoinRequestOrderByRelationAggregateInput
     history?: TeamMatchHistoryOrderByRelationAggregateInput
+    opponentHistory?: TeamMatchHistoryOrderByRelationAggregateInput
   }
 
   export type TeamWhereUniqueInput = Prisma.AtLeast<{
@@ -44183,6 +44329,7 @@ export namespace Prisma {
     MatchesAsTeam2?: TeamMatchListRelationFilter
     joinRequests?: TeamJoinRequestListRelationFilter
     history?: TeamMatchHistoryListRelationFilter
+    opponentHistory?: TeamMatchHistoryListRelationFilter
   }, "id">
 
   export type TeamOrderByWithAggregationInput = {
@@ -44614,6 +44761,8 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"TeamMatchHistory"> | Date | string
     updatedAt?: DateTimeFilter<"TeamMatchHistory"> | Date | string
     team?: XOR<TeamScalarRelationFilter, TeamWhereInput>
+    opponent_team?: XOR<TeamNullableScalarRelationFilter, TeamWhereInput> | null
+    contest?: XOR<ContestNullableScalarRelationFilter, ContestWhereInput> | null
   }
 
   export type TeamMatchHistoryOrderByWithRelationInput = {
@@ -44629,15 +44778,18 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrder
     team?: TeamOrderByWithRelationInput
+    opponent_team?: TeamOrderByWithRelationInput
+    contest?: ContestOrderByWithRelationInput
   }
 
   export type TeamMatchHistoryWhereUniqueInput = Prisma.AtLeast<{
     id?: string
-    matchId?: string
+    teamId_matchId?: TeamMatchHistoryTeamIdMatchIdCompoundUniqueInput
     AND?: TeamMatchHistoryWhereInput | TeamMatchHistoryWhereInput[]
     OR?: TeamMatchHistoryWhereInput[]
     NOT?: TeamMatchHistoryWhereInput | TeamMatchHistoryWhereInput[]
     teamId?: StringFilter<"TeamMatchHistory"> | string
+    matchId?: StringFilter<"TeamMatchHistory"> | string
     opponent_team_id?: StringFilter<"TeamMatchHistory"> | string
     team_score?: IntFilter<"TeamMatchHistory"> | number
     opponent_score?: IntFilter<"TeamMatchHistory"> | number
@@ -44647,7 +44799,9 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"TeamMatchHistory"> | Date | string
     updatedAt?: DateTimeFilter<"TeamMatchHistory"> | Date | string
     team?: XOR<TeamScalarRelationFilter, TeamWhereInput>
-  }, "id" | "matchId">
+    opponent_team?: XOR<TeamNullableScalarRelationFilter, TeamWhereInput> | null
+    contest?: XOR<ContestNullableScalarRelationFilter, ContestWhereInput> | null
+  }, "id" | "teamId_matchId">
 
   export type TeamMatchHistoryOrderByWithAggregationInput = {
     id?: SortOrder
@@ -45518,6 +45672,7 @@ export namespace Prisma {
     contestPrizes?: ContestPrizeCreateNestedManyWithoutContestInput
     achievements?: ContestAchievementCreateNestedManyWithoutContestInput
     teamMatch?: TeamMatchCreateNestedManyWithoutContestInput
+    matchHistory?: TeamMatchHistoryCreateNestedManyWithoutContestInput
   }
 
   export type ContestUncheckedCreateInput = {
@@ -45547,6 +45702,7 @@ export namespace Prisma {
     contestPrizes?: ContestPrizeUncheckedCreateNestedManyWithoutContestInput
     achievements?: ContestAchievementUncheckedCreateNestedManyWithoutContestInput
     teamMatch?: TeamMatchUncheckedCreateNestedManyWithoutContestInput
+    matchHistory?: TeamMatchHistoryUncheckedCreateNestedManyWithoutContestInput
   }
 
   export type ContestUpdateInput = {
@@ -45575,6 +45731,7 @@ export namespace Prisma {
     contestPrizes?: ContestPrizeUpdateManyWithoutContestNestedInput
     achievements?: ContestAchievementUpdateManyWithoutContestNestedInput
     teamMatch?: TeamMatchUpdateManyWithoutContestNestedInput
+    matchHistory?: TeamMatchHistoryUpdateManyWithoutContestNestedInput
   }
 
   export type ContestUncheckedUpdateInput = {
@@ -45603,6 +45760,7 @@ export namespace Prisma {
     contestPrizes?: ContestPrizeUncheckedUpdateManyWithoutContestNestedInput
     achievements?: ContestAchievementUncheckedUpdateManyWithoutContestNestedInput
     teamMatch?: TeamMatchUncheckedUpdateManyWithoutContestNestedInput
+    matchHistory?: TeamMatchHistoryUncheckedUpdateManyWithoutContestNestedInput
   }
 
   export type ContestCreateManyInput = {
@@ -46040,6 +46198,7 @@ export namespace Prisma {
     level?: $Enums.YCLevel
     rank?: number | null
     exposure_bonus?: number
+    member_score?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     contest: ContestCreateNestedOneWithoutParticipantsInput
@@ -46059,6 +46218,7 @@ export namespace Prisma {
     level?: $Enums.YCLevel
     rank?: number | null
     exposure_bonus?: number
+    member_score?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     photos?: ContestPhotoUncheckedCreateNestedManyWithoutParticipantInput
@@ -46071,6 +46231,7 @@ export namespace Prisma {
     level?: EnumYCLevelFieldUpdateOperationsInput | $Enums.YCLevel
     rank?: NullableIntFieldUpdateOperationsInput | number | null
     exposure_bonus?: IntFieldUpdateOperationsInput | number
+    member_score?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     contest?: ContestUpdateOneRequiredWithoutParticipantsNestedInput
@@ -46089,6 +46250,7 @@ export namespace Prisma {
     level?: EnumYCLevelFieldUpdateOperationsInput | $Enums.YCLevel
     rank?: NullableIntFieldUpdateOperationsInput | number | null
     exposure_bonus?: IntFieldUpdateOperationsInput | number
+    member_score?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     photos?: ContestPhotoUncheckedUpdateManyWithoutParticipantNestedInput
@@ -46105,6 +46267,7 @@ export namespace Prisma {
     level?: $Enums.YCLevel
     rank?: number | null
     exposure_bonus?: number
+    member_score?: number
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -46114,6 +46277,7 @@ export namespace Prisma {
     level?: EnumYCLevelFieldUpdateOperationsInput | $Enums.YCLevel
     rank?: NullableIntFieldUpdateOperationsInput | number | null
     exposure_bonus?: IntFieldUpdateOperationsInput | number
+    member_score?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -46126,6 +46290,7 @@ export namespace Prisma {
     level?: EnumYCLevelFieldUpdateOperationsInput | $Enums.YCLevel
     rank?: NullableIntFieldUpdateOperationsInput | number | null
     exposure_bonus?: IntFieldUpdateOperationsInput | number
+    member_score?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -47019,6 +47184,7 @@ export namespace Prisma {
     MatchesAsTeam2?: TeamMatchCreateNestedManyWithoutTeam2Input
     joinRequests?: TeamJoinRequestCreateNestedManyWithoutTeamInput
     history?: TeamMatchHistoryCreateNestedManyWithoutTeamInput
+    opponentHistory?: TeamMatchHistoryCreateNestedManyWithoutOpponent_teamInput
   }
 
   export type TeamUncheckedCreateInput = {
@@ -47052,6 +47218,7 @@ export namespace Prisma {
     MatchesAsTeam2?: TeamMatchUncheckedCreateNestedManyWithoutTeam2Input
     joinRequests?: TeamJoinRequestUncheckedCreateNestedManyWithoutTeamInput
     history?: TeamMatchHistoryUncheckedCreateNestedManyWithoutTeamInput
+    opponentHistory?: TeamMatchHistoryUncheckedCreateNestedManyWithoutOpponent_teamInput
   }
 
   export type TeamUpdateInput = {
@@ -47084,6 +47251,7 @@ export namespace Prisma {
     MatchesAsTeam2?: TeamMatchUpdateManyWithoutTeam2NestedInput
     joinRequests?: TeamJoinRequestUpdateManyWithoutTeamNestedInput
     history?: TeamMatchHistoryUpdateManyWithoutTeamNestedInput
+    opponentHistory?: TeamMatchHistoryUpdateManyWithoutOpponent_teamNestedInput
   }
 
   export type TeamUncheckedUpdateInput = {
@@ -47116,6 +47284,7 @@ export namespace Prisma {
     MatchesAsTeam2?: TeamMatchUncheckedUpdateManyWithoutTeam2NestedInput
     joinRequests?: TeamJoinRequestUncheckedUpdateManyWithoutTeamNestedInput
     history?: TeamMatchHistoryUncheckedUpdateManyWithoutTeamNestedInput
+    opponentHistory?: TeamMatchHistoryUncheckedUpdateManyWithoutOpponent_teamNestedInput
   }
 
   export type TeamCreateManyInput = {
@@ -47536,15 +47705,15 @@ export namespace Prisma {
   export type TeamMatchHistoryCreateInput = {
     id?: string
     matchId: string
-    opponent_team_id: string
     team_score: number
     opponent_score: number
     result: $Enums.HistoryResult
     match_date: Date | string
-    contest_id?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     team: TeamCreateNestedOneWithoutHistoryInput
+    opponent_team?: TeamCreateNestedOneWithoutOpponentHistoryInput
+    contest?: ContestCreateNestedOneWithoutMatchHistoryInput
   }
 
   export type TeamMatchHistoryUncheckedCreateInput = {
@@ -47563,15 +47732,15 @@ export namespace Prisma {
 
   export type TeamMatchHistoryUpdateInput = {
     matchId?: StringFieldUpdateOperationsInput | string
-    opponent_team_id?: StringFieldUpdateOperationsInput | string
     team_score?: IntFieldUpdateOperationsInput | number
     opponent_score?: IntFieldUpdateOperationsInput | number
     result?: EnumHistoryResultFieldUpdateOperationsInput | $Enums.HistoryResult
     match_date?: DateTimeFieldUpdateOperationsInput | Date | string
-    contest_id?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     team?: TeamUpdateOneRequiredWithoutHistoryNestedInput
+    opponent_team?: TeamUpdateOneWithoutOpponentHistoryNestedInput
+    contest?: ContestUpdateOneWithoutMatchHistoryNestedInput
   }
 
   export type TeamMatchHistoryUncheckedUpdateInput = {
@@ -47603,12 +47772,10 @@ export namespace Prisma {
 
   export type TeamMatchHistoryUpdateManyMutationInput = {
     matchId?: StringFieldUpdateOperationsInput | string
-    opponent_team_id?: StringFieldUpdateOperationsInput | string
     team_score?: IntFieldUpdateOperationsInput | number
     opponent_score?: IntFieldUpdateOperationsInput | number
     result?: EnumHistoryResultFieldUpdateOperationsInput | $Enums.HistoryResult
     match_date?: DateTimeFieldUpdateOperationsInput | Date | string
-    contest_id?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -48617,6 +48784,12 @@ export namespace Prisma {
     none?: TeamMatchWhereInput
   }
 
+  export type TeamMatchHistoryListRelationFilter = {
+    every?: TeamMatchHistoryWhereInput
+    some?: TeamMatchHistoryWhereInput
+    none?: TeamMatchHistoryWhereInput
+  }
+
   export type ContestParticipantOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
@@ -48642,6 +48815,10 @@ export namespace Prisma {
   }
 
   export type TeamMatchOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type TeamMatchHistoryOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -49163,6 +49340,7 @@ export namespace Prisma {
     level?: SortOrder
     rank?: SortOrder
     exposure_bonus?: SortOrder
+    member_score?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -49170,6 +49348,7 @@ export namespace Prisma {
   export type ContestParticipantAvgOrderByAggregateInput = {
     rank?: SortOrder
     exposure_bonus?: SortOrder
+    member_score?: SortOrder
   }
 
   export type ContestParticipantMaxOrderByAggregateInput = {
@@ -49181,6 +49360,7 @@ export namespace Prisma {
     level?: SortOrder
     rank?: SortOrder
     exposure_bonus?: SortOrder
+    member_score?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -49194,6 +49374,7 @@ export namespace Prisma {
     level?: SortOrder
     rank?: SortOrder
     exposure_bonus?: SortOrder
+    member_score?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -49201,6 +49382,7 @@ export namespace Prisma {
   export type ContestParticipantSumOrderByAggregateInput = {
     rank?: SortOrder
     exposure_bonus?: SortOrder
+    member_score?: SortOrder
   }
 
   export type EnumContestParticipantStatusWithAggregatesFilter<$PrismaModel = never> = {
@@ -49964,12 +50146,6 @@ export namespace Prisma {
     none?: TeamJoinRequestWhereInput
   }
 
-  export type TeamMatchHistoryListRelationFilter = {
-    every?: TeamMatchHistoryWhereInput
-    some?: TeamMatchHistoryWhereInput
-    none?: TeamMatchHistoryWhereInput
-  }
-
   export type TeamMemberOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
@@ -49979,10 +50155,6 @@ export namespace Prisma {
   }
 
   export type TeamJoinRequestOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
-  export type TeamMatchHistoryOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -50384,6 +50556,21 @@ export namespace Prisma {
     in?: $Enums.HistoryResult[] | ListEnumHistoryResultFieldRefInput<$PrismaModel>
     notIn?: $Enums.HistoryResult[] | ListEnumHistoryResultFieldRefInput<$PrismaModel>
     not?: NestedEnumHistoryResultFilter<$PrismaModel> | $Enums.HistoryResult
+  }
+
+  export type TeamNullableScalarRelationFilter = {
+    is?: TeamWhereInput | null
+    isNot?: TeamWhereInput | null
+  }
+
+  export type ContestNullableScalarRelationFilter = {
+    is?: ContestWhereInput | null
+    isNot?: ContestWhereInput | null
+  }
+
+  export type TeamMatchHistoryTeamIdMatchIdCompoundUniqueInput = {
+    teamId: string
+    matchId: string
   }
 
   export type TeamMatchHistoryCountOrderByAggregateInput = {
@@ -51114,6 +51301,13 @@ export namespace Prisma {
     connect?: TeamMatchWhereUniqueInput | TeamMatchWhereUniqueInput[]
   }
 
+  export type TeamMatchHistoryCreateNestedManyWithoutContestInput = {
+    create?: XOR<TeamMatchHistoryCreateWithoutContestInput, TeamMatchHistoryUncheckedCreateWithoutContestInput> | TeamMatchHistoryCreateWithoutContestInput[] | TeamMatchHistoryUncheckedCreateWithoutContestInput[]
+    connectOrCreate?: TeamMatchHistoryCreateOrConnectWithoutContestInput | TeamMatchHistoryCreateOrConnectWithoutContestInput[]
+    createMany?: TeamMatchHistoryCreateManyContestInputEnvelope
+    connect?: TeamMatchHistoryWhereUniqueInput | TeamMatchHistoryWhereUniqueInput[]
+  }
+
   export type ContestParticipantUncheckedCreateNestedManyWithoutContestInput = {
     create?: XOR<ContestParticipantCreateWithoutContestInput, ContestParticipantUncheckedCreateWithoutContestInput> | ContestParticipantCreateWithoutContestInput[] | ContestParticipantUncheckedCreateWithoutContestInput[]
     connectOrCreate?: ContestParticipantCreateOrConnectWithoutContestInput | ContestParticipantCreateOrConnectWithoutContestInput[]
@@ -51161,6 +51355,13 @@ export namespace Prisma {
     connectOrCreate?: TeamMatchCreateOrConnectWithoutContestInput | TeamMatchCreateOrConnectWithoutContestInput[]
     createMany?: TeamMatchCreateManyContestInputEnvelope
     connect?: TeamMatchWhereUniqueInput | TeamMatchWhereUniqueInput[]
+  }
+
+  export type TeamMatchHistoryUncheckedCreateNestedManyWithoutContestInput = {
+    create?: XOR<TeamMatchHistoryCreateWithoutContestInput, TeamMatchHistoryUncheckedCreateWithoutContestInput> | TeamMatchHistoryCreateWithoutContestInput[] | TeamMatchHistoryUncheckedCreateWithoutContestInput[]
+    connectOrCreate?: TeamMatchHistoryCreateOrConnectWithoutContestInput | TeamMatchHistoryCreateOrConnectWithoutContestInput[]
+    createMany?: TeamMatchHistoryCreateManyContestInputEnvelope
+    connect?: TeamMatchHistoryWhereUniqueInput | TeamMatchHistoryWhereUniqueInput[]
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -51321,6 +51522,20 @@ export namespace Prisma {
     deleteMany?: TeamMatchScalarWhereInput | TeamMatchScalarWhereInput[]
   }
 
+  export type TeamMatchHistoryUpdateManyWithoutContestNestedInput = {
+    create?: XOR<TeamMatchHistoryCreateWithoutContestInput, TeamMatchHistoryUncheckedCreateWithoutContestInput> | TeamMatchHistoryCreateWithoutContestInput[] | TeamMatchHistoryUncheckedCreateWithoutContestInput[]
+    connectOrCreate?: TeamMatchHistoryCreateOrConnectWithoutContestInput | TeamMatchHistoryCreateOrConnectWithoutContestInput[]
+    upsert?: TeamMatchHistoryUpsertWithWhereUniqueWithoutContestInput | TeamMatchHistoryUpsertWithWhereUniqueWithoutContestInput[]
+    createMany?: TeamMatchHistoryCreateManyContestInputEnvelope
+    set?: TeamMatchHistoryWhereUniqueInput | TeamMatchHistoryWhereUniqueInput[]
+    disconnect?: TeamMatchHistoryWhereUniqueInput | TeamMatchHistoryWhereUniqueInput[]
+    delete?: TeamMatchHistoryWhereUniqueInput | TeamMatchHistoryWhereUniqueInput[]
+    connect?: TeamMatchHistoryWhereUniqueInput | TeamMatchHistoryWhereUniqueInput[]
+    update?: TeamMatchHistoryUpdateWithWhereUniqueWithoutContestInput | TeamMatchHistoryUpdateWithWhereUniqueWithoutContestInput[]
+    updateMany?: TeamMatchHistoryUpdateManyWithWhereWithoutContestInput | TeamMatchHistoryUpdateManyWithWhereWithoutContestInput[]
+    deleteMany?: TeamMatchHistoryScalarWhereInput | TeamMatchHistoryScalarWhereInput[]
+  }
+
   export type ContestParticipantUncheckedUpdateManyWithoutContestNestedInput = {
     create?: XOR<ContestParticipantCreateWithoutContestInput, ContestParticipantUncheckedCreateWithoutContestInput> | ContestParticipantCreateWithoutContestInput[] | ContestParticipantUncheckedCreateWithoutContestInput[]
     connectOrCreate?: ContestParticipantCreateOrConnectWithoutContestInput | ContestParticipantCreateOrConnectWithoutContestInput[]
@@ -51417,6 +51632,20 @@ export namespace Prisma {
     update?: TeamMatchUpdateWithWhereUniqueWithoutContestInput | TeamMatchUpdateWithWhereUniqueWithoutContestInput[]
     updateMany?: TeamMatchUpdateManyWithWhereWithoutContestInput | TeamMatchUpdateManyWithWhereWithoutContestInput[]
     deleteMany?: TeamMatchScalarWhereInput | TeamMatchScalarWhereInput[]
+  }
+
+  export type TeamMatchHistoryUncheckedUpdateManyWithoutContestNestedInput = {
+    create?: XOR<TeamMatchHistoryCreateWithoutContestInput, TeamMatchHistoryUncheckedCreateWithoutContestInput> | TeamMatchHistoryCreateWithoutContestInput[] | TeamMatchHistoryUncheckedCreateWithoutContestInput[]
+    connectOrCreate?: TeamMatchHistoryCreateOrConnectWithoutContestInput | TeamMatchHistoryCreateOrConnectWithoutContestInput[]
+    upsert?: TeamMatchHistoryUpsertWithWhereUniqueWithoutContestInput | TeamMatchHistoryUpsertWithWhereUniqueWithoutContestInput[]
+    createMany?: TeamMatchHistoryCreateManyContestInputEnvelope
+    set?: TeamMatchHistoryWhereUniqueInput | TeamMatchHistoryWhereUniqueInput[]
+    disconnect?: TeamMatchHistoryWhereUniqueInput | TeamMatchHistoryWhereUniqueInput[]
+    delete?: TeamMatchHistoryWhereUniqueInput | TeamMatchHistoryWhereUniqueInput[]
+    connect?: TeamMatchHistoryWhereUniqueInput | TeamMatchHistoryWhereUniqueInput[]
+    update?: TeamMatchHistoryUpdateWithWhereUniqueWithoutContestInput | TeamMatchHistoryUpdateWithWhereUniqueWithoutContestInput[]
+    updateMany?: TeamMatchHistoryUpdateManyWithWhereWithoutContestInput | TeamMatchHistoryUpdateManyWithWhereWithoutContestInput[]
+    deleteMany?: TeamMatchHistoryScalarWhereInput | TeamMatchHistoryScalarWhereInput[]
   }
 
   export type RecurringContestCreatelevel_requirementsInput = {
@@ -52102,6 +52331,13 @@ export namespace Prisma {
     connect?: TeamMatchHistoryWhereUniqueInput | TeamMatchHistoryWhereUniqueInput[]
   }
 
+  export type TeamMatchHistoryCreateNestedManyWithoutOpponent_teamInput = {
+    create?: XOR<TeamMatchHistoryCreateWithoutOpponent_teamInput, TeamMatchHistoryUncheckedCreateWithoutOpponent_teamInput> | TeamMatchHistoryCreateWithoutOpponent_teamInput[] | TeamMatchHistoryUncheckedCreateWithoutOpponent_teamInput[]
+    connectOrCreate?: TeamMatchHistoryCreateOrConnectWithoutOpponent_teamInput | TeamMatchHistoryCreateOrConnectWithoutOpponent_teamInput[]
+    createMany?: TeamMatchHistoryCreateManyOpponent_teamInputEnvelope
+    connect?: TeamMatchHistoryWhereUniqueInput | TeamMatchHistoryWhereUniqueInput[]
+  }
+
   export type TeamMemberUncheckedCreateNestedManyWithoutTeamInput = {
     create?: XOR<TeamMemberCreateWithoutTeamInput, TeamMemberUncheckedCreateWithoutTeamInput> | TeamMemberCreateWithoutTeamInput[] | TeamMemberUncheckedCreateWithoutTeamInput[]
     connectOrCreate?: TeamMemberCreateOrConnectWithoutTeamInput | TeamMemberCreateOrConnectWithoutTeamInput[]
@@ -52148,6 +52384,13 @@ export namespace Prisma {
     create?: XOR<TeamMatchHistoryCreateWithoutTeamInput, TeamMatchHistoryUncheckedCreateWithoutTeamInput> | TeamMatchHistoryCreateWithoutTeamInput[] | TeamMatchHistoryUncheckedCreateWithoutTeamInput[]
     connectOrCreate?: TeamMatchHistoryCreateOrConnectWithoutTeamInput | TeamMatchHistoryCreateOrConnectWithoutTeamInput[]
     createMany?: TeamMatchHistoryCreateManyTeamInputEnvelope
+    connect?: TeamMatchHistoryWhereUniqueInput | TeamMatchHistoryWhereUniqueInput[]
+  }
+
+  export type TeamMatchHistoryUncheckedCreateNestedManyWithoutOpponent_teamInput = {
+    create?: XOR<TeamMatchHistoryCreateWithoutOpponent_teamInput, TeamMatchHistoryUncheckedCreateWithoutOpponent_teamInput> | TeamMatchHistoryCreateWithoutOpponent_teamInput[] | TeamMatchHistoryUncheckedCreateWithoutOpponent_teamInput[]
+    connectOrCreate?: TeamMatchHistoryCreateOrConnectWithoutOpponent_teamInput | TeamMatchHistoryCreateOrConnectWithoutOpponent_teamInput[]
+    createMany?: TeamMatchHistoryCreateManyOpponent_teamInputEnvelope
     connect?: TeamMatchHistoryWhereUniqueInput | TeamMatchHistoryWhereUniqueInput[]
   }
 
@@ -52265,6 +52508,20 @@ export namespace Prisma {
     deleteMany?: TeamMatchHistoryScalarWhereInput | TeamMatchHistoryScalarWhereInput[]
   }
 
+  export type TeamMatchHistoryUpdateManyWithoutOpponent_teamNestedInput = {
+    create?: XOR<TeamMatchHistoryCreateWithoutOpponent_teamInput, TeamMatchHistoryUncheckedCreateWithoutOpponent_teamInput> | TeamMatchHistoryCreateWithoutOpponent_teamInput[] | TeamMatchHistoryUncheckedCreateWithoutOpponent_teamInput[]
+    connectOrCreate?: TeamMatchHistoryCreateOrConnectWithoutOpponent_teamInput | TeamMatchHistoryCreateOrConnectWithoutOpponent_teamInput[]
+    upsert?: TeamMatchHistoryUpsertWithWhereUniqueWithoutOpponent_teamInput | TeamMatchHistoryUpsertWithWhereUniqueWithoutOpponent_teamInput[]
+    createMany?: TeamMatchHistoryCreateManyOpponent_teamInputEnvelope
+    set?: TeamMatchHistoryWhereUniqueInput | TeamMatchHistoryWhereUniqueInput[]
+    disconnect?: TeamMatchHistoryWhereUniqueInput | TeamMatchHistoryWhereUniqueInput[]
+    delete?: TeamMatchHistoryWhereUniqueInput | TeamMatchHistoryWhereUniqueInput[]
+    connect?: TeamMatchHistoryWhereUniqueInput | TeamMatchHistoryWhereUniqueInput[]
+    update?: TeamMatchHistoryUpdateWithWhereUniqueWithoutOpponent_teamInput | TeamMatchHistoryUpdateWithWhereUniqueWithoutOpponent_teamInput[]
+    updateMany?: TeamMatchHistoryUpdateManyWithWhereWithoutOpponent_teamInput | TeamMatchHistoryUpdateManyWithWhereWithoutOpponent_teamInput[]
+    deleteMany?: TeamMatchHistoryScalarWhereInput | TeamMatchHistoryScalarWhereInput[]
+  }
+
   export type TeamMemberUncheckedUpdateManyWithoutTeamNestedInput = {
     create?: XOR<TeamMemberCreateWithoutTeamInput, TeamMemberUncheckedCreateWithoutTeamInput> | TeamMemberCreateWithoutTeamInput[] | TeamMemberUncheckedCreateWithoutTeamInput[]
     connectOrCreate?: TeamMemberCreateOrConnectWithoutTeamInput | TeamMemberCreateOrConnectWithoutTeamInput[]
@@ -52360,6 +52617,20 @@ export namespace Prisma {
     connect?: TeamMatchHistoryWhereUniqueInput | TeamMatchHistoryWhereUniqueInput[]
     update?: TeamMatchHistoryUpdateWithWhereUniqueWithoutTeamInput | TeamMatchHistoryUpdateWithWhereUniqueWithoutTeamInput[]
     updateMany?: TeamMatchHistoryUpdateManyWithWhereWithoutTeamInput | TeamMatchHistoryUpdateManyWithWhereWithoutTeamInput[]
+    deleteMany?: TeamMatchHistoryScalarWhereInput | TeamMatchHistoryScalarWhereInput[]
+  }
+
+  export type TeamMatchHistoryUncheckedUpdateManyWithoutOpponent_teamNestedInput = {
+    create?: XOR<TeamMatchHistoryCreateWithoutOpponent_teamInput, TeamMatchHistoryUncheckedCreateWithoutOpponent_teamInput> | TeamMatchHistoryCreateWithoutOpponent_teamInput[] | TeamMatchHistoryUncheckedCreateWithoutOpponent_teamInput[]
+    connectOrCreate?: TeamMatchHistoryCreateOrConnectWithoutOpponent_teamInput | TeamMatchHistoryCreateOrConnectWithoutOpponent_teamInput[]
+    upsert?: TeamMatchHistoryUpsertWithWhereUniqueWithoutOpponent_teamInput | TeamMatchHistoryUpsertWithWhereUniqueWithoutOpponent_teamInput[]
+    createMany?: TeamMatchHistoryCreateManyOpponent_teamInputEnvelope
+    set?: TeamMatchHistoryWhereUniqueInput | TeamMatchHistoryWhereUniqueInput[]
+    disconnect?: TeamMatchHistoryWhereUniqueInput | TeamMatchHistoryWhereUniqueInput[]
+    delete?: TeamMatchHistoryWhereUniqueInput | TeamMatchHistoryWhereUniqueInput[]
+    connect?: TeamMatchHistoryWhereUniqueInput | TeamMatchHistoryWhereUniqueInput[]
+    update?: TeamMatchHistoryUpdateWithWhereUniqueWithoutOpponent_teamInput | TeamMatchHistoryUpdateWithWhereUniqueWithoutOpponent_teamInput[]
+    updateMany?: TeamMatchHistoryUpdateManyWithWhereWithoutOpponent_teamInput | TeamMatchHistoryUpdateManyWithWhereWithoutOpponent_teamInput[]
     deleteMany?: TeamMatchHistoryScalarWhereInput | TeamMatchHistoryScalarWhereInput[]
   }
 
@@ -52561,6 +52832,18 @@ export namespace Prisma {
     connect?: TeamWhereUniqueInput
   }
 
+  export type TeamCreateNestedOneWithoutOpponentHistoryInput = {
+    create?: XOR<TeamCreateWithoutOpponentHistoryInput, TeamUncheckedCreateWithoutOpponentHistoryInput>
+    connectOrCreate?: TeamCreateOrConnectWithoutOpponentHistoryInput
+    connect?: TeamWhereUniqueInput
+  }
+
+  export type ContestCreateNestedOneWithoutMatchHistoryInput = {
+    create?: XOR<ContestCreateWithoutMatchHistoryInput, ContestUncheckedCreateWithoutMatchHistoryInput>
+    connectOrCreate?: ContestCreateOrConnectWithoutMatchHistoryInput
+    connect?: ContestWhereUniqueInput
+  }
+
   export type EnumHistoryResultFieldUpdateOperationsInput = {
     set?: $Enums.HistoryResult
   }
@@ -52571,6 +52854,26 @@ export namespace Prisma {
     upsert?: TeamUpsertWithoutHistoryInput
     connect?: TeamWhereUniqueInput
     update?: XOR<XOR<TeamUpdateToOneWithWhereWithoutHistoryInput, TeamUpdateWithoutHistoryInput>, TeamUncheckedUpdateWithoutHistoryInput>
+  }
+
+  export type TeamUpdateOneWithoutOpponentHistoryNestedInput = {
+    create?: XOR<TeamCreateWithoutOpponentHistoryInput, TeamUncheckedCreateWithoutOpponentHistoryInput>
+    connectOrCreate?: TeamCreateOrConnectWithoutOpponentHistoryInput
+    upsert?: TeamUpsertWithoutOpponentHistoryInput
+    disconnect?: boolean
+    delete?: TeamWhereInput | boolean
+    connect?: TeamWhereUniqueInput
+    update?: XOR<XOR<TeamUpdateToOneWithWhereWithoutOpponentHistoryInput, TeamUpdateWithoutOpponentHistoryInput>, TeamUncheckedUpdateWithoutOpponentHistoryInput>
+  }
+
+  export type ContestUpdateOneWithoutMatchHistoryNestedInput = {
+    create?: XOR<ContestCreateWithoutMatchHistoryInput, ContestUncheckedCreateWithoutMatchHistoryInput>
+    connectOrCreate?: ContestCreateOrConnectWithoutMatchHistoryInput
+    upsert?: ContestUpsertWithoutMatchHistoryInput
+    disconnect?: boolean
+    delete?: ContestWhereInput | boolean
+    connect?: ContestWhereUniqueInput
+    update?: XOR<XOR<ContestUpdateToOneWithWhereWithoutMatchHistoryInput, ContestUpdateWithoutMatchHistoryInput>, ContestUncheckedUpdateWithoutMatchHistoryInput>
   }
 
   export type UserLevelCreateNestedOneWithoutUserInput = {
@@ -54577,6 +54880,7 @@ export namespace Prisma {
     level?: $Enums.YCLevel
     rank?: number | null
     exposure_bonus?: number
+    member_score?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutContestParticipantInput
@@ -54594,6 +54898,7 @@ export namespace Prisma {
     level?: $Enums.YCLevel
     rank?: number | null
     exposure_bonus?: number
+    member_score?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     photos?: ContestPhotoUncheckedCreateNestedManyWithoutParticipantInput
@@ -54782,6 +55087,41 @@ export namespace Prisma {
     data: TeamMatchCreateManyContestInput | TeamMatchCreateManyContestInput[]
   }
 
+  export type TeamMatchHistoryCreateWithoutContestInput = {
+    id?: string
+    matchId: string
+    team_score: number
+    opponent_score: number
+    result: $Enums.HistoryResult
+    match_date: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    team: TeamCreateNestedOneWithoutHistoryInput
+    opponent_team?: TeamCreateNestedOneWithoutOpponentHistoryInput
+  }
+
+  export type TeamMatchHistoryUncheckedCreateWithoutContestInput = {
+    id?: string
+    teamId: string
+    matchId: string
+    opponent_team_id: string
+    team_score: number
+    opponent_score: number
+    result: $Enums.HistoryResult
+    match_date: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type TeamMatchHistoryCreateOrConnectWithoutContestInput = {
+    where: TeamMatchHistoryWhereUniqueInput
+    create: XOR<TeamMatchHistoryCreateWithoutContestInput, TeamMatchHistoryUncheckedCreateWithoutContestInput>
+  }
+
+  export type TeamMatchHistoryCreateManyContestInputEnvelope = {
+    data: TeamMatchHistoryCreateManyContestInput | TeamMatchHistoryCreateManyContestInput[]
+  }
+
   export type UserUpsertWithoutCreatedContestsInput = {
     update: XOR<UserUpdateWithoutCreatedContestsInput, UserUncheckedUpdateWithoutCreatedContestsInput>
     create: XOR<UserCreateWithoutCreatedContestsInput, UserUncheckedCreateWithoutCreatedContestsInput>
@@ -54905,6 +55245,7 @@ export namespace Prisma {
     level?: EnumYCLevelFilter<"ContestParticipant"> | $Enums.YCLevel
     rank?: IntNullableFilter<"ContestParticipant"> | number | null
     exposure_bonus?: IntFilter<"ContestParticipant"> | number
+    member_score?: IntFilter<"ContestParticipant"> | number
     createdAt?: DateTimeFilter<"ContestParticipant"> | Date | string
     updatedAt?: DateTimeFilter<"ContestParticipant"> | Date | string
   }
@@ -55088,6 +55429,39 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"TeamMatch"> | Date | string
   }
 
+  export type TeamMatchHistoryUpsertWithWhereUniqueWithoutContestInput = {
+    where: TeamMatchHistoryWhereUniqueInput
+    update: XOR<TeamMatchHistoryUpdateWithoutContestInput, TeamMatchHistoryUncheckedUpdateWithoutContestInput>
+    create: XOR<TeamMatchHistoryCreateWithoutContestInput, TeamMatchHistoryUncheckedCreateWithoutContestInput>
+  }
+
+  export type TeamMatchHistoryUpdateWithWhereUniqueWithoutContestInput = {
+    where: TeamMatchHistoryWhereUniqueInput
+    data: XOR<TeamMatchHistoryUpdateWithoutContestInput, TeamMatchHistoryUncheckedUpdateWithoutContestInput>
+  }
+
+  export type TeamMatchHistoryUpdateManyWithWhereWithoutContestInput = {
+    where: TeamMatchHistoryScalarWhereInput
+    data: XOR<TeamMatchHistoryUpdateManyMutationInput, TeamMatchHistoryUncheckedUpdateManyWithoutContestInput>
+  }
+
+  export type TeamMatchHistoryScalarWhereInput = {
+    AND?: TeamMatchHistoryScalarWhereInput | TeamMatchHistoryScalarWhereInput[]
+    OR?: TeamMatchHistoryScalarWhereInput[]
+    NOT?: TeamMatchHistoryScalarWhereInput | TeamMatchHistoryScalarWhereInput[]
+    id?: StringFilter<"TeamMatchHistory"> | string
+    teamId?: StringFilter<"TeamMatchHistory"> | string
+    matchId?: StringFilter<"TeamMatchHistory"> | string
+    opponent_team_id?: StringFilter<"TeamMatchHistory"> | string
+    team_score?: IntFilter<"TeamMatchHistory"> | number
+    opponent_score?: IntFilter<"TeamMatchHistory"> | number
+    result?: EnumHistoryResultFilter<"TeamMatchHistory"> | $Enums.HistoryResult
+    match_date?: DateTimeFilter<"TeamMatchHistory"> | Date | string
+    contest_id?: StringNullableFilter<"TeamMatchHistory"> | string | null
+    createdAt?: DateTimeFilter<"TeamMatchHistory"> | Date | string
+    updatedAt?: DateTimeFilter<"TeamMatchHistory"> | Date | string
+  }
+
   export type RecurringDataUpdateInput = {
     recurringType?: EnumRecurringTypeFieldUpdateOperationsInput | $Enums.RecurringType
     previousOccurrence?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -55121,6 +55495,7 @@ export namespace Prisma {
     contestPrizes?: ContestPrizeCreateNestedManyWithoutContestInput
     achievements?: ContestAchievementCreateNestedManyWithoutContestInput
     teamMatch?: TeamMatchCreateNestedManyWithoutContestInput
+    matchHistory?: TeamMatchHistoryCreateNestedManyWithoutContestInput
   }
 
   export type ContestUncheckedCreateWithoutContestRulesInput = {
@@ -55149,6 +55524,7 @@ export namespace Prisma {
     contestPrizes?: ContestPrizeUncheckedCreateNestedManyWithoutContestInput
     achievements?: ContestAchievementUncheckedCreateNestedManyWithoutContestInput
     teamMatch?: TeamMatchUncheckedCreateNestedManyWithoutContestInput
+    matchHistory?: TeamMatchHistoryUncheckedCreateNestedManyWithoutContestInput
   }
 
   export type ContestCreateOrConnectWithoutContestRulesInput = {
@@ -55192,6 +55568,7 @@ export namespace Prisma {
     contestPrizes?: ContestPrizeUpdateManyWithoutContestNestedInput
     achievements?: ContestAchievementUpdateManyWithoutContestNestedInput
     teamMatch?: TeamMatchUpdateManyWithoutContestNestedInput
+    matchHistory?: TeamMatchHistoryUpdateManyWithoutContestNestedInput
   }
 
   export type ContestUncheckedUpdateWithoutContestRulesInput = {
@@ -55219,6 +55596,7 @@ export namespace Prisma {
     contestPrizes?: ContestPrizeUncheckedUpdateManyWithoutContestNestedInput
     achievements?: ContestAchievementUncheckedUpdateManyWithoutContestNestedInput
     teamMatch?: TeamMatchUncheckedUpdateManyWithoutContestNestedInput
+    matchHistory?: TeamMatchHistoryUncheckedUpdateManyWithoutContestNestedInput
   }
 
   export type ContestParticipantCreateWithoutPhotosInput = {
@@ -55227,6 +55605,7 @@ export namespace Prisma {
     level?: $Enums.YCLevel
     rank?: number | null
     exposure_bonus?: number
+    member_score?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     contest: ContestCreateNestedOneWithoutParticipantsInput
@@ -55245,6 +55624,7 @@ export namespace Prisma {
     level?: $Enums.YCLevel
     rank?: number | null
     exposure_bonus?: number
+    member_score?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     ContestWinner?: ContestWinnerUncheckedCreateNestedManyWithoutParticipantInput
@@ -55417,6 +55797,7 @@ export namespace Prisma {
     level?: EnumYCLevelFieldUpdateOperationsInput | $Enums.YCLevel
     rank?: NullableIntFieldUpdateOperationsInput | number | null
     exposure_bonus?: IntFieldUpdateOperationsInput | number
+    member_score?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     contest?: ContestUpdateOneRequiredWithoutParticipantsNestedInput
@@ -55434,6 +55815,7 @@ export namespace Prisma {
     level?: EnumYCLevelFieldUpdateOperationsInput | $Enums.YCLevel
     rank?: NullableIntFieldUpdateOperationsInput | number | null
     exposure_bonus?: IntFieldUpdateOperationsInput | number
+    member_score?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     ContestWinner?: ContestWinnerUncheckedUpdateManyWithoutParticipantNestedInput
@@ -55574,6 +55956,7 @@ export namespace Prisma {
     level?: $Enums.YCLevel
     rank?: number | null
     exposure_bonus?: number
+    member_score?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     contest: ContestCreateNestedOneWithoutParticipantsInput
@@ -55592,6 +55975,7 @@ export namespace Prisma {
     level?: $Enums.YCLevel
     rank?: number | null
     exposure_bonus?: number
+    member_score?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     photos?: ContestPhotoUncheckedCreateNestedManyWithoutParticipantInput
@@ -55658,6 +56042,7 @@ export namespace Prisma {
     level?: EnumYCLevelFieldUpdateOperationsInput | $Enums.YCLevel
     rank?: NullableIntFieldUpdateOperationsInput | number | null
     exposure_bonus?: IntFieldUpdateOperationsInput | number
+    member_score?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     contest?: ContestUpdateOneRequiredWithoutParticipantsNestedInput
@@ -55675,6 +56060,7 @@ export namespace Prisma {
     level?: EnumYCLevelFieldUpdateOperationsInput | $Enums.YCLevel
     rank?: NullableIntFieldUpdateOperationsInput | number | null
     exposure_bonus?: IntFieldUpdateOperationsInput | number
+    member_score?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     photos?: ContestPhotoUncheckedUpdateManyWithoutParticipantNestedInput
@@ -55750,6 +56136,7 @@ export namespace Prisma {
     contestPrizes?: ContestPrizeCreateNestedManyWithoutContestInput
     achievements?: ContestAchievementCreateNestedManyWithoutContestInput
     teamMatch?: TeamMatchCreateNestedManyWithoutContestInput
+    matchHistory?: TeamMatchHistoryCreateNestedManyWithoutContestInput
   }
 
   export type ContestUncheckedCreateWithoutParticipantsInput = {
@@ -55778,6 +56165,7 @@ export namespace Prisma {
     contestPrizes?: ContestPrizeUncheckedCreateNestedManyWithoutContestInput
     achievements?: ContestAchievementUncheckedCreateNestedManyWithoutContestInput
     teamMatch?: TeamMatchUncheckedCreateNestedManyWithoutContestInput
+    matchHistory?: TeamMatchHistoryUncheckedCreateNestedManyWithoutContestInput
   }
 
   export type ContestCreateOrConnectWithoutParticipantsInput = {
@@ -56032,6 +56420,7 @@ export namespace Prisma {
     contestPrizes?: ContestPrizeUpdateManyWithoutContestNestedInput
     achievements?: ContestAchievementUpdateManyWithoutContestNestedInput
     teamMatch?: TeamMatchUpdateManyWithoutContestNestedInput
+    matchHistory?: TeamMatchHistoryUpdateManyWithoutContestNestedInput
   }
 
   export type ContestUncheckedUpdateWithoutParticipantsInput = {
@@ -56059,6 +56448,7 @@ export namespace Prisma {
     contestPrizes?: ContestPrizeUncheckedUpdateManyWithoutContestNestedInput
     achievements?: ContestAchievementUncheckedUpdateManyWithoutContestNestedInput
     teamMatch?: TeamMatchUncheckedUpdateManyWithoutContestNestedInput
+    matchHistory?: TeamMatchHistoryUncheckedUpdateManyWithoutContestNestedInput
   }
 
   export type UserUpsertWithoutContestParticipantInput = {
@@ -56276,6 +56666,7 @@ export namespace Prisma {
     contestRules?: ContestRuleCreateNestedManyWithoutContestInput
     achievements?: ContestAchievementCreateNestedManyWithoutContestInput
     teamMatch?: TeamMatchCreateNestedManyWithoutContestInput
+    matchHistory?: TeamMatchHistoryCreateNestedManyWithoutContestInput
   }
 
   export type ContestUncheckedCreateWithoutContestPrizesInput = {
@@ -56304,6 +56695,7 @@ export namespace Prisma {
     contestRules?: ContestRuleUncheckedCreateNestedManyWithoutContestInput
     achievements?: ContestAchievementUncheckedCreateNestedManyWithoutContestInput
     teamMatch?: TeamMatchUncheckedCreateNestedManyWithoutContestInput
+    matchHistory?: TeamMatchHistoryUncheckedCreateNestedManyWithoutContestInput
   }
 
   export type ContestCreateOrConnectWithoutContestPrizesInput = {
@@ -56347,6 +56739,7 @@ export namespace Prisma {
     contestRules?: ContestRuleUpdateManyWithoutContestNestedInput
     achievements?: ContestAchievementUpdateManyWithoutContestNestedInput
     teamMatch?: TeamMatchUpdateManyWithoutContestNestedInput
+    matchHistory?: TeamMatchHistoryUpdateManyWithoutContestNestedInput
   }
 
   export type ContestUncheckedUpdateWithoutContestPrizesInput = {
@@ -56374,6 +56767,7 @@ export namespace Prisma {
     contestRules?: ContestRuleUncheckedUpdateManyWithoutContestNestedInput
     achievements?: ContestAchievementUncheckedUpdateManyWithoutContestNestedInput
     teamMatch?: TeamMatchUncheckedUpdateManyWithoutContestNestedInput
+    matchHistory?: TeamMatchHistoryUncheckedUpdateManyWithoutContestNestedInput
   }
 
   export type ContestPhotoCreateWithoutAchievementsInput = {
@@ -56441,6 +56835,7 @@ export namespace Prisma {
     contestRules?: ContestRuleCreateNestedManyWithoutContestInput
     contestPrizes?: ContestPrizeCreateNestedManyWithoutContestInput
     teamMatch?: TeamMatchCreateNestedManyWithoutContestInput
+    matchHistory?: TeamMatchHistoryCreateNestedManyWithoutContestInput
   }
 
   export type ContestUncheckedCreateWithoutAchievementsInput = {
@@ -56469,6 +56864,7 @@ export namespace Prisma {
     contestRules?: ContestRuleUncheckedCreateNestedManyWithoutContestInput
     contestPrizes?: ContestPrizeUncheckedCreateNestedManyWithoutContestInput
     teamMatch?: TeamMatchUncheckedCreateNestedManyWithoutContestInput
+    matchHistory?: TeamMatchHistoryUncheckedCreateNestedManyWithoutContestInput
   }
 
   export type ContestCreateOrConnectWithoutAchievementsInput = {
@@ -56482,6 +56878,7 @@ export namespace Prisma {
     level?: $Enums.YCLevel
     rank?: number | null
     exposure_bonus?: number
+    member_score?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     contest: ContestCreateNestedOneWithoutParticipantsInput
@@ -56500,6 +56897,7 @@ export namespace Prisma {
     level?: $Enums.YCLevel
     rank?: number | null
     exposure_bonus?: number
+    member_score?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     photos?: ContestPhotoUncheckedCreateNestedManyWithoutParticipantInput
@@ -56590,6 +56988,7 @@ export namespace Prisma {
     contestRules?: ContestRuleUpdateManyWithoutContestNestedInput
     contestPrizes?: ContestPrizeUpdateManyWithoutContestNestedInput
     teamMatch?: TeamMatchUpdateManyWithoutContestNestedInput
+    matchHistory?: TeamMatchHistoryUpdateManyWithoutContestNestedInput
   }
 
   export type ContestUncheckedUpdateWithoutAchievementsInput = {
@@ -56617,6 +57016,7 @@ export namespace Prisma {
     contestRules?: ContestRuleUncheckedUpdateManyWithoutContestNestedInput
     contestPrizes?: ContestPrizeUncheckedUpdateManyWithoutContestNestedInput
     teamMatch?: TeamMatchUncheckedUpdateManyWithoutContestNestedInput
+    matchHistory?: TeamMatchHistoryUncheckedUpdateManyWithoutContestNestedInput
   }
 
   export type ContestParticipantUpsertWithoutContestAchievementInput = {
@@ -56635,6 +57035,7 @@ export namespace Prisma {
     level?: EnumYCLevelFieldUpdateOperationsInput | $Enums.YCLevel
     rank?: NullableIntFieldUpdateOperationsInput | number | null
     exposure_bonus?: IntFieldUpdateOperationsInput | number
+    member_score?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     contest?: ContestUpdateOneRequiredWithoutParticipantsNestedInput
@@ -56652,6 +57053,7 @@ export namespace Prisma {
     level?: EnumYCLevelFieldUpdateOperationsInput | $Enums.YCLevel
     rank?: NullableIntFieldUpdateOperationsInput | number | null
     exposure_bonus?: IntFieldUpdateOperationsInput | number
+    member_score?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     photos?: ContestPhotoUncheckedUpdateManyWithoutParticipantNestedInput
@@ -57060,6 +57462,7 @@ export namespace Prisma {
     MatchesAsTeam2?: TeamMatchCreateNestedManyWithoutTeam2Input
     joinRequests?: TeamJoinRequestCreateNestedManyWithoutTeamInput
     history?: TeamMatchHistoryCreateNestedManyWithoutTeamInput
+    opponentHistory?: TeamMatchHistoryCreateNestedManyWithoutOpponent_teamInput
   }
 
   export type TeamUncheckedCreateWithoutChatInput = {
@@ -57092,6 +57495,7 @@ export namespace Prisma {
     MatchesAsTeam2?: TeamMatchUncheckedCreateNestedManyWithoutTeam2Input
     joinRequests?: TeamJoinRequestUncheckedCreateNestedManyWithoutTeamInput
     history?: TeamMatchHistoryUncheckedCreateNestedManyWithoutTeamInput
+    opponentHistory?: TeamMatchHistoryUncheckedCreateNestedManyWithoutOpponent_teamInput
   }
 
   export type TeamCreateOrConnectWithoutChatInput = {
@@ -57230,6 +57634,7 @@ export namespace Prisma {
     MatchesAsTeam2?: TeamMatchUpdateManyWithoutTeam2NestedInput
     joinRequests?: TeamJoinRequestUpdateManyWithoutTeamNestedInput
     history?: TeamMatchHistoryUpdateManyWithoutTeamNestedInput
+    opponentHistory?: TeamMatchHistoryUpdateManyWithoutOpponent_teamNestedInput
   }
 
   export type TeamUncheckedUpdateWithoutChatInput = {
@@ -57261,6 +57666,7 @@ export namespace Prisma {
     MatchesAsTeam2?: TeamMatchUncheckedUpdateManyWithoutTeam2NestedInput
     joinRequests?: TeamJoinRequestUncheckedUpdateManyWithoutTeamNestedInput
     history?: TeamMatchHistoryUncheckedUpdateManyWithoutTeamNestedInput
+    opponentHistory?: TeamMatchHistoryUncheckedUpdateManyWithoutOpponent_teamNestedInput
   }
 
   export type UserUpsertWithoutChatInput = {
@@ -57628,14 +58034,14 @@ export namespace Prisma {
   export type TeamMatchHistoryCreateWithoutTeamInput = {
     id?: string
     matchId: string
-    opponent_team_id: string
     team_score: number
     opponent_score: number
     result: $Enums.HistoryResult
     match_date: Date | string
-    contest_id?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    opponent_team?: TeamCreateNestedOneWithoutOpponentHistoryInput
+    contest?: ContestCreateNestedOneWithoutMatchHistoryInput
   }
 
   export type TeamMatchHistoryUncheckedCreateWithoutTeamInput = {
@@ -57658,6 +58064,41 @@ export namespace Prisma {
 
   export type TeamMatchHistoryCreateManyTeamInputEnvelope = {
     data: TeamMatchHistoryCreateManyTeamInput | TeamMatchHistoryCreateManyTeamInput[]
+  }
+
+  export type TeamMatchHistoryCreateWithoutOpponent_teamInput = {
+    id?: string
+    matchId: string
+    team_score: number
+    opponent_score: number
+    result: $Enums.HistoryResult
+    match_date: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    team: TeamCreateNestedOneWithoutHistoryInput
+    contest?: ContestCreateNestedOneWithoutMatchHistoryInput
+  }
+
+  export type TeamMatchHistoryUncheckedCreateWithoutOpponent_teamInput = {
+    id?: string
+    teamId: string
+    matchId: string
+    team_score: number
+    opponent_score: number
+    result: $Enums.HistoryResult
+    match_date: Date | string
+    contest_id?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type TeamMatchHistoryCreateOrConnectWithoutOpponent_teamInput = {
+    where: TeamMatchHistoryWhereUniqueInput
+    create: XOR<TeamMatchHistoryCreateWithoutOpponent_teamInput, TeamMatchHistoryUncheckedCreateWithoutOpponent_teamInput>
+  }
+
+  export type TeamMatchHistoryCreateManyOpponent_teamInputEnvelope = {
+    data: TeamMatchHistoryCreateManyOpponent_teamInput | TeamMatchHistoryCreateManyOpponent_teamInput[]
   }
 
   export type UserUpsertWithoutCreatedTeamInput = {
@@ -57904,21 +58345,20 @@ export namespace Prisma {
     data: XOR<TeamMatchHistoryUpdateManyMutationInput, TeamMatchHistoryUncheckedUpdateManyWithoutTeamInput>
   }
 
-  export type TeamMatchHistoryScalarWhereInput = {
-    AND?: TeamMatchHistoryScalarWhereInput | TeamMatchHistoryScalarWhereInput[]
-    OR?: TeamMatchHistoryScalarWhereInput[]
-    NOT?: TeamMatchHistoryScalarWhereInput | TeamMatchHistoryScalarWhereInput[]
-    id?: StringFilter<"TeamMatchHistory"> | string
-    teamId?: StringFilter<"TeamMatchHistory"> | string
-    matchId?: StringFilter<"TeamMatchHistory"> | string
-    opponent_team_id?: StringFilter<"TeamMatchHistory"> | string
-    team_score?: IntFilter<"TeamMatchHistory"> | number
-    opponent_score?: IntFilter<"TeamMatchHistory"> | number
-    result?: EnumHistoryResultFilter<"TeamMatchHistory"> | $Enums.HistoryResult
-    match_date?: DateTimeFilter<"TeamMatchHistory"> | Date | string
-    contest_id?: StringNullableFilter<"TeamMatchHistory"> | string | null
-    createdAt?: DateTimeFilter<"TeamMatchHistory"> | Date | string
-    updatedAt?: DateTimeFilter<"TeamMatchHistory"> | Date | string
+  export type TeamMatchHistoryUpsertWithWhereUniqueWithoutOpponent_teamInput = {
+    where: TeamMatchHistoryWhereUniqueInput
+    update: XOR<TeamMatchHistoryUpdateWithoutOpponent_teamInput, TeamMatchHistoryUncheckedUpdateWithoutOpponent_teamInput>
+    create: XOR<TeamMatchHistoryCreateWithoutOpponent_teamInput, TeamMatchHistoryUncheckedCreateWithoutOpponent_teamInput>
+  }
+
+  export type TeamMatchHistoryUpdateWithWhereUniqueWithoutOpponent_teamInput = {
+    where: TeamMatchHistoryWhereUniqueInput
+    data: XOR<TeamMatchHistoryUpdateWithoutOpponent_teamInput, TeamMatchHistoryUncheckedUpdateWithoutOpponent_teamInput>
+  }
+
+  export type TeamMatchHistoryUpdateManyWithWhereWithoutOpponent_teamInput = {
+    where: TeamMatchHistoryScalarWhereInput
+    data: XOR<TeamMatchHistoryUpdateManyMutationInput, TeamMatchHistoryUncheckedUpdateManyWithoutOpponent_teamInput>
   }
 
   export type ContestCreateWithoutTeamMatchInput = {
@@ -57947,6 +58387,7 @@ export namespace Prisma {
     contestRules?: ContestRuleCreateNestedManyWithoutContestInput
     contestPrizes?: ContestPrizeCreateNestedManyWithoutContestInput
     achievements?: ContestAchievementCreateNestedManyWithoutContestInput
+    matchHistory?: TeamMatchHistoryCreateNestedManyWithoutContestInput
   }
 
   export type ContestUncheckedCreateWithoutTeamMatchInput = {
@@ -57975,6 +58416,7 @@ export namespace Prisma {
     contestRules?: ContestRuleUncheckedCreateNestedManyWithoutContestInput
     contestPrizes?: ContestPrizeUncheckedCreateNestedManyWithoutContestInput
     achievements?: ContestAchievementUncheckedCreateNestedManyWithoutContestInput
+    matchHistory?: TeamMatchHistoryUncheckedCreateNestedManyWithoutContestInput
   }
 
   export type ContestCreateOrConnectWithoutTeamMatchInput = {
@@ -58012,6 +58454,7 @@ export namespace Prisma {
     MatchesAsTeam2?: TeamMatchCreateNestedManyWithoutTeam2Input
     joinRequests?: TeamJoinRequestCreateNestedManyWithoutTeamInput
     history?: TeamMatchHistoryCreateNestedManyWithoutTeamInput
+    opponentHistory?: TeamMatchHistoryCreateNestedManyWithoutOpponent_teamInput
   }
 
   export type TeamUncheckedCreateWithoutMatchesAsTeam1Input = {
@@ -58044,6 +58487,7 @@ export namespace Prisma {
     MatchesAsTeam2?: TeamMatchUncheckedCreateNestedManyWithoutTeam2Input
     joinRequests?: TeamJoinRequestUncheckedCreateNestedManyWithoutTeamInput
     history?: TeamMatchHistoryUncheckedCreateNestedManyWithoutTeamInput
+    opponentHistory?: TeamMatchHistoryUncheckedCreateNestedManyWithoutOpponent_teamInput
   }
 
   export type TeamCreateOrConnectWithoutMatchesAsTeam1Input = {
@@ -58081,6 +58525,7 @@ export namespace Prisma {
     MatchesAsTeam1?: TeamMatchCreateNestedManyWithoutTeam1Input
     joinRequests?: TeamJoinRequestCreateNestedManyWithoutTeamInput
     history?: TeamMatchHistoryCreateNestedManyWithoutTeamInput
+    opponentHistory?: TeamMatchHistoryCreateNestedManyWithoutOpponent_teamInput
   }
 
   export type TeamUncheckedCreateWithoutMatchesAsTeam2Input = {
@@ -58113,6 +58558,7 @@ export namespace Prisma {
     MatchesAsTeam1?: TeamMatchUncheckedCreateNestedManyWithoutTeam1Input
     joinRequests?: TeamJoinRequestUncheckedCreateNestedManyWithoutTeamInput
     history?: TeamMatchHistoryUncheckedCreateNestedManyWithoutTeamInput
+    opponentHistory?: TeamMatchHistoryUncheckedCreateNestedManyWithoutOpponent_teamInput
   }
 
   export type TeamCreateOrConnectWithoutMatchesAsTeam2Input = {
@@ -58156,6 +58602,7 @@ export namespace Prisma {
     contestRules?: ContestRuleUpdateManyWithoutContestNestedInput
     contestPrizes?: ContestPrizeUpdateManyWithoutContestNestedInput
     achievements?: ContestAchievementUpdateManyWithoutContestNestedInput
+    matchHistory?: TeamMatchHistoryUpdateManyWithoutContestNestedInput
   }
 
   export type ContestUncheckedUpdateWithoutTeamMatchInput = {
@@ -58183,6 +58630,7 @@ export namespace Prisma {
     contestRules?: ContestRuleUncheckedUpdateManyWithoutContestNestedInput
     contestPrizes?: ContestPrizeUncheckedUpdateManyWithoutContestNestedInput
     achievements?: ContestAchievementUncheckedUpdateManyWithoutContestNestedInput
+    matchHistory?: TeamMatchHistoryUncheckedUpdateManyWithoutContestNestedInput
   }
 
   export type TeamUpsertWithoutMatchesAsTeam1Input = {
@@ -58225,6 +58673,7 @@ export namespace Prisma {
     MatchesAsTeam2?: TeamMatchUpdateManyWithoutTeam2NestedInput
     joinRequests?: TeamJoinRequestUpdateManyWithoutTeamNestedInput
     history?: TeamMatchHistoryUpdateManyWithoutTeamNestedInput
+    opponentHistory?: TeamMatchHistoryUpdateManyWithoutOpponent_teamNestedInput
   }
 
   export type TeamUncheckedUpdateWithoutMatchesAsTeam1Input = {
@@ -58256,6 +58705,7 @@ export namespace Prisma {
     MatchesAsTeam2?: TeamMatchUncheckedUpdateManyWithoutTeam2NestedInput
     joinRequests?: TeamJoinRequestUncheckedUpdateManyWithoutTeamNestedInput
     history?: TeamMatchHistoryUncheckedUpdateManyWithoutTeamNestedInput
+    opponentHistory?: TeamMatchHistoryUncheckedUpdateManyWithoutOpponent_teamNestedInput
   }
 
   export type TeamUpsertWithoutMatchesAsTeam2Input = {
@@ -58298,6 +58748,7 @@ export namespace Prisma {
     MatchesAsTeam1?: TeamMatchUpdateManyWithoutTeam1NestedInput
     joinRequests?: TeamJoinRequestUpdateManyWithoutTeamNestedInput
     history?: TeamMatchHistoryUpdateManyWithoutTeamNestedInput
+    opponentHistory?: TeamMatchHistoryUpdateManyWithoutOpponent_teamNestedInput
   }
 
   export type TeamUncheckedUpdateWithoutMatchesAsTeam2Input = {
@@ -58329,6 +58780,7 @@ export namespace Prisma {
     MatchesAsTeam1?: TeamMatchUncheckedUpdateManyWithoutTeam1NestedInput
     joinRequests?: TeamJoinRequestUncheckedUpdateManyWithoutTeamNestedInput
     history?: TeamMatchHistoryUncheckedUpdateManyWithoutTeamNestedInput
+    opponentHistory?: TeamMatchHistoryUncheckedUpdateManyWithoutOpponent_teamNestedInput
   }
 
   export type TeamCreateWithoutMembersInput = {
@@ -58361,6 +58813,7 @@ export namespace Prisma {
     MatchesAsTeam2?: TeamMatchCreateNestedManyWithoutTeam2Input
     joinRequests?: TeamJoinRequestCreateNestedManyWithoutTeamInput
     history?: TeamMatchHistoryCreateNestedManyWithoutTeamInput
+    opponentHistory?: TeamMatchHistoryCreateNestedManyWithoutOpponent_teamInput
   }
 
   export type TeamUncheckedCreateWithoutMembersInput = {
@@ -58393,6 +58846,7 @@ export namespace Prisma {
     MatchesAsTeam2?: TeamMatchUncheckedCreateNestedManyWithoutTeam2Input
     joinRequests?: TeamJoinRequestUncheckedCreateNestedManyWithoutTeamInput
     history?: TeamMatchHistoryUncheckedCreateNestedManyWithoutTeamInput
+    opponentHistory?: TeamMatchHistoryUncheckedCreateNestedManyWithoutOpponent_teamInput
   }
 
   export type TeamCreateOrConnectWithoutMembersInput = {
@@ -58497,6 +58951,7 @@ export namespace Prisma {
     level?: $Enums.YCLevel
     rank?: number | null
     exposure_bonus?: number
+    member_score?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     contest: ContestCreateNestedOneWithoutParticipantsInput
@@ -58514,6 +58969,7 @@ export namespace Prisma {
     level?: $Enums.YCLevel
     rank?: number | null
     exposure_bonus?: number
+    member_score?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     photos?: ContestPhotoUncheckedCreateNestedManyWithoutParticipantInput
@@ -58570,6 +59026,7 @@ export namespace Prisma {
     MatchesAsTeam2?: TeamMatchUpdateManyWithoutTeam2NestedInput
     joinRequests?: TeamJoinRequestUpdateManyWithoutTeamNestedInput
     history?: TeamMatchHistoryUpdateManyWithoutTeamNestedInput
+    opponentHistory?: TeamMatchHistoryUpdateManyWithoutOpponent_teamNestedInput
   }
 
   export type TeamUncheckedUpdateWithoutMembersInput = {
@@ -58601,6 +59058,7 @@ export namespace Prisma {
     MatchesAsTeam2?: TeamMatchUncheckedUpdateManyWithoutTeam2NestedInput
     joinRequests?: TeamJoinRequestUncheckedUpdateManyWithoutTeamNestedInput
     history?: TeamMatchHistoryUncheckedUpdateManyWithoutTeamNestedInput
+    opponentHistory?: TeamMatchHistoryUncheckedUpdateManyWithoutOpponent_teamNestedInput
   }
 
   export type UserUpsertWithoutJoinedTeamInput = {
@@ -58744,6 +59202,7 @@ export namespace Prisma {
     MatchesAsTeam2?: TeamMatchCreateNestedManyWithoutTeam2Input
     joinRequests?: TeamJoinRequestCreateNestedManyWithoutTeamInput
     history?: TeamMatchHistoryCreateNestedManyWithoutTeamInput
+    opponentHistory?: TeamMatchHistoryCreateNestedManyWithoutOpponent_teamInput
   }
 
   export type TeamUncheckedCreateWithoutParticipationsInput = {
@@ -58776,6 +59235,7 @@ export namespace Prisma {
     MatchesAsTeam2?: TeamMatchUncheckedCreateNestedManyWithoutTeam2Input
     joinRequests?: TeamJoinRequestUncheckedCreateNestedManyWithoutTeamInput
     history?: TeamMatchHistoryUncheckedCreateNestedManyWithoutTeamInput
+    opponentHistory?: TeamMatchHistoryUncheckedCreateNestedManyWithoutOpponent_teamInput
   }
 
   export type TeamCreateOrConnectWithoutParticipationsInput = {
@@ -58809,6 +59269,7 @@ export namespace Prisma {
     contestPrizes?: ContestPrizeCreateNestedManyWithoutContestInput
     achievements?: ContestAchievementCreateNestedManyWithoutContestInput
     teamMatch?: TeamMatchCreateNestedManyWithoutContestInput
+    matchHistory?: TeamMatchHistoryCreateNestedManyWithoutContestInput
   }
 
   export type ContestUncheckedCreateWithoutTeamParticipationsInput = {
@@ -58837,6 +59298,7 @@ export namespace Prisma {
     contestPrizes?: ContestPrizeUncheckedCreateNestedManyWithoutContestInput
     achievements?: ContestAchievementUncheckedCreateNestedManyWithoutContestInput
     teamMatch?: TeamMatchUncheckedCreateNestedManyWithoutContestInput
+    matchHistory?: TeamMatchHistoryUncheckedCreateNestedManyWithoutContestInput
   }
 
   export type ContestCreateOrConnectWithoutTeamParticipationsInput = {
@@ -58884,6 +59346,7 @@ export namespace Prisma {
     MatchesAsTeam2?: TeamMatchUpdateManyWithoutTeam2NestedInput
     joinRequests?: TeamJoinRequestUpdateManyWithoutTeamNestedInput
     history?: TeamMatchHistoryUpdateManyWithoutTeamNestedInput
+    opponentHistory?: TeamMatchHistoryUpdateManyWithoutOpponent_teamNestedInput
   }
 
   export type TeamUncheckedUpdateWithoutParticipationsInput = {
@@ -58915,6 +59378,7 @@ export namespace Prisma {
     MatchesAsTeam2?: TeamMatchUncheckedUpdateManyWithoutTeam2NestedInput
     joinRequests?: TeamJoinRequestUncheckedUpdateManyWithoutTeamNestedInput
     history?: TeamMatchHistoryUncheckedUpdateManyWithoutTeamNestedInput
+    opponentHistory?: TeamMatchHistoryUncheckedUpdateManyWithoutOpponent_teamNestedInput
   }
 
   export type ContestUpsertWithoutTeamParticipationsInput = {
@@ -58953,6 +59417,7 @@ export namespace Prisma {
     contestPrizes?: ContestPrizeUpdateManyWithoutContestNestedInput
     achievements?: ContestAchievementUpdateManyWithoutContestNestedInput
     teamMatch?: TeamMatchUpdateManyWithoutContestNestedInput
+    matchHistory?: TeamMatchHistoryUpdateManyWithoutContestNestedInput
   }
 
   export type ContestUncheckedUpdateWithoutTeamParticipationsInput = {
@@ -58980,6 +59445,7 @@ export namespace Prisma {
     contestPrizes?: ContestPrizeUncheckedUpdateManyWithoutContestNestedInput
     achievements?: ContestAchievementUncheckedUpdateManyWithoutContestNestedInput
     teamMatch?: TeamMatchUncheckedUpdateManyWithoutContestNestedInput
+    matchHistory?: TeamMatchHistoryUncheckedUpdateManyWithoutContestNestedInput
   }
 
   export type TeamCreateWithoutJoinRequestsInput = {
@@ -59012,6 +59478,7 @@ export namespace Prisma {
     MatchesAsTeam1?: TeamMatchCreateNestedManyWithoutTeam1Input
     MatchesAsTeam2?: TeamMatchCreateNestedManyWithoutTeam2Input
     history?: TeamMatchHistoryCreateNestedManyWithoutTeamInput
+    opponentHistory?: TeamMatchHistoryCreateNestedManyWithoutOpponent_teamInput
   }
 
   export type TeamUncheckedCreateWithoutJoinRequestsInput = {
@@ -59044,6 +59511,7 @@ export namespace Prisma {
     MatchesAsTeam1?: TeamMatchUncheckedCreateNestedManyWithoutTeam1Input
     MatchesAsTeam2?: TeamMatchUncheckedCreateNestedManyWithoutTeam2Input
     history?: TeamMatchHistoryUncheckedCreateNestedManyWithoutTeamInput
+    opponentHistory?: TeamMatchHistoryUncheckedCreateNestedManyWithoutOpponent_teamInput
   }
 
   export type TeamCreateOrConnectWithoutJoinRequestsInput = {
@@ -59182,6 +59650,7 @@ export namespace Prisma {
     MatchesAsTeam1?: TeamMatchUpdateManyWithoutTeam1NestedInput
     MatchesAsTeam2?: TeamMatchUpdateManyWithoutTeam2NestedInput
     history?: TeamMatchHistoryUpdateManyWithoutTeamNestedInput
+    opponentHistory?: TeamMatchHistoryUpdateManyWithoutOpponent_teamNestedInput
   }
 
   export type TeamUncheckedUpdateWithoutJoinRequestsInput = {
@@ -59213,6 +59682,7 @@ export namespace Prisma {
     MatchesAsTeam1?: TeamMatchUncheckedUpdateManyWithoutTeam1NestedInput
     MatchesAsTeam2?: TeamMatchUncheckedUpdateManyWithoutTeam2NestedInput
     history?: TeamMatchHistoryUncheckedUpdateManyWithoutTeamNestedInput
+    opponentHistory?: TeamMatchHistoryUncheckedUpdateManyWithoutOpponent_teamNestedInput
   }
 
   export type UserUpsertWithoutSentJoinRequestsInput = {
@@ -59340,6 +59810,7 @@ export namespace Prisma {
     MatchesAsTeam1?: TeamMatchCreateNestedManyWithoutTeam1Input
     MatchesAsTeam2?: TeamMatchCreateNestedManyWithoutTeam2Input
     joinRequests?: TeamJoinRequestCreateNestedManyWithoutTeamInput
+    opponentHistory?: TeamMatchHistoryCreateNestedManyWithoutOpponent_teamInput
   }
 
   export type TeamUncheckedCreateWithoutHistoryInput = {
@@ -59372,11 +59843,146 @@ export namespace Prisma {
     MatchesAsTeam1?: TeamMatchUncheckedCreateNestedManyWithoutTeam1Input
     MatchesAsTeam2?: TeamMatchUncheckedCreateNestedManyWithoutTeam2Input
     joinRequests?: TeamJoinRequestUncheckedCreateNestedManyWithoutTeamInput
+    opponentHistory?: TeamMatchHistoryUncheckedCreateNestedManyWithoutOpponent_teamInput
   }
 
   export type TeamCreateOrConnectWithoutHistoryInput = {
     where: TeamWhereUniqueInput
     create: XOR<TeamCreateWithoutHistoryInput, TeamUncheckedCreateWithoutHistoryInput>
+  }
+
+  export type TeamCreateWithoutOpponentHistoryInput = {
+    id?: string
+    name: string
+    level?: string
+    language: string
+    country: string
+    description: string
+    accessibility?: $Enums.TeamAccessibility
+    member_count?: number
+    member_slots?: number
+    score?: number
+    win?: number
+    lost?: number
+    draw?: number
+    badge?: string
+    min_requirement?: string | null
+    min_requirement_str?: string
+    active_match_id?: string | null
+    leaderboard_rank?: number | null
+    total_matches?: number
+    skill_level?: $Enums.SkillLevel
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    creator: UserCreateNestedOneWithoutCreatedTeamInput
+    members?: TeamMemberCreateNestedManyWithoutTeamInput
+    chat?: ChatCreateNestedManyWithoutTeamInput
+    participations?: TeamParticipationCreateNestedManyWithoutTeamInput
+    MatchesAsTeam1?: TeamMatchCreateNestedManyWithoutTeam1Input
+    MatchesAsTeam2?: TeamMatchCreateNestedManyWithoutTeam2Input
+    joinRequests?: TeamJoinRequestCreateNestedManyWithoutTeamInput
+    history?: TeamMatchHistoryCreateNestedManyWithoutTeamInput
+  }
+
+  export type TeamUncheckedCreateWithoutOpponentHistoryInput = {
+    id?: string
+    name: string
+    level?: string
+    language: string
+    country: string
+    description: string
+    accessibility?: $Enums.TeamAccessibility
+    member_count?: number
+    member_slots?: number
+    score?: number
+    win?: number
+    lost?: number
+    draw?: number
+    badge?: string
+    min_requirement?: string | null
+    min_requirement_str?: string
+    active_match_id?: string | null
+    leaderboard_rank?: number | null
+    total_matches?: number
+    skill_level?: $Enums.SkillLevel
+    creatorId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    members?: TeamMemberUncheckedCreateNestedManyWithoutTeamInput
+    chat?: ChatUncheckedCreateNestedManyWithoutTeamInput
+    participations?: TeamParticipationUncheckedCreateNestedManyWithoutTeamInput
+    MatchesAsTeam1?: TeamMatchUncheckedCreateNestedManyWithoutTeam1Input
+    MatchesAsTeam2?: TeamMatchUncheckedCreateNestedManyWithoutTeam2Input
+    joinRequests?: TeamJoinRequestUncheckedCreateNestedManyWithoutTeamInput
+    history?: TeamMatchHistoryUncheckedCreateNestedManyWithoutTeamInput
+  }
+
+  export type TeamCreateOrConnectWithoutOpponentHistoryInput = {
+    where: TeamWhereUniqueInput
+    create: XOR<TeamCreateWithoutOpponentHistoryInput, TeamUncheckedCreateWithoutOpponentHistoryInput>
+  }
+
+  export type ContestCreateWithoutMatchHistoryInput = {
+    id?: string
+    title: string
+    description: string
+    banner?: string | null
+    status?: $Enums.ContestStatus
+    mode?: $Enums.ContestMode
+    maxUploads?: number
+    isMoneyContest?: boolean
+    maxPrize?: number | null
+    minPrize?: number | null
+    level_requirements?: ContestCreatelevel_requirementsInput | number[]
+    startDate: Date | string
+    endDate: Date | string
+    startedAt?: Date | string | null
+    rules?: InputJsonValue | null
+    prizes?: InputJsonValue | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    creator: UserCreateNestedOneWithoutCreatedContestsInput
+    participants?: ContestParticipantCreateNestedManyWithoutContestInput
+    teamParticipations?: TeamParticipationCreateNestedManyWithoutContestInput
+    votes?: VoteCreateNestedManyWithoutContestInput
+    contestRules?: ContestRuleCreateNestedManyWithoutContestInput
+    contestPrizes?: ContestPrizeCreateNestedManyWithoutContestInput
+    achievements?: ContestAchievementCreateNestedManyWithoutContestInput
+    teamMatch?: TeamMatchCreateNestedManyWithoutContestInput
+  }
+
+  export type ContestUncheckedCreateWithoutMatchHistoryInput = {
+    id?: string
+    title: string
+    description: string
+    banner?: string | null
+    status?: $Enums.ContestStatus
+    mode?: $Enums.ContestMode
+    maxUploads?: number
+    isMoneyContest?: boolean
+    maxPrize?: number | null
+    minPrize?: number | null
+    level_requirements?: ContestCreatelevel_requirementsInput | number[]
+    startDate: Date | string
+    endDate: Date | string
+    startedAt?: Date | string | null
+    creatorId: string
+    rules?: InputJsonValue | null
+    prizes?: InputJsonValue | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    participants?: ContestParticipantUncheckedCreateNestedManyWithoutContestInput
+    teamParticipations?: TeamParticipationUncheckedCreateNestedManyWithoutContestInput
+    votes?: VoteUncheckedCreateNestedManyWithoutContestInput
+    contestRules?: ContestRuleUncheckedCreateNestedManyWithoutContestInput
+    contestPrizes?: ContestPrizeUncheckedCreateNestedManyWithoutContestInput
+    achievements?: ContestAchievementUncheckedCreateNestedManyWithoutContestInput
+    teamMatch?: TeamMatchUncheckedCreateNestedManyWithoutContestInput
+  }
+
+  export type ContestCreateOrConnectWithoutMatchHistoryInput = {
+    where: ContestWhereUniqueInput
+    create: XOR<ContestCreateWithoutMatchHistoryInput, ContestUncheckedCreateWithoutMatchHistoryInput>
   }
 
   export type TeamUpsertWithoutHistoryInput = {
@@ -59419,6 +60025,7 @@ export namespace Prisma {
     MatchesAsTeam1?: TeamMatchUpdateManyWithoutTeam1NestedInput
     MatchesAsTeam2?: TeamMatchUpdateManyWithoutTeam2NestedInput
     joinRequests?: TeamJoinRequestUpdateManyWithoutTeamNestedInput
+    opponentHistory?: TeamMatchHistoryUpdateManyWithoutOpponent_teamNestedInput
   }
 
   export type TeamUncheckedUpdateWithoutHistoryInput = {
@@ -59450,6 +60057,149 @@ export namespace Prisma {
     MatchesAsTeam1?: TeamMatchUncheckedUpdateManyWithoutTeam1NestedInput
     MatchesAsTeam2?: TeamMatchUncheckedUpdateManyWithoutTeam2NestedInput
     joinRequests?: TeamJoinRequestUncheckedUpdateManyWithoutTeamNestedInput
+    opponentHistory?: TeamMatchHistoryUncheckedUpdateManyWithoutOpponent_teamNestedInput
+  }
+
+  export type TeamUpsertWithoutOpponentHistoryInput = {
+    update: XOR<TeamUpdateWithoutOpponentHistoryInput, TeamUncheckedUpdateWithoutOpponentHistoryInput>
+    create: XOR<TeamCreateWithoutOpponentHistoryInput, TeamUncheckedCreateWithoutOpponentHistoryInput>
+    where?: TeamWhereInput
+  }
+
+  export type TeamUpdateToOneWithWhereWithoutOpponentHistoryInput = {
+    where?: TeamWhereInput
+    data: XOR<TeamUpdateWithoutOpponentHistoryInput, TeamUncheckedUpdateWithoutOpponentHistoryInput>
+  }
+
+  export type TeamUpdateWithoutOpponentHistoryInput = {
+    name?: StringFieldUpdateOperationsInput | string
+    level?: StringFieldUpdateOperationsInput | string
+    language?: StringFieldUpdateOperationsInput | string
+    country?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    accessibility?: EnumTeamAccessibilityFieldUpdateOperationsInput | $Enums.TeamAccessibility
+    member_count?: IntFieldUpdateOperationsInput | number
+    member_slots?: IntFieldUpdateOperationsInput | number
+    score?: IntFieldUpdateOperationsInput | number
+    win?: IntFieldUpdateOperationsInput | number
+    lost?: IntFieldUpdateOperationsInput | number
+    draw?: IntFieldUpdateOperationsInput | number
+    badge?: StringFieldUpdateOperationsInput | string
+    min_requirement?: NullableStringFieldUpdateOperationsInput | string | null
+    min_requirement_str?: StringFieldUpdateOperationsInput | string
+    active_match_id?: NullableStringFieldUpdateOperationsInput | string | null
+    leaderboard_rank?: NullableIntFieldUpdateOperationsInput | number | null
+    total_matches?: IntFieldUpdateOperationsInput | number
+    skill_level?: EnumSkillLevelFieldUpdateOperationsInput | $Enums.SkillLevel
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    creator?: UserUpdateOneRequiredWithoutCreatedTeamNestedInput
+    members?: TeamMemberUpdateManyWithoutTeamNestedInput
+    chat?: ChatUpdateManyWithoutTeamNestedInput
+    participations?: TeamParticipationUpdateManyWithoutTeamNestedInput
+    MatchesAsTeam1?: TeamMatchUpdateManyWithoutTeam1NestedInput
+    MatchesAsTeam2?: TeamMatchUpdateManyWithoutTeam2NestedInput
+    joinRequests?: TeamJoinRequestUpdateManyWithoutTeamNestedInput
+    history?: TeamMatchHistoryUpdateManyWithoutTeamNestedInput
+  }
+
+  export type TeamUncheckedUpdateWithoutOpponentHistoryInput = {
+    name?: StringFieldUpdateOperationsInput | string
+    level?: StringFieldUpdateOperationsInput | string
+    language?: StringFieldUpdateOperationsInput | string
+    country?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    accessibility?: EnumTeamAccessibilityFieldUpdateOperationsInput | $Enums.TeamAccessibility
+    member_count?: IntFieldUpdateOperationsInput | number
+    member_slots?: IntFieldUpdateOperationsInput | number
+    score?: IntFieldUpdateOperationsInput | number
+    win?: IntFieldUpdateOperationsInput | number
+    lost?: IntFieldUpdateOperationsInput | number
+    draw?: IntFieldUpdateOperationsInput | number
+    badge?: StringFieldUpdateOperationsInput | string
+    min_requirement?: NullableStringFieldUpdateOperationsInput | string | null
+    min_requirement_str?: StringFieldUpdateOperationsInput | string
+    active_match_id?: NullableStringFieldUpdateOperationsInput | string | null
+    leaderboard_rank?: NullableIntFieldUpdateOperationsInput | number | null
+    total_matches?: IntFieldUpdateOperationsInput | number
+    skill_level?: EnumSkillLevelFieldUpdateOperationsInput | $Enums.SkillLevel
+    creatorId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    members?: TeamMemberUncheckedUpdateManyWithoutTeamNestedInput
+    chat?: ChatUncheckedUpdateManyWithoutTeamNestedInput
+    participations?: TeamParticipationUncheckedUpdateManyWithoutTeamNestedInput
+    MatchesAsTeam1?: TeamMatchUncheckedUpdateManyWithoutTeam1NestedInput
+    MatchesAsTeam2?: TeamMatchUncheckedUpdateManyWithoutTeam2NestedInput
+    joinRequests?: TeamJoinRequestUncheckedUpdateManyWithoutTeamNestedInput
+    history?: TeamMatchHistoryUncheckedUpdateManyWithoutTeamNestedInput
+  }
+
+  export type ContestUpsertWithoutMatchHistoryInput = {
+    update: XOR<ContestUpdateWithoutMatchHistoryInput, ContestUncheckedUpdateWithoutMatchHistoryInput>
+    create: XOR<ContestCreateWithoutMatchHistoryInput, ContestUncheckedCreateWithoutMatchHistoryInput>
+    where?: ContestWhereInput
+  }
+
+  export type ContestUpdateToOneWithWhereWithoutMatchHistoryInput = {
+    where?: ContestWhereInput
+    data: XOR<ContestUpdateWithoutMatchHistoryInput, ContestUncheckedUpdateWithoutMatchHistoryInput>
+  }
+
+  export type ContestUpdateWithoutMatchHistoryInput = {
+    title?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    banner?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumContestStatusFieldUpdateOperationsInput | $Enums.ContestStatus
+    mode?: EnumContestModeFieldUpdateOperationsInput | $Enums.ContestMode
+    maxUploads?: IntFieldUpdateOperationsInput | number
+    isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
+    maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
+    minPrize?: NullableIntFieldUpdateOperationsInput | number | null
+    level_requirements?: ContestUpdatelevel_requirementsInput | number[]
+    startDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    endDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    rules?: InputJsonValue | InputJsonValue | null
+    prizes?: InputJsonValue | InputJsonValue | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    creator?: UserUpdateOneRequiredWithoutCreatedContestsNestedInput
+    participants?: ContestParticipantUpdateManyWithoutContestNestedInput
+    teamParticipations?: TeamParticipationUpdateManyWithoutContestNestedInput
+    votes?: VoteUpdateManyWithoutContestNestedInput
+    contestRules?: ContestRuleUpdateManyWithoutContestNestedInput
+    contestPrizes?: ContestPrizeUpdateManyWithoutContestNestedInput
+    achievements?: ContestAchievementUpdateManyWithoutContestNestedInput
+    teamMatch?: TeamMatchUpdateManyWithoutContestNestedInput
+  }
+
+  export type ContestUncheckedUpdateWithoutMatchHistoryInput = {
+    title?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    banner?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumContestStatusFieldUpdateOperationsInput | $Enums.ContestStatus
+    mode?: EnumContestModeFieldUpdateOperationsInput | $Enums.ContestMode
+    maxUploads?: IntFieldUpdateOperationsInput | number
+    isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
+    maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
+    minPrize?: NullableIntFieldUpdateOperationsInput | number | null
+    level_requirements?: ContestUpdatelevel_requirementsInput | number[]
+    startDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    endDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    creatorId?: StringFieldUpdateOperationsInput | string
+    rules?: InputJsonValue | InputJsonValue | null
+    prizes?: InputJsonValue | InputJsonValue | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    participants?: ContestParticipantUncheckedUpdateManyWithoutContestNestedInput
+    teamParticipations?: TeamParticipationUncheckedUpdateManyWithoutContestNestedInput
+    votes?: VoteUncheckedUpdateManyWithoutContestNestedInput
+    contestRules?: ContestRuleUncheckedUpdateManyWithoutContestNestedInput
+    contestPrizes?: ContestPrizeUncheckedUpdateManyWithoutContestNestedInput
+    achievements?: ContestAchievementUncheckedUpdateManyWithoutContestNestedInput
+    teamMatch?: TeamMatchUncheckedUpdateManyWithoutContestNestedInput
   }
 
   export type UserLevelCreateWithoutUserInput = {
@@ -59545,6 +60295,7 @@ export namespace Prisma {
     MatchesAsTeam2?: TeamMatchCreateNestedManyWithoutTeam2Input
     joinRequests?: TeamJoinRequestCreateNestedManyWithoutTeamInput
     history?: TeamMatchHistoryCreateNestedManyWithoutTeamInput
+    opponentHistory?: TeamMatchHistoryCreateNestedManyWithoutOpponent_teamInput
   }
 
   export type TeamUncheckedCreateWithoutCreatorInput = {
@@ -59577,6 +60328,7 @@ export namespace Prisma {
     MatchesAsTeam2?: TeamMatchUncheckedCreateNestedManyWithoutTeam2Input
     joinRequests?: TeamJoinRequestUncheckedCreateNestedManyWithoutTeamInput
     history?: TeamMatchHistoryUncheckedCreateNestedManyWithoutTeamInput
+    opponentHistory?: TeamMatchHistoryUncheckedCreateNestedManyWithoutOpponent_teamInput
   }
 
   export type TeamCreateOrConnectWithoutCreatorInput = {
@@ -59664,6 +60416,7 @@ export namespace Prisma {
     contestPrizes?: ContestPrizeCreateNestedManyWithoutContestInput
     achievements?: ContestAchievementCreateNestedManyWithoutContestInput
     teamMatch?: TeamMatchCreateNestedManyWithoutContestInput
+    matchHistory?: TeamMatchHistoryCreateNestedManyWithoutContestInput
   }
 
   export type ContestUncheckedCreateWithoutCreatorInput = {
@@ -59692,6 +60445,7 @@ export namespace Prisma {
     contestPrizes?: ContestPrizeUncheckedCreateNestedManyWithoutContestInput
     achievements?: ContestAchievementUncheckedCreateNestedManyWithoutContestInput
     teamMatch?: TeamMatchUncheckedCreateNestedManyWithoutContestInput
+    matchHistory?: TeamMatchHistoryUncheckedCreateNestedManyWithoutContestInput
   }
 
   export type ContestCreateOrConnectWithoutCreatorInput = {
@@ -59875,6 +60629,7 @@ export namespace Prisma {
     level?: $Enums.YCLevel
     rank?: number | null
     exposure_bonus?: number
+    member_score?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     contest: ContestCreateNestedOneWithoutParticipantsInput
@@ -59892,6 +60647,7 @@ export namespace Prisma {
     level?: $Enums.YCLevel
     rank?: number | null
     exposure_bonus?: number
+    member_score?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     photos?: ContestPhotoUncheckedCreateNestedManyWithoutParticipantInput
@@ -62275,6 +63031,7 @@ export namespace Prisma {
     contestPrizes?: ContestPrizeCreateNestedManyWithoutContestInput
     achievements?: ContestAchievementCreateNestedManyWithoutContestInput
     teamMatch?: TeamMatchCreateNestedManyWithoutContestInput
+    matchHistory?: TeamMatchHistoryCreateNestedManyWithoutContestInput
   }
 
   export type ContestUncheckedCreateWithoutVotesInput = {
@@ -62303,6 +63060,7 @@ export namespace Prisma {
     contestPrizes?: ContestPrizeUncheckedCreateNestedManyWithoutContestInput
     achievements?: ContestAchievementUncheckedCreateNestedManyWithoutContestInput
     teamMatch?: TeamMatchUncheckedCreateNestedManyWithoutContestInput
+    matchHistory?: TeamMatchHistoryUncheckedCreateNestedManyWithoutContestInput
   }
 
   export type ContestCreateOrConnectWithoutVotesInput = {
@@ -62484,6 +63242,7 @@ export namespace Prisma {
     contestPrizes?: ContestPrizeUpdateManyWithoutContestNestedInput
     achievements?: ContestAchievementUpdateManyWithoutContestNestedInput
     teamMatch?: TeamMatchUpdateManyWithoutContestNestedInput
+    matchHistory?: TeamMatchHistoryUpdateManyWithoutContestNestedInput
   }
 
   export type ContestUncheckedUpdateWithoutVotesInput = {
@@ -62511,6 +63270,7 @@ export namespace Prisma {
     contestPrizes?: ContestPrizeUncheckedUpdateManyWithoutContestNestedInput
     achievements?: ContestAchievementUncheckedUpdateManyWithoutContestNestedInput
     teamMatch?: TeamMatchUncheckedUpdateManyWithoutContestNestedInput
+    matchHistory?: TeamMatchHistoryUncheckedUpdateManyWithoutContestNestedInput
   }
 
   export type LevelCreateWithoutUserLevelInput = {
@@ -62817,6 +63577,7 @@ export namespace Prisma {
     level?: $Enums.YCLevel
     rank?: number | null
     exposure_bonus?: number
+    member_score?: number
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -62880,11 +63641,25 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
+  export type TeamMatchHistoryCreateManyContestInput = {
+    id?: string
+    teamId: string
+    matchId: string
+    opponent_team_id: string
+    team_score: number
+    opponent_score: number
+    result: $Enums.HistoryResult
+    match_date: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
   export type ContestParticipantUpdateWithoutContestInput = {
     status?: EnumContestParticipantStatusFieldUpdateOperationsInput | $Enums.ContestParticipantStatus
     level?: EnumYCLevelFieldUpdateOperationsInput | $Enums.YCLevel
     rank?: NullableIntFieldUpdateOperationsInput | number | null
     exposure_bonus?: IntFieldUpdateOperationsInput | number
+    member_score?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutContestParticipantNestedInput
@@ -62901,6 +63676,7 @@ export namespace Prisma {
     level?: EnumYCLevelFieldUpdateOperationsInput | $Enums.YCLevel
     rank?: NullableIntFieldUpdateOperationsInput | number | null
     exposure_bonus?: IntFieldUpdateOperationsInput | number
+    member_score?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     photos?: ContestPhotoUncheckedUpdateManyWithoutParticipantNestedInput
@@ -62915,6 +63691,7 @@ export namespace Prisma {
     level?: EnumYCLevelFieldUpdateOperationsInput | $Enums.YCLevel
     rank?: NullableIntFieldUpdateOperationsInput | number | null
     exposure_bonus?: IntFieldUpdateOperationsInput | number
+    member_score?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -63074,6 +63851,42 @@ export namespace Prisma {
     status?: EnumMatchStatusFieldUpdateOperationsInput | $Enums.MatchStatus
     startedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TeamMatchHistoryUpdateWithoutContestInput = {
+    matchId?: StringFieldUpdateOperationsInput | string
+    team_score?: IntFieldUpdateOperationsInput | number
+    opponent_score?: IntFieldUpdateOperationsInput | number
+    result?: EnumHistoryResultFieldUpdateOperationsInput | $Enums.HistoryResult
+    match_date?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    team?: TeamUpdateOneRequiredWithoutHistoryNestedInput
+    opponent_team?: TeamUpdateOneWithoutOpponentHistoryNestedInput
+  }
+
+  export type TeamMatchHistoryUncheckedUpdateWithoutContestInput = {
+    teamId?: StringFieldUpdateOperationsInput | string
+    matchId?: StringFieldUpdateOperationsInput | string
+    opponent_team_id?: StringFieldUpdateOperationsInput | string
+    team_score?: IntFieldUpdateOperationsInput | number
+    opponent_score?: IntFieldUpdateOperationsInput | number
+    result?: EnumHistoryResultFieldUpdateOperationsInput | $Enums.HistoryResult
+    match_date?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TeamMatchHistoryUncheckedUpdateManyWithoutContestInput = {
+    teamId?: StringFieldUpdateOperationsInput | string
+    matchId?: StringFieldUpdateOperationsInput | string
+    opponent_team_id?: StringFieldUpdateOperationsInput | string
+    team_score?: IntFieldUpdateOperationsInput | number
+    opponent_score?: IntFieldUpdateOperationsInput | number
+    result?: EnumHistoryResultFieldUpdateOperationsInput | $Enums.HistoryResult
+    match_date?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -63408,6 +64221,19 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
+  export type TeamMatchHistoryCreateManyOpponent_teamInput = {
+    id?: string
+    teamId: string
+    matchId: string
+    team_score: number
+    opponent_score: number
+    result: $Enums.HistoryResult
+    match_date: Date | string
+    contest_id?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
   export type TeamMemberUpdateWithoutTeamInput = {
     status?: EnumTeamMemberStatusFieldUpdateOperationsInput | $Enums.TeamMemberStatus
     level?: EnumMemberLevelFieldUpdateOperationsInput | $Enums.MemberLevel
@@ -63574,14 +64400,14 @@ export namespace Prisma {
 
   export type TeamMatchHistoryUpdateWithoutTeamInput = {
     matchId?: StringFieldUpdateOperationsInput | string
-    opponent_team_id?: StringFieldUpdateOperationsInput | string
     team_score?: IntFieldUpdateOperationsInput | number
     opponent_score?: IntFieldUpdateOperationsInput | number
     result?: EnumHistoryResultFieldUpdateOperationsInput | $Enums.HistoryResult
     match_date?: DateTimeFieldUpdateOperationsInput | Date | string
-    contest_id?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    opponent_team?: TeamUpdateOneWithoutOpponentHistoryNestedInput
+    contest?: ContestUpdateOneWithoutMatchHistoryNestedInput
   }
 
   export type TeamMatchHistoryUncheckedUpdateWithoutTeamInput = {
@@ -63608,6 +64434,42 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type TeamMatchHistoryUpdateWithoutOpponent_teamInput = {
+    matchId?: StringFieldUpdateOperationsInput | string
+    team_score?: IntFieldUpdateOperationsInput | number
+    opponent_score?: IntFieldUpdateOperationsInput | number
+    result?: EnumHistoryResultFieldUpdateOperationsInput | $Enums.HistoryResult
+    match_date?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    team?: TeamUpdateOneRequiredWithoutHistoryNestedInput
+    contest?: ContestUpdateOneWithoutMatchHistoryNestedInput
+  }
+
+  export type TeamMatchHistoryUncheckedUpdateWithoutOpponent_teamInput = {
+    teamId?: StringFieldUpdateOperationsInput | string
+    matchId?: StringFieldUpdateOperationsInput | string
+    team_score?: IntFieldUpdateOperationsInput | number
+    opponent_score?: IntFieldUpdateOperationsInput | number
+    result?: EnumHistoryResultFieldUpdateOperationsInput | $Enums.HistoryResult
+    match_date?: DateTimeFieldUpdateOperationsInput | Date | string
+    contest_id?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TeamMatchHistoryUncheckedUpdateManyWithoutOpponent_teamInput = {
+    teamId?: StringFieldUpdateOperationsInput | string
+    matchId?: StringFieldUpdateOperationsInput | string
+    team_score?: IntFieldUpdateOperationsInput | number
+    opponent_score?: IntFieldUpdateOperationsInput | number
+    result?: EnumHistoryResultFieldUpdateOperationsInput | $Enums.HistoryResult
+    match_date?: DateTimeFieldUpdateOperationsInput | Date | string
+    contest_id?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type ContestParticipantCreateManyMemberInput = {
     id?: string
     status?: $Enums.ContestParticipantStatus
@@ -63616,6 +64478,7 @@ export namespace Prisma {
     level?: $Enums.YCLevel
     rank?: number | null
     exposure_bonus?: number
+    member_score?: number
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -63625,6 +64488,7 @@ export namespace Prisma {
     level?: EnumYCLevelFieldUpdateOperationsInput | $Enums.YCLevel
     rank?: NullableIntFieldUpdateOperationsInput | number | null
     exposure_bonus?: IntFieldUpdateOperationsInput | number
+    member_score?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     contest?: ContestUpdateOneRequiredWithoutParticipantsNestedInput
@@ -63641,6 +64505,7 @@ export namespace Prisma {
     level?: EnumYCLevelFieldUpdateOperationsInput | $Enums.YCLevel
     rank?: NullableIntFieldUpdateOperationsInput | number | null
     exposure_bonus?: IntFieldUpdateOperationsInput | number
+    member_score?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     photos?: ContestPhotoUncheckedUpdateManyWithoutParticipantNestedInput
@@ -63655,6 +64520,7 @@ export namespace Prisma {
     level?: EnumYCLevelFieldUpdateOperationsInput | $Enums.YCLevel
     rank?: NullableIntFieldUpdateOperationsInput | number | null
     exposure_bonus?: IntFieldUpdateOperationsInput | number
+    member_score?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -63774,6 +64640,7 @@ export namespace Prisma {
     level?: $Enums.YCLevel
     rank?: number | null
     exposure_bonus?: number
+    member_score?: number
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -63847,6 +64714,7 @@ export namespace Prisma {
     MatchesAsTeam2?: TeamMatchUpdateManyWithoutTeam2NestedInput
     joinRequests?: TeamJoinRequestUpdateManyWithoutTeamNestedInput
     history?: TeamMatchHistoryUpdateManyWithoutTeamNestedInput
+    opponentHistory?: TeamMatchHistoryUpdateManyWithoutOpponent_teamNestedInput
   }
 
   export type TeamUncheckedUpdateWithoutCreatorInput = {
@@ -63878,6 +64746,7 @@ export namespace Prisma {
     MatchesAsTeam2?: TeamMatchUncheckedUpdateManyWithoutTeam2NestedInput
     joinRequests?: TeamJoinRequestUncheckedUpdateManyWithoutTeamNestedInput
     history?: TeamMatchHistoryUncheckedUpdateManyWithoutTeamNestedInput
+    opponentHistory?: TeamMatchHistoryUncheckedUpdateManyWithoutOpponent_teamNestedInput
   }
 
   export type TeamUncheckedUpdateManyWithoutCreatorInput = {
@@ -63950,6 +64819,7 @@ export namespace Prisma {
     contestPrizes?: ContestPrizeUpdateManyWithoutContestNestedInput
     achievements?: ContestAchievementUpdateManyWithoutContestNestedInput
     teamMatch?: TeamMatchUpdateManyWithoutContestNestedInput
+    matchHistory?: TeamMatchHistoryUpdateManyWithoutContestNestedInput
   }
 
   export type ContestUncheckedUpdateWithoutCreatorInput = {
@@ -63977,6 +64847,7 @@ export namespace Prisma {
     contestPrizes?: ContestPrizeUncheckedUpdateManyWithoutContestNestedInput
     achievements?: ContestAchievementUncheckedUpdateManyWithoutContestNestedInput
     teamMatch?: TeamMatchUncheckedUpdateManyWithoutContestNestedInput
+    matchHistory?: TeamMatchHistoryUncheckedUpdateManyWithoutContestNestedInput
   }
 
   export type ContestUncheckedUpdateManyWithoutCreatorInput = {
@@ -64151,6 +65022,7 @@ export namespace Prisma {
     level?: EnumYCLevelFieldUpdateOperationsInput | $Enums.YCLevel
     rank?: NullableIntFieldUpdateOperationsInput | number | null
     exposure_bonus?: IntFieldUpdateOperationsInput | number
+    member_score?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     contest?: ContestUpdateOneRequiredWithoutParticipantsNestedInput
@@ -64167,6 +65039,7 @@ export namespace Prisma {
     level?: EnumYCLevelFieldUpdateOperationsInput | $Enums.YCLevel
     rank?: NullableIntFieldUpdateOperationsInput | number | null
     exposure_bonus?: IntFieldUpdateOperationsInput | number
+    member_score?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     photos?: ContestPhotoUncheckedUpdateManyWithoutParticipantNestedInput
@@ -64181,6 +65054,7 @@ export namespace Prisma {
     level?: EnumYCLevelFieldUpdateOperationsInput | $Enums.YCLevel
     rank?: NullableIntFieldUpdateOperationsInput | number | null
     exposure_bonus?: IntFieldUpdateOperationsInput | number
+    member_score?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

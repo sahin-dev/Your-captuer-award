@@ -1,4 +1,5 @@
 import express, { Application, NextFunction, Request, Response } from "express";
+import path from "path";
 
 import httpStatus from "http-status";
 import cors from "cors";
@@ -44,7 +45,7 @@ app.use(cors(corsOptions));
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static("public"));
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 // Route handler for root endpoint
 

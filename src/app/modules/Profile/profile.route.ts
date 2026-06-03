@@ -6,7 +6,7 @@ import { fileUploader } from "../../../helpers/fileUploader";
 const route = Router();
 
 route.get("/photos", auth(), profileController.getMyUploads);
-route.post("/photos/upload",auth(), fileUploader.userPhoto, profileController.uploadUserPhoto);
+route.post("/photos/upload",auth(), fileUploader.filesystemUploadUserPhoto, profileController.uploadUserPhoto);
 route.get("/stats", auth(), profileController.getUserStates);
 
 route.get("/photos/:photoId", auth(), profileController.getUserPhotoDetails)

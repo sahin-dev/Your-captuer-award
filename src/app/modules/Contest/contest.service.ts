@@ -38,7 +38,7 @@ const createContestBuilderApproach = async (creatorId:string, body:contestData, 
         contestBuilder = ContestBuilderFactory.create("normal", creatorId) as SimpleContestBuilder
     }
 
-    let bannerUrl = banner? (await fileUploader.uploadToDigitalOcean(banner)).Location: null
+    let bannerUrl = banner? (await fileUploader.uploadToFilesystem(banner)).Location: null
 
      contestBuilder
         .title(body.title)
@@ -83,7 +83,7 @@ const createContest = async (creatorId: string, body: contestData, banner:Expres
     }
 
 
-    let bannerUrl = banner? (await fileUploader.uploadToDigitalOcean(banner)).Location: null
+    let bannerUrl = "https://images.unsplash.com/photo-1591534180437-507029f6ee60?q=80&w=1169&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
 
     let levels = body.level_requirements.map(levels => parseInt(levels))
   
@@ -187,7 +187,7 @@ const createRecurringContest  =  async (creatorId: string, body: contestData, ba
    
     let bannerUrl:string
     if (banner){
-        bannerUrl = (await fileUploader.uploadToDigitalOcean(banner)).Location;
+        bannerUrl = (await fileUploader.uploadToFilesystem(banner)).Location;
         contestData.banner = bannerUrl
     }
 
@@ -258,16 +258,12 @@ const joinContest = async (userId:string,contestId:string)=>{
         throw new ApiError(httpstatus.NOT_FOUND, "Contest is not available to participate")
     }
     
-    if (contest.mode === ContestMode.TEAM){
-        const team = await prisma.teamMember.findFirst({where:{member:{id:userId}}})
-        if(!team){
-            throw new ApiError(httpstatus.NOT_FOUND, 'Team not found')
-        }
-        const teamContest = await prisma.teamParticipation.findUnique({where:{teamId_contestId:{teamId:team.id, contestId}}})
-       
+   
+    const teamMember = await prisma.teamMember.findFirst({where:{memberId:userId}})
+    let participant = await prisma.contestParticipant.create({data:{contestId,userId}})
+    if(teamMember){
+        await prisma.contestParticipant.update({where:{id:participant.id}, data:{memberId:teamMember.id}})
     }
-
-    const participant = await prisma.contestParticipant.create({data:{contestId,userId}})
     
     if (participant){
         console.log("User has joined the contest")
@@ -680,6 +676,11 @@ const awardTeam = async (matchId:string, contestId:string) => {
         return
     }
 
+    // TEAM MATCH SCORING:
+    // Get total votes for each team
+    // Score = Sum of all votes received by team members in the contest
+    // When a team member participated in the contest with team badge (memberId set),
+    // all votes they received count toward their team's total score
     const team1Votes = await voteService.getTeamTotalVotes(contestId, teamMatch.team1Id)
     const team2Votes = await voteService.getTeamTotalVotes(contestId, teamMatch.team2Id)
 
@@ -917,7 +918,7 @@ const getContestUploads = async (userId:string,contestId:string, page: number = 
 
     const { skip, limit: paginationLimit } = paginationHelper.calculatePagination({ page, limit });
 
-    const contestUploads = await prisma.contestPhoto.findMany({where:{contestId, votes:{none:{providerId:participant.userId}}}, include:{photo:{select:{id:true, url:true}}}, skip, take: paginationLimit})
+    const contestUploads = await prisma.contestPhoto.findMany({where:{contestId,photo:{userId:{not:userId}}, votes:{none:{providerId:userId}}}, include:{photo:{select:{id:true, url:true}}}, skip, take: paginationLimit})
 
     if(contest.status === ContestStatus.ACTIVE){
         contestUploads.sort((a: ContestPhoto, b: ContestPhoto) => {
@@ -1012,7 +1013,70 @@ const uploadPhotoToContest = async (contestId:string,userId:string, photoIds:str
  
     }
     //add watcher for exposure bonus
+    
+    const teamMember = await prisma.teamMember.findFirst({where:{memberId:userId}})
+    if(teamMember){
+        await prisma.contestParticipant.update({where:{id:contestParticipant!.id}, data:{memberId:teamMember.id}})
+        
+        // OPTION 2: Dynamic team member registration on photo upload
+        // When a team member uploads a photo in a contest with an active match,
+        // automatically register all other active team members as contestants
+        try {
+            // Check if team has an active match in this contest
+            const activeTeamMatch = await prisma.teamMatch.findFirst({
+                where: {
+                    contestId,
+                    status: 'ACTIVE',
+                    OR: [
+                        { team1Id: teamMember.teamId },
+                        { team2Id: teamMember.teamId }
+                    ]
+                }
+            })
 
+            // If active match exists, register all active team members
+            if (activeTeamMatch) {
+                const allTeamMembers = await prisma.teamMember.findMany({
+                    where: {
+                        teamId: teamMember.teamId,
+                        status: 'ACTIVE'
+                    },
+                    select: { id: true, memberId: true }
+                })
+
+                // Bulk register all team members who aren't already participants
+                for (const member of allTeamMembers) {
+                    try {
+                        // Check if already registered
+                        const existingParticipant = await prisma.contestParticipant.findUnique({
+                            where: { contestId_userId: { contestId, userId: member.memberId } }
+                        })
+
+                        // If not registered, create entry
+                        if (!existingParticipant) {
+                            await prisma.contestParticipant.create({
+                                data: {
+                                    contestId,
+                                    userId: member.memberId,
+                                    memberId: member.id
+                                }
+                            })
+                        }
+                    } catch (err) {
+                        // Silently skip on constraint violations (already registered)
+                        if (!(err instanceof Error && err.message.includes('Unique constraint'))) {
+                            console.error(`Failed to register team member ${member.memberId}:`, err)
+                        }
+                    }
+                }
+
+                console.log(`Team members auto-registered for contest ${contestId} via member upload`)
+            }
+        } catch (err) {
+            console.error(`Error during dynamic team member registration:`, err)
+            // Don't throw - upload still succeeds even if auto-registration fails
+        }
+    }
    
 
     return images

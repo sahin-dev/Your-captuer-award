@@ -9,7 +9,7 @@ import { UserRole } from '../../../prismaClient';
 
 const router = express.Router();
 
-router.post('/',auth(),fileUploader.uploadBadge, validateRequest(createTeamValidationSchema), teamController.createTeam);
+router.post('/',auth(),fileUploader.filesystemUploadBadge, validateRequest(createTeamValidationSchema), teamController.createTeam);
 
 router.post("/invite", auth(), teamController.inviteUser)
 router.post("/leave", auth(), teamController.leaveTeam)
@@ -34,10 +34,11 @@ router.post('/:teamId/members/:memberId/assign-role', auth(), teamController.ass
 router.post('/:teamId/members/:memberId/revoke-role', auth(), teamController.revokeMemberRole)
 
 router.get('/', auth(),teamController.getTeams);
+router.get('/search/by-name', auth(), teamController.searchTeamsByName);
 router.get('/:teamId',auth(), teamController.getTeamDetails);
 
 router.get("/members/:teamId", auth(), teamController.getAllTeamMembers)
-router.put('/:teamId',auth(),fileUploader.uploadBadge, validateRequest(updateTeamValidationSchema), teamController.updateTeam);
+router.put('/:teamId',auth(),fileUploader.filesystemUploadBadge, validateRequest(updateTeamValidationSchema), teamController.updateTeam);
 router.delete('/:teamId', auth(UserRole.USER),teamController.deleteTeam);
 
 // NEW: Join Request System Routes
@@ -66,6 +67,6 @@ router.get('/:teamId/available-contests', auth(), teamController.getAvailableTea
  * Body: { contestId: string }
  * Files: Upload via 'files' field (array)
  */
-router.post('/:teamId/start-match-auto', auth(), fileUploader.uploadTeamMatchPhotos, teamController.startTeamMatchWithAutoRival);
+router.post('/:teamId/start-match-auto', auth(), fileUploader.filesystemUploadTeamMatchPhotos, teamController.startTeamMatchWithAutoRival);
 
 export const teamRoutes = router;

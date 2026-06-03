@@ -194,29 +194,39 @@ async function scheduleContest(rContest: RecurringContest) {
 
 agenda.define("contest:watcher", async (job: Job) => {
     const { contestId } = job.attrs.data as { contestId: string };
-
+    console.log(`Contest watcher triggered for contest ID: ${contestId}`)
     const contest = await contestService.getContestById(contestId)
     if (!contest) {
         console.error(`Contest:watcher - contest ${contestId} not found, skipping`)
         return
     }
 
-    // Update contest status to CLOSED
-    await prisma.contest.update({ where: { id: contestId }, data: { status: ContestStatus.CLOSED } })
-    globalEventHandler.emit(Events.CONTEST_ENDED, contestId)
-    console.log(`Contest ${contestId} has ended and moved to CLOSED status`)
-
-    // Wrap awarding in try-catch so the contest still closes even if awarding fails
+   
     try {
+         // Update contest status to CLOSED
+        await prisma.contest.update({ where: { id: contestId }, data: { status: ContestStatus.CLOSED } })
+        globalEventHandler.emit(Events.CONTEST_ENDED, contestId)
+        console.log(`Contest ${contestId} has ended and moved to CLOSED status`)
+
+        // Wrap awarding in try-catch so the contest still closes even if awarding fails
         // Award individual winners
-        await contestService.identifyWinner(contestId)
-        console.log(`Contest ${contestId} - Individual winners identified`)
+        try{
+              await contestService.identifyWinner(contestId)
+            console.log(`Contest ${contestId} - Individual winners identified`)
+        }catch(err){
+            console.log(`Contest ${contestId} - Error identifying individual winners:`, err)
+        }
+      
 
         // For TEAM mode contests: End all active team matches and move them to history
-        if (contest.mode === ContestMode.TEAM) {
-            await contestService.awardTeams(contestId)
-            console.log(`Contest ${contestId} - All active team matches ended and moved to history`)
-        }
+       try{
+        await contestService.awardTeams(contestId)
+        console.log(`Contest ${contestId} - All active team matches ended and moved to history`)
+       }catch(err){
+        console.log(`Contest ${contestId} - Error awarding teams or moving matches to history:`, err)
+       }
+        
+    
         
         console.log(`Contest ${contestId} awards completed successfully`)
     } catch (err) {

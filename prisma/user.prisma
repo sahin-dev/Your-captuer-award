@@ -104,7 +104,7 @@ model Otp {
   expires_in DateTime
   userId     String   @unique @db.ObjectId
 
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id])
   otpStatus OtpStatus @default(CREATED)
 
   createdAt DateTime @default(now())
@@ -156,7 +156,7 @@ model Vote {
   power      Int @default(1)
 
   provider User         @relation(fields: [providerId], references: [id])
-  photo    ContestPhoto @relation(fields: [photoId], references: [id], onDelete: Cascade)
+  photo    ContestPhoto @relation(fields: [photoId], references: [id])
   contest  Contest      @relation(fields: [contestId], references: [id])
 
   createdAt DateTime @default(now())

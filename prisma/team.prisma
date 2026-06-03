@@ -29,6 +29,7 @@ model Team {
   MatchesAsTeam2     TeamMatch[]  @relation(name: "team2")
   joinRequests      TeamJoinRequest[]
   history           TeamMatchHistory[]
+  opponentHistory   TeamMatchHistory[] @relation("opponentTeam")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -68,7 +69,7 @@ model TeamMember {
 
   teamId   String @db.ObjectId
   memberId String @unique @db.ObjectId
-  team     Team   @relation(fields: [teamId], references: [id], onDelete:Cascade)
+  team     Team   @relation(fields: [teamId], references: [id])
   member   User   @relation(fields: [memberId], references: [id])
   contestParticipant   ContestParticipant[]
 
@@ -115,8 +116,8 @@ model TeamJoinRequest {
   teamId  String    @db.ObjectId
   requesterId   String     @db.ObjectId
 
-  team      Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  requester     User   @relation("sentJoinRequests", fields: [requesterId], references: [id], onDelete: Cascade)
+  team      Team   @relation(fields: [teamId], references: [id])
+  requester     User   @relation("sentJoinRequests", fields: [requesterId], references: [id])
 
   status  JoinRequestStatus  @default(PENDING)
 
@@ -130,9 +131,9 @@ model TeamJoinRequest {
 model TeamMatchHistory {
   id      String        @id  @default(auto())  @map("_id")  @db.ObjectId
   teamId        String    @db.ObjectId
-  team          Team      @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  team          Team      @relation(fields: [teamId], references: [id])
   
-  matchId       String    @db.ObjectId  @unique
+  matchId       String    @db.ObjectId
   opponent_team_id    String    @db.ObjectId
   team_score    Int
   opponent_score    Int
@@ -140,9 +141,12 @@ model TeamMatchHistory {
   match_date    DateTime
   contest_id    String?   @db.ObjectId
 
+  opponent_team   Team?     @relation("opponentTeam", fields: [opponent_team_id], references: [id])
+  contest          Contest?   @relation(fields: [contest_id], references: [id])
   createdAt   DateTime @default(now())
   updatedAt   DateTime  @updatedAt
 
+  @@unique([teamId, matchId])
   @@map("team_match_history")
 }
 

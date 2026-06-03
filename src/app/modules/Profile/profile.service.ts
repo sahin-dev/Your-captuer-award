@@ -51,9 +51,9 @@ export const uploadUserPhoto = async (userId:string, file:Express.Multer.File)=>
         throw new ApiError(httpStatus.NOT_FOUND, "user not found")
     }
 
-    // const uploadedFile = await fileUploader.uploadToDigitalOcean(file)
-
-    const addedPhoto =   await handleAddUpload(userId, file.originalname)
+    // Upload file to filesystem with BASE_URL prefix
+    const uploadedFile = await fileUploader.uploadToFilesystem(file)
+    const addedPhoto = await handleAddUpload(userId, uploadedFile.Location)
 
     return {...addedPhoto, contestUpload: [],
             totalVotes: 0,

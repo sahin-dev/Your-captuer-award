@@ -1,5 +1,7 @@
 import multer from "multer";
 import { v4 as uuidv4 } from "uuid";
+import path from "path";
+import fs from "fs";
 import {
   S3Client,
   PutObjectCommand,
@@ -21,6 +23,26 @@ cloudinary.config({
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
+
+// ========== FILESYSTEM STORAGE CONFIGURATION ==========
+// Create uploads directory if it doesn't exist
+const uploadsDir = path.join(process.cwd(), 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+// Filesystem storage configuration
+const filesystemStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadsDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueName = `${Date.now()}_${uuidv4()}_${file.originalname}`;
+    cb(null, uniqueName);
+  }
+});
+
+const filesystemUpload = multer({ storage: filesystemStorage });
 
 // Multer configuration using memoryStorage (for DigitalOcean & Cloudinary)
 const storage = multer.memoryStorage();
@@ -53,6 +75,21 @@ const uploadMultipleImage = upload.fields([{ name: "images", maxCount: 15 }]);
 
 // Upload team match photos (multiple files, limit validated in service)
 const uploadTeamMatchPhotos = upload.array('files', 4);
+
+// ========== FILESYSTEM MIDDLEWARE VERSIONS ==========
+// Filesystem storage single file uploads
+const filesystemUploadBadge = filesystemUpload.single("badge");
+const filesystemUploadContestBanner = filesystemUpload.single("banner");
+const filesystemUploadUserPhoto = filesystemUpload.single('photo');
+const filesystemUploadTradePhoto = filesystemUpload.single("tradePhoto");
+const filesystemUploadAvatar = filesystemUpload.single("avatar");
+const filesystemUploadCover = filesystemUpload.single("cover");
+
+// Filesystem storage multiple file uploads
+const filesystemUploadMultipleImage = filesystemUpload.fields([{ name: "images", maxCount: 15 }]);
+
+// Filesystem storage team match photos
+const filesystemUploadTeamMatchPhotos = filesystemUpload.array('files', 4);
 
 // Upload profile and banner images
 const updateProfile = upload.fields([
@@ -140,6 +177,35 @@ const uploadToDigitalOcean = async (file: Express.Multer.File) => {
   
 };
 
+// ✅ Filesystem Upload Function
+const uploadToFilesystem = async (file: Express.Multer.File): Promise<{ Location: string; filename: string }> => {
+  if (!file) {
+    throw new Error("File is required for uploading.");
+  }
+
+  try {
+    // File is already saved by multer diskStorage middleware
+    const relativePath = `/uploads/${file.filename}`;
+    const fullPath = path.join(uploadsDir, file.filename);
+
+    // Verify file exists
+    if (!fs.existsSync(fullPath)) {
+      throw new Error("File failed to upload to filesystem.");
+    }
+
+    // Prefix with BASE_URL for full URL
+    const fullUrl = `${process.env.BASE_URL}${relativePath}`;
+
+    return {
+      Location: fullUrl,  // Full URL with BASE_URL prefix
+      filename: file.filename,
+    };
+  } catch (error) {
+    console.error("Error uploading file to filesystem:", error);
+    throw error;
+  }
+};
+
 // ✅ No Name Changes, Just Fixes
 export const fileUploader = {
   upload,
@@ -150,11 +216,21 @@ export const fileUploader = {
   cloudinaryUpload,
   uploadToDigitalOcean,
   uploadToCloudinary,
+  uploadToFilesystem,
+  filesystemUpload,
   uploadAvatar,
-  uploadBadge, 
+  uploadBadge,
+  filesystemUploadBadge,
   contestBanner,
+  filesystemUploadContestBanner,
   uploadCover,
+  filesystemUploadCover,
   userPhoto,
+  filesystemUploadUserPhoto,
   tradePhoto,
-  uploadTeamMatchPhotos
+  filesystemUploadTradePhoto,
+  filesystemUploadAvatar,
+  uploadTeamMatchPhotos,
+  filesystemUploadTeamMatchPhotos,
+  filesystemUploadMultipleImage
 };

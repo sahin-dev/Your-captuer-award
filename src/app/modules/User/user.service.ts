@@ -42,7 +42,7 @@ const updateProfilePhoto = async (userId:string, file: Express.Multer.File)=>{
         throw new ApiError(httpstatus.BAD_REQUEST, "avatar photo is required")
     }
 
-    let url = await fileUploader.uploadToDigitalOcean(file)
+    let url = await fileUploader.uploadToFilesystem(file)
 
     await prisma.user.update({where:{id:userId}, data:{avatar:url.Location}})
 
@@ -60,7 +60,7 @@ const updateCoverPhoto = async (userId:string, file: Express.Multer.File)=>{
         throw new ApiError(httpstatus.BAD_REQUEST, "cover photo is required")
     }
 
-    let url = await fileUploader.uploadToDigitalOcean(file)
+    let url = await fileUploader.uploadToFilesystem(file)
 
     await prisma.user.update({where:{id:userId}, data:{cover:url.Location}})
 
@@ -170,7 +170,7 @@ const uploadAvatar = async (userId:string,file:Express.Multer.File)=>{
         throw new ApiError(httpstatus.BAD_REQUEST, "File is required")
     }
 
-    const uploadedFile = await fileUploader.uploadToDigitalOcean(file)
+    const uploadedFile = await fileUploader.uploadToFilesystem(file)
 
     await prisma.user.update({where:{id:userId}, data:{avatar:uploadedFile.Location}})
 
@@ -185,7 +185,7 @@ const uploadCover = async (userId:string,file:Express.Multer.File)=>{
         throw new ApiError(httpstatus.BAD_REQUEST, "File is required")
     }
 
-    const uploadedFile = await fileUploader.uploadToDigitalOcean(file)
+    const uploadedFile = await fileUploader.uploadToFilesystem(file)
 
     await prisma.user.update({where:{id:userId}, data:{cover:uploadedFile.Location}})
 

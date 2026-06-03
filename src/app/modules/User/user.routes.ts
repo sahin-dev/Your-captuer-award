@@ -16,9 +16,9 @@ const router = Router()
 
 
 router.get("/", auth(UserRole.ADMIN), userController.getUsers)
-router.put("/",auth(),validateRequest(userSchema.updateUserSchema), fileUploader.uploadAvatar, userController.updateUserProfile)
-router.patch("/avatar",auth(), fileUploader.uploadAvatar, userController.uploadAvatar)
-router.patch("/cover", auth(),fileUploader.uploadCover, userController.uploadCover )
+router.put("/",auth(),validateRequest(userSchema.updateUserSchema), fileUploader.filesystemUploadAvatar, userController.updateUserProfile)
+router.patch("/avatar",auth(), fileUploader.filesystemUploadAvatar, userController.uploadAvatar)
+router.patch("/cover", auth(),fileUploader.filesystemUploadCover, userController.uploadCover )
 router.post("/forget-password",validateRequest(userSchema.forgetPasswordSchema), userController.forgetPassword)
 router.patch("/reset-password",validateRequest(userSchema.resetPasswordSchema), userController.resetPassword)
 router.put("/change-password",auth(), validateRequest(userSchema.changePasswordSchema), userController.changePassword)
