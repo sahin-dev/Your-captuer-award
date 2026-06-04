@@ -1,5 +1,5 @@
 import ApiError from "../../../errors/ApiError"
-import { userSockets } from "../../../helpers/websocketSetUp"
+import { getIO } from "../../../helpers/websocketSetUp"
 import { paginationHelper } from "../../../helpers/paginationHelper"
 import { NotificationType, UserRole } from "../../../prismaClient"
 import prisma from "../../../shared/prisma"
@@ -16,9 +16,16 @@ const postNotificationWithPayload = async (title:string, message:string, receive
 
     const notification = await prisma.notification.create({data:{title, message, receiverId, data:payload, ...(type && { type })}})
 
-    const userSocket = userSockets.get(receiverId)
-    if(userSocket && (userSocket.readyState === WebSocket.OPEN)){
-        userSocket.send(JSON.stringify({type:"notification", data:notification}))
+    // Send through Socket.IO if available
+    const io = getIO()
+    if(io){
+        io.to(receiverId).emit("notification", {
+            event: payload.event || "notification",
+            title,
+            message,
+            data: notification,
+            timestamp: new Date()
+        })
     }
 
     return notification
@@ -80,6 +87,23 @@ const markAllRead = async (userId:string) => {
     return await prisma.notification.updateMany({where:{receiverId:'admin'}, data:{isRead:true}})
 }
 
+/**
+ * Get all team members by team ID
+ * Used for broadcasting notifications to entire teams
+ */
+const getTeamMembers = async (teamId: string) => {
+    const teamMembers = await prisma.teamMember.findMany({
+        where: { teamId },
+        select: { memberId: true, member: { select: { id: true, firstName: true, lastName: true } } }
+    })
+    
+    return teamMembers.map(tm => ({
+        memberId: tm.memberId,
+        memberName: `${tm.member.firstName} ${tm.member.lastName}`,
+        userId: tm.member.id
+    }))
+}
+
 export const notificationService = {
     postNotification,
     getUserNotifications,
@@ -88,6 +112,7 @@ export const notificationService = {
     updateNotificationStatus,
     postNotificationWithPayload,
     getAdminNotification,
-    markAllRead
+    markAllRead,
+    getTeamMembers
     
 }

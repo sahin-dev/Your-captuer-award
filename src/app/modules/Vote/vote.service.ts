@@ -5,6 +5,8 @@ import { ContestStatus, Vote, VoteType } from '../../../prismaClient'
 import globalEventHandler from '../../event/eventEmitter'
 import Events from '../../event/events.constant'
 import { ObjectId } from 'mongodb'
+import { notificationOrchestrator } from '../Notification/notificationOrchestrator'
+import { participantLevelService } from '../Contest/participantLevel.service'
 
 const checkExistingVote = async (userId:string, contestId:string, photoId:string)=>{
     const exisitngVote = await prisma.vote.findFirst({where:{providerId:userId, contestId, photoId}})
@@ -61,10 +63,34 @@ export const addOneVote = async (userId:string, contestId:string, photoId:string
 
     const type = await getVoteType(photoId)
 
-    if(!(await checkExistingVote(userId, contestId,contestPhoto.id))){
+    if(!(await checkExistingVote(userId, contestId, contestPhoto.id))){
     
         const vote = await prisma.vote.create({data:{providerId:userId, contestId, photoId:contestPhoto.id, type}})
         await prisma.contestParticipant.update({where:{id:participant.id}, data:{exposure_bonus:{increment:2}}})
+        
+        // Get total votes for the photo's participant
+        const totalVotes = await getVoteCount(photoId)
+        
+        // Send notification to photo participant about the vote
+        await notificationOrchestrator.notifyVoteReceived(
+            contestPhoto.participant.id,
+            contestPhoto.participant.userId,
+            userId,
+            totalVotes
+        )
+        
+        // Update participant level and check for level up
+        const levelUpdate = await participantLevelService.updateParticipantLevel(contestPhoto.participant.id)
+        
+        if (levelUpdate.levelChanged && levelUpdate.newLevel) {
+            // Send level up notification
+            await notificationOrchestrator.notifyLevelUp(
+                contestPhoto.participant.id,
+                contestPhoto.participant.userId,
+                levelUpdate.newLevel,
+                totalVotes
+            )
+        }
         
         // For team matches: increment team member's individual score and team's match score
         // This counts votes received by team members in team contests

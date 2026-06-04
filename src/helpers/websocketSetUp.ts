@@ -14,6 +14,9 @@ type Message = { event: string; token?: string; teamId?: string; message?: strin
 export const onlineUsers = new Set<string>();
 export const userSockets = new Map<string, AuthenticatedSocket>();
 
+// Global io instance for use in other services
+let ioInstance: SocketIOServer | null = null;
+
 export function setupWebSocket(server: HTTPServer) {
   const io = new SocketIOServer(server, {
     cors: {
@@ -21,6 +24,9 @@ export function setupWebSocket(server: HTTPServer) {
       methods: ["GET", "POST"],
     },
   });
+
+  // Store io instance globally
+  ioInstance = io;
 
   console.log("Socket.IO server is running");
 
@@ -235,3 +241,14 @@ export function setupWebSocket(server: HTTPServer) {
 
   return io;
 }
+
+/**
+ * Get the global Socket.IO instance
+ * Used by other services to emit notifications and messages
+ */
+export function getIO(): SocketIOServer | null {
+  return ioInstance;
+}
+
+// Export io for direct import in other modules
+export const io = ioInstance;
