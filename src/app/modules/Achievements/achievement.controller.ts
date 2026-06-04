@@ -16,7 +16,7 @@ const getAchievementsByContest = catchAsync(async (req:Request, res:Response)=>{
         message:"Contest achievement fetched successfully",
         success:true,
         data:result.data,
-        meta:result.meta
+    
     })
 })
 

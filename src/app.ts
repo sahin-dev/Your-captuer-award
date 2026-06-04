@@ -12,6 +12,7 @@ import ErrorHandler from "./app/middlewares/error.middleware";
 import { User } from "./prismaClient/client";
 import './app/event'
 import stripeWebhook from "./helpers/stripeWebhook";
+import v2Router from "./app/routes/v2";
 
 const app: Application = express();
 
@@ -63,6 +64,8 @@ app.get("/", (req: Request, res: Response) => {
 
 // Router setup
 app.use("/api/v1", router);
+
+app.use("/api/v2", v2Router)
 
 // Error handling middleware
 app.use(ErrorHandler);

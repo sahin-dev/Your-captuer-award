@@ -31,6 +31,7 @@ const addAchievement = async (userId:string,contestId:string, category:PrizeType
 const getContestAchievementsByUser = async (userId:string,type?:PrizeType, page: number = 1, limit: number = 10)=>{
     
     const contestParticipant =  await prisma.contestParticipant.findFirst({where:{userId}})
+    
     if (!contestParticipant){
         throw new ApiError(httpStatus.NOT_FOUND, "participant not found")
     }
@@ -63,7 +64,7 @@ const getContestAchievementsByUser = async (userId:string,type?:PrizeType, page:
     const total = await prisma.contestAchievement.count({where:{participantId:contestParticipant.id}});
     const meta = paginationHelper.getPaginationMetaData(page, paginationLimit, total);
     
-    return { data: achievements, meta };
+    return { data: achievements };
 }
 
 
@@ -93,14 +94,15 @@ const getAchievements = async (contestId:string, page: number = 1, limit: number
         where:{contestId}, 
         skip,
         take: paginationLimit,
-        include:{photo:{select:{photo:{select:{id:true, url:true}}}}, participant:{select:{user:true}}},
+        include:{photo:{select:{photo:{select:{id:true, url:true}}}}, 
+        participant:{select:{user:{omit:{password:true, accessToken:true}}, photos:{select:{photo:{select:{id:true, url:true}}}}}}},
         orderBy: { createdAt: 'desc' }
     })
 
     const total = await prisma.contestAchievement.count({where:{contestId}});
     const meta = paginationHelper.getPaginationMetaData(page, paginationLimit, total);
 
-    return { data: achievements, meta };
+    return { data: achievements };
 }
 
 const getAchievementCount = async (userId:string)=>{
@@ -153,7 +155,9 @@ const getMyAchievementsByContest = async (userId:string, contestId:string) => {
         where: { contestId, participantId: participant.id },
         include: {
             photo: { select: { photo: { select: { id: true, url: true } } } },
-            participant: { select: { user: true } }
+            participant: { select: { user: {
+                omit: { password: true, accessToken: true }
+            } } }
         },
         orderBy: { createdAt: 'desc' }
     })

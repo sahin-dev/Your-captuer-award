@@ -216,7 +216,6 @@ agenda.define("contest:watcher", async (job: Job) => {
         }catch(err){
             console.log(`Contest ${contestId} - Error identifying individual winners:`, err)
         }
-      
 
         // For TEAM mode contests: End all active team matches and move them to history
        try{
@@ -225,8 +224,6 @@ agenda.define("contest:watcher", async (job: Job) => {
        }catch(err){
         console.log(`Contest ${contestId} - Error awarding teams or moving matches to history:`, err)
        }
-        
-    
         
         console.log(`Contest ${contestId} awards completed successfully`)
     } catch (err) {
