@@ -197,7 +197,7 @@ const uploadToFilesystem = async (file: Express.Multer.File): Promise<{ Location
     const fullUrl = `${process.env.BASE_URL}${relativePath}`;
 
     return {
-      Location: fullUrl,  // Full URL with BASE_URL prefix
+      Location: relativePath,  // Full URL with BASE_URL prefix
       filename: file.filename,
     };
   } catch (error) {
