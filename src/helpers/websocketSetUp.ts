@@ -1,208 +1,237 @@
-import { Server } from "http";
-import { WebSocket, WebSocketServer } from "ws";
+import { Server as HTTPServer } from "http";
+import { Server as SocketIOServer, Socket } from "socket.io";
 import config from "../config";
 import { jwtHelpers } from "./jwt";
 import prisma from "../shared/prisma";
 import { chatService } from "../app/modules/Chat/chat.service";
 
-interface ExtendedWebSocket extends WebSocket {
+interface AuthenticatedSocket extends Socket {
   userId?: string;
+  teamIds?: Set<string>;
 }
 
-type Message  = {event:string, token?:string, teamId?:string, message?:string} 
+type Message = { event: string; token?: string; teamId?: string; message?: string };
 export const onlineUsers = new Set<string>();
-export const userSockets = new Map<string, ExtendedWebSocket>();
-export const teamsChannel = new Map<string, Set<ExtendedWebSocket>>()
+export const userSockets = new Map<string, AuthenticatedSocket>();
 
-export function setupWebSocket(server: Server) {
-  
-  const wss = new WebSocketServer({ server });
-  console.log("WebSocket server is running");
+export function setupWebSocket(server: HTTPServer) {
+  const io = new SocketIOServer(server, {
+    cors: {
+      origin: "*",
+      methods: ["GET", "POST"],
+    },
+  });
 
-  wss.on("connection", (ws: ExtendedWebSocket) => {
-    console.log("A user connected");
+  console.log("Socket.IO server is running");
 
-    ws.on("message", async (data: string) => {
+  io.on("connection", (socket: AuthenticatedSocket) => {
+    console.log("A user connected:", socket.id);
+    socket.teamIds = new Set();
+
+    socket.on("authenticate", async (token: string, callback) => {
       try {
-        const parsedData:Message = JSON.parse(data);
-
-        if (!ws.userId && parsedData.event !== "authenticate"){
-          ws.send(JSON.stringify({event:"error",message:"User not authenticated"}))
-          return
+        if (!token) {
+          console.log("No token provided");
+          callback({ success: false, message: "No token provided" });
+          return;
         }
 
-        switch (parsedData.event) {
-          case "authenticate": {
-            const token = parsedData.token;
+        const user = jwtHelpers.verifyToken(token, config.jwt.jwt_secret as string);
 
-            if (!token) {
-              console.log("No token provided");
-              ws.close();
-              return;
-            }
+        if (!user) {
+          console.log("Invalid token");
+          callback({ success: false, message: "Invalid token" });
+          return;
+        }
 
-            const user = jwtHelpers.verifyToken(
-              token,
-              config.jwt.jwt_secret as string
-            );
+        const { id } = user;
+        socket.userId = id;
+        onlineUsers.add(id);
+        userSockets.set(id, socket);
 
-            if (!user) {
-              console.log("Invalid token");
-              
-              ws.close();
-              return;
-            }
-            ws.send(JSON.stringify({event:"authentication_status", data:{message:"User authenticated"}}))
-            const { id } = user;
+        await prisma.user.update({ where: { id }, data: { isActive: true } });
+        console.log(`User ${id} authenticated`);
 
-            ws.userId = id;
-            onlineUsers.add(id);
-            userSockets.set(id, ws);
-            await prisma.user.update({where:{id}, data:{isActive:true}})
-            console.log(`User ${id} active`);
-            broadcastToAll(wss, {
-              event: "user_status",
-              data: { userId: id, isOnline: true },
+        callback({ success: true, userId: id, message: "User authenticated" });
+
+        // Broadcast user online status
+        io.emit("user_status", { userId: id, isOnline: true });
+      } catch (error) {
+        console.error("Authentication error:", error);
+        callback({ success: false, message: "Authentication failed" });
+      }
+    });
+
+    socket.on("join_team", async (teamId: string, callback) => {
+      try {
+        if (!socket.userId) {
+          callback({ success: false, message: "User not authenticated" });
+          return;
+        }
+
+        if (!teamId) {
+          callback({ success: false, message: "teamId is required" });
+          return;
+        }
+
+        // Verify user is member of this team
+        const teamMember = await prisma.teamMember.findFirst({
+          where: { teamId, memberId: socket.userId },
+        });
+
+        if (!teamMember) {
+          callback({ success: false, message: "User is not a member of this team" });
+          return;
+        }
+
+        // Join the team room
+        socket.join(`team_${teamId}`);
+        socket.teamIds?.add(teamId);
+
+        // Get all chats for this team
+        const allChats = await chatService.getAllChats(socket.userId, teamId);
+
+        callback({ success: true, data: allChats });
+
+        // Notify team members that user joined
+        io.to(`team_${teamId}`).emit("member_joined", {
+          userId: socket.userId,
+          teamId,
+          timestamp: new Date(),
+        });
+
+        console.log(`User ${socket.userId} joined team ${teamId}`);
+      } catch (error) {
+        console.error("Join team error:", error);
+        callback({ success: false, message: "Failed to join team" });
+      }
+    });
+
+    socket.on("leave_team", (teamId: string, callback) => {
+      try {
+        if (!socket.userId) {
+          callback({ success: false, message: "User not authenticated" });
+          return;
+        }
+
+        socket.leave(`team_${teamId}`);
+        socket.teamIds?.delete(teamId);
+
+        // Notify team members that user left
+        io.to(`team_${teamId}`).emit("member_left", {
+          userId: socket.userId,
+          teamId,
+          timestamp: new Date(),
+        });
+
+        callback({ success: true, message: "Left team room" });
+        console.log(`User ${socket.userId} left team ${teamId}`);
+      } catch (error) {
+        console.error("Leave team error:", error);
+        callback({ success: false, message: "Failed to leave team" });
+      }
+    });
+
+    socket.on("send_message", async (payload: { teamId: string; message: string }, callback) => {
+      try {
+        if (!socket.userId) {
+          callback({ success: false, message: "User not authenticated" });
+          return;
+        }
+
+        const { teamId, message } = payload;
+
+        if (!teamId || !message) {
+          callback({ success: false, message: "teamId and message are required" });
+          return;
+        }
+
+        // Verify user is member of this team
+        const teamMember = await prisma.teamMember.findFirst({
+          where: { teamId, memberId: socket.userId },
+        });
+
+        if (!teamMember) {
+          callback({ success: false, message: "User is not a member of this team" });
+          return;
+        }
+
+        // Create chat record
+        const chat = await prisma.chat.create({
+          data: {
+            message,
+            senderId: socket.userId,
+            teamId,
+          },
+          include: {
+            sender: {
+              select: { id: true, firstName: true, lastName: true, avatar: true },
+            },
+          },
+        });
+
+        // Broadcast message to all team members in the room
+        io.to(`team_${teamId}`).emit("new_message", {
+          event: "message",
+          data: chat,
+        });
+
+        callback({ success: true, data: chat });
+        console.log(`Message from ${socket.userId} to team ${teamId}`);
+      } catch (error) {
+        console.error("Send message error:", error);
+        callback({ success: false, message: "Failed to send message" });
+      }
+    });
+
+    socket.on("get_team_messages", async (teamId: string, callback) => {
+      try {
+        if (!socket.userId) {
+          callback({ success: false, message: "User not authenticated" });
+          return;
+        }
+
+        if (!teamId) {
+          callback({ success: false, message: "teamId is required" });
+          return;
+        }
+
+        const chats = await chatService.getAllChats(socket.userId, teamId);
+        callback({ success: true, data: chats });
+      } catch (error) {
+        console.error("Get team messages error:", error);
+        callback({ success: false, message: "Failed to retrieve messages" });
+      }
+    });
+
+    socket.on("disconnect", async () => {
+      try {
+        if (socket.userId) {
+          // Notify teams that user disconnected
+          socket.teamIds?.forEach((teamId) => {
+            io.to(`team_${teamId}`).emit("member_left", {
+              userId: socket.userId,
+              teamId,
+              timestamp: new Date(),
             });
-            break;
-          }
+          });
 
-          case "subscribe" : {
-             if(!ws.userId){
-              ws.send("User is not authenticated")
-              ws.terminate()
-            }
-            const {teamId} = parsedData
+          onlineUsers.delete(socket.userId);
+          userSockets.delete(socket.userId);
 
-            if(!teamId){
-              ws.send("teamId is not present")
-              break
-            } 
+          await prisma.user.update({
+            where: { id: socket.userId },
+            data: { isActive: false },
+          });
 
-            if(!teamsChannel.has(teamId)){
-              let set = new Set<ExtendedWebSocket> ()
-              set.add(ws)
-              teamsChannel.set(teamId, set)
-            }else {
-              let memberSet = teamsChannel.get(teamId) as Set<ExtendedWebSocket>
-              memberSet.add(ws)
-            }
-
-            const allChats = await chatService.getAllChats(ws.userId as string,teamId)
-            
-           ws.send(JSON.stringify({event:'subscribed', data:allChats}))
-
-          }
-
-          case "unsubscribe":{
-            const {teamId} = parsedData
-            if(!teamId){
-              ws.send(JSON.stringify({message:"teamId is required"}))
-            }
-            
-            if (teamsChannel.has(teamId as string)){
-              let memberSet = teamsChannel.get(teamId as string) as Set<ExtendedWebSocket>
-              memberSet.delete(ws)
-            }
-
-            ws.send(JSON.stringify({event:'unsubscribed', data:teamId}))
-
-          }
-
-          case "message": {
-            const { teamId , message } = parsedData;
-  
-            if ( !teamId || !message) {
-              console.log("Invalid message payload");
-              ws.send("Payload is invalid for message event")
-              return;
-            }
-            
-            if(!ws.userId){
-              ws.send("User is not authenticated")
-              ws.terminate()
-            }
-
-            let chat = await prisma.chat.create({
-              data:{message,senderId:ws.userId as string,teamId}
-            });
-
-            let memberSockets :Set<ExtendedWebSocket> | undefined
-            if(!teamsChannel.has(teamId)){
-              memberSockets = new Set<ExtendedWebSocket>()
-              memberSockets.add(ws)
-              teamsChannel.set(teamId, memberSockets)
-            }else {
-              memberSockets = teamsChannel.get(teamId)
-            }
-              memberSockets?.forEach(socket => {
-                if(socket !== ws){
-                  socket.send(JSON.stringify({event:"message", data:chat}))
-                }
-              })
-           
-            break;
-          }
-  
-          case "all_chats": {
-            const { teamId } = parsedData;
-            if (!ws.userId) {
-              console.log("User not authenticated");
-              ws.send(JSON.stringify({event:"unauthenticated", message:"User not authenticated"}))
-              return;
-            }
-            if (!teamId){
-              ws.send(JSON.stringify({event:"error", message:"teamId is required"}))
-            }
-
-            const chats = await chatService.getAllChats(ws.userId as string,teamId as string)
-
-            ws.send(
-              JSON.stringify({
-                event: "all_chats",
-                data: chats,
-              })
-            );
-            break;
-          }
-
-          default:
-            console.log("Unknown event type:", parsedData.event);
+          io.emit("user_status", { userId: socket.userId, isOnline: false });
+          console.log(`User ${socket.userId} disconnected`);
         }
       } catch (error) {
-        console.error("Error handling WebSocket message:", error);
+        console.error("Disconnect error:", error);
       }
-    });
-
-    ws.on("close", () => {
-      if (ws.userId) {
-        onlineUsers.delete(ws.userId);
-        userSockets.delete(ws.userId);
-        
-        teamsChannel.forEach( channel => {
-          if(channel.has(ws)){
-            channel.delete(ws)
-          }
-        })
-
-        broadcastToAll(wss, {
-          event: "user_status",
-          data: { userId: ws.userId, isOnline: false },
-        });
-      }
-      console.log("User disconnected");
     });
   });
 
-  return wss;
-}
-
-
-
-function broadcastToAll(wss: WebSocketServer, message: object) {
-  wss.clients.forEach((client) => {
-    if (client.readyState === WebSocket.OPEN) {
-      client.send(JSON.stringify(message));
-    }
-  });
+  return io;
 }

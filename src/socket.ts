@@ -1,34 +1,24 @@
-import {  Server } from "http";
-import { WebSocketServer, WebSocket } from "ws";
-import querystring from "querystring";
+import { Server as HTTPServer } from "http";
+import { Server as SocketIOServer, Socket } from "socket.io";
+import { setupWebSocket } from "./helpers/websocketSetUp";
 
 class WebSocketHandler {
-    private wsServer:WebSocketServer
-    private user:Map<string, WebSocketServer>
-    private teamChannel:Map<string, Set<WebSocketServer>>
+  private io: SocketIOServer;
 
-    constructor (server:Server){
-        this.wsServer = new WebSocketServer({server})
-        this.user = new Map()
-        this.teamChannel = new Map()
-        this.init()
+  constructor(server: HTTPServer) {
+    this.io = setupWebSocket(server);
+    this.init();
+    console.log("Socket.IO server initialized...");
+  }
 
-        console.log('Websocket server initialized...')
-    }
+  private init() {
+    // Initialization is handled in setupWebSocket
+    // This method can be used for additional setup if needed
+  }
 
-    private init (){
-
-        this.wsServer.on('connection', (socket,req)=>{
-           
-            
-            socket.on("message",data =>{
-                console.log(data.toString())
-                let parsedData = JSON.parse(data.toString())
-                
-            })
-
-        })
-    }
+  getIO() {
+    return this.io;
+  }
 }
 
-export default WebSocketHandler
+export default WebSocketHandler;
