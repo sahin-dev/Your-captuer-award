@@ -10,7 +10,7 @@ import { PaymentRegistry } from "./paymentRegistry";
 import { loadProviders } from "./providerLoader";
 import httpStatus from 'http-status';
 
- class PaymentService {
+ export class PaymentService {
 
   private providersLoaded:boolean = false
 
