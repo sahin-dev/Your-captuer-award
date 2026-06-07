@@ -240,6 +240,7 @@ enum ContestLevel {
 }
 
 enum ContestPlan {
+  OPEN
   FREE
   PREMIUM
   PRO

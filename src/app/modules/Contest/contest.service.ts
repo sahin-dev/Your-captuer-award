@@ -89,7 +89,7 @@ const createContest = async (creatorId: string, body: contestData, banner:Expres
     }
 
     let levels = body.level_requirements.map(levels => parseInt(levels))
-  
+
     const contestData:any = {
         creatorId,
         title: body.title,

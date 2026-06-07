@@ -510,6 +510,8 @@ const purchaseProduct = async (userId: string, productId: string, quantity: numb
         throw new ApiError(httpStatus.CONFLICT, "Insufficient product quantity available");
     }
 
+    
+
     // Reduce product quantity
     await reduceProductQuantity(productId, quantity);
 

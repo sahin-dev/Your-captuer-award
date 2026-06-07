@@ -565,6 +565,7 @@ exports.ContestMode = exports.$Enums.ContestMode = {
 };
 
 exports.ContestPlan = exports.$Enums.ContestPlan = {
+  OPEN: 'OPEN',
   FREE: 'FREE',
   PREMIUM: 'PREMIUM',
   PRO: 'PRO'

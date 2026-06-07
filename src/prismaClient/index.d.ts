@@ -266,6 +266,7 @@ export type ContestLevel = (typeof ContestLevel)[keyof typeof ContestLevel]
 
 
 export const ContestPlan: {
+  OPEN: 'OPEN',
   FREE: 'FREE',
   PREMIUM: 'PREMIUM',
   PRO: 'PRO'
