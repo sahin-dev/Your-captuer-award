@@ -60,6 +60,8 @@ import httpStatus from 'http-status';
     success_url: string,
     cancel_url: string
   ) {
+
+    console.log(success_url)
     // Validate user exists
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) {
@@ -77,70 +79,73 @@ import httpStatus from 'http-status';
       throw new ApiError(httpStatus.BAD_REQUEST, "This subscription plan is not available for purchase at this time");
     }
 
-    // Create payment record
-    const payment = await prisma.payment.create({
-      data: {
-        amount: plan.amount,
-        currency: plan.currency,
-        method: "stripe",
-        type: PaymentType.SUBSCRIPTION,
+    const session = await prisma.$transaction(async txc => {
+          // Create payment record
+      const payment = await prisma.payment.create({
+        data: {
+          amount: plan.amount,
+          currency: plan.currency,
+          method: "stripe",
+          type: PaymentType.SUBSCRIPTION,
+          userId,
+          planName: plan.planName,
+          recurring: plan.recurring,
+          planId: plan.id,
+          description: `${plan.planName} Subscription - ${plan.recurring}`
+        }
+      });
+
+      // Calculate subscription dates
+      const startDate = new Date();
+      let endDate: Date;
+      if (plan.recurring === PlanRecurringType.MONTHLY) {
+        endDate = new Date(startDate.getTime() + 30 * 24 * 60 * 60 * 1000);
+      } else if (plan.recurring === PlanRecurringType.YEARLY) {
+        endDate = new Date(startDate.getTime() + 365 * 24 * 60 * 60 * 1000);
+      } else {
+        endDate = startDate; // ONETIME
+      }
+
+      // Create subscription record
+      const subscription = await subscriptionService.createSubscription(
         userId,
-        planName: plan.planName,
-        recurring: plan.recurring,
-        planId: plan.id,
-        description: `${plan.planName} Subscription - ${plan.recurring}`
-      }
-    });
+        plan.id,
+        startDate,
+        endDate,
+        ""
+      );
 
-    // Calculate subscription dates
-    const startDate = new Date();
-    let endDate: Date;
-    if (plan.recurring === PlanRecurringType.MONTHLY) {
-      endDate = new Date(startDate.getTime() + 30 * 24 * 60 * 60 * 1000);
-    } else if (plan.recurring === PlanRecurringType.YEARLY) {
-      endDate = new Date(startDate.getTime() + 365 * 24 * 60 * 60 * 1000);
-    } else {
-      endDate = startDate; // ONETIME
-    }
-
-    // Create subscription record
-    const subscription = await subscriptionService.createSubscription(
-      userId,
-      plan.id,
-      startDate,
-      endDate,
-      ""
-    );
-
-    // Create Stripe session
-    const provider = PaymentFactory.getProvider("STRIPE");
-    const session = await provider.createSession(
-      userId,
-      plan.stripe_price_id,
-      'subscription',
-      success_url,
-      cancel_url,
-      {
+      // Create Stripe session
+      const provider = PaymentFactory.getProvider("STRIPE");
+      const session = await provider.createSession(
         userId,
-        subscription_id: subscription.id,
-        plan_id: plan.id,
-        payment_id: payment.id
-      }
-    );
+        plan.stripe_price_id!,
+        'subscription',
+        success_url,
+        cancel_url,
+        {
+          userId,
+          subscription_id: subscription.id,
+          plan_id: plan.id,
+          payment_id: payment.id
+        }
+      );
 
-    // Update subscription and payment with Stripe session ID
-    await prisma.subscription.update({
-      where: { id: subscription.id },
-      data: { stripe_session_id: session.id }
-    });
+      // Update subscription and payment with Stripe session ID
+      await prisma.subscription.update({
+        where: { id: subscription.id },
+        data: { stripe_session_id: session.id }
+      });
 
-    await prisma.payment.update({
-      where: { id: payment.id },
-      data: {
-        stripe_session_id: session.id,
-        status: PaymentStatus.PENDING
-      }
-    });
+      await prisma.payment.update({
+        where: { id: payment.id },
+        data: {
+          stripe_session_id: session.id,
+          status: PaymentStatus.PENDING
+        }
+      });
+      return session
+    })
 
     return session;
   }

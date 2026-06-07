@@ -56,6 +56,8 @@ export class StripeProvider implements PaymentProvider {
     return await this.stripe.checkout.sessions.create({
       customer:customer.id,
       mode,
+      success_url,
+      cancel_url,
       line_items:[{price:priceId, quantity:1}],
       metadata:data
     

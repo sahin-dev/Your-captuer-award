@@ -281,7 +281,7 @@ const joinContest = async (userId:string,contestId:string)=>{
 const getContestByUserId = async ( userId:string, contestId: string) => {
     const contest = await prisma.contest.findUnique({
         where: { id: contestId },
-        include: { creator: {omit:{password:true, accessToken:true}}}
+        include: { creator: {omit:{password:true, accessToken:true}}, participants:true}
     });
     if(!contest){
         throw new ApiError(httpstatus.NOT_FOUND, "contest not found")
