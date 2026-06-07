@@ -1012,19 +1012,13 @@ const uploadPhotoToContest = async (contestId:string,userId:string, photoIds:str
         throw new ApiError(httpstatus.NOT_FOUND, "user not found")
     }
 
-   
-    
-
     let contestParticipant:ContestParticipant | null = await prisma.contestParticipant.findUnique({where:{contestId_userId:{contestId,userId}}})
 
 
     if(!contestParticipant){
          const userSubscription = user.subscriptions && user.subscriptions.length > 0 ? user.subscriptions[0] : null
-
-      
-
-        if( (!userSubscription && contest.type === ContestPlan.OPEN) || 
-            (userSubscription && 
+        if( (contest.type === ContestPlan.OPEN) || 
+            !(userSubscription && 
                 (userSubscription.plan === SubscriptionPlanEnum.PREMIUM || 
                     userSubscription.plan === contest.type))){
 

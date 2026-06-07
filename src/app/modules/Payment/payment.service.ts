@@ -113,7 +113,7 @@ import httpStatus from 'http-status';
     );
 
     // Create Stripe session
-    const provider = PaymentRegistry.getProvider("STRIPE");
+    const provider = PaymentFactory.getProvider("STRIPE");
     const session = await provider.createSession(
       userId,
       plan.stripe_price_id,
