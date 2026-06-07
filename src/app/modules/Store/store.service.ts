@@ -29,11 +29,9 @@ const addProduct = async (userId: string, productData: {
         throw new ApiError(httpStatus.BAD_REQUEST, "Product image is required");
     }
 
-    if (!productData.title || !productData.category || 
-        !productData.items || productData.quantity === undefined || 
-        productData.amount === undefined) {
+    if (!productData.title || !productData.category  || productData.amount === undefined) {
 
-        throw new ApiError(httpStatus.BAD_REQUEST, "Missing required product fields (title, category, items, quantity, amount)");
+        throw new ApiError(httpStatus.BAD_REQUEST, "Missing required product fields (title, category, amount)");
     }
 
     if (!productData.currency) {
@@ -41,26 +39,22 @@ const addProduct = async (userId: string, productData: {
     }
 
     // Convert quantity and amount to numbers
-    let parsedQuantity = Number(productData.quantity);
     const parsedAmount = Number(productData.amount);
+    
 
-    if (isNaN(parsedQuantity) || parsedQuantity <= 0) {
-        throw new ApiError(httpStatus.BAD_REQUEST, "Quantity must be a positive number");
-    }
+     
 
     if (isNaN(parsedAmount) || parsedAmount < 0) {
         throw new ApiError(httpStatus.BAD_REQUEST, "Amount must be a non-negative number");
-    }
-
-    if (!Array.isArray(productData.items) || productData.items.length === 0) {
-        throw new ApiError(httpStatus.BAD_REQUEST, "Items array is required and must not be empty");
     }
 
     let parsedItems: Array<{ type: ProductType; quantity: number }> = [];
 
     if(productData.category === Category.BUNDLES){
 
-        parsedQuantity = 1; // For bundles, the quantity is always 1, as it's a package of items
+        if (!Array.isArray(productData.items) || productData.items.length === 0) {
+            throw new ApiError(httpStatus.BAD_REQUEST, "Items array is required and must not be empty");
+        }
         productData.currency = "COINS"
          // Validate and parse items
         parsedItems = productData.items.map(item => {
@@ -76,6 +70,14 @@ const addProduct = async (userId: string, productData: {
 
     }
 
+    if (productData.category === Category.COINS) {
+        const parsedQuantity = Number(productData.quantity);
+        if (isNaN(parsedQuantity) || parsedQuantity <= 0) {
+            throw new ApiError(httpStatus.BAD_REQUEST, "Quantity must be a positive integer for COINS category");
+        }
+        productData.quantity = parsedQuantity;
+    }
+
 
    
     // Upload the file
@@ -85,16 +87,12 @@ const addProduct = async (userId: string, productData: {
         imageUrl = uploadedFile.Location;
     }
 
-    if(productData.category === Category.COINS){
-        parsedItems = []
-    }
-
     const product = await prisma.product.create({
         data: {
             title: productData.title,
             category: productData.category,
             items: parsedItems,
-            quantity: parsedQuantity,
+            quantity: productData.quantity,
             amount: parsedAmount,
             currency: productData.currency,
             description: productData.description || "",
@@ -321,7 +319,7 @@ const isProductAvailable = async (productId: string): Promise<boolean> => {
     });
 
     if (!product) return false;
-    return product.status === ProductStatus.ACTIVE && product.quantity > 0;
+    return product.status === ProductStatus.ACTIVE
 };
 
 /**
@@ -340,9 +338,6 @@ const reduceProductQuantity = async (productId: string, quantity: number) => {
         throw new ApiError(httpStatus.NOT_FOUND, "Product not found");
     }
 
-    if (product.quantity < quantity) {
-        throw new ApiError(httpStatus.CONFLICT, "Insufficient product quantity");
-    }
 
     const updatedProduct = await prisma.product.update({
         where: { id: productId },
@@ -514,7 +509,7 @@ const purchaseProduct = async (userId: string, productId: string) => {
     if (!userStore) {
         throw new ApiError(httpStatus.NOT_FOUND, "User store not found");
     }
-    
+
     const product = await prisma.product.findUnique({
         where: { id: productId }
     });

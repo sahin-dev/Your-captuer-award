@@ -58,13 +58,11 @@ const stripeWebhook =  async (req: Request, res: Response) => {
                 console.log("Product not found")
                 break
               }
-              if(store){
+              if(store && product.quantity){
                 await prisma.userStore.update({where:{userId:payment.userId}, data:{coins: {increment: product.quantity}}})
               }
             }
 
-           
-           
             await notificationService.postNotification("Payment Received",`You have received ${session.amount_total}$ from ${userId}`,"admin",NotificationType.PAYMENT)
             console.log(`✅ Subscribed: ${subscriptionId}, Customer: ${customerId}, User: ${userId}`);
           break;

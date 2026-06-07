@@ -59,6 +59,24 @@ model Subscription {
 
 }
 
+model PurchaseRecords {
+    id          String @id @default(auto()) @map("_id") @db.ObjectId
+    userId      String @db.ObjectId
+    productId   String  @db.ObjectId
+    type        PurchaseType
+    amount     Float
+    
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
+
+    @@map("purchase_records")
+}
+
+enum PurchaseType {
+  COINS
+  BUNDLES
+}
+
 enum SubscriptionPlanStatus {
     ACTIVE
     INACTIVE

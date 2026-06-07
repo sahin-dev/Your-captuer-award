@@ -286,6 +286,16 @@ exports.Prisma.SubscriptionScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.PurchaseRecordsScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  productId: 'productId',
+  type: 'type',
+  amount: 'amount',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.SitePolicyScalarFieldEnum = {
   id: 'id',
   type: 'type',
@@ -639,6 +649,11 @@ exports.SubscriptionStatus = exports.$Enums.SubscriptionStatus = {
   EXPIRED: 'EXPIRED'
 };
 
+exports.PurchaseType = exports.$Enums.PurchaseType = {
+  COINS: 'COINS',
+  BUNDLES: 'BUNDLES'
+};
+
 exports.SitePolicyType = exports.$Enums.SitePolicyType = {
   TERMS: 'TERMS',
   POLICY: 'POLICY',
@@ -765,6 +780,7 @@ exports.Prisma.ModelName = {
   Payment: 'Payment',
   SubscriptionPlan: 'SubscriptionPlan',
   Subscription: 'Subscription',
+  PurchaseRecords: 'PurchaseRecords',
   SitePolicy: 'SitePolicy',
   Room: 'Room',
   Chat: 'Chat',
