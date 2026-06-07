@@ -232,10 +232,10 @@ const deleteProductPrice = catchAsync(async (req: Request, res: Response) => {
  */
 const purchaseProduct = catchAsync(async (req: Request, res: Response) => {
     const { productId } = req.params;
-    const { quantity = 1 } = req.body;
+
     const userId = req.user.id;
 
-    const result = await storeService.purchaseProduct(userId, productId, quantity);
+    const result = await storeService.purchaseProduct(userId, productId);
 
     sendResponse(res, {
         success: true,

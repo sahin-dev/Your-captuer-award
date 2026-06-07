@@ -29,7 +29,10 @@ const addProduct = async (userId: string, productData: {
         throw new ApiError(httpStatus.BAD_REQUEST, "Product image is required");
     }
 
-    if (!productData.title || !productData.category || !productData.items || productData.quantity === undefined || productData.amount === undefined) {
+    if (!productData.title || !productData.category || 
+        !productData.items || productData.quantity === undefined || 
+        productData.amount === undefined) {
+
         throw new ApiError(httpStatus.BAD_REQUEST, "Missing required product fields (title, category, items, quantity, amount)");
     }
 
@@ -38,7 +41,7 @@ const addProduct = async (userId: string, productData: {
     }
 
     // Convert quantity and amount to numbers
-    const parsedQuantity = Number(productData.quantity);
+    let parsedQuantity = Number(productData.quantity);
     const parsedAmount = Number(productData.amount);
 
     if (isNaN(parsedQuantity) || parsedQuantity <= 0) {
@@ -53,18 +56,28 @@ const addProduct = async (userId: string, productData: {
         throw new ApiError(httpStatus.BAD_REQUEST, "Items array is required and must not be empty");
     }
 
-    // Validate and parse items
-    let parsedItems = productData.items.map(item => {
-        const parsedItemQuantity = Number(item.quantity);
-        if (!item.type || isNaN(parsedItemQuantity) || parsedItemQuantity <= 0) {
-            throw new ApiError(httpStatus.BAD_REQUEST, "Each item must have a valid type and positive quantity");
-        }
-        return {
-            type: item.type,
-            quantity: parsedItemQuantity
-        };
-    });
+    let parsedItems: Array<{ type: ProductType; quantity: number }> = [];
 
+    if(productData.category === Category.BUNDLES){
+
+        parsedQuantity = 1; // For bundles, the quantity is always 1, as it's a package of items
+        productData.currency = "COINS"
+         // Validate and parse items
+        parsedItems = productData.items.map(item => {
+            const parsedItemQuantity = Number(item.quantity);
+            if (!item.type || isNaN(parsedItemQuantity) || parsedItemQuantity <= 0) {
+                throw new ApiError(httpStatus.BAD_REQUEST, "Each item must have a valid type and positive quantity");
+            }
+            return {
+                type: item.type,
+                quantity: parsedItemQuantity
+            };
+        });
+
+    }
+
+
+   
     // Upload the file
     let imageUrl: string | null = null;
     if (file) {
@@ -92,6 +105,7 @@ const addProduct = async (userId: string, productData: {
 
     return product;
 };
+
 
 /**
  * Get all products by category with pagination
@@ -493,7 +507,14 @@ const deleteProductPrice = async (priceId: string) => {
 /**
  * Purchase product from store
  */
-const purchaseProduct = async (userId: string, productId: string, quantity: number = 1) => {
+const purchaseProduct = async (userId: string, productId: string) => {
+
+    const userStore = await userStoreService.getStoreData(userId);
+
+    if (!userStore) {
+        throw new ApiError(httpStatus.NOT_FOUND, "User store not found");
+    }
+    
     const product = await prisma.product.findUnique({
         where: { id: productId }
     });
@@ -505,30 +526,64 @@ const purchaseProduct = async (userId: string, productId: string, quantity: numb
     if (product.status !== ProductStatus.ACTIVE) {
         throw new ApiError(httpStatus.BAD_REQUEST, "Product is not available for purchase");
     }
-
-    if (product.quantity < quantity) {
-        throw new ApiError(httpStatus.CONFLICT, "Insufficient product quantity available");
-    }
-
     
+    if(product.category === Category.BUNDLES){
 
-    // Reduce product quantity
-    await reduceProductQuantity(productId, quantity);
+       return await purchaseProductUsingCoin(userId, productId)
 
-    // Add items to user store based on product items
-    for (const item of product.items) {
-        const totalQuantity = item.quantity * quantity;
-        const type = item.type.toLowerCase() as "key" | "boost" | "swap";
-        await userStoreService.addUserStoreBasedOnType(userId, type, totalQuantity);
     }
 
-    return {
-        success: true,
-        message: "Product purchased successfully",
-        productId,
-        quantity
-    };
+    return await purchaseProductWithStripe(userId, productId)
+    
+  
 };
+
+const purchaseProductUsingCoin = async (userId: string, productId: string) => {
+
+    const userStore = await userStoreService.getStoreData(userId);
+
+    if (!userStore) {
+        throw new ApiError(httpStatus.NOT_FOUND, "User store not found");
+    }
+    const productDetails = await getProductDetails(productId);
+    if (!productDetails) {
+        throw new ApiError(httpStatus.NOT_FOUND, "Product not found");
+    }
+
+    if (productDetails.amount > userStore.coins) {
+        throw new ApiError(httpStatus.BAD_REQUEST, "Insufficient coins for purchase");
+    }
+
+     await prisma.$transaction(async (tx) => {
+        await prisma.userStore.update({
+                where: { userId },
+                data: {
+                    coins: {
+                        decrement: productDetails.amount
+                    }
+                }
+            });
+        
+        for (const item of productDetails.items) {
+            const totalQuantity = item.quantity;
+            const type = item.type.toLowerCase() as "key" | "boost" | "swap";
+            await userStoreService.addUserStoreBasedOnType(userId, type, totalQuantity);
+        }
+     })
+
+     return { message: "Product purchased successfully using coins" };
+
+}
+
+const purchaseProductWithStripe = async (userId: string, productId: string) => {
+      try {
+            return await paymentService.pay(userId,productId, null,"payment","http://localhost:3000/success", "http://localhost:3000/cancel")
+        }catch(error){
+            console.log("Payment processing error:", error);
+            throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, "Payment processing failed");
+        }
+        
+}
 
 export const storeService = {
     addProduct,

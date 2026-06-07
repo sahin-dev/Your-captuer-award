@@ -29,6 +29,10 @@ const stripeWebhook =  async (req: Request, res: Response) => {
   
         case 'checkout.session.completed':
             const session = event.data.object as Stripe.Checkout.Session;
+             const subscriptionId = session.subscription as string;
+            const customerId = session.customer as string;
+            const userId = session.metadata?.userId;
+            const productId = session.metadata?.product_id;
             
             const payment = await prisma.payment.findFirst({where:{stripe_session_id:session.id}})
             
@@ -47,9 +51,19 @@ const stripeWebhook =  async (req: Request, res: Response) => {
               await prisma.user.update({where:{id:payment.userId}, data:{purchased_plan:payment.planName}})
             }
 
-            const subscriptionId = session.subscription as string;
-            const customerId = session.customer as string;
-            const userId = session.metadata?.userId;
+            if(session.mode === 'payment'){
+              const store = await prisma.userStore.findUnique({where:{userId:payment.userId}})
+              const product = await prisma.product.findUnique({where:{id:productId}})
+              if(!product || product.category !== 'COINS'){
+                console.log("Product not found")
+                break
+              }
+              if(store){
+                await prisma.userStore.update({where:{userId:payment.userId}, data:{coins: {increment: product.quantity}}})
+              }
+            }
+
+           
            
             await notificationService.postNotification("Payment Received",`You have received ${session.amount_total}$ from ${userId}`,"admin",NotificationType.PAYMENT)
             console.log(`✅ Subscribed: ${subscriptionId}, Customer: ${customerId}, User: ${userId}`);

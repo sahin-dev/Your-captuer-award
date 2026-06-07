@@ -4,7 +4,7 @@ model Product {
     title           String
     category       Category
     items          items[]
-    quantity        Int
+    quantity        Int?
     amount          Float
     currency        String
     icon            String?

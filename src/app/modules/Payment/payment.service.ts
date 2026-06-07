@@ -5,11 +5,12 @@ import prisma from "../../../shared/prisma";
 import { storeService } from "../Store/store.service";
 import { subscriptionService } from "../Subscription/subscription.service";
 import { PaymentMethod } from "./payment.interface";
+import { PaymentFactory } from "./paymentFactory";
 import { PaymentRegistry } from "./paymentRegistry";
 import { loadProviders } from "./providerLoader";
 import httpStatus from 'http-status';
 
-export class PaymentService {
+ class PaymentService {
 
   private providersLoaded:boolean = false
 
@@ -32,8 +33,6 @@ export class PaymentService {
     success_url: string,
     cancel_url: string
   ) {
-    if (!this.providersLoaded)
-      await this.loadProviders();
 
     if (mode === 'payment') {
       if (!productId) {
@@ -188,7 +187,7 @@ export class PaymentService {
     });
 
     // Create Stripe payment session
-    const provider = PaymentRegistry.getProvider("STRIPE");
+    const provider = PaymentFactory.getProvider("STRIPE");
     const session = await provider.initializePaymentSession(
       userId,
       product.amount,

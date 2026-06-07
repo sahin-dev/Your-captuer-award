@@ -519,7 +519,7 @@ const getTransactionStats = async () => {
 
     // Store revenue
     const totalStoreRevenue = allSuccessfulPayments
-        .filter(p => p.method === 'STORE')
+        .filter(p => p.type === 'STORE')
         .reduce((acc, p) => acc + p.amount, 0)
 
     // Subscription revenue
