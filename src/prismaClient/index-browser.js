@@ -612,7 +612,8 @@ exports.PaymentStatus = exports.$Enums.PaymentStatus = {
 exports.SubscriptionPlanEnum = exports.$Enums.SubscriptionPlanEnum = {
   PREMIUM: 'PREMIUM',
   PRO: 'PRO',
-  FREE: 'FREE'
+  FREE: 'FREE',
+  OPEN: 'OPEN'
 };
 
 exports.PlanRecurringType = exports.$Enums.PlanRecurringType = {

@@ -338,7 +338,8 @@ export type PlanRecurringType = (typeof PlanRecurringType)[keyof typeof PlanRecu
 export const SubscriptionPlanEnum: {
   PREMIUM: 'PREMIUM',
   PRO: 'PRO',
-  FREE: 'FREE'
+  FREE: 'FREE',
+  OPEN: 'OPEN'
 };
 
 export type SubscriptionPlanEnum = (typeof SubscriptionPlanEnum)[keyof typeof SubscriptionPlanEnum]

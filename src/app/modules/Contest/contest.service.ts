@@ -97,7 +97,7 @@ const createContest = async (creatorId: string, body: contestData, banner:Expres
         status: ContestStatus.UPCOMING,
         mode: body.mode || ContestMode.SOLO,
         level_requirements:levels,
-        type: body.type || ContestPlan.FREE,
+        type: body.type || ContestPlan.OPEN,
         maxUploads: Number(body.maxUploads),
         ...(bannerUrl && {banner:bannerUrl})
     }
@@ -1012,17 +1012,24 @@ const uploadPhotoToContest = async (contestId:string,userId:string, photoIds:str
         throw new ApiError(httpstatus.NOT_FOUND, "user not found")
     }
 
-    const userSubscription = user.subscriptions && user.subscriptions.length > 0 ? user.subscriptions[0] : null
-
-    if(userSubscription && userSubscription.plan !== SubscriptionPlanEnum.PREMIUM && userSubscription.plan !== contest.type){
-        throw new ApiError(httpstatus.FORBIDDEN, "your subscription plan does not allow you to participate in this contest")
-    }
+   
     
 
     let contestParticipant:ContestParticipant | null = await prisma.contestParticipant.findUnique({where:{contestId_userId:{contestId,userId}}})
 
 
     if(!contestParticipant){
+         const userSubscription = user.subscriptions && user.subscriptions.length > 0 ? user.subscriptions[0] : null
+
+      
+
+        if( (!userSubscription && contest.type === ContestPlan.OPEN) || 
+            (userSubscription && 
+                (userSubscription.plan === SubscriptionPlanEnum.PREMIUM || 
+                    userSubscription.plan === contest.type))){
+
+                throw new ApiError(httpstatus.FORBIDDEN, `You are not allowed to upload photo to this contest. Please subscribe to ${contest.type.toLocaleLowerCase()} plan to participate in this contest`)
+        }
         contestParticipant = await prisma.contestParticipant.create({data:{contestId:contest.id,userId:userId}, include:{contest:true, _count:{select:{photos:true}}}})
     }
 

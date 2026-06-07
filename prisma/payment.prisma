@@ -80,6 +80,7 @@ enum SubscriptionPlanEnum {
     PREMIUM
     PRO
     FREE
+    OPEN
 }
 
 enum PaymentStatus {
