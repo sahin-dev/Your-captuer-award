@@ -206,6 +206,20 @@ const getUserPhotoAchievements = catchAsync(async (req:Request, res:Response) =>
     })
 })
 
+const deleteAccount = catchAsync(async (req:Request, res:Response) => {
+    const userId = req.user.id
+    const {password} = req.body
+
+    const result = await userService.deleteAccount(userId, password)
+    sendResponse(res, {
+        success:true,
+        statusCode:httpstatus.OK,
+        message:"Account deleted successfully",
+        data:result
+    })
+})
+
+
 export const userController = {
 
     getUsers,
@@ -220,5 +234,6 @@ export const userController = {
     changePassword,
     getUserProgress,
     searchUser,
-    getUserPhotoAchievements
+    getUserPhotoAchievements,
+    deleteAccount
 }

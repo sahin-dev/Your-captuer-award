@@ -9,7 +9,7 @@ const getStoreData = async (userId: string) => {
   
     const storeData = await prisma.userStore.findUnique({
       where: { userId },
-      select:{id:true,key:true, boost:true, swap:true}
+      select:{id:true,key:true, boost:true, swap:true, coins:true}
     });
     return storeData;
   
@@ -53,8 +53,24 @@ const updateStoreData = async (userId: string, data: Partial<UserStore>) => {
 }   
 
 
+const addUserStoreBasedOnType = async (userId: string, type: "key" | "boost" | "swap", amount: number) => {
+    const store = await prisma.userStore.findUnique({where:{userId}})
+    if (!store) {
+      throw new Error("User store not found");
+    }
+    // Update the store based on the type and amount
+    const updatedStore = await prisma.userStore.update({
+        where: { userId },
+        data: {
+            [type]: { increment: amount }
+        }
+    });
+    return updatedStore;
+};
+
 export const userStoreService = {
   getStoreData, 
   addStoreData,
-  updateStoreData
-}
+  updateStoreData,
+  addUserStoreBasedOnType
+};

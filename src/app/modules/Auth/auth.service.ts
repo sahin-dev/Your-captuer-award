@@ -10,7 +10,7 @@ import globalEventHandler from "../../event/eventEmitter"
 import Events from "../../event/events.constant"
 import { UserRegistrationData, UserSignInData } from "./auth.types"
 import { userService } from "../User/user.service"
-import { UserRole } from "../../../prismaClient"
+import { SubscriptionStatus, UserRole } from "../../../prismaClient"
 
 
 
@@ -50,7 +50,7 @@ export const handleRegister = async (body:UserRegistrationData)=>{
         //     }
         
         //create user store for every user register
-       await tx.userStore.create({data:{userId:user.id, key:0, boost:0, swap:0}})
+       await tx.userStore.create({data:{userId:user.id, coins:0, key:0, boost:0, swap:0}})
 
         return user
     })
@@ -133,13 +133,14 @@ export const handleAdminSignIn = async(body:UserSignInData)=>{
 }
 
 export const getAutheticatedUser = async (userId:string)=>{
-    const user = await prisma.user.findUnique({where:{id:userId}})
+    const user = await prisma.user.findUnique({where:{id:userId}, include:{subscriptions:
+        {where:{status:SubscriptionStatus.VALID}}, store:true}, omit:{password:true, accessToken:true}})
 
     if (!user){
         throw new ApiError(httpstatus.NOT_FOUND, "user not found")
     }
 
-    return UserDto(user)
+    return user
 }
 
 export const handleSignout = async (userId:string)=>{

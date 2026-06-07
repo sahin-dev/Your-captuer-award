@@ -19,6 +19,7 @@ model User {
   accessToken        String?
   isActive          Boolean              @default(false) 
   isBlocked         Boolean               @default(false)
+  isDeleted         Boolean               @default(false)
   currentLevel       Int @default(-1)
   voting_power       Int @default(1)
   purchased_plan    SubscriptionPlanEnum?
@@ -49,7 +50,8 @@ model User {
 
 model UserStore {
   id      String    @id  @default(auto())  @map("_id") @db.ObjectId
-  userId    String  @db.ObjectId @unique 
+  userId    String  @db.ObjectId @unique
+  coins     Int     @default(0) 
   key      Int     @default(0)
   boost    Int     @default(0)
   swap   Int     @default(0)

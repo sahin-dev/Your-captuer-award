@@ -1,33 +1,91 @@
-import { Product, ProductType, ProductStatus } from "../../../prismaClient";
+import { ProductType, ProductStatus, Category, UserRole } from "../../../prismaClient";
 import prisma from "../../../shared/prisma";
 import { paginationHelper } from "../../../helpers/paginationHelper";
 import ApiError from "../../../errors/ApiError";
 import httpStatus from 'http-status';
+import { userStoreService } from "../User/UserStore/userStore.service";
+import { paymentService } from "../Payment/payment.service";
+import { fileUploader } from "../../../helpers/fileUploader";
 
 /**
  * Add a new product to the store
  */
-const addProduct = async (productData: {
+const addProduct = async (userId: string, productData: {
     title: string;
-    productType: ProductType;
+    category: Category;
+    items: Array<{ type: ProductType; quantity: number }>;
     quantity: number;
     amount: number;
+    currency: string;
     description?: string;
-    image?: string;
-    icon?: string;
-}) => {
-    // Validate input
-    if (!productData.title || !productData.productType) {
-        throw new ApiError(httpStatus.BAD_REQUEST, "Title and product type are required");
+}, file?: Express.Multer.File) => {
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+
+    if (!user || user.role !== UserRole.ADMIN) {
+        throw new ApiError(httpStatus.UNAUTHORIZED, "User not found or User unauthorized");
     }
 
-    if (productData.amount < 0) {
-        throw new ApiError(httpStatus.BAD_REQUEST, "Amount cannot be negative");
+    if(!file){
+        throw new ApiError(httpStatus.BAD_REQUEST, "Product image is required");
+    }
+
+    if (!productData.title || !productData.category || !productData.items || productData.quantity === undefined || productData.amount === undefined) {
+        throw new ApiError(httpStatus.BAD_REQUEST, "Missing required product fields (title, category, items, quantity, amount)");
+    }
+
+    if (!productData.currency) {
+        throw new ApiError(httpStatus.BAD_REQUEST, "Currency is required");
+    }
+
+    // Convert quantity and amount to numbers
+    const parsedQuantity = Number(productData.quantity);
+    const parsedAmount = Number(productData.amount);
+
+    if (isNaN(parsedQuantity) || parsedQuantity <= 0) {
+        throw new ApiError(httpStatus.BAD_REQUEST, "Quantity must be a positive number");
+    }
+
+    if (isNaN(parsedAmount) || parsedAmount < 0) {
+        throw new ApiError(httpStatus.BAD_REQUEST, "Amount must be a non-negative number");
+    }
+
+    if (!Array.isArray(productData.items) || productData.items.length === 0) {
+        throw new ApiError(httpStatus.BAD_REQUEST, "Items array is required and must not be empty");
+    }
+
+    // Validate and parse items
+    let parsedItems = productData.items.map(item => {
+        const parsedItemQuantity = Number(item.quantity);
+        if (!item.type || isNaN(parsedItemQuantity) || parsedItemQuantity <= 0) {
+            throw new ApiError(httpStatus.BAD_REQUEST, "Each item must have a valid type and positive quantity");
+        }
+        return {
+            type: item.type,
+            quantity: parsedItemQuantity
+        };
+    });
+
+    // Upload the file
+    let imageUrl: string | null = null;
+    if (file) {
+        const uploadedFile = await fileUploader.uploadToFilesystem(file);
+        imageUrl = uploadedFile.Location;
+    }
+
+    if(productData.category === Category.COINS){
+        parsedItems = []
     }
 
     const product = await prisma.product.create({
         data: {
-            ...productData,
+            title: productData.title,
+            category: productData.category,
+            items: parsedItems,
+            quantity: parsedQuantity,
+            amount: parsedAmount,
+            currency: productData.currency,
+            description: productData.description || "",
+            image: imageUrl,
             status: ProductStatus.ACTIVE
         }
     });
@@ -36,10 +94,10 @@ const addProduct = async (productData: {
 };
 
 /**
- * Get all products by type with pagination
+ * Get all products by category with pagination
  */
-const getAllProductByType = async (
-    type: ProductType,
+const getAllProductByCategory = async (
+    category: Category,
     page: number = 1,
     limit: number = 10
 ) => {
@@ -50,17 +108,17 @@ const getAllProductByType = async (
 
     const products = await prisma.product.findMany({
         where: {
-            productType: type,
+            category: category,
             status: ProductStatus.ACTIVE
         },
         skip,
         take: paginationLimit,
-        orderBy: { id: 'desc' }
+        orderBy: { createdAt: 'desc' }
     });
 
     const total = await prisma.product.count({
         where: {
-            productType: type,
+            category: category,
             status: ProductStatus.ACTIVE
         }
     });
@@ -79,15 +137,15 @@ const getAllProductByType = async (
 };
 
 /**
- * Get all products with optional type filter
+ * Get all products with optional category filter
  */
-const getAllProduct = async (
-    type?: ProductType,
+const getAllProducts = async (
+    category?: Category,
     page: number = 1,
     limit: number = 10
 ) => {
-    if (type) {
-        return getAllProductByType(type, page, limit);
+    if (category) {
+        return getAllProductByCategory(category, page, limit);
     }
 
     const { skip, limit: paginationLimit } = paginationHelper.calculatePagination({
@@ -99,7 +157,7 @@ const getAllProduct = async (
         where: { status: ProductStatus.ACTIVE },
         skip,
         take: paginationLimit,
-        orderBy: { id: 'desc' }
+        orderBy: { createdAt: 'desc' }
     });
 
     const total = await prisma.product.count({
@@ -147,6 +205,7 @@ const updateProduct = async (
         title: string;
         amount: number;
         quantity: number;
+        items?: Array<{ type: ProductType; quantity: number }>;
         description?: string;
         image?: string;
         icon?: string;
@@ -170,6 +229,18 @@ const updateProduct = async (
         throw new ApiError(httpStatus.BAD_REQUEST, "Amount cannot be negative");
     }
 
+    // Validate items if provided
+    if (data.items) {
+        if (!Array.isArray(data.items) || data.items.length === 0) {
+            throw new ApiError(httpStatus.BAD_REQUEST, "Items array must not be empty");
+        }
+        for (const item of data.items) {
+            if (!item.type || item.quantity === undefined || item.quantity <= 0) {
+                throw new ApiError(httpStatus.BAD_REQUEST, "Each item must have a valid type and positive quantity");
+            }
+        }
+    }
+
     const updatedProduct = await prisma.product.update({
         where: { id: productId },
         data
@@ -179,7 +250,7 @@ const updateProduct = async (
 };
 
 /**
- * Delete product (soft delete by marking as INACTIVE)
+ * Delete product (soft delete by marking as DISCONTINUED)
  */
 const deleteProduct = async (productId: string) => {
     if (!productId) {
@@ -194,7 +265,7 @@ const deleteProduct = async (productId: string) => {
         throw new ApiError(httpStatus.NOT_FOUND, "Product not found");
     }
 
-    // Soft delete: mark as INACTIVE
+    // Soft delete: mark as DISCONTINUED
     const deletedProduct = await prisma.product.update({
         where: { id: productId },
         data: { status: ProductStatus.DISCONTINUED }
@@ -300,11 +371,11 @@ const increaseProductQuantity = async (productId: string, quantity: number) => {
 };
 
 /**
- * Search products by type and keyword
+ * Search products by category and keyword
  */
 const searchProducts = async (
     query?: string,
-    type?: ProductType,
+    category?: Category,
     page: number = 1,
     limit: number = 10
 ) => {
@@ -317,8 +388,8 @@ const searchProducts = async (
         status: ProductStatus.ACTIVE
     };
 
-    if (type) {
-        whereClause.productType = type;
+    if (category) {
+        whereClause.category = category;
     }
 
     if (query) {
@@ -332,7 +403,7 @@ const searchProducts = async (
         where: whereClause,
         skip,
         take: paginationLimit,
-        orderBy: { id: 'desc' }
+        orderBy: { createdAt: 'desc' }
     });
 
     const total = await prisma.product.count({ where: whereClause });
@@ -349,16 +420,128 @@ const searchProducts = async (
     };
 };
 
+/**
+ * Get product prices
+ */
+const getProductPrices = async (productId: string) => {
+    if (!productId) {
+        throw new ApiError(httpStatus.BAD_REQUEST, "Product ID is required");
+    }
+
+    const prices = await prisma.price.findMany({
+        where: { product_id: productId },
+        orderBy: { createdAt: 'desc' }
+    });
+
+    return prices;
+};
+
+/**
+ * Add pricing for a product
+ */
+const addProductPrice = async (productId: string, priceData: {
+    name: string;
+    amount: number;
+    quantity: number;
+    price_id: string;
+}) => {
+    const product = await prisma.product.findUnique({
+        where: { id: productId }
+    });
+
+    if (!product) {
+        throw new ApiError(httpStatus.NOT_FOUND, "Product not found");
+    }
+
+    if (!priceData.name || priceData.amount === undefined || priceData.quantity === undefined || !priceData.price_id) {
+        throw new ApiError(httpStatus.BAD_REQUEST, "Missing required price fields (name, amount, quantity, price_id)");
+    }
+
+    const price = await prisma.price.create({
+        data: {
+            ...priceData,
+            product_id: productId
+        }
+    });
+
+    return price;
+};
+
+/**
+ * Delete product price
+ */
+const deleteProductPrice = async (priceId: string) => {
+    if (!priceId) {
+        throw new ApiError(httpStatus.BAD_REQUEST, "Price ID is required");
+    }
+
+    const price = await prisma.price.findUnique({
+        where: { id: priceId }
+    });
+
+    if (!price) {
+        throw new ApiError(httpStatus.NOT_FOUND, "Price not found");
+    }
+
+    const deletedPrice = await prisma.price.delete({
+        where: { id: priceId }
+    });
+
+    return deletedPrice;
+};
+
+/**
+ * Purchase product from store
+ */
+const purchaseProduct = async (userId: string, productId: string, quantity: number = 1) => {
+    const product = await prisma.product.findUnique({
+        where: { id: productId }
+    });
+
+    if (!product) {
+        throw new ApiError(httpStatus.NOT_FOUND, "Product not found");
+    }
+
+    if (product.status !== ProductStatus.ACTIVE) {
+        throw new ApiError(httpStatus.BAD_REQUEST, "Product is not available for purchase");
+    }
+
+    if (product.quantity < quantity) {
+        throw new ApiError(httpStatus.CONFLICT, "Insufficient product quantity available");
+    }
+
+    // Reduce product quantity
+    await reduceProductQuantity(productId, quantity);
+
+    // Add items to user store based on product items
+    for (const item of product.items) {
+        const totalQuantity = item.quantity * quantity;
+        const type = item.type.toLowerCase() as "key" | "boost" | "swap";
+        await userStoreService.addUserStoreBasedOnType(userId, type, totalQuantity);
+    }
+
+    return {
+        success: true,
+        message: "Product purchased successfully",
+        productId,
+        quantity
+    };
+};
+
 export const storeService = {
     addProduct,
-    getAllProductByType,
+    getAllProductByCategory,
+    getAllProducts,
     getProductDetails,
     updateProduct,
     deleteProduct,
     restoreProduct,
-    getAllProduct,
     isProductAvailable,
     reduceProductQuantity,
     increaseProductQuantity,
-    searchProducts
+    searchProducts,
+    purchaseProduct,
+    getProductPrices,
+    addProductPrice,
+    deleteProductPrice
 };

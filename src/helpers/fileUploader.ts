@@ -84,6 +84,7 @@ const filesystemUploadUserPhoto = filesystemUpload.single('photo');
 const filesystemUploadTradePhoto = filesystemUpload.single("tradePhoto");
 const filesystemUploadAvatar = filesystemUpload.single("avatar");
 const filesystemUploadCover = filesystemUpload.single("cover");
+const fileSystemUploaderProductImage = filesystemUpload.single("image")
 
 // Filesystem storage multiple file uploads
 const filesystemUploadMultipleImage = filesystemUpload.fields([{ name: "images", maxCount: 15 }]);

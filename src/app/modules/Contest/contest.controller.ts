@@ -46,7 +46,7 @@ const getAllContests = catchAsync(async (req:any, res:Response)=>{
 
 const getContestById = catchAsync(async (req:any, res:Response)=>{
     const {contestId} = req.params
-    const userId = req.user.id
+    const userId = req.user?.id
 
     const contest = await contestService.getContestByUserId(userId, contestId)
 
@@ -297,12 +297,51 @@ const getContestPhotographers = catchAsync(async (req:Request, res:Response)=> {
         meta:photos.meta
     })
 })
+
+const getPublicContestsByStatus = catchAsync(async (req:Request, res:Response) => {
+    const {status, page = "1", limit = "20"} = req.query as {status: string, page?: string, limit?: string}
+    
+    if (!status) {
+        return sendResponse(res, {
+            statusCode: 400,
+            success: false,
+            message: "Status query parameter is required",
+            data: null
+        });
+    }
+
+    // Validate that status is a valid ContestStatus
+    const validStatuses = ['UPCOMING', 'ACTIVE', 'CLOSED'];
+    if (!validStatuses.includes(status.toUpperCase())) {
+        return sendResponse(res, {
+            statusCode: 400,
+            success: false,
+            message: "Invalid status. Must be one of: UPCOMING, ACTIVE, CLOSED",
+            data: null
+        });
+    }
+
+    const pageNum = parseInt(page) || 1;
+    const limitNum = parseInt(limit) || 20;
+
+    const result = await contestService.getPublicContestsByStatus(status as any, pageNum, limitNum);
+
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: `${status.toLowerCase()} contests fetched successfully`,
+        data: result.data,
+        meta: result.meta
+    });
+});
+
 export const contestController = {
     createContest,
     uploadPhoto,
     getUploadedPhotos,
     deleteContest,
     getContestsByStatus,
+    getPublicContestsByStatus,
     getMyActiveContests,
     joinContest,
     updateContestDetails,

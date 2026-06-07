@@ -14,6 +14,8 @@ const router = Router()
 
 router.route("/").post(fileUploader.filesystemUploadContestBanner,validateRequest(createContestSchema), auth(UserRole.ADMIN),  contestController.createContest).get(auth(), contestController.getContestsByStatus)
 router.get("/all", auth(UserRole.ADMIN), contestController.getAllContests)
+router.get("/ucontests", contestController.getPublicContestsByStatus)
+router.get("/ucontests/:contestId", contestController.getContestById)
 
 router.get("/my-active-contests", auth(), contestController.getMyActiveContests)
 router.post("/photos/promote", auth(), contestController.promotePhoto)
@@ -22,17 +24,17 @@ router.post("/charge", auth(), contestController.chargePhoto)
 
 router.get("/:contestId/photos", auth(), contestController.getUploadedPhotos)
 router.get("/:contestId/photos/vote", auth(), contestController.getUploadedPhotosToVote)
-router.get("/:contestId/rules", auth(), contestRuleController.getContestRules)
-router.get("/:contestId/prizes", auth(), contestPrizeController.getContestPrize)
-router.get("/:contestId/winners", auth(), contestController.getWinners)
+router.get("/:contestId/rules", contestRuleController.getContestRules)
+router.get("/:contestId/prizes", contestPrizeController.getContestPrize)
+router.get("/:contestId/winners", contestController.getWinners)
 router.get("/:contestId/user-photos", auth(), contestController.getUserRemainingPhotos)
-router.get("/:contestId/rank-photos", auth(), contestController.getContestPhotosSortedByVote)
-router.get("/:contestId/rank-photographer", auth(), contestController.getContestPhotographers)
+router.get("/:contestId/rank-photos", contestController.getContestPhotosSortedByVote)
+router.get("/:contestId/rank-photographer", contestController.getContestPhotographers)
 
 router.delete("/:contestId/photos/:photoId", auth(), contestController.deleteContestPhoto)
 
 router.post("/:contestId/upload",fileUploader.filesystemUploadUserPhoto, auth(), contestController.uploadPhoto)
-router.route("/:contestId").get(auth(), contestController.getContestById).put(auth(UserRole.ADMIN), contestController.updateContestDetails).delete(auth(UserRole.ADMIN), contestController.deleteContest)
+router.route("/:contestId").get(contestController.getContestById).put(auth(UserRole.ADMIN), contestController.updateContestDetails).delete(auth(UserRole.ADMIN), contestController.deleteContest)
 router.route("/:contestId/join").post(auth(),contestController.joinContest)
 
 export const contestRoutes = router

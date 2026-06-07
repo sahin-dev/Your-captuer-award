@@ -11,6 +11,7 @@ model Contest {
   isMoneyContest     Boolean       @default(false)
   maxPrize           Int?          @default(0)
   minPrize           Int?          @default(0)
+  type               ContestPlan   @default(FREE)
   level_requirements Int[]
 
   startDate DateTime
@@ -224,6 +225,12 @@ enum ContestLevel {
   ALL_STAR
 }
 
+enum ContestPlan {
+  FREE
+  PREMIUM
+  PRO
+}
+
 enum YCLevel {
   NEW
   AMATEUR
@@ -411,18 +418,26 @@ datasource db {
 
 model Product {
   id          String        @id @default(auto()) @map("_id") @db.ObjectId
-  productType ProductType
   title       String
+  category    Category
+  items       items[]
   quantity    Int
   amount      Float
-  currency    String        @default("USD")
+  currency    String
   icon        String?
   description String?
   image       String?
   status      ProductStatus @default(ACTIVE)
 
-  @@index([id, productType])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@map("products")
+}
+
+type items {
+  type     ProductType
+  quantity Int
 }
 
 model Price {
@@ -440,6 +455,11 @@ model Price {
   @@map("prices")
 }
 
+enum Category {
+  COINS
+  BUNDLES
+}
+
 enum ProductStatus {
   ACTIVE
   INACTIVE
@@ -447,6 +467,7 @@ enum ProductStatus {
 }
 
 enum ProductType {
+  COIN
   KEY
   BOOST
   SWAP
@@ -681,6 +702,7 @@ model User {
   accessToken        String?
   isActive           Boolean               @default(false)
   isBlocked          Boolean               @default(false)
+  isDeleted          Boolean               @default(false)
   currentLevel       Int                   @default(-1)
   voting_power       Int                   @default(1)
   purchased_plan     SubscriptionPlanEnum?
@@ -711,6 +733,7 @@ model User {
 model UserStore {
   id     String @id @default(auto()) @map("_id") @db.ObjectId
   userId String @unique @db.ObjectId
+  coins  Int    @default(0)
   key    Int    @default(0)
   boost  Int    @default(0)
   swap   Int    @default(0)

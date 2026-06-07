@@ -12,6 +12,7 @@ model Contest {
   isMoneyContest Boolean       @default(false)
   maxPrize       Int?          @default(0)
   minPrize       Int?          @default(0)
+  type           ContestPlan   @default(FREE)
   level_requirements    Int[]
   
   startDate DateTime
@@ -236,6 +237,12 @@ enum ContestLevel {
   PREMIER
   ELITE
   ALL_STAR
+}
+
+enum ContestPlan {
+  FREE
+  PREMIUM
+  PRO
 }
 
 enum YCLevel {

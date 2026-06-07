@@ -3,7 +3,7 @@ import ApiError from '../../../errors/ApiError';
 import httpstatus from 'http-status';
 import { fileUploader } from '../../../helpers/fileUploader';
 import { paginationHelper } from '../../../helpers/paginationHelper';
-import { ContestMode, ContestParticipant, ContestPhoto, ContestStatus, PrizeType, YCLevel } from '../../../prismaClient';
+import { ContestMode, ContestParticipant, ContestPhoto, ContestPlan, ContestStatus, PrizeType, SubscriptionPlanEnum, SubscriptionStatus, YCLevel } from '../../../prismaClient';
 import { IContest } from './contest.interface';
 import { contestData } from './contest.type';
 import { contestRuleService } from './ContestRules/contestRules.service';
@@ -97,6 +97,7 @@ const createContest = async (creatorId: string, body: contestData, banner:Expres
         status: ContestStatus.UPCOMING,
         mode: body.mode || ContestMode.SOLO,
         level_requirements:levels,
+        type: body.type || ContestPlan.FREE,
         maxUploads: Number(body.maxUploads),
         ...(bannerUrl && {banner:bannerUrl})
     }
@@ -119,11 +120,11 @@ const createContest = async (creatorId: string, body: contestData, banner:Expres
     contestData.startDate = new Date(body.startDate) < new Date(Date.now()) ? new Date(Date.now()) : new Date(body.startDate)
     contestData.endDate = new Date(body.endDate)
 
-    console.log(contestData)
+    console.log("contestdata",contestData)
 
     // Create a normal contest entry for all type of contest
        let contest = await prisma.contest.create({
-            data: contestData
+            data: {...contestData}
         });
 
         let createdRules, createdPrizes
@@ -298,6 +299,10 @@ const getContestByUserId = async ( userId:string, contestId: string) => {
         console.log(contest)
 
         return {...contest, prizes, totalVotes, winners};
+    }
+
+    if(!userId){
+        return {...contest, rules, prizes, totalVotes, joined:false};
     }
 
     if( (await isContestParticipantExist(userId, contestId)) && (contest.status === ContestStatus.ACTIVE)){
@@ -1001,11 +1006,18 @@ const uploadPhotoToContest = async (contestId:string,userId:string, photoIds:str
         throw new ApiError(httpstatus.NOT_FOUND, "contest not found or contest closed")
     }
 
-    let user = await prisma.user.findUnique({where:{id:userId}})
+    let user = await prisma.user.findUnique({where:{id:userId}, include:{subscriptions:{where:{status:SubscriptionStatus.VALID}}}})
 
     if(!user){
         throw new ApiError(httpstatus.NOT_FOUND, "user not found")
     }
+
+    const userSubscription = user.subscriptions && user.subscriptions.length > 0 ? user.subscriptions[0] : null
+
+    if(userSubscription && userSubscription.plan !== SubscriptionPlanEnum.PREMIUM && userSubscription.plan !== contest.type){
+        throw new ApiError(httpstatus.FORBIDDEN, "your subscription plan does not allow you to participate in this contest")
+    }
+    
 
     let contestParticipant:ContestParticipant | null = await prisma.contestParticipant.findUnique({where:{contestId_userId:{contestId,userId}}})
 
@@ -1497,6 +1509,54 @@ const getMatchContests = async (userId:string, page: number = 1, limit: number =
 
 }
 
+// Get public contests by status with pagination (no auth required)
+const getPublicContestsByStatus = async (status: ContestStatus, page: number = 1, limit: number = 20) => {
+    const { skip, limit: paginationLimit } = paginationHelper.calculatePagination({ page, limit });
+
+    const contests = await prisma.contest.findMany({
+        where: { status },
+        include: { 
+            creator: { 
+                select: { id: true, avatar: true, fullName: true, firstName: true, lastName: true, cover: true }
+            },
+            _count: {
+                select: { participants: true, votes: true }
+            }
+        },
+        skip,
+        take: paginationLimit,
+        orderBy: { startDate: 'desc' }
+    });
+
+    const total = await prisma.contest.count({ where: { status } });
+    
+    const contestsWithDetails = await Promise.all(contests.map(async (contest) => {
+        const rules = await contestRuleService.getContestRules(contest.id);
+        const prizes = await getContestPrizes(contest.id);
+        
+        const contestData: any = {
+            ...contest,
+            rules,
+            prizes,
+            totalParticipants: contest._count.participants,
+            totalVotes: contest._count.votes
+        };
+        
+        if (status === ContestStatus.CLOSED) {
+            const winnersData = await getContestWinners(contest.id, 1, 10);
+            contestData.winners = winnersData.data;
+        }
+        
+        return contestData;
+    }));
+
+    const meta = paginationHelper.getPaginationMetaData(page, paginationLimit, total);
+    
+    return { data: contestsWithDetails, meta };
+};
+
+
+
 
 
 
@@ -1508,6 +1568,7 @@ export const contestService = {
     getAllContests,
     getMyActiveContests,
     getContestsByStatus,
+    getPublicContestsByStatus,
     getUpcomingContest,
     getMyCompletedContest,
     getClosedContestsWithWinner,

@@ -124,6 +124,7 @@ exports.Prisma.ContestScalarFieldEnum = {
   isMoneyContest: 'isMoneyContest',
   maxPrize: 'maxPrize',
   minPrize: 'minPrize',
+  type: 'type',
   level_requirements: 'level_requirements',
   startDate: 'startDate',
   endDate: 'endDate',
@@ -309,15 +310,17 @@ exports.Prisma.ChatScalarFieldEnum = {
 
 exports.Prisma.ProductScalarFieldEnum = {
   id: 'id',
-  productType: 'productType',
   title: 'title',
+  category: 'category',
   quantity: 'quantity',
   amount: 'amount',
   currency: 'currency',
   icon: 'icon',
   description: 'description',
   image: 'image',
-  status: 'status'
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.PriceScalarFieldEnum = {
@@ -443,6 +446,7 @@ exports.Prisma.UserScalarFieldEnum = {
   accessToken: 'accessToken',
   isActive: 'isActive',
   isBlocked: 'isBlocked',
+  isDeleted: 'isDeleted',
   currentLevel: 'currentLevel',
   voting_power: 'voting_power',
   purchased_plan: 'purchased_plan',
@@ -453,6 +457,7 @@ exports.Prisma.UserScalarFieldEnum = {
 exports.Prisma.UserStoreScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
+  coins: 'coins',
   key: 'key',
   boost: 'boost',
   swap: 'swap',
@@ -559,6 +564,12 @@ exports.ContestMode = exports.$Enums.ContestMode = {
   TEAM: 'TEAM'
 };
 
+exports.ContestPlan = exports.$Enums.ContestPlan = {
+  FREE: 'FREE',
+  PREMIUM: 'PREMIUM',
+  PRO: 'PRO'
+};
+
 exports.ContestParticipantStatus = exports.$Enums.ContestParticipantStatus = {
   ACTIVE: 'ACTIVE',
   BLOCKED: 'BLOCKED'
@@ -632,10 +643,9 @@ exports.SitePolicyType = exports.$Enums.SitePolicyType = {
   ABOUT: 'ABOUT'
 };
 
-exports.ProductType = exports.$Enums.ProductType = {
-  KEY: 'KEY',
-  BOOST: 'BOOST',
-  SWAP: 'SWAP'
+exports.Category = exports.$Enums.Category = {
+  COINS: 'COINS',
+  BUNDLES: 'BUNDLES'
 };
 
 exports.ProductStatus = exports.$Enums.ProductStatus = {
@@ -731,6 +741,13 @@ exports.RecurringType = exports.$Enums.RecurringType = {
   DAILY: 'DAILY',
   WEEKLY: 'WEEKLY',
   MONTHLY: 'MONTHLY'
+};
+
+exports.ProductType = exports.$Enums.ProductType = {
+  COIN: 'COIN',
+  KEY: 'KEY',
+  BOOST: 'BOOST',
+  SWAP: 'SWAP'
 };
 
 exports.Prisma.ModelName = {

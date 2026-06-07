@@ -31,5 +31,6 @@ router.get("/photos/:photoId", auth(), userController.getUserPhotoAchievements)
 
 router.get("/:userId", auth(UserRole.ADMIN), userController.getUserDetails)
 router.patch("/:userId",auth(UserRole.ADMIN),validateRequest(userSchema.updateUserAdminSchema), userController.updateUser)
-
+router.delete("/delete-account", auth(), validateRequest(userSchema.deleteAccountSchema),
+ userController.deleteAccount)
 export const userRoutes = router
