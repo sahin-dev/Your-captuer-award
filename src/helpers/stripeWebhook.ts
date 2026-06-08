@@ -40,6 +40,7 @@ const stripeWebhook =  async (req: Request, res: Response) => {
               console.log("Payment not found")
               break
             }
+            
             await prisma.payment.update({where:{id:payment.id}, data:{status:PaymentStatus.SUCCEEDED}})
             if(session.mode === 'subscription'){
               const subscription = await prisma.subscription.findFirst({where:{stripe_session_id:session.id}})

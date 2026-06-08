@@ -1016,14 +1016,33 @@ const uploadPhotoToContest = async (contestId:string,userId:string, photoIds:str
 
 
     if(!contestParticipant){
-         const userSubscription = user.subscriptions && user.subscriptions.length > 0 ? user.subscriptions[0] : null
-        if( (contest.type === ContestPlan.OPEN) || 
-            !(userSubscription && 
-                (userSubscription.plan === SubscriptionPlanEnum.PREMIUM || 
-                    userSubscription.plan === contest.type))){
+        const userSubscription = user.subscriptions && user.subscriptions.length > 0 ? user.subscriptions[0] : null
 
-                throw new ApiError(httpstatus.FORBIDDEN, `You are not allowed to upload photo to this contest. Please subscribe to ${contest.type.toLocaleLowerCase()} plan to participate in this contest`)
+        switch(contest.type){
+            case ContestPlan.OPEN:
+                // Open contest is available for all users, no subscription check needed
+                break;
+            case ContestPlan.PREMIUM:
+                if (!userSubscription || userSubscription.plan !== SubscriptionPlanEnum.PREMIUM) {
+                    throw new ApiError(httpstatus.FORBIDDEN, `You are not allowed to upload photo to this contest. Please subscribe to premium plan to participate in this contest`)
+                }
+                break;
+            case ContestPlan.PRO:
+                if (!userSubscription || (userSubscription.plan !== SubscriptionPlanEnum.PRO && userSubscription.plan !== SubscriptionPlanEnum.PREMIUM)) {
+                    throw new ApiError(httpstatus.FORBIDDEN, `You are not allowed to upload photo to this contest. Please subscribe to pro plan to participate in this contest`)
+                }
+                break;
+            default:
+                throw new ApiError(httpstatus.INTERNAL_SERVER_ERROR, "Invalid contest type")
         }
+
+        // if( (contest.type !== ContestPlan.OPEN) || 
+        //     !(userSubscription && 
+        //         (userSubscription.plan === SubscriptionPlanEnum.PREMIUM || 
+        //             userSubscription.plan === contest.type))){
+
+        //         throw new ApiError(httpstatus.FORBIDDEN, `You are not allowed to upload photo to this contest. Please subscribe to ${contest.type.toLocaleLowerCase()} plan to participate in this contest`)
+        // }
         contestParticipant = await prisma.contestParticipant.create({data:{contestId:contest.id,userId:userId}, include:{contest:true, _count:{select:{photos:true}}}})
     }
 
