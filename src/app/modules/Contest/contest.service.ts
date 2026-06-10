@@ -1135,7 +1135,15 @@ const uploadPhotoToContest = async (contestId: string, userId: string, photoIds:
 
         //         throw new ApiError(httpstatus.FORBIDDEN, `You are not allowed to upload photo to this contest. Please subscribe to ${contest.type.toLocaleLowerCase()} plan to participate in this contest`)
         // }
-        contestParticipant = await prisma.contestParticipant.create({ data: { contestId: contest.id, userId: userId }, include: { contest: true, _count: { select: { photos: true } } } })
+        contestParticipant = await prisma.contestParticipant.create({
+            data: { contestId: contest.id, userId: userId }, include: { contest: true, _count: { select: { photos: true } } }
+        })
+
+        //add watcher for exposure bonus
+
+        const exposureJob = agenda.create("exposure:watcher", { contestParticipantId: contestParticipant!.id })
+        exposureJob.repeatEvery("1 minute")
+        await exposureJob.save()
     }
 
     const contestPhotosCount = await prisma.contestPhoto.count({ where: { contestId: contest.id, participantId: contestParticipant!.id } })
@@ -1171,14 +1179,11 @@ const uploadPhotoToContest = async (contestId: string, userId: string, photoIds:
                 uploadImage = await prisma.contestPhoto.create({ data: { contestId, participantId: contestParticipant!.id, photoId: userPhoto.id }, include: { photo: true } })
                 if (uploadImage) {
                     images.push(uploadImage)
-                    const exposureJob = agenda.create("exposure:watcher", { contestPhotoId: uploadImage.id })
-                    exposureJob.repeatEvery("1 minute")
-                    await exposureJob.save()
                 }
             }
         }
     }
-    //add watcher for exposure bonus
+
 
     const teamMember = await prisma.teamMember.findFirst({ where: { memberId: userId } })
     if (teamMember) {
@@ -1300,7 +1305,7 @@ const joinContestByCoin = async (userId: string, contestId: string) => {
     if (contest.coin_required! > userStore.coins) {
         throw new ApiError(httpstatus.BAD_REQUEST, "Insufficient coin balance")
     }
-    await prisma.userStore.update({ where: { id: userId }, data: { coins: userStore.coins - contest.coin_required } })
+    await prisma.userStore.update({ where: { id: userId }, data: { coins: userStore.coins - contest.coin_required! } })
     const participant = await prisma.contestParticipant.create({ data: { contestId, userId, status: ContestParticipantStatus.ACTIVE } })
     return participant
 }

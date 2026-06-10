@@ -201,51 +201,52 @@ agenda.define("contest:watcher", async (job: Job) => {
         return
     }
 
-   
+
     try {
-         // Update contest status to CLOSED
+        // Update contest status to CLOSED
         await prisma.contest.update({ where: { id: contestId }, data: { status: ContestStatus.CLOSED } })
         globalEventHandler.emit(Events.CONTEST_ENDED, contestId)
         console.log(`Contest ${contestId} has ended and moved to CLOSED status`)
 
         // Wrap awarding in try-catch so the contest still closes even if awarding fails
         // Award individual winners
-        try{
-              await contestService.identifyWinner(contestId)
+        try {
+            await contestService.identifyWinner(contestId)
             console.log(`Contest ${contestId} - Individual winners identified`)
-        }catch(err){
+        } catch (err) {
             console.log(`Contest ${contestId} - Error identifying individual winners:`, err)
         }
 
         // For TEAM mode contests: End all active team matches and move them to history
-       try{
-        await contestService.awardTeams(contestId)
-        console.log(`Contest ${contestId} - All active team matches ended and moved to history`)
-       }catch(err){
-        console.log(`Contest ${contestId} - Error awarding teams or moving matches to history:`, err)
-       }
-        
+        try {
+            await contestService.awardTeams(contestId)
+            console.log(`Contest ${contestId} - All active team matches ended and moved to history`)
+        } catch (err) {
+            console.log(`Contest ${contestId} - Error awarding teams or moving matches to history:`, err)
+        }
+
         console.log(`Contest ${contestId} awards completed successfully`)
     } catch (err) {
         console.error(`Contest ${contestId} awarding failed:`, err)
-        // Contest is already CLOSED — the error is logged for manual investigation
-        // Do not re-throw so Agenda doesn't retry and re-run the entire job
     }
+    await job.remove()
 });
 
-agenda.define("exposure:watcher", async (job: Job) => {
-    const { contestPhotoId } = job.attrs.data as { contestPhotoId: string }
 
-    const contestPhoto = await prisma.contestPhoto.findUnique({ where: { id: contestPhotoId }, include: { participant: true } })
-    if (!contestPhoto) {
-        console.log(`Exposure watcher: photo ${contestPhotoId} not found, cancelling this job`)
+agenda.define("exposure:watcher", async (job: Job) => {
+
+    const { contestParticipantId } = job.attrs.data as { contestParticipantId: string }
+
+    const participant = await prisma.contestParticipant.findUnique({ where: { id: contestParticipantId }, include: { contest: true } })
+    if (!participant) {
+        console.log(`Exposure watcher: participant ${contestParticipantId} not found, cancelling this job`)
         // Cancel only THIS specific job, not all exposure:watcher jobs
         await job.remove()
         return
     }
 
-    const updatedBonus = contestPhoto.participant.exposure_bonus - 10
-    await prisma.contestParticipant.update({ where: { id: contestPhoto.participant.id }, data: { exposure_bonus: updatedBonus < 0 ? 0 : updatedBonus } })
+    const updatedBonus = participant.exposure_bonus - 10
+    await prisma.contestParticipant.update({ where: { id: contestParticipantId }, data: { exposure_bonus: updatedBonus < 0 ? 0 : updatedBonus } })
 
     if (updatedBonus <= 0) {
         // Cancel only THIS specific job, not all exposure:watcher jobs
@@ -255,16 +256,16 @@ agenda.define("exposure:watcher", async (job: Job) => {
 
 
 agenda.define("promotion:remove", async (job: Job) => {
-    const { photoId } = job.attrs.data as { photoId: string };
-    const contestPhoto = await prisma.contestPhoto.findUnique({ where: { id: photoId } });
+    const { contestPhotoId } = job.attrs.data as { contestPhotoId: string };
+    const contestPhoto = await prisma.contestPhoto.findUnique({ where: { id: contestPhotoId } });
     if (contestPhoto) {
         await prisma.contestPhoto.update({
-            where: { id: photoId },
+            where: { id: contestPhotoId },
             data: { promoted: false, promotionExpiresAt: null }
         });
-        console.log(`Promotion removed for photo ID: ${photoId}`);
+        console.log(`Promotion removed for photo ID: ${contestPhotoId}`);
     } else {
-        console.log(`No contest photo found with ID: ${photoId}`);
+        console.log(`No contest photo found with ID: ${contestPhotoId}`);
     }
 });
 
