@@ -238,6 +238,9 @@ agenda.define("exposure:watcher", async (job: Job) => {
     const { contestParticipantId } = job.attrs.data as { contestParticipantId: string }
 
     const participant = await prisma.contestParticipant.findUnique({ where: { id: contestParticipantId }, include: { contest: true } })
+
+
+
     if (!participant) {
         console.log(`Exposure watcher: participant ${contestParticipantId} not found, cancelling this job`)
         // Cancel only THIS specific job, not all exposure:watcher jobs
@@ -245,13 +248,18 @@ agenda.define("exposure:watcher", async (job: Job) => {
         return
     }
 
-    const updatedBonus = participant.exposure_bonus - 10
-    await prisma.contestParticipant.update({ where: { id: contestParticipantId }, data: { exposure_bonus: updatedBonus < 0 ? 0 : updatedBonus } })
 
-    if (updatedBonus <= 0) {
-        // Cancel only THIS specific job, not all exposure:watcher jobs
+    if (participant?.contest.status === ContestStatus.CLOSED) {
         await job.remove()
+        return
     }
+
+    if (participant.exposure_bonus <= 0) return
+
+    const updatedBonus = Math.max(0, participant?.exposure_bonus - 10)
+    await prisma.contestParticipant.update({ where: { id: contestParticipantId }, data: { exposure_bonus: updatedBonus } })
+
+
 })
 
 
@@ -267,6 +275,8 @@ agenda.define("promotion:remove", async (job: Job) => {
     } else {
         console.log(`No contest photo found with ID: ${contestPhotoId}`);
     }
+
+    await job.remove()
 });
 
 

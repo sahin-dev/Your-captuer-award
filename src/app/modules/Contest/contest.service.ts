@@ -951,15 +951,39 @@ const getContestUploadsToVote = async (userId: string, contestId: string, page: 
 
     const { skip, limit: paginationLimit } = paginationHelper.calculatePagination({ page, limit });
 
-    const contestUploads = await prisma.contestPhoto.findMany({ where: { contestId, participant: { NOT: { userId } }, votes: { none: { providerId: participant.userId } } }, include: { photo: { select: { id: true, url: true } } }, skip, take: paginationLimit })
+    const contestUploads = await prisma.contestPhoto.findMany({
+        where: {
+            contestId,
+            participant: { NOT: { userId } },
+            votes: { none: { providerId: participant.userId } }
+        },
+        include: {
+            photo: { select: { id: true, url: true } },
+            participant: { select: { exposure_bonus: true, createdAt: true } }
+        },
+        orderBy: contest.status === ContestStatus.ACTIVE ? [
+            { promoted: 'desc' },
+            { participant: { exposure_bonus: 'desc' } },
+            { participant: { createdAt: 'desc' } }
+        ] : undefined,
+        skip,
+        take: paginationLimit
+    })
 
     if (contest.status === ContestStatus.ACTIVE) {
-        contestUploads.sort((a: ContestPhoto, b: ContestPhoto) => {
-
+        contestUploads.sort((a, b) => {
             if (a.promoted && !b.promoted) return -1;
             if (!a.promoted && b.promoted) return 1;
 
-            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+            const aBonus = a.participant?.exposure_bonus ?? 0;
+            const bBonus = b.participant?.exposure_bonus ?? 0;
+            if (aBonus !== bBonus) {
+                return bBonus - aBonus;
+            }
+
+            const aJoined = a.participant?.createdAt ? new Date(a.participant.createdAt).getTime() : 0;
+            const bJoined = b.participant?.createdAt ? new Date(b.participant.createdAt).getTime() : 0;
+            return bJoined - aJoined;
         })
     }
 
@@ -1405,8 +1429,6 @@ const promoteContestPhoto = async (contestId: string, photoId: string, userId: s
         throw new ApiError(httpstatus.BAD_REQUEST, "Contest photo is already promoted")
     }
 
-
-
     if (contestPhoto.participant.userId !== userId) {
         throw new ApiError(httpstatus.FORBIDDEN, "You are not allowed to promote this contest photo")
     }
@@ -1487,7 +1509,6 @@ const identifyContestTopPhoto = async (contestId: string) => {
 
 const tradePhoto = async (userId: string, contestId: string, contestPhotoId: string, photoId: string, file: Express.Multer.File) => {
     const contestPhoto = await prisma.contestPhoto.findUnique({ where: { id: contestPhotoId, contestId }, include: { photo: true } })
-
 
     if (!contestPhoto) {
         throw new ApiError(httpstatus.NOT_FOUND, "contest photo not found")
