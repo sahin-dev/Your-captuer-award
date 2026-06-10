@@ -30,7 +30,9 @@ router.get("/google", passport.use(googleStrategy).authenticate("google",{
 
 router.get("/google/callback", socialLogin.googleCallback);
 
-router.get("/facebook", passport.use(facebookStrategy).authenticate("facebook"))
+router.get("/facebook", passport.use(facebookStrategy).authenticate("facebook", {
+  scope: ["email"]
+}))
 
 router.get("/facebook/callback", socialLogin.facebookCallback)
 

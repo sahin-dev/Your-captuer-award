@@ -15,8 +15,10 @@ export const createContestSchema = z.object({
     mode:z.nativeEnum(ContestMode).default(ContestMode.SOLO),
     recurring: z.enum(['true', 'false'],{invalid_type_error: "'recurring' must be true or false"}).optional().transform( v => v && v === 'true'),
     recurringType: z.nativeEnum(RecurringType, {invalid_type_error:"Invalid recurring type"}).optional(),
+    coin_requirement:z.string().optional().transform(val => val? val === 'true':null),
+    coin_required:z.string().optional().transform(val => val? Number(val):null),  
+    
     prizes: z.preprocess((val) => {
-        console.log(val)
         if (typeof val === "string") {
             return JSON.parse(val);
         }
@@ -54,8 +56,8 @@ export const createContestSchema = z.object({
         if(val)
             return parseInt(val)
     }),
-    minPrize:z.string().optional().transform(val => Number(val)),
-    maxUploads:z.string().optional().transform(val => Number(val)),
+    minPrize:z.string().optional().transform(val => val? Number(val):null),
+    maxUploads:z.string().optional().transform(val => val? Number(val):null),
 });
 
  

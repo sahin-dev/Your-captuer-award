@@ -138,14 +138,14 @@ export function setupWebSocket(server: HTTPServer) {
       }
     });
 
-    socket.on("send_message", async (payload: { teamId: string; message: string }, callback) => {
+    socket.on("send_message", async (payload: { teamId: string; message: string; messageType?: string; fileUrl?: string }, callback) => {
       try {
         if (!socket.userId) {
           callback({ success: false, message: "User not authenticated" });
           return;
         }
 
-        const { teamId, message } = payload;
+        const { teamId, message, messageType, fileUrl } = payload;
 
         if (!teamId || !message) {
           callback({ success: false, message: "teamId and message are required" });
@@ -168,6 +168,8 @@ export function setupWebSocket(server: HTTPServer) {
             message,
             senderId: socket.userId,
             teamId,
+            messageType: messageType || "text",
+            fileUrl: fileUrl || null,
           },
           include: {
             sender: {
@@ -190,19 +192,16 @@ export function setupWebSocket(server: HTTPServer) {
       }
     });
 
-    socket.on("get_team_messages", async (teamId: string, callback) => {
+    socket.on("get_team_messages", async (data: { page: number; limit: number; teamId: string }, callback) => {
       try {
         if (!socket.userId) {
           callback({ success: false, message: "User not authenticated" });
           return;
         }
 
-        if (!teamId) {
-          callback({ success: false, message: "teamId is required" });
-          return;
-        }
 
-        const chats = await chatService.getAllChats(socket.userId, teamId);
+
+        const chats = await chatService.getAllChats(socket.userId, data.teamId, data.page, data.limit);
         callback({ success: true, data: chats });
       } catch (error) {
         console.error("Get team messages error:", error);

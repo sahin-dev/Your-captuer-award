@@ -19,7 +19,7 @@ export class StripeProvider implements PaymentProvider {
 
     async initializePaymentSession(userId:string,amount: number, currency: string, success_url:string, cancel_url:string, data?:any){
       const customer = await this.createCustomer(userId)
-      console.log(data)
+      
 
         const session = await this.stripe.checkout.sessions.create({
           customer:customer.id,

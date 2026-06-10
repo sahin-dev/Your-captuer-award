@@ -15,35 +15,62 @@ const facebookConfig:StrategyOptions = {
 
 const facebookCallback = async (accessToken:any, refreshToken:any, profile:Profile, done:any)=>{
     try{
-        let user = await userService.getUserBySocialId("facebook", profile.id)
+        let user = await prisma.user.findFirst({
+            where: { socialProvider: "facebook", socialId: profile.id }
+        });
+
+        if (!user) {
+            const email = (profile.emails && profile.emails[0]?.value) || null;
+            if (email) {
+                user = await prisma.user.findUnique({ where: { email } });
+                if (user) {
+                    // Link existing account
+                    user = await prisma.user.update({
+                        where: { id: user.id },
+                        data: {
+                            socialProvider: "facebook",
+                            socialId: profile.id,
+                            isActive: true, // Mark active since OAuth is authenticated
+                            avatar: user.avatar || (profile.photos && profile.photos[0]?.value),
+                            fullName: user.fullName || profile.displayName
+                        }
+                    });
+                }
+            }
+        }
+
         if (!user){
-         let userData:IUser = {
+            // Fallback email if Facebook did not provide one
+            const finalEmail = (profile.emails && profile.emails[0]?.value) || `facebook_${profile.id}@yourcaptureawards.com`;
+            let userData:IUser = {
                 socialProvider:"facebook",
                 socialId: profile?.id,
                 fullName: profile?.displayName,
-                email: profile?.emails && profile?.emails[0]?.value,
+                email: finalEmail,
                 avatar: profile?.photos && profile?.photos[0]?.value,
                 firstName:profile.name?.givenName,
                 lastName:profile.name?.familyName
-              };
+            };
 
-            user = await  prisma.$transaction(async tx => {
-                
-                const user = await tx.user.create({data:
-                {   
-                    email:userData.email as string, 
-                    firstName:userData.firstName as string, 
-                    lastName:userData.lastName as string,
-                    socialProvider:userData.socialProvider, 
-                    socialId:userData.socialId,
-                    avatar:userData.avatar
-                }})
+            user = await prisma.$transaction(async tx => {
+                const createdUser = await tx.user.create({
+                    data: {   
+                        email:userData.email as string, 
+                        firstName:userData.firstName as string, 
+                        lastName:userData.lastName as string,
+                        fullName:userData.fullName as string,
+                        socialProvider:userData.socialProvider, 
+                        socialId:userData.socialId,
+                        avatar:userData.avatar,
+                        isActive: true // Mark active since OAuth email is verified
+                    }
+                });
 
-                await tx.userStore.create({data:{userId:user.id, key:0, boost:0, swap:0}})
+                await tx.userStore.create({data:{userId:createdUser.id, key:0, boost:0, swap:0, coins:0}});
 
-                return user
-            })
-      }
+                return createdUser;
+            });
+        }
         return done(null, user);
 
     }catch(error){

@@ -151,29 +151,39 @@ const deleteContest = catchAsync(async (req:any, res:Response)=>{
 })
 
 const getContestsByStatus = catchAsync (async (req:Request, res:Response) => {
-    const {status} = req.query as {status:ContestStatus}
+    const {status, page = "1", limit = "10"} = req.query as {status:ContestStatus, page?:string, limit?:string}
     const userId = req.user.id
 
-    const contests = await contestService.getContestsByStatus(userId,status)
+    const pageNum = parseInt(page) || 1;
+    const limitNum = parseInt(limit) || 10;
+
+    const result = await contestService.getContestsByStatus(userId, status, pageNum, limitNum)
 
     sendResponse(res, {
         success:true,
         statusCode:httpStatus.OK,
         message:`contests fetched successfully`,
-        data:contests
+        data:result.data,
+        meta:result.meta
     })
 })
 
 const getMyActiveContests = catchAsync(async (req:Request, res:Response) => {
+    const {page = "1", limit = "10"} = req.query as {page?:string, limit?:string}
     const userId = req.user.id
     console.log(userId)
-    const contests = await contestService.getMyActiveContests(userId)
+
+    const pageNum = parseInt(page) || 1;
+    const limitNum = parseInt(limit) || 10;
+
+    const result = await contestService.getMyActiveContests(userId, pageNum, limitNum)
 
     sendResponse(res, {
         success:true,
         statusCode:httpStatus.OK,
         message:"user active contest fetched successfully",
-        data:contests
+        data:result.data,
+        meta:result.meta
     })
 })
 

@@ -124,6 +124,11 @@ export type Product = $Result.DefaultSelection<Prisma.$ProductPayload>
  */
 export type Price = $Result.DefaultSelection<Prisma.$PricePayload>
 /**
+ * Model Support
+ * 
+ */
+export type Support = $Result.DefaultSelection<Prisma.$SupportPayload>
+/**
  * Model Team
  * 
  */
@@ -414,6 +419,16 @@ export const ProductType: {
 export type ProductType = (typeof ProductType)[keyof typeof ProductType]
 
 
+export const SupportStatus: {
+  PENDING: 'PENDING',
+  IN_PROGRESS: 'IN_PROGRESS',
+  RESOLVED: 'RESOLVED',
+  CLOSED: 'CLOSED'
+};
+
+export type SupportStatus = (typeof SupportStatus)[keyof typeof SupportStatus]
+
+
 export const TeamAccessibility: {
   PUBLIC: 'PUBLIC',
   PRIVATE: 'PRIVATE'
@@ -620,6 +635,10 @@ export const ProductStatus: typeof $Enums.ProductStatus
 export type ProductType = $Enums.ProductType
 
 export const ProductType: typeof $Enums.ProductType
+
+export type SupportStatus = $Enums.SupportStatus
+
+export const SupportStatus: typeof $Enums.SupportStatus
 
 export type TeamAccessibility = $Enums.TeamAccessibility
 
@@ -937,6 +956,16 @@ export class PrismaClient<
     * ```
     */
   get price(): Prisma.PriceDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.support`: Exposes CRUD operations for the **Support** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Supports
+    * const supports = await prisma.support.findMany()
+    * ```
+    */
+  get support(): Prisma.SupportDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.team`: Exposes CRUD operations for the **Team** model.
@@ -1566,6 +1595,7 @@ export namespace Prisma {
     Chat: 'Chat',
     Product: 'Product',
     Price: 'Price',
+    Support: 'Support',
     Team: 'Team',
     TeamMatch: 'TeamMatch',
     TeamMember: 'TeamMember',
@@ -1601,7 +1631,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "contest" | "recurringContest" | "contestRule" | "contestPhoto" | "contestWinner" | "contestParticipant" | "contestPrize" | "contestAchievement" | "notification" | "payment" | "subscriptionPlan" | "subscription" | "purchaseRecords" | "sitePolicy" | "room" | "chat" | "product" | "price" | "team" | "teamMatch" | "teamMember" | "teamParticipation" | "teamInvitation" | "teamJoinRequest" | "teamMatchHistory" | "user" | "userStore" | "userPhoto" | "like" | "otp" | "comment" | "follow" | "vote" | "userLevel" | "level"
+      modelProps: "contest" | "recurringContest" | "contestRule" | "contestPhoto" | "contestWinner" | "contestParticipant" | "contestPrize" | "contestAchievement" | "notification" | "payment" | "subscriptionPlan" | "subscription" | "purchaseRecords" | "sitePolicy" | "room" | "chat" | "product" | "price" | "support" | "team" | "teamMatch" | "teamMember" | "teamParticipation" | "teamInvitation" | "teamJoinRequest" | "teamMatchHistory" | "user" | "userStore" | "userPhoto" | "like" | "otp" | "comment" | "follow" | "vote" | "userLevel" | "level"
       txIsolationLevel: never
     }
     model: {
@@ -2934,6 +2964,80 @@ export namespace Prisma {
           count: {
             args: Prisma.PriceCountArgs<ExtArgs>
             result: $Utils.Optional<PriceCountAggregateOutputType> | number
+          }
+        }
+      }
+      Support: {
+        payload: Prisma.$SupportPayload<ExtArgs>
+        fields: Prisma.SupportFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.SupportFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SupportPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.SupportFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SupportPayload>
+          }
+          findFirst: {
+            args: Prisma.SupportFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SupportPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.SupportFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SupportPayload>
+          }
+          findMany: {
+            args: Prisma.SupportFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SupportPayload>[]
+          }
+          create: {
+            args: Prisma.SupportCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SupportPayload>
+          }
+          createMany: {
+            args: Prisma.SupportCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.SupportDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SupportPayload>
+          }
+          update: {
+            args: Prisma.SupportUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SupportPayload>
+          }
+          deleteMany: {
+            args: Prisma.SupportDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.SupportUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.SupportUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SupportPayload>
+          }
+          aggregate: {
+            args: Prisma.SupportAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateSupport>
+          }
+          groupBy: {
+            args: Prisma.SupportGroupByArgs<ExtArgs>
+            result: $Utils.Optional<SupportGroupByOutputType>[]
+          }
+          findRaw: {
+            args: Prisma.SupportFindRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          aggregateRaw: {
+            args: Prisma.SupportAggregateRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          count: {
+            args: Prisma.SupportCountArgs<ExtArgs>
+            result: $Utils.Optional<SupportCountAggregateOutputType> | number
           }
         }
       }
@@ -4292,6 +4396,7 @@ export namespace Prisma {
     chat?: ChatOmit
     product?: ProductOmit
     price?: PriceOmit
+    support?: SupportOmit
     team?: TeamOmit
     teamMatch?: TeamMatchOmit
     teamMember?: TeamMemberOmit
@@ -5240,6 +5345,7 @@ export namespace Prisma {
     maxPrize: number | null
     minPrize: number | null
     level_requirements: number | null
+    coin_required: number | null
   }
 
   export type ContestSumAggregateOutputType = {
@@ -5247,6 +5353,7 @@ export namespace Prisma {
     maxPrize: number | null
     minPrize: number | null
     level_requirements: number[]
+    coin_required: number | null
   }
 
   export type ContestMinAggregateOutputType = {
@@ -5261,6 +5368,8 @@ export namespace Prisma {
     maxPrize: number | null
     minPrize: number | null
     type: $Enums.ContestPlan | null
+    coin_requirement: boolean | null
+    coin_required: number | null
     startDate: Date | null
     endDate: Date | null
     startedAt: Date | null
@@ -5281,6 +5390,8 @@ export namespace Prisma {
     maxPrize: number | null
     minPrize: number | null
     type: $Enums.ContestPlan | null
+    coin_requirement: boolean | null
+    coin_required: number | null
     startDate: Date | null
     endDate: Date | null
     startedAt: Date | null
@@ -5302,6 +5413,8 @@ export namespace Prisma {
     minPrize: number
     type: number
     level_requirements: number
+    coin_requirement: number
+    coin_required: number
     startDate: number
     endDate: number
     startedAt: number
@@ -5319,6 +5432,7 @@ export namespace Prisma {
     maxPrize?: true
     minPrize?: true
     level_requirements?: true
+    coin_required?: true
   }
 
   export type ContestSumAggregateInputType = {
@@ -5326,6 +5440,7 @@ export namespace Prisma {
     maxPrize?: true
     minPrize?: true
     level_requirements?: true
+    coin_required?: true
   }
 
   export type ContestMinAggregateInputType = {
@@ -5340,6 +5455,8 @@ export namespace Prisma {
     maxPrize?: true
     minPrize?: true
     type?: true
+    coin_requirement?: true
+    coin_required?: true
     startDate?: true
     endDate?: true
     startedAt?: true
@@ -5360,6 +5477,8 @@ export namespace Prisma {
     maxPrize?: true
     minPrize?: true
     type?: true
+    coin_requirement?: true
+    coin_required?: true
     startDate?: true
     endDate?: true
     startedAt?: true
@@ -5381,6 +5500,8 @@ export namespace Prisma {
     minPrize?: true
     type?: true
     level_requirements?: true
+    coin_requirement?: true
+    coin_required?: true
     startDate?: true
     endDate?: true
     startedAt?: true
@@ -5491,6 +5612,8 @@ export namespace Prisma {
     minPrize: number | null
     type: $Enums.ContestPlan
     level_requirements: number[]
+    coin_requirement: boolean
+    coin_required: number | null
     startDate: Date
     endDate: Date
     startedAt: Date | null
@@ -5533,6 +5656,8 @@ export namespace Prisma {
     minPrize?: boolean
     type?: boolean
     level_requirements?: boolean
+    coin_requirement?: boolean
+    coin_required?: boolean
     startDate?: boolean
     endDate?: boolean
     startedAt?: boolean
@@ -5568,6 +5693,8 @@ export namespace Prisma {
     minPrize?: boolean
     type?: boolean
     level_requirements?: boolean
+    coin_requirement?: boolean
+    coin_required?: boolean
     startDate?: boolean
     endDate?: boolean
     startedAt?: boolean
@@ -5578,7 +5705,7 @@ export namespace Prisma {
     updatedAt?: boolean
   }
 
-  export type ContestOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "description" | "banner" | "status" | "mode" | "maxUploads" | "isMoneyContest" | "maxPrize" | "minPrize" | "type" | "level_requirements" | "startDate" | "endDate" | "startedAt" | "creatorId" | "rules" | "prizes" | "createdAt" | "updatedAt", ExtArgs["result"]["contest"]>
+  export type ContestOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "description" | "banner" | "status" | "mode" | "maxUploads" | "isMoneyContest" | "maxPrize" | "minPrize" | "type" | "level_requirements" | "coin_requirement" | "coin_required" | "startDate" | "endDate" | "startedAt" | "creatorId" | "rules" | "prizes" | "createdAt" | "updatedAt", ExtArgs["result"]["contest"]>
   export type ContestInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     creator?: boolean | UserDefaultArgs<ExtArgs>
     participants?: boolean | Contest$participantsArgs<ExtArgs>
@@ -5618,6 +5745,8 @@ export namespace Prisma {
       minPrize: number | null
       type: $Enums.ContestPlan
       level_requirements: number[]
+      coin_requirement: boolean
+      coin_required: number | null
       startDate: Date
       endDate: Date
       startedAt: Date | null
@@ -6039,6 +6168,8 @@ export namespace Prisma {
     readonly minPrize: FieldRef<"Contest", 'Int'>
     readonly type: FieldRef<"Contest", 'ContestPlan'>
     readonly level_requirements: FieldRef<"Contest", 'Int[]'>
+    readonly coin_requirement: FieldRef<"Contest", 'Boolean'>
+    readonly coin_required: FieldRef<"Contest", 'Int'>
     readonly startDate: FieldRef<"Contest", 'DateTime'>
     readonly endDate: FieldRef<"Contest", 'DateTime'>
     readonly startedAt: FieldRef<"Contest", 'DateTime'>
@@ -6643,6 +6774,7 @@ export namespace Prisma {
     maxUploads: number | null
     maxPrize: number | null
     minPrize: number | null
+    coin_required: number | null
     level_requirements: number | null
   }
 
@@ -6650,6 +6782,7 @@ export namespace Prisma {
     maxUploads: number | null
     maxPrize: number | null
     minPrize: number | null
+    coin_required: number | null
     level_requirements: number[]
   }
 
@@ -6662,6 +6795,10 @@ export namespace Prisma {
     isMoneyContest: boolean | null
     maxPrize: number | null
     minPrize: number | null
+    mode: $Enums.ContestMode | null
+    type: $Enums.ContestPlan | null
+    coin_requirement: boolean | null
+    coin_required: number | null
     startDate: Date | null
     endDate: Date | null
     creatorId: string | null
@@ -6678,6 +6815,10 @@ export namespace Prisma {
     isMoneyContest: boolean | null
     maxPrize: number | null
     minPrize: number | null
+    mode: $Enums.ContestMode | null
+    type: $Enums.ContestPlan | null
+    coin_requirement: boolean | null
+    coin_required: number | null
     startDate: Date | null
     endDate: Date | null
     creatorId: string | null
@@ -6694,6 +6835,10 @@ export namespace Prisma {
     isMoneyContest: number
     maxPrize: number
     minPrize: number
+    mode: number
+    type: number
+    coin_requirement: number
+    coin_required: number
     level_requirements: number
     startDate: number
     endDate: number
@@ -6710,6 +6855,7 @@ export namespace Prisma {
     maxUploads?: true
     maxPrize?: true
     minPrize?: true
+    coin_required?: true
     level_requirements?: true
   }
 
@@ -6717,6 +6863,7 @@ export namespace Prisma {
     maxUploads?: true
     maxPrize?: true
     minPrize?: true
+    coin_required?: true
     level_requirements?: true
   }
 
@@ -6729,6 +6876,10 @@ export namespace Prisma {
     isMoneyContest?: true
     maxPrize?: true
     minPrize?: true
+    mode?: true
+    type?: true
+    coin_requirement?: true
+    coin_required?: true
     startDate?: true
     endDate?: true
     creatorId?: true
@@ -6745,6 +6896,10 @@ export namespace Prisma {
     isMoneyContest?: true
     maxPrize?: true
     minPrize?: true
+    mode?: true
+    type?: true
+    coin_requirement?: true
+    coin_required?: true
     startDate?: true
     endDate?: true
     creatorId?: true
@@ -6761,6 +6916,10 @@ export namespace Prisma {
     isMoneyContest?: true
     maxPrize?: true
     minPrize?: true
+    mode?: true
+    type?: true
+    coin_requirement?: true
+    coin_required?: true
     level_requirements?: true
     startDate?: true
     endDate?: true
@@ -6867,6 +7026,10 @@ export namespace Prisma {
     isMoneyContest: boolean
     maxPrize: number | null
     minPrize: number | null
+    mode: $Enums.ContestMode
+    type: $Enums.ContestPlan
+    coin_requirement: boolean
+    coin_required: number | null
     level_requirements: number[]
     startDate: Date
     endDate: Date
@@ -6905,6 +7068,10 @@ export namespace Prisma {
     isMoneyContest?: boolean
     maxPrize?: boolean
     minPrize?: boolean
+    mode?: boolean
+    type?: boolean
+    coin_requirement?: boolean
+    coin_required?: boolean
     level_requirements?: boolean
     startDate?: boolean
     endDate?: boolean
@@ -6927,6 +7094,10 @@ export namespace Prisma {
     isMoneyContest?: boolean
     maxPrize?: boolean
     minPrize?: boolean
+    mode?: boolean
+    type?: boolean
+    coin_requirement?: boolean
+    coin_required?: boolean
     level_requirements?: boolean
     startDate?: boolean
     endDate?: boolean
@@ -6937,7 +7108,7 @@ export namespace Prisma {
     updatedAt?: boolean
   }
 
-  export type RecurringContestOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "description" | "banner" | "maxUploads" | "isMoneyContest" | "maxPrize" | "minPrize" | "level_requirements" | "startDate" | "endDate" | "creatorId" | "recurring" | "rules" | "prizes" | "createdAt" | "updatedAt", ExtArgs["result"]["recurringContest"]>
+  export type RecurringContestOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "description" | "banner" | "maxUploads" | "isMoneyContest" | "maxPrize" | "minPrize" | "mode" | "type" | "coin_requirement" | "coin_required" | "level_requirements" | "startDate" | "endDate" | "creatorId" | "recurring" | "rules" | "prizes" | "createdAt" | "updatedAt", ExtArgs["result"]["recurringContest"]>
   export type RecurringContestInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
 
   export type $RecurringContestPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -6952,6 +7123,10 @@ export namespace Prisma {
       isMoneyContest: boolean
       maxPrize: number | null
       minPrize: number | null
+      mode: $Enums.ContestMode
+      type: $Enums.ContestPlan
+      coin_requirement: boolean
+      coin_required: number | null
       level_requirements: number[]
       startDate: Date
       endDate: Date
@@ -7362,6 +7537,10 @@ export namespace Prisma {
     readonly isMoneyContest: FieldRef<"RecurringContest", 'Boolean'>
     readonly maxPrize: FieldRef<"RecurringContest", 'Int'>
     readonly minPrize: FieldRef<"RecurringContest", 'Int'>
+    readonly mode: FieldRef<"RecurringContest", 'ContestMode'>
+    readonly type: FieldRef<"RecurringContest", 'ContestPlan'>
+    readonly coin_requirement: FieldRef<"RecurringContest", 'Boolean'>
+    readonly coin_required: FieldRef<"RecurringContest", 'Int'>
     readonly level_requirements: FieldRef<"RecurringContest", 'Int[]'>
     readonly startDate: FieldRef<"RecurringContest", 'DateTime'>
     readonly endDate: FieldRef<"RecurringContest", 'DateTime'>
@@ -21312,6 +21491,8 @@ export namespace Prisma {
     teamId: string | null
     senderId: string | null
     message: string | null
+    messageType: string | null
+    fileUrl: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -21321,6 +21502,8 @@ export namespace Prisma {
     teamId: string | null
     senderId: string | null
     message: string | null
+    messageType: string | null
+    fileUrl: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -21330,6 +21513,8 @@ export namespace Prisma {
     teamId: number
     senderId: number
     message: number
+    messageType: number
+    fileUrl: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -21341,6 +21526,8 @@ export namespace Prisma {
     teamId?: true
     senderId?: true
     message?: true
+    messageType?: true
+    fileUrl?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -21350,6 +21537,8 @@ export namespace Prisma {
     teamId?: true
     senderId?: true
     message?: true
+    messageType?: true
+    fileUrl?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -21359,6 +21548,8 @@ export namespace Prisma {
     teamId?: true
     senderId?: true
     message?: true
+    messageType?: true
+    fileUrl?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -21441,6 +21632,8 @@ export namespace Prisma {
     teamId: string
     senderId: string
     message: string
+    messageType: string
+    fileUrl: string | null
     createdAt: Date
     updatedAt: Date
     _count: ChatCountAggregateOutputType | null
@@ -21467,6 +21660,8 @@ export namespace Prisma {
     teamId?: boolean
     senderId?: boolean
     message?: boolean
+    messageType?: boolean
+    fileUrl?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     team?: boolean | TeamDefaultArgs<ExtArgs>
@@ -21480,11 +21675,13 @@ export namespace Prisma {
     teamId?: boolean
     senderId?: boolean
     message?: boolean
+    messageType?: boolean
+    fileUrl?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type ChatOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "teamId" | "senderId" | "message" | "createdAt" | "updatedAt", ExtArgs["result"]["chat"]>
+  export type ChatOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "teamId" | "senderId" | "message" | "messageType" | "fileUrl" | "createdAt" | "updatedAt", ExtArgs["result"]["chat"]>
   export type ChatInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     team?: boolean | TeamDefaultArgs<ExtArgs>
     sender?: boolean | UserDefaultArgs<ExtArgs>
@@ -21501,6 +21698,8 @@ export namespace Prisma {
       teamId: string
       senderId: string
       message: string
+      messageType: string
+      fileUrl: string | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["chat"]>
@@ -21901,6 +22100,8 @@ export namespace Prisma {
     readonly teamId: FieldRef<"Chat", 'String'>
     readonly senderId: FieldRef<"Chat", 'String'>
     readonly message: FieldRef<"Chat", 'String'>
+    readonly messageType: FieldRef<"Chat", 'String'>
+    readonly fileUrl: FieldRef<"Chat", 'String'>
     readonly createdAt: FieldRef<"Chat", 'DateTime'>
     readonly updatedAt: FieldRef<"Chat", 'DateTime'>
   }
@@ -24382,6 +24583,982 @@ export namespace Prisma {
      * Omit specific fields from the Price
      */
     omit?: PriceOmit<ExtArgs> | null
+  }
+
+
+  /**
+   * Model Support
+   */
+
+  export type AggregateSupport = {
+    _count: SupportCountAggregateOutputType | null
+    _min: SupportMinAggregateOutputType | null
+    _max: SupportMaxAggregateOutputType | null
+  }
+
+  export type SupportMinAggregateOutputType = {
+    id: string | null
+    ticket_no: string | null
+    name: string | null
+    email: string | null
+    subject: string | null
+    message: string | null
+    status: $Enums.SupportStatus | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type SupportMaxAggregateOutputType = {
+    id: string | null
+    ticket_no: string | null
+    name: string | null
+    email: string | null
+    subject: string | null
+    message: string | null
+    status: $Enums.SupportStatus | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type SupportCountAggregateOutputType = {
+    id: number
+    ticket_no: number
+    name: number
+    email: number
+    subject: number
+    message: number
+    status: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type SupportMinAggregateInputType = {
+    id?: true
+    ticket_no?: true
+    name?: true
+    email?: true
+    subject?: true
+    message?: true
+    status?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type SupportMaxAggregateInputType = {
+    id?: true
+    ticket_no?: true
+    name?: true
+    email?: true
+    subject?: true
+    message?: true
+    status?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type SupportCountAggregateInputType = {
+    id?: true
+    ticket_no?: true
+    name?: true
+    email?: true
+    subject?: true
+    message?: true
+    status?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type SupportAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Support to aggregate.
+     */
+    where?: SupportWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Supports to fetch.
+     */
+    orderBy?: SupportOrderByWithRelationInput | SupportOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: SupportWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Supports from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Supports.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned Supports
+    **/
+    _count?: true | SupportCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: SupportMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: SupportMaxAggregateInputType
+  }
+
+  export type GetSupportAggregateType<T extends SupportAggregateArgs> = {
+        [P in keyof T & keyof AggregateSupport]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateSupport[P]>
+      : GetScalarType<T[P], AggregateSupport[P]>
+  }
+
+
+
+
+  export type SupportGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: SupportWhereInput
+    orderBy?: SupportOrderByWithAggregationInput | SupportOrderByWithAggregationInput[]
+    by: SupportScalarFieldEnum[] | SupportScalarFieldEnum
+    having?: SupportScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: SupportCountAggregateInputType | true
+    _min?: SupportMinAggregateInputType
+    _max?: SupportMaxAggregateInputType
+  }
+
+  export type SupportGroupByOutputType = {
+    id: string
+    ticket_no: string
+    name: string
+    email: string
+    subject: string
+    message: string
+    status: $Enums.SupportStatus
+    createdAt: Date
+    updatedAt: Date
+    _count: SupportCountAggregateOutputType | null
+    _min: SupportMinAggregateOutputType | null
+    _max: SupportMaxAggregateOutputType | null
+  }
+
+  type GetSupportGroupByPayload<T extends SupportGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<SupportGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof SupportGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], SupportGroupByOutputType[P]>
+            : GetScalarType<T[P], SupportGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type SupportSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    ticket_no?: boolean
+    name?: boolean
+    email?: boolean
+    subject?: boolean
+    message?: boolean
+    status?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["support"]>
+
+
+
+  export type SupportSelectScalar = {
+    id?: boolean
+    ticket_no?: boolean
+    name?: boolean
+    email?: boolean
+    subject?: boolean
+    message?: boolean
+    status?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type SupportOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "ticket_no" | "name" | "email" | "subject" | "message" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["support"]>
+
+  export type $SupportPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Support"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      ticket_no: string
+      name: string
+      email: string
+      subject: string
+      message: string
+      status: $Enums.SupportStatus
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["support"]>
+    composites: {}
+  }
+
+  type SupportGetPayload<S extends boolean | null | undefined | SupportDefaultArgs> = $Result.GetResult<Prisma.$SupportPayload, S>
+
+  type SupportCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<SupportFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: SupportCountAggregateInputType | true
+    }
+
+  export interface SupportDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Support'], meta: { name: 'Support' } }
+    /**
+     * Find zero or one Support that matches the filter.
+     * @param {SupportFindUniqueArgs} args - Arguments to find a Support
+     * @example
+     * // Get one Support
+     * const support = await prisma.support.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends SupportFindUniqueArgs>(args: SelectSubset<T, SupportFindUniqueArgs<ExtArgs>>): Prisma__SupportClient<$Result.GetResult<Prisma.$SupportPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one Support that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {SupportFindUniqueOrThrowArgs} args - Arguments to find a Support
+     * @example
+     * // Get one Support
+     * const support = await prisma.support.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends SupportFindUniqueOrThrowArgs>(args: SelectSubset<T, SupportFindUniqueOrThrowArgs<ExtArgs>>): Prisma__SupportClient<$Result.GetResult<Prisma.$SupportPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Support that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SupportFindFirstArgs} args - Arguments to find a Support
+     * @example
+     * // Get one Support
+     * const support = await prisma.support.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends SupportFindFirstArgs>(args?: SelectSubset<T, SupportFindFirstArgs<ExtArgs>>): Prisma__SupportClient<$Result.GetResult<Prisma.$SupportPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Support that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SupportFindFirstOrThrowArgs} args - Arguments to find a Support
+     * @example
+     * // Get one Support
+     * const support = await prisma.support.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends SupportFindFirstOrThrowArgs>(args?: SelectSubset<T, SupportFindFirstOrThrowArgs<ExtArgs>>): Prisma__SupportClient<$Result.GetResult<Prisma.$SupportPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Supports that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SupportFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Supports
+     * const supports = await prisma.support.findMany()
+     * 
+     * // Get first 10 Supports
+     * const supports = await prisma.support.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const supportWithIdOnly = await prisma.support.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends SupportFindManyArgs>(args?: SelectSubset<T, SupportFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SupportPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a Support.
+     * @param {SupportCreateArgs} args - Arguments to create a Support.
+     * @example
+     * // Create one Support
+     * const Support = await prisma.support.create({
+     *   data: {
+     *     // ... data to create a Support
+     *   }
+     * })
+     * 
+     */
+    create<T extends SupportCreateArgs>(args: SelectSubset<T, SupportCreateArgs<ExtArgs>>): Prisma__SupportClient<$Result.GetResult<Prisma.$SupportPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many Supports.
+     * @param {SupportCreateManyArgs} args - Arguments to create many Supports.
+     * @example
+     * // Create many Supports
+     * const support = await prisma.support.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends SupportCreateManyArgs>(args?: SelectSubset<T, SupportCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a Support.
+     * @param {SupportDeleteArgs} args - Arguments to delete one Support.
+     * @example
+     * // Delete one Support
+     * const Support = await prisma.support.delete({
+     *   where: {
+     *     // ... filter to delete one Support
+     *   }
+     * })
+     * 
+     */
+    delete<T extends SupportDeleteArgs>(args: SelectSubset<T, SupportDeleteArgs<ExtArgs>>): Prisma__SupportClient<$Result.GetResult<Prisma.$SupportPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one Support.
+     * @param {SupportUpdateArgs} args - Arguments to update one Support.
+     * @example
+     * // Update one Support
+     * const support = await prisma.support.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends SupportUpdateArgs>(args: SelectSubset<T, SupportUpdateArgs<ExtArgs>>): Prisma__SupportClient<$Result.GetResult<Prisma.$SupportPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more Supports.
+     * @param {SupportDeleteManyArgs} args - Arguments to filter Supports to delete.
+     * @example
+     * // Delete a few Supports
+     * const { count } = await prisma.support.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends SupportDeleteManyArgs>(args?: SelectSubset<T, SupportDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Supports.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SupportUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Supports
+     * const support = await prisma.support.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends SupportUpdateManyArgs>(args: SelectSubset<T, SupportUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one Support.
+     * @param {SupportUpsertArgs} args - Arguments to update or create a Support.
+     * @example
+     * // Update or create a Support
+     * const support = await prisma.support.upsert({
+     *   create: {
+     *     // ... data to create a Support
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Support we want to update
+     *   }
+     * })
+     */
+    upsert<T extends SupportUpsertArgs>(args: SelectSubset<T, SupportUpsertArgs<ExtArgs>>): Prisma__SupportClient<$Result.GetResult<Prisma.$SupportPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Supports that matches the filter.
+     * @param {SupportFindRawArgs} args - Select which filters you would like to apply.
+     * @example
+     * const support = await prisma.support.findRaw({
+     *   filter: { age: { $gt: 25 } }
+     * })
+     */
+    findRaw(args?: SupportFindRawArgs): Prisma.PrismaPromise<JsonObject>
+
+    /**
+     * Perform aggregation operations on a Support.
+     * @param {SupportAggregateRawArgs} args - Select which aggregations you would like to apply.
+     * @example
+     * const support = await prisma.support.aggregateRaw({
+     *   pipeline: [
+     *     { $match: { status: "registered" } },
+     *     { $group: { _id: "$country", total: { $sum: 1 } } }
+     *   ]
+     * })
+     */
+    aggregateRaw(args?: SupportAggregateRawArgs): Prisma.PrismaPromise<JsonObject>
+
+
+    /**
+     * Count the number of Supports.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SupportCountArgs} args - Arguments to filter Supports to count.
+     * @example
+     * // Count the number of Supports
+     * const count = await prisma.support.count({
+     *   where: {
+     *     // ... the filter for the Supports we want to count
+     *   }
+     * })
+    **/
+    count<T extends SupportCountArgs>(
+      args?: Subset<T, SupportCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], SupportCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Support.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SupportAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends SupportAggregateArgs>(args: Subset<T, SupportAggregateArgs>): Prisma.PrismaPromise<GetSupportAggregateType<T>>
+
+    /**
+     * Group by Support.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SupportGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends SupportGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: SupportGroupByArgs['orderBy'] }
+        : { orderBy?: SupportGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, SupportGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetSupportGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the Support model
+   */
+  readonly fields: SupportFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Support.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__SupportClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the Support model
+   */
+  interface SupportFieldRefs {
+    readonly id: FieldRef<"Support", 'String'>
+    readonly ticket_no: FieldRef<"Support", 'String'>
+    readonly name: FieldRef<"Support", 'String'>
+    readonly email: FieldRef<"Support", 'String'>
+    readonly subject: FieldRef<"Support", 'String'>
+    readonly message: FieldRef<"Support", 'String'>
+    readonly status: FieldRef<"Support", 'SupportStatus'>
+    readonly createdAt: FieldRef<"Support", 'DateTime'>
+    readonly updatedAt: FieldRef<"Support", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * Support findUnique
+   */
+  export type SupportFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Support
+     */
+    select?: SupportSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Support
+     */
+    omit?: SupportOmit<ExtArgs> | null
+    /**
+     * Filter, which Support to fetch.
+     */
+    where: SupportWhereUniqueInput
+  }
+
+  /**
+   * Support findUniqueOrThrow
+   */
+  export type SupportFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Support
+     */
+    select?: SupportSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Support
+     */
+    omit?: SupportOmit<ExtArgs> | null
+    /**
+     * Filter, which Support to fetch.
+     */
+    where: SupportWhereUniqueInput
+  }
+
+  /**
+   * Support findFirst
+   */
+  export type SupportFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Support
+     */
+    select?: SupportSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Support
+     */
+    omit?: SupportOmit<ExtArgs> | null
+    /**
+     * Filter, which Support to fetch.
+     */
+    where?: SupportWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Supports to fetch.
+     */
+    orderBy?: SupportOrderByWithRelationInput | SupportOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Supports.
+     */
+    cursor?: SupportWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Supports from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Supports.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Supports.
+     */
+    distinct?: SupportScalarFieldEnum | SupportScalarFieldEnum[]
+  }
+
+  /**
+   * Support findFirstOrThrow
+   */
+  export type SupportFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Support
+     */
+    select?: SupportSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Support
+     */
+    omit?: SupportOmit<ExtArgs> | null
+    /**
+     * Filter, which Support to fetch.
+     */
+    where?: SupportWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Supports to fetch.
+     */
+    orderBy?: SupportOrderByWithRelationInput | SupportOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Supports.
+     */
+    cursor?: SupportWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Supports from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Supports.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Supports.
+     */
+    distinct?: SupportScalarFieldEnum | SupportScalarFieldEnum[]
+  }
+
+  /**
+   * Support findMany
+   */
+  export type SupportFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Support
+     */
+    select?: SupportSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Support
+     */
+    omit?: SupportOmit<ExtArgs> | null
+    /**
+     * Filter, which Supports to fetch.
+     */
+    where?: SupportWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Supports to fetch.
+     */
+    orderBy?: SupportOrderByWithRelationInput | SupportOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing Supports.
+     */
+    cursor?: SupportWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Supports from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Supports.
+     */
+    skip?: number
+    distinct?: SupportScalarFieldEnum | SupportScalarFieldEnum[]
+  }
+
+  /**
+   * Support create
+   */
+  export type SupportCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Support
+     */
+    select?: SupportSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Support
+     */
+    omit?: SupportOmit<ExtArgs> | null
+    /**
+     * The data needed to create a Support.
+     */
+    data: XOR<SupportCreateInput, SupportUncheckedCreateInput>
+  }
+
+  /**
+   * Support createMany
+   */
+  export type SupportCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many Supports.
+     */
+    data: SupportCreateManyInput | SupportCreateManyInput[]
+  }
+
+  /**
+   * Support update
+   */
+  export type SupportUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Support
+     */
+    select?: SupportSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Support
+     */
+    omit?: SupportOmit<ExtArgs> | null
+    /**
+     * The data needed to update a Support.
+     */
+    data: XOR<SupportUpdateInput, SupportUncheckedUpdateInput>
+    /**
+     * Choose, which Support to update.
+     */
+    where: SupportWhereUniqueInput
+  }
+
+  /**
+   * Support updateMany
+   */
+  export type SupportUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update Supports.
+     */
+    data: XOR<SupportUpdateManyMutationInput, SupportUncheckedUpdateManyInput>
+    /**
+     * Filter which Supports to update
+     */
+    where?: SupportWhereInput
+    /**
+     * Limit how many Supports to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * Support upsert
+   */
+  export type SupportUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Support
+     */
+    select?: SupportSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Support
+     */
+    omit?: SupportOmit<ExtArgs> | null
+    /**
+     * The filter to search for the Support to update in case it exists.
+     */
+    where: SupportWhereUniqueInput
+    /**
+     * In case the Support found by the `where` argument doesn't exist, create a new Support with this data.
+     */
+    create: XOR<SupportCreateInput, SupportUncheckedCreateInput>
+    /**
+     * In case the Support was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<SupportUpdateInput, SupportUncheckedUpdateInput>
+  }
+
+  /**
+   * Support delete
+   */
+  export type SupportDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Support
+     */
+    select?: SupportSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Support
+     */
+    omit?: SupportOmit<ExtArgs> | null
+    /**
+     * Filter which Support to delete.
+     */
+    where: SupportWhereUniqueInput
+  }
+
+  /**
+   * Support deleteMany
+   */
+  export type SupportDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Supports to delete
+     */
+    where?: SupportWhereInput
+    /**
+     * Limit how many Supports to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * Support findRaw
+   */
+  export type SupportFindRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The query predicate filter. If unspecified, then all documents in the collection will match the predicate. ${@link https://docs.mongodb.com/manual/reference/operator/query MongoDB Docs}.
+     */
+    filter?: InputJsonValue
+    /**
+     * Additional options to pass to the `find` command ${@link https://docs.mongodb.com/manual/reference/command/find/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * Support aggregateRaw
+   */
+  export type SupportAggregateRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * An array of aggregation stages to process and transform the document stream via the aggregation pipeline. ${@link https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline MongoDB Docs}.
+     */
+    pipeline?: InputJsonValue[]
+    /**
+     * Additional options to pass to the `aggregate` command ${@link https://docs.mongodb.com/manual/reference/command/aggregate/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * Support without action
+   */
+  export type SupportDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Support
+     */
+    select?: SupportSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Support
+     */
+    omit?: SupportOmit<ExtArgs> | null
   }
 
 
@@ -43088,6 +44265,8 @@ export namespace Prisma {
     minPrize: 'minPrize',
     type: 'type',
     level_requirements: 'level_requirements',
+    coin_requirement: 'coin_requirement',
+    coin_required: 'coin_required',
     startDate: 'startDate',
     endDate: 'endDate',
     startedAt: 'startedAt',
@@ -43110,6 +44289,10 @@ export namespace Prisma {
     isMoneyContest: 'isMoneyContest',
     maxPrize: 'maxPrize',
     minPrize: 'minPrize',
+    mode: 'mode',
+    type: 'type',
+    coin_requirement: 'coin_requirement',
+    coin_required: 'coin_required',
     level_requirements: 'level_requirements',
     startDate: 'startDate',
     endDate: 'endDate',
@@ -43321,6 +44504,8 @@ export namespace Prisma {
     teamId: 'teamId',
     senderId: 'senderId',
     message: 'message',
+    messageType: 'messageType',
+    fileUrl: 'fileUrl',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -43358,6 +44543,21 @@ export namespace Prisma {
   };
 
   export type PriceScalarFieldEnum = (typeof PriceScalarFieldEnum)[keyof typeof PriceScalarFieldEnum]
+
+
+  export const SupportScalarFieldEnum: {
+    id: 'id',
+    ticket_no: 'ticket_no',
+    name: 'name',
+    email: 'email',
+    subject: 'subject',
+    message: 'message',
+    status: 'status',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type SupportScalarFieldEnum = (typeof SupportScalarFieldEnum)[keyof typeof SupportScalarFieldEnum]
 
 
   export const TeamScalarFieldEnum: {
@@ -43947,6 +45147,20 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'SupportStatus'
+   */
+  export type EnumSupportStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SupportStatus'>
+    
+
+
+  /**
+   * Reference to a field of type 'SupportStatus[]'
+   */
+  export type ListEnumSupportStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SupportStatus[]'>
+    
+
+
+  /**
    * Reference to a field of type 'TeamAccessibility'
    */
   export type EnumTeamAccessibilityFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TeamAccessibility'>
@@ -44175,6 +45389,8 @@ export namespace Prisma {
     minPrize?: IntNullableFilter<"Contest"> | number | null
     type?: EnumContestPlanFilter<"Contest"> | $Enums.ContestPlan
     level_requirements?: IntNullableListFilter<"Contest">
+    coin_requirement?: BoolFilter<"Contest"> | boolean
+    coin_required?: IntNullableFilter<"Contest"> | number | null
     startDate?: DateTimeFilter<"Contest"> | Date | string
     endDate?: DateTimeFilter<"Contest"> | Date | string
     startedAt?: DateTimeNullableFilter<"Contest"> | Date | string | null
@@ -44207,6 +45423,8 @@ export namespace Prisma {
     minPrize?: SortOrder
     type?: SortOrder
     level_requirements?: SortOrder
+    coin_requirement?: SortOrder
+    coin_required?: SortOrder
     startDate?: SortOrder
     endDate?: SortOrder
     startedAt?: SortOrder
@@ -44242,6 +45460,8 @@ export namespace Prisma {
     minPrize?: IntNullableFilter<"Contest"> | number | null
     type?: EnumContestPlanFilter<"Contest"> | $Enums.ContestPlan
     level_requirements?: IntNullableListFilter<"Contest">
+    coin_requirement?: BoolFilter<"Contest"> | boolean
+    coin_required?: IntNullableFilter<"Contest"> | number | null
     startDate?: DateTimeFilter<"Contest"> | Date | string
     endDate?: DateTimeFilter<"Contest"> | Date | string
     startedAt?: DateTimeNullableFilter<"Contest"> | Date | string | null
@@ -44274,6 +45494,8 @@ export namespace Prisma {
     minPrize?: SortOrder
     type?: SortOrder
     level_requirements?: SortOrder
+    coin_requirement?: SortOrder
+    coin_required?: SortOrder
     startDate?: SortOrder
     endDate?: SortOrder
     startedAt?: SortOrder
@@ -44305,6 +45527,8 @@ export namespace Prisma {
     minPrize?: IntNullableWithAggregatesFilter<"Contest"> | number | null
     type?: EnumContestPlanWithAggregatesFilter<"Contest"> | $Enums.ContestPlan
     level_requirements?: IntNullableListFilter<"Contest">
+    coin_requirement?: BoolWithAggregatesFilter<"Contest"> | boolean
+    coin_required?: IntNullableWithAggregatesFilter<"Contest"> | number | null
     startDate?: DateTimeWithAggregatesFilter<"Contest"> | Date | string
     endDate?: DateTimeWithAggregatesFilter<"Contest"> | Date | string
     startedAt?: DateTimeNullableWithAggregatesFilter<"Contest"> | Date | string | null
@@ -44327,6 +45551,10 @@ export namespace Prisma {
     isMoneyContest?: BoolFilter<"RecurringContest"> | boolean
     maxPrize?: IntNullableFilter<"RecurringContest"> | number | null
     minPrize?: IntNullableFilter<"RecurringContest"> | number | null
+    mode?: EnumContestModeFilter<"RecurringContest"> | $Enums.ContestMode
+    type?: EnumContestPlanFilter<"RecurringContest"> | $Enums.ContestPlan
+    coin_requirement?: BoolFilter<"RecurringContest"> | boolean
+    coin_required?: IntNullableFilter<"RecurringContest"> | number | null
     level_requirements?: IntNullableListFilter<"RecurringContest">
     startDate?: DateTimeFilter<"RecurringContest"> | Date | string
     endDate?: DateTimeFilter<"RecurringContest"> | Date | string
@@ -44347,6 +45575,10 @@ export namespace Prisma {
     isMoneyContest?: SortOrder
     maxPrize?: SortOrder
     minPrize?: SortOrder
+    mode?: SortOrder
+    type?: SortOrder
+    coin_requirement?: SortOrder
+    coin_required?: SortOrder
     level_requirements?: SortOrder
     startDate?: SortOrder
     endDate?: SortOrder
@@ -44370,6 +45602,10 @@ export namespace Prisma {
     isMoneyContest?: BoolFilter<"RecurringContest"> | boolean
     maxPrize?: IntNullableFilter<"RecurringContest"> | number | null
     minPrize?: IntNullableFilter<"RecurringContest"> | number | null
+    mode?: EnumContestModeFilter<"RecurringContest"> | $Enums.ContestMode
+    type?: EnumContestPlanFilter<"RecurringContest"> | $Enums.ContestPlan
+    coin_requirement?: BoolFilter<"RecurringContest"> | boolean
+    coin_required?: IntNullableFilter<"RecurringContest"> | number | null
     level_requirements?: IntNullableListFilter<"RecurringContest">
     startDate?: DateTimeFilter<"RecurringContest"> | Date | string
     endDate?: DateTimeFilter<"RecurringContest"> | Date | string
@@ -44390,6 +45626,10 @@ export namespace Prisma {
     isMoneyContest?: SortOrder
     maxPrize?: SortOrder
     minPrize?: SortOrder
+    mode?: SortOrder
+    type?: SortOrder
+    coin_requirement?: SortOrder
+    coin_required?: SortOrder
     level_requirements?: SortOrder
     startDate?: SortOrder
     endDate?: SortOrder
@@ -44417,6 +45657,10 @@ export namespace Prisma {
     isMoneyContest?: BoolWithAggregatesFilter<"RecurringContest"> | boolean
     maxPrize?: IntNullableWithAggregatesFilter<"RecurringContest"> | number | null
     minPrize?: IntNullableWithAggregatesFilter<"RecurringContest"> | number | null
+    mode?: EnumContestModeWithAggregatesFilter<"RecurringContest"> | $Enums.ContestMode
+    type?: EnumContestPlanWithAggregatesFilter<"RecurringContest"> | $Enums.ContestPlan
+    coin_requirement?: BoolWithAggregatesFilter<"RecurringContest"> | boolean
+    coin_required?: IntNullableWithAggregatesFilter<"RecurringContest"> | number | null
     level_requirements?: IntNullableListFilter<"RecurringContest">
     startDate?: DateTimeWithAggregatesFilter<"RecurringContest"> | Date | string
     endDate?: DateTimeWithAggregatesFilter<"RecurringContest"> | Date | string
@@ -45437,6 +46681,8 @@ export namespace Prisma {
     teamId?: StringFilter<"Chat"> | string
     senderId?: StringFilter<"Chat"> | string
     message?: StringFilter<"Chat"> | string
+    messageType?: StringFilter<"Chat"> | string
+    fileUrl?: StringNullableFilter<"Chat"> | string | null
     createdAt?: DateTimeFilter<"Chat"> | Date | string
     updatedAt?: DateTimeFilter<"Chat"> | Date | string
     team?: XOR<TeamScalarRelationFilter, TeamWhereInput>
@@ -45448,6 +46694,8 @@ export namespace Prisma {
     teamId?: SortOrder
     senderId?: SortOrder
     message?: SortOrder
+    messageType?: SortOrder
+    fileUrl?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     team?: TeamOrderByWithRelationInput
@@ -45462,6 +46710,8 @@ export namespace Prisma {
     teamId?: StringFilter<"Chat"> | string
     senderId?: StringFilter<"Chat"> | string
     message?: StringFilter<"Chat"> | string
+    messageType?: StringFilter<"Chat"> | string
+    fileUrl?: StringNullableFilter<"Chat"> | string | null
     createdAt?: DateTimeFilter<"Chat"> | Date | string
     updatedAt?: DateTimeFilter<"Chat"> | Date | string
     team?: XOR<TeamScalarRelationFilter, TeamWhereInput>
@@ -45473,6 +46723,8 @@ export namespace Prisma {
     teamId?: SortOrder
     senderId?: SortOrder
     message?: SortOrder
+    messageType?: SortOrder
+    fileUrl?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: ChatCountOrderByAggregateInput
@@ -45488,6 +46740,8 @@ export namespace Prisma {
     teamId?: StringWithAggregatesFilter<"Chat"> | string
     senderId?: StringWithAggregatesFilter<"Chat"> | string
     message?: StringWithAggregatesFilter<"Chat"> | string
+    messageType?: StringWithAggregatesFilter<"Chat"> | string
+    fileUrl?: StringNullableWithAggregatesFilter<"Chat"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Chat"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Chat"> | Date | string
   }
@@ -45651,6 +46905,78 @@ export namespace Prisma {
     price_id?: StringWithAggregatesFilter<"Price"> | string
     createdAt?: DateTimeWithAggregatesFilter<"Price"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Price"> | Date | string
+  }
+
+  export type SupportWhereInput = {
+    AND?: SupportWhereInput | SupportWhereInput[]
+    OR?: SupportWhereInput[]
+    NOT?: SupportWhereInput | SupportWhereInput[]
+    id?: StringFilter<"Support"> | string
+    ticket_no?: StringFilter<"Support"> | string
+    name?: StringFilter<"Support"> | string
+    email?: StringFilter<"Support"> | string
+    subject?: StringFilter<"Support"> | string
+    message?: StringFilter<"Support"> | string
+    status?: EnumSupportStatusFilter<"Support"> | $Enums.SupportStatus
+    createdAt?: DateTimeFilter<"Support"> | Date | string
+    updatedAt?: DateTimeFilter<"Support"> | Date | string
+  }
+
+  export type SupportOrderByWithRelationInput = {
+    id?: SortOrder
+    ticket_no?: SortOrder
+    name?: SortOrder
+    email?: SortOrder
+    subject?: SortOrder
+    message?: SortOrder
+    status?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type SupportWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    ticket_no?: string
+    AND?: SupportWhereInput | SupportWhereInput[]
+    OR?: SupportWhereInput[]
+    NOT?: SupportWhereInput | SupportWhereInput[]
+    name?: StringFilter<"Support"> | string
+    email?: StringFilter<"Support"> | string
+    subject?: StringFilter<"Support"> | string
+    message?: StringFilter<"Support"> | string
+    status?: EnumSupportStatusFilter<"Support"> | $Enums.SupportStatus
+    createdAt?: DateTimeFilter<"Support"> | Date | string
+    updatedAt?: DateTimeFilter<"Support"> | Date | string
+  }, "id" | "ticket_no">
+
+  export type SupportOrderByWithAggregationInput = {
+    id?: SortOrder
+    ticket_no?: SortOrder
+    name?: SortOrder
+    email?: SortOrder
+    subject?: SortOrder
+    message?: SortOrder
+    status?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: SupportCountOrderByAggregateInput
+    _max?: SupportMaxOrderByAggregateInput
+    _min?: SupportMinOrderByAggregateInput
+  }
+
+  export type SupportScalarWhereWithAggregatesInput = {
+    AND?: SupportScalarWhereWithAggregatesInput | SupportScalarWhereWithAggregatesInput[]
+    OR?: SupportScalarWhereWithAggregatesInput[]
+    NOT?: SupportScalarWhereWithAggregatesInput | SupportScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"Support"> | string
+    ticket_no?: StringWithAggregatesFilter<"Support"> | string
+    name?: StringWithAggregatesFilter<"Support"> | string
+    email?: StringWithAggregatesFilter<"Support"> | string
+    subject?: StringWithAggregatesFilter<"Support"> | string
+    message?: StringWithAggregatesFilter<"Support"> | string
+    status?: EnumSupportStatusWithAggregatesFilter<"Support"> | $Enums.SupportStatus
+    createdAt?: DateTimeWithAggregatesFilter<"Support"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"Support"> | Date | string
   }
 
   export type TeamWhereInput = {
@@ -47100,6 +48426,8 @@ export namespace Prisma {
     minPrize?: number | null
     type?: $Enums.ContestPlan
     level_requirements?: ContestCreatelevel_requirementsInput | number[]
+    coin_requirement?: boolean
+    coin_required?: number | null
     startDate: Date | string
     endDate: Date | string
     startedAt?: Date | string | null
@@ -47131,6 +48459,8 @@ export namespace Prisma {
     minPrize?: number | null
     type?: $Enums.ContestPlan
     level_requirements?: ContestCreatelevel_requirementsInput | number[]
+    coin_requirement?: boolean
+    coin_required?: number | null
     startDate: Date | string
     endDate: Date | string
     startedAt?: Date | string | null
@@ -47161,6 +48491,8 @@ export namespace Prisma {
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
     type?: EnumContestPlanFieldUpdateOperationsInput | $Enums.ContestPlan
     level_requirements?: ContestUpdatelevel_requirementsInput | number[]
+    coin_requirement?: BoolFieldUpdateOperationsInput | boolean
+    coin_required?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -47191,6 +48523,8 @@ export namespace Prisma {
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
     type?: EnumContestPlanFieldUpdateOperationsInput | $Enums.ContestPlan
     level_requirements?: ContestUpdatelevel_requirementsInput | number[]
+    coin_requirement?: BoolFieldUpdateOperationsInput | boolean
+    coin_required?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -47222,6 +48556,8 @@ export namespace Prisma {
     minPrize?: number | null
     type?: $Enums.ContestPlan
     level_requirements?: ContestCreatelevel_requirementsInput | number[]
+    coin_requirement?: boolean
+    coin_required?: number | null
     startDate: Date | string
     endDate: Date | string
     startedAt?: Date | string | null
@@ -47244,6 +48580,8 @@ export namespace Prisma {
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
     type?: EnumContestPlanFieldUpdateOperationsInput | $Enums.ContestPlan
     level_requirements?: ContestUpdatelevel_requirementsInput | number[]
+    coin_requirement?: BoolFieldUpdateOperationsInput | boolean
+    coin_required?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -47265,6 +48603,8 @@ export namespace Prisma {
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
     type?: EnumContestPlanFieldUpdateOperationsInput | $Enums.ContestPlan
     level_requirements?: ContestUpdatelevel_requirementsInput | number[]
+    coin_requirement?: BoolFieldUpdateOperationsInput | boolean
+    coin_required?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -47284,6 +48624,10 @@ export namespace Prisma {
     isMoneyContest?: boolean
     maxPrize?: number | null
     minPrize?: number | null
+    mode?: $Enums.ContestMode
+    type?: $Enums.ContestPlan
+    coin_requirement?: boolean
+    coin_required?: number | null
     level_requirements?: RecurringContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
@@ -47304,6 +48648,10 @@ export namespace Prisma {
     isMoneyContest?: boolean
     maxPrize?: number | null
     minPrize?: number | null
+    mode?: $Enums.ContestMode
+    type?: $Enums.ContestPlan
+    coin_requirement?: boolean
+    coin_required?: number | null
     level_requirements?: RecurringContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
@@ -47323,6 +48671,10 @@ export namespace Prisma {
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
+    mode?: EnumContestModeFieldUpdateOperationsInput | $Enums.ContestMode
+    type?: EnumContestPlanFieldUpdateOperationsInput | $Enums.ContestPlan
+    coin_requirement?: BoolFieldUpdateOperationsInput | boolean
+    coin_required?: NullableIntFieldUpdateOperationsInput | number | null
     level_requirements?: RecurringContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -47342,6 +48694,10 @@ export namespace Prisma {
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
+    mode?: EnumContestModeFieldUpdateOperationsInput | $Enums.ContestMode
+    type?: EnumContestPlanFieldUpdateOperationsInput | $Enums.ContestPlan
+    coin_requirement?: BoolFieldUpdateOperationsInput | boolean
+    coin_required?: NullableIntFieldUpdateOperationsInput | number | null
     level_requirements?: RecurringContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -47362,6 +48718,10 @@ export namespace Prisma {
     isMoneyContest?: boolean
     maxPrize?: number | null
     minPrize?: number | null
+    mode?: $Enums.ContestMode
+    type?: $Enums.ContestPlan
+    coin_requirement?: boolean
+    coin_required?: number | null
     level_requirements?: RecurringContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
@@ -47381,6 +48741,10 @@ export namespace Prisma {
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
+    mode?: EnumContestModeFieldUpdateOperationsInput | $Enums.ContestMode
+    type?: EnumContestPlanFieldUpdateOperationsInput | $Enums.ContestPlan
+    coin_requirement?: BoolFieldUpdateOperationsInput | boolean
+    coin_required?: NullableIntFieldUpdateOperationsInput | number | null
     level_requirements?: RecurringContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -47400,6 +48764,10 @@ export namespace Prisma {
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
+    mode?: EnumContestModeFieldUpdateOperationsInput | $Enums.ContestMode
+    type?: EnumContestPlanFieldUpdateOperationsInput | $Enums.ContestPlan
+    coin_requirement?: BoolFieldUpdateOperationsInput | boolean
+    coin_required?: NullableIntFieldUpdateOperationsInput | number | null
     level_requirements?: RecurringContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -48454,6 +49822,8 @@ export namespace Prisma {
   export type ChatCreateInput = {
     id?: string
     message: string
+    messageType?: string
+    fileUrl?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     team: TeamCreateNestedOneWithoutChatInput
@@ -48465,12 +49835,16 @@ export namespace Prisma {
     teamId: string
     senderId: string
     message: string
+    messageType?: string
+    fileUrl?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
 
   export type ChatUpdateInput = {
     message?: StringFieldUpdateOperationsInput | string
+    messageType?: StringFieldUpdateOperationsInput | string
+    fileUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     team?: TeamUpdateOneRequiredWithoutChatNestedInput
@@ -48481,6 +49855,8 @@ export namespace Prisma {
     teamId?: StringFieldUpdateOperationsInput | string
     senderId?: StringFieldUpdateOperationsInput | string
     message?: StringFieldUpdateOperationsInput | string
+    messageType?: StringFieldUpdateOperationsInput | string
+    fileUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -48490,12 +49866,16 @@ export namespace Prisma {
     teamId: string
     senderId: string
     message: string
+    messageType?: string
+    fileUrl?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
 
   export type ChatUpdateManyMutationInput = {
     message?: StringFieldUpdateOperationsInput | string
+    messageType?: StringFieldUpdateOperationsInput | string
+    fileUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -48504,6 +49884,8 @@ export namespace Prisma {
     teamId?: StringFieldUpdateOperationsInput | string
     senderId?: StringFieldUpdateOperationsInput | string
     message?: StringFieldUpdateOperationsInput | string
+    messageType?: StringFieldUpdateOperationsInput | string
+    fileUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -48685,6 +50067,86 @@ export namespace Prisma {
     amount?: FloatFieldUpdateOperationsInput | number
     quantity?: IntFieldUpdateOperationsInput | number
     price_id?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SupportCreateInput = {
+    id?: string
+    ticket_no: string
+    name: string
+    email: string
+    subject: string
+    message: string
+    status?: $Enums.SupportStatus
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type SupportUncheckedCreateInput = {
+    id?: string
+    ticket_no: string
+    name: string
+    email: string
+    subject: string
+    message: string
+    status?: $Enums.SupportStatus
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type SupportUpdateInput = {
+    ticket_no?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    subject?: StringFieldUpdateOperationsInput | string
+    message?: StringFieldUpdateOperationsInput | string
+    status?: EnumSupportStatusFieldUpdateOperationsInput | $Enums.SupportStatus
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SupportUncheckedUpdateInput = {
+    ticket_no?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    subject?: StringFieldUpdateOperationsInput | string
+    message?: StringFieldUpdateOperationsInput | string
+    status?: EnumSupportStatusFieldUpdateOperationsInput | $Enums.SupportStatus
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SupportCreateManyInput = {
+    id?: string
+    ticket_no: string
+    name: string
+    email: string
+    subject: string
+    message: string
+    status?: $Enums.SupportStatus
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type SupportUpdateManyMutationInput = {
+    ticket_no?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    subject?: StringFieldUpdateOperationsInput | string
+    message?: StringFieldUpdateOperationsInput | string
+    status?: EnumSupportStatusFieldUpdateOperationsInput | $Enums.SupportStatus
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SupportUncheckedUpdateManyInput = {
+    ticket_no?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    subject?: StringFieldUpdateOperationsInput | string
+    message?: StringFieldUpdateOperationsInput | string
+    status?: EnumSupportStatusFieldUpdateOperationsInput | $Enums.SupportStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -50392,6 +51854,8 @@ export namespace Prisma {
     minPrize?: SortOrder
     type?: SortOrder
     level_requirements?: SortOrder
+    coin_requirement?: SortOrder
+    coin_required?: SortOrder
     startDate?: SortOrder
     endDate?: SortOrder
     startedAt?: SortOrder
@@ -50407,6 +51871,7 @@ export namespace Prisma {
     maxPrize?: SortOrder
     minPrize?: SortOrder
     level_requirements?: SortOrder
+    coin_required?: SortOrder
   }
 
   export type ContestMaxOrderByAggregateInput = {
@@ -50421,6 +51886,8 @@ export namespace Prisma {
     maxPrize?: SortOrder
     minPrize?: SortOrder
     type?: SortOrder
+    coin_requirement?: SortOrder
+    coin_required?: SortOrder
     startDate?: SortOrder
     endDate?: SortOrder
     startedAt?: SortOrder
@@ -50441,6 +51908,8 @@ export namespace Prisma {
     maxPrize?: SortOrder
     minPrize?: SortOrder
     type?: SortOrder
+    coin_requirement?: SortOrder
+    coin_required?: SortOrder
     startDate?: SortOrder
     endDate?: SortOrder
     startedAt?: SortOrder
@@ -50454,6 +51923,7 @@ export namespace Prisma {
     maxPrize?: SortOrder
     minPrize?: SortOrder
     level_requirements?: SortOrder
+    coin_required?: SortOrder
   }
 
   export type StringWithAggregatesFilter<$PrismaModel = never> = {
@@ -50648,6 +52118,10 @@ export namespace Prisma {
     isMoneyContest?: SortOrder
     maxPrize?: SortOrder
     minPrize?: SortOrder
+    mode?: SortOrder
+    type?: SortOrder
+    coin_requirement?: SortOrder
+    coin_required?: SortOrder
     level_requirements?: SortOrder
     startDate?: SortOrder
     endDate?: SortOrder
@@ -50662,6 +52136,7 @@ export namespace Prisma {
     maxUploads?: SortOrder
     maxPrize?: SortOrder
     minPrize?: SortOrder
+    coin_required?: SortOrder
     level_requirements?: SortOrder
   }
 
@@ -50674,6 +52149,10 @@ export namespace Prisma {
     isMoneyContest?: SortOrder
     maxPrize?: SortOrder
     minPrize?: SortOrder
+    mode?: SortOrder
+    type?: SortOrder
+    coin_requirement?: SortOrder
+    coin_required?: SortOrder
     startDate?: SortOrder
     endDate?: SortOrder
     creatorId?: SortOrder
@@ -50690,6 +52169,10 @@ export namespace Prisma {
     isMoneyContest?: SortOrder
     maxPrize?: SortOrder
     minPrize?: SortOrder
+    mode?: SortOrder
+    type?: SortOrder
+    coin_requirement?: SortOrder
+    coin_required?: SortOrder
     startDate?: SortOrder
     endDate?: SortOrder
     creatorId?: SortOrder
@@ -50701,6 +52184,7 @@ export namespace Prisma {
     maxUploads?: SortOrder
     maxPrize?: SortOrder
     minPrize?: SortOrder
+    coin_required?: SortOrder
     level_requirements?: SortOrder
   }
   export type JsonWithAggregatesFilter<$PrismaModel = never> =
@@ -51591,6 +53075,8 @@ export namespace Prisma {
     teamId?: SortOrder
     senderId?: SortOrder
     message?: SortOrder
+    messageType?: SortOrder
+    fileUrl?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -51600,6 +53086,8 @@ export namespace Prisma {
     teamId?: SortOrder
     senderId?: SortOrder
     message?: SortOrder
+    messageType?: SortOrder
+    fileUrl?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -51609,6 +53097,8 @@ export namespace Prisma {
     teamId?: SortOrder
     senderId?: SortOrder
     message?: SortOrder
+    messageType?: SortOrder
+    fileUrl?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -51761,6 +53251,59 @@ export namespace Prisma {
   export type PriceSumOrderByAggregateInput = {
     amount?: SortOrder
     quantity?: SortOrder
+  }
+
+  export type EnumSupportStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.SupportStatus | EnumSupportStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.SupportStatus[] | ListEnumSupportStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.SupportStatus[] | ListEnumSupportStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumSupportStatusFilter<$PrismaModel> | $Enums.SupportStatus
+  }
+
+  export type SupportCountOrderByAggregateInput = {
+    id?: SortOrder
+    ticket_no?: SortOrder
+    name?: SortOrder
+    email?: SortOrder
+    subject?: SortOrder
+    message?: SortOrder
+    status?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type SupportMaxOrderByAggregateInput = {
+    id?: SortOrder
+    ticket_no?: SortOrder
+    name?: SortOrder
+    email?: SortOrder
+    subject?: SortOrder
+    message?: SortOrder
+    status?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type SupportMinOrderByAggregateInput = {
+    id?: SortOrder
+    ticket_no?: SortOrder
+    name?: SortOrder
+    email?: SortOrder
+    subject?: SortOrder
+    message?: SortOrder
+    status?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type EnumSupportStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.SupportStatus | EnumSupportStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.SupportStatus[] | ListEnumSupportStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.SupportStatus[] | ListEnumSupportStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumSupportStatusWithAggregatesFilter<$PrismaModel> | $Enums.SupportStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumSupportStatusFilter<$PrismaModel>
+    _max?: NestedEnumSupportStatusFilter<$PrismaModel>
   }
 
   export type EnumTeamAccessibilityFilter<$PrismaModel = never> = {
@@ -53955,6 +55498,10 @@ export namespace Prisma {
 
   export type EnumProductStatusFieldUpdateOperationsInput = {
     set?: $Enums.ProductStatus
+  }
+
+  export type EnumSupportStatusFieldUpdateOperationsInput = {
+    set?: $Enums.SupportStatus
   }
 
   export type UserCreateNestedOneWithoutCreatedTeamInput = {
@@ -56267,6 +57814,23 @@ export namespace Prisma {
     _max?: NestedEnumProductStatusFilter<$PrismaModel>
   }
 
+  export type NestedEnumSupportStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.SupportStatus | EnumSupportStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.SupportStatus[] | ListEnumSupportStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.SupportStatus[] | ListEnumSupportStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumSupportStatusFilter<$PrismaModel> | $Enums.SupportStatus
+  }
+
+  export type NestedEnumSupportStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.SupportStatus | EnumSupportStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.SupportStatus[] | ListEnumSupportStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.SupportStatus[] | ListEnumSupportStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumSupportStatusWithAggregatesFilter<$PrismaModel> | $Enums.SupportStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumSupportStatusFilter<$PrismaModel>
+    _max?: NestedEnumSupportStatusFilter<$PrismaModel>
+  }
+
   export type NestedEnumTeamAccessibilityFilter<$PrismaModel = never> = {
     equals?: $Enums.TeamAccessibility | EnumTeamAccessibilityFieldRefInput<$PrismaModel>
     in?: $Enums.TeamAccessibility[] | ListEnumTeamAccessibilityFieldRefInput<$PrismaModel>
@@ -57209,6 +58773,8 @@ export namespace Prisma {
     minPrize?: number | null
     type?: $Enums.ContestPlan
     level_requirements?: ContestCreatelevel_requirementsInput | number[]
+    coin_requirement?: boolean
+    coin_required?: number | null
     startDate: Date | string
     endDate: Date | string
     startedAt?: Date | string | null
@@ -57239,6 +58805,8 @@ export namespace Prisma {
     minPrize?: number | null
     type?: $Enums.ContestPlan
     level_requirements?: ContestCreatelevel_requirementsInput | number[]
+    coin_requirement?: boolean
+    coin_required?: number | null
     startDate: Date | string
     endDate: Date | string
     startedAt?: Date | string | null
@@ -57284,6 +58852,8 @@ export namespace Prisma {
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
     type?: EnumContestPlanFieldUpdateOperationsInput | $Enums.ContestPlan
     level_requirements?: ContestUpdatelevel_requirementsInput | number[]
+    coin_requirement?: BoolFieldUpdateOperationsInput | boolean
+    coin_required?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -57313,6 +58883,8 @@ export namespace Prisma {
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
     type?: EnumContestPlanFieldUpdateOperationsInput | $Enums.ContestPlan
     level_requirements?: ContestUpdatelevel_requirementsInput | number[]
+    coin_requirement?: BoolFieldUpdateOperationsInput | boolean
+    coin_required?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -57854,6 +59426,8 @@ export namespace Prisma {
     minPrize?: number | null
     type?: $Enums.ContestPlan
     level_requirements?: ContestCreatelevel_requirementsInput | number[]
+    coin_requirement?: boolean
+    coin_required?: number | null
     startDate: Date | string
     endDate: Date | string
     startedAt?: Date | string | null
@@ -57884,6 +59458,8 @@ export namespace Prisma {
     minPrize?: number | null
     type?: $Enums.ContestPlan
     level_requirements?: ContestCreatelevel_requirementsInput | number[]
+    coin_requirement?: boolean
+    coin_required?: number | null
     startDate: Date | string
     endDate: Date | string
     startedAt?: Date | string | null
@@ -58142,6 +59718,8 @@ export namespace Prisma {
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
     type?: EnumContestPlanFieldUpdateOperationsInput | $Enums.ContestPlan
     level_requirements?: ContestUpdatelevel_requirementsInput | number[]
+    coin_requirement?: BoolFieldUpdateOperationsInput | boolean
+    coin_required?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -58171,6 +59749,8 @@ export namespace Prisma {
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
     type?: EnumContestPlanFieldUpdateOperationsInput | $Enums.ContestPlan
     level_requirements?: ContestUpdatelevel_requirementsInput | number[]
+    coin_requirement?: BoolFieldUpdateOperationsInput | boolean
+    coin_required?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -58392,6 +59972,8 @@ export namespace Prisma {
     minPrize?: number | null
     type?: $Enums.ContestPlan
     level_requirements?: ContestCreatelevel_requirementsInput | number[]
+    coin_requirement?: boolean
+    coin_required?: number | null
     startDate: Date | string
     endDate: Date | string
     startedAt?: Date | string | null
@@ -58422,6 +60004,8 @@ export namespace Prisma {
     minPrize?: number | null
     type?: $Enums.ContestPlan
     level_requirements?: ContestCreatelevel_requirementsInput | number[]
+    coin_requirement?: boolean
+    coin_required?: number | null
     startDate: Date | string
     endDate: Date | string
     startedAt?: Date | string | null
@@ -58467,6 +60051,8 @@ export namespace Prisma {
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
     type?: EnumContestPlanFieldUpdateOperationsInput | $Enums.ContestPlan
     level_requirements?: ContestUpdatelevel_requirementsInput | number[]
+    coin_requirement?: BoolFieldUpdateOperationsInput | boolean
+    coin_required?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -58496,6 +60082,8 @@ export namespace Prisma {
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
     type?: EnumContestPlanFieldUpdateOperationsInput | $Enums.ContestPlan
     level_requirements?: ContestUpdatelevel_requirementsInput | number[]
+    coin_requirement?: BoolFieldUpdateOperationsInput | boolean
+    coin_required?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -58565,6 +60153,8 @@ export namespace Prisma {
     minPrize?: number | null
     type?: $Enums.ContestPlan
     level_requirements?: ContestCreatelevel_requirementsInput | number[]
+    coin_requirement?: boolean
+    coin_required?: number | null
     startDate: Date | string
     endDate: Date | string
     startedAt?: Date | string | null
@@ -58595,6 +60185,8 @@ export namespace Prisma {
     minPrize?: number | null
     type?: $Enums.ContestPlan
     level_requirements?: ContestCreatelevel_requirementsInput | number[]
+    coin_requirement?: boolean
+    coin_required?: number | null
     startDate: Date | string
     endDate: Date | string
     startedAt?: Date | string | null
@@ -58720,6 +60312,8 @@ export namespace Prisma {
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
     type?: EnumContestPlanFieldUpdateOperationsInput | $Enums.ContestPlan
     level_requirements?: ContestUpdatelevel_requirementsInput | number[]
+    coin_requirement?: BoolFieldUpdateOperationsInput | boolean
+    coin_required?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -58749,6 +60343,8 @@ export namespace Prisma {
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
     type?: EnumContestPlanFieldUpdateOperationsInput | $Enums.ContestPlan
     level_requirements?: ContestUpdatelevel_requirementsInput | number[]
+    coin_requirement?: BoolFieldUpdateOperationsInput | boolean
+    coin_required?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -59657,6 +61253,8 @@ export namespace Prisma {
   export type ChatCreateWithoutTeamInput = {
     id?: string
     message: string
+    messageType?: string
+    fileUrl?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     sender: UserCreateNestedOneWithoutChatInput
@@ -59666,6 +61264,8 @@ export namespace Prisma {
     id?: string
     senderId: string
     message: string
+    messageType?: string
+    fileUrl?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -60021,6 +61621,8 @@ export namespace Prisma {
     teamId?: StringFilter<"Chat"> | string
     senderId?: StringFilter<"Chat"> | string
     message?: StringFilter<"Chat"> | string
+    messageType?: StringFilter<"Chat"> | string
+    fileUrl?: StringNullableFilter<"Chat"> | string | null
     createdAt?: DateTimeFilter<"Chat"> | Date | string
     updatedAt?: DateTimeFilter<"Chat"> | Date | string
   }
@@ -60146,6 +61748,8 @@ export namespace Prisma {
     minPrize?: number | null
     type?: $Enums.ContestPlan
     level_requirements?: ContestCreatelevel_requirementsInput | number[]
+    coin_requirement?: boolean
+    coin_required?: number | null
     startDate: Date | string
     endDate: Date | string
     startedAt?: Date | string | null
@@ -60176,6 +61780,8 @@ export namespace Prisma {
     minPrize?: number | null
     type?: $Enums.ContestPlan
     level_requirements?: ContestCreatelevel_requirementsInput | number[]
+    coin_requirement?: boolean
+    coin_required?: number | null
     startDate: Date | string
     endDate: Date | string
     startedAt?: Date | string | null
@@ -60363,6 +61969,8 @@ export namespace Prisma {
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
     type?: EnumContestPlanFieldUpdateOperationsInput | $Enums.ContestPlan
     level_requirements?: ContestUpdatelevel_requirementsInput | number[]
+    coin_requirement?: BoolFieldUpdateOperationsInput | boolean
+    coin_required?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -60392,6 +62000,8 @@ export namespace Prisma {
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
     type?: EnumContestPlanFieldUpdateOperationsInput | $Enums.ContestPlan
     level_requirements?: ContestUpdatelevel_requirementsInput | number[]
+    coin_requirement?: BoolFieldUpdateOperationsInput | boolean
+    coin_required?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -61036,6 +62646,8 @@ export namespace Prisma {
     minPrize?: number | null
     type?: $Enums.ContestPlan
     level_requirements?: ContestCreatelevel_requirementsInput | number[]
+    coin_requirement?: boolean
+    coin_required?: number | null
     startDate: Date | string
     endDate: Date | string
     startedAt?: Date | string | null
@@ -61066,6 +62678,8 @@ export namespace Prisma {
     minPrize?: number | null
     type?: $Enums.ContestPlan
     level_requirements?: ContestCreatelevel_requirementsInput | number[]
+    coin_requirement?: boolean
+    coin_required?: number | null
     startDate: Date | string
     endDate: Date | string
     startedAt?: Date | string | null
@@ -61186,6 +62800,8 @@ export namespace Prisma {
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
     type?: EnumContestPlanFieldUpdateOperationsInput | $Enums.ContestPlan
     level_requirements?: ContestUpdatelevel_requirementsInput | number[]
+    coin_requirement?: BoolFieldUpdateOperationsInput | boolean
+    coin_required?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -61215,6 +62831,8 @@ export namespace Prisma {
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
     type?: EnumContestPlanFieldUpdateOperationsInput | $Enums.ContestPlan
     level_requirements?: ContestUpdatelevel_requirementsInput | number[]
+    coin_requirement?: BoolFieldUpdateOperationsInput | boolean
+    coin_required?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -61723,6 +63341,8 @@ export namespace Prisma {
     minPrize?: number | null
     type?: $Enums.ContestPlan
     level_requirements?: ContestCreatelevel_requirementsInput | number[]
+    coin_requirement?: boolean
+    coin_required?: number | null
     startDate: Date | string
     endDate: Date | string
     startedAt?: Date | string | null
@@ -61753,6 +63373,8 @@ export namespace Prisma {
     minPrize?: number | null
     type?: $Enums.ContestPlan
     level_requirements?: ContestCreatelevel_requirementsInput | number[]
+    coin_requirement?: boolean
+    coin_required?: number | null
     startDate: Date | string
     endDate: Date | string
     startedAt?: Date | string | null
@@ -61948,6 +63570,8 @@ export namespace Prisma {
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
     type?: EnumContestPlanFieldUpdateOperationsInput | $Enums.ContestPlan
     level_requirements?: ContestUpdatelevel_requirementsInput | number[]
+    coin_requirement?: BoolFieldUpdateOperationsInput | boolean
+    coin_required?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -61977,6 +63601,8 @@ export namespace Prisma {
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
     type?: EnumContestPlanFieldUpdateOperationsInput | $Enums.ContestPlan
     level_requirements?: ContestUpdatelevel_requirementsInput | number[]
+    coin_requirement?: BoolFieldUpdateOperationsInput | boolean
+    coin_required?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -62197,6 +63823,8 @@ export namespace Prisma {
     minPrize?: number | null
     type?: $Enums.ContestPlan
     level_requirements?: ContestCreatelevel_requirementsInput | number[]
+    coin_requirement?: boolean
+    coin_required?: number | null
     startDate: Date | string
     endDate: Date | string
     startedAt?: Date | string | null
@@ -62227,6 +63855,8 @@ export namespace Prisma {
     minPrize?: number | null
     type?: $Enums.ContestPlan
     level_requirements?: ContestCreatelevel_requirementsInput | number[]
+    coin_requirement?: boolean
+    coin_required?: number | null
     startDate: Date | string
     endDate: Date | string
     startedAt?: Date | string | null
@@ -62463,6 +64093,8 @@ export namespace Prisma {
   export type ChatCreateWithoutSenderInput = {
     id?: string
     message: string
+    messageType?: string
+    fileUrl?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     team: TeamCreateNestedOneWithoutChatInput
@@ -62472,6 +64104,8 @@ export namespace Prisma {
     id?: string
     teamId: string
     message: string
+    messageType?: string
+    fileUrl?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -62766,6 +64400,8 @@ export namespace Prisma {
     minPrize?: IntNullableFilter<"Contest"> | number | null
     type?: EnumContestPlanFilter<"Contest"> | $Enums.ContestPlan
     level_requirements?: IntNullableListFilter<"Contest">
+    coin_requirement?: BoolFilter<"Contest"> | boolean
+    coin_required?: IntNullableFilter<"Contest"> | number | null
     startDate?: DateTimeFilter<"Contest"> | Date | string
     endDate?: DateTimeFilter<"Contest"> | Date | string
     startedAt?: DateTimeNullableFilter<"Contest"> | Date | string | null
@@ -64847,6 +66483,8 @@ export namespace Prisma {
     minPrize?: number | null
     type?: $Enums.ContestPlan
     level_requirements?: ContestCreatelevel_requirementsInput | number[]
+    coin_requirement?: boolean
+    coin_required?: number | null
     startDate: Date | string
     endDate: Date | string
     startedAt?: Date | string | null
@@ -64877,6 +66515,8 @@ export namespace Prisma {
     minPrize?: number | null
     type?: $Enums.ContestPlan
     level_requirements?: ContestCreatelevel_requirementsInput | number[]
+    coin_requirement?: boolean
+    coin_required?: number | null
     startDate: Date | string
     endDate: Date | string
     startedAt?: Date | string | null
@@ -65062,6 +66702,8 @@ export namespace Prisma {
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
     type?: EnumContestPlanFieldUpdateOperationsInput | $Enums.ContestPlan
     level_requirements?: ContestUpdatelevel_requirementsInput | number[]
+    coin_requirement?: BoolFieldUpdateOperationsInput | boolean
+    coin_required?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -65091,6 +66733,8 @@ export namespace Prisma {
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
     type?: EnumContestPlanFieldUpdateOperationsInput | $Enums.ContestPlan
     level_requirements?: ContestUpdatelevel_requirementsInput | number[]
+    coin_requirement?: BoolFieldUpdateOperationsInput | boolean
+    coin_required?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -66012,6 +67656,8 @@ export namespace Prisma {
     id?: string
     senderId: string
     message: string
+    messageType?: string
+    fileUrl?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -66113,6 +67759,8 @@ export namespace Prisma {
 
   export type ChatUpdateWithoutTeamInput = {
     message?: StringFieldUpdateOperationsInput | string
+    messageType?: StringFieldUpdateOperationsInput | string
+    fileUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     sender?: UserUpdateOneRequiredWithoutChatNestedInput
@@ -66121,6 +67769,8 @@ export namespace Prisma {
   export type ChatUncheckedUpdateWithoutTeamInput = {
     senderId?: StringFieldUpdateOperationsInput | string
     message?: StringFieldUpdateOperationsInput | string
+    messageType?: StringFieldUpdateOperationsInput | string
+    fileUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -66128,6 +67778,8 @@ export namespace Prisma {
   export type ChatUncheckedUpdateManyWithoutTeamInput = {
     senderId?: StringFieldUpdateOperationsInput | string
     message?: StringFieldUpdateOperationsInput | string
+    messageType?: StringFieldUpdateOperationsInput | string
+    fileUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -66422,6 +68074,8 @@ export namespace Prisma {
     minPrize?: number | null
     type?: $Enums.ContestPlan
     level_requirements?: ContestCreatelevel_requirementsInput | number[]
+    coin_requirement?: boolean
+    coin_required?: number | null
     startDate: Date | string
     endDate: Date | string
     startedAt?: Date | string | null
@@ -66501,6 +68155,8 @@ export namespace Prisma {
     id?: string
     teamId: string
     message: string
+    messageType?: string
+    fileUrl?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -66658,6 +68314,8 @@ export namespace Prisma {
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
     type?: EnumContestPlanFieldUpdateOperationsInput | $Enums.ContestPlan
     level_requirements?: ContestUpdatelevel_requirementsInput | number[]
+    coin_requirement?: BoolFieldUpdateOperationsInput | boolean
+    coin_required?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -66687,6 +68345,8 @@ export namespace Prisma {
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
     type?: EnumContestPlanFieldUpdateOperationsInput | $Enums.ContestPlan
     level_requirements?: ContestUpdatelevel_requirementsInput | number[]
+    coin_requirement?: BoolFieldUpdateOperationsInput | boolean
+    coin_required?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -66716,6 +68376,8 @@ export namespace Prisma {
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
     type?: EnumContestPlanFieldUpdateOperationsInput | $Enums.ContestPlan
     level_requirements?: ContestUpdatelevel_requirementsInput | number[]
+    coin_requirement?: BoolFieldUpdateOperationsInput | boolean
+    coin_required?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -66916,6 +68578,8 @@ export namespace Prisma {
 
   export type ChatUpdateWithoutSenderInput = {
     message?: StringFieldUpdateOperationsInput | string
+    messageType?: StringFieldUpdateOperationsInput | string
+    fileUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     team?: TeamUpdateOneRequiredWithoutChatNestedInput
@@ -66924,6 +68588,8 @@ export namespace Prisma {
   export type ChatUncheckedUpdateWithoutSenderInput = {
     teamId?: StringFieldUpdateOperationsInput | string
     message?: StringFieldUpdateOperationsInput | string
+    messageType?: StringFieldUpdateOperationsInput | string
+    fileUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -66931,6 +68597,8 @@ export namespace Prisma {
   export type ChatUncheckedUpdateManyWithoutSenderInput = {
     teamId?: StringFieldUpdateOperationsInput | string
     message?: StringFieldUpdateOperationsInput | string
+    messageType?: StringFieldUpdateOperationsInput | string
+    fileUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

@@ -1,0 +1,148 @@
+{
+  "info": {
+    "name": "Support Module API",
+    "description": "Postman/Thunder Client collection for the Support module endpoints (public submissions and admin management)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Submit Support Ticket (Public)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"johndoe@example.com\",\n  \"subject\": \"Cannot upload photo to contest\",\n  \"message\": \"I am getting a bad request error whenever I try to submit my entry for the active money contest.\"\n}"
+        },
+        "url": {
+          "raw": "{{local_url}}/api/v1/support",
+          "host": [
+            "{{local_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "support"
+          ]
+        }
+      }
+    },
+    {
+      "name": "2. Get All Support Tickets (Admin)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{local_url}}/api/v1/support?page=1&limit=10",
+          "host": [
+            "{{local_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "support"
+          ],
+          "query": [
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "limit",
+              "value": "10"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "3. Get Support Ticket By ID (Admin)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{local_url}}/api/v1/support/{{ticket_id}}",
+          "host": [
+            "{{local_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "support",
+            "{{ticket_id}}"
+          ]
+        }
+      }
+    },
+    {
+      "name": "4. Update Support Ticket Status (Admin)",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"status\": \"RESOLVED\"\n}"
+        },
+        "url": {
+          "raw": "{{local_url}}/api/v1/support/{{ticket_id}}/status",
+          "host": [
+            "{{local_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "support",
+            "{{ticket_id}}",
+            "status"
+          ]
+        }
+      }
+    }
+  ],
+  "variable": [
+    {
+      "name": "local_url",
+      "value": "http://localhost:5003",
+      "type": "string"
+    },
+    {
+      "name": "admin_token",
+      "value": "your_admin_jwt_token_here",
+      "type": "string"
+    },
+    {
+      "name": "ticket_id",
+      "value": "ticket_mongodb_id_here",
+      "type": "string"
+    }
+  ]
+}

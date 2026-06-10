@@ -126,6 +126,8 @@ exports.Prisma.ContestScalarFieldEnum = {
   minPrize: 'minPrize',
   type: 'type',
   level_requirements: 'level_requirements',
+  coin_requirement: 'coin_requirement',
+  coin_required: 'coin_required',
   startDate: 'startDate',
   endDate: 'endDate',
   startedAt: 'startedAt',
@@ -145,6 +147,10 @@ exports.Prisma.RecurringContestScalarFieldEnum = {
   isMoneyContest: 'isMoneyContest',
   maxPrize: 'maxPrize',
   minPrize: 'minPrize',
+  mode: 'mode',
+  type: 'type',
+  coin_requirement: 'coin_requirement',
+  coin_required: 'coin_required',
   level_requirements: 'level_requirements',
   startDate: 'startDate',
   endDate: 'endDate',
@@ -314,6 +320,8 @@ exports.Prisma.ChatScalarFieldEnum = {
   teamId: 'teamId',
   senderId: 'senderId',
   message: 'message',
+  messageType: 'messageType',
+  fileUrl: 'fileUrl',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -340,6 +348,18 @@ exports.Prisma.PriceScalarFieldEnum = {
   amount: 'amount',
   quantity: 'quantity',
   price_id: 'price_id',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.SupportScalarFieldEnum = {
+  id: 'id',
+  ticket_no: 'ticket_no',
+  name: 'name',
+  email: 'email',
+  subject: 'subject',
+  message: 'message',
+  status: 'status',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -671,6 +691,13 @@ exports.ProductStatus = exports.$Enums.ProductStatus = {
   DISCONTINUED: 'DISCONTINUED'
 };
 
+exports.SupportStatus = exports.$Enums.SupportStatus = {
+  PENDING: 'PENDING',
+  IN_PROGRESS: 'IN_PROGRESS',
+  RESOLVED: 'RESOLVED',
+  CLOSED: 'CLOSED'
+};
+
 exports.TeamAccessibility = exports.$Enums.TeamAccessibility = {
   PUBLIC: 'PUBLIC',
   PRIVATE: 'PRIVATE'
@@ -786,6 +813,7 @@ exports.Prisma.ModelName = {
   Chat: 'Chat',
   Product: 'Product',
   Price: 'Price',
+  Support: 'Support',
   Team: 'Team',
   TeamMatch: 'TeamMatch',
   TeamMember: 'TeamMember',

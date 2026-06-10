@@ -6,6 +6,7 @@ import httpStatus from 'http-status';
 import { userStoreService } from "../User/UserStore/userStore.service";
 import { paymentService } from "../Payment/payment.service";
 import { fileUploader } from "../../../helpers/fileUploader";
+import config from "../../../config";
 
 /**
  * Add a new product to the store
@@ -572,7 +573,9 @@ const purchaseProductUsingCoin = async (userId: string, productId: string) => {
 
 const purchaseProductWithStripe = async (userId: string, productId: string) => {
       try {
-            return await paymentService.pay(userId,productId, null,"payment","http://localhost:3000/success", "http://localhost:3000/cancel")
+        const successUrl = config.success_url || "http://localhost:3000/success";
+        const cancelUrl = config.cancel_url || "http://localhost:3000/cancel";
+            return await paymentService.pay(userId,productId, null,"payment",successUrl, cancelUrl)
         }catch(error){
             console.log("Payment processing error:", error);
             throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, "Payment processing failed");

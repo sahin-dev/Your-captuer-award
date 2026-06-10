@@ -28,7 +28,7 @@ class DatabaseSeeder {
             return
         }
         let hashedPassword = await bcrypt.hash(password, 12)
-       let admin =  await this.client?.user.create({data:{email, password:hashedPassword, username:"admin", role:UserRole.ADMIN},omit:{level:true}})
+       let admin =  await this.client?.user.create({data:{email, password:hashedPassword, username:"admin", role:UserRole.ADMIN}})
        if(admin){
         
             console.log(`Admin Created.\nEmail: ${email}.\nPassowrd:${password}`)
