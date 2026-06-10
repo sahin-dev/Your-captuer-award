@@ -1125,156 +1125,162 @@ const uploadPhotoToContest = async (contestId: string, userId: string, photoIds:
 
     let contestParticipant: ContestParticipant | null = await prisma.contestParticipant.findUnique({ where: { contestId_userId: { contestId, userId } } })
 
+    const images = await prisma.$transaction(async prisam => {
 
-    if (!contestParticipant) {
 
-        if (contest.coin_requirement) {
-            const participant = await joinContestByCoin(userId, contestId)
-            contestParticipant = participant
-        }
-        // const userSubscription = user.subscriptions && user.subscriptions.length > 0 ? user.subscriptions[0] : null
+        if (!contestParticipant) {
 
-        // switch(contest.type){
-        //     case ContestPlan.OPEN:
-        //         // Open contest is available for all users, no subscription check needed
-        //         break;
-        //     case ContestPlan.PREMIUM:
-        //         if (!userSubscription || userSubscription.plan !== SubscriptionPlanEnum.PREMIUM) {
-        //             throw new ApiError(httpstatus.FORBIDDEN, `You are not allowed to upload photo to this contest. Please subscribe to premium plan to participate in this contest`)
-        //         }
-        //         break;
-        //     case ContestPlan.PRO:
-        //         if (!userSubscription || (userSubscription.plan !== SubscriptionPlanEnum.PRO && userSubscription.plan !== SubscriptionPlanEnum.PREMIUM)) {
-        //             throw new ApiError(httpstatus.FORBIDDEN, `You are not allowed to upload photo to this contest. Please subscribe to pro plan to participate in this contest`)
-        //         }
-        //         break;
-        //     default:
-        //         throw new ApiError(httpstatus.INTERNAL_SERVER_ERROR, "Invalid contest type")
-        // }
-
-        // if( (contest.type !== ContestPlan.OPEN) || 
-        //     !(userSubscription && 
-        //         (userSubscription.plan === SubscriptionPlanEnum.PREMIUM || 
-        //             userSubscription.plan === contest.type))){
-
-        //         throw new ApiError(httpstatus.FORBIDDEN, `You are not allowed to upload photo to this contest. Please subscribe to ${contest.type.toLocaleLowerCase()} plan to participate in this contest`)
-        // }
-        contestParticipant = await prisma.contestParticipant.create({
-            data: { contestId: contest.id, userId: userId }, include: { contest: true, _count: { select: { photos: true } } }
-        })
-
-        //add watcher for exposure bonus
-
-        const exposureJob = agenda.create("exposure:watcher", { contestParticipantId: contestParticipant!.id })
-        exposureJob.repeatEvery("1 minute")
-        await exposureJob.save()
-    }
-
-    const contestPhotosCount = await prisma.contestPhoto.count({ where: { contestId: contest.id, participantId: contestParticipant!.id } })
-
-    if (contestPhotosCount >= contest.maxUploads) {
-        throw new ApiError(httpstatus.BAD_REQUEST, "maximum photo upload limit has reached!")
-    }
-
-    let uploadImage: ContestPhoto | null = null;
-    let images: Array<ContestPhoto> = []
-
-    if (file) {
-
-        let uploadedPhoto = await profileService.uploadUserPhoto(userId, file)
-
-        uploadImage = await prisma.contestPhoto.create({ data: { contestId, participantId: contestParticipant!.id, photoId: uploadedPhoto.id } })
-
-    } else {
-        if (!photoIds || photoIds.length <= 0) {
-            throw new ApiError(httpstatus.BAD_REQUEST, "photoIds is empty or missing")
-        }
-
-        const alreadyUploadedPhotosCount = await prisma.contestPhoto.count({ where: { contestId, photo: { userId } } })
-
-        if ((photoIds.length > contest.maxUploads) || (photoIds.length > (contest.maxUploads - alreadyUploadedPhotosCount))) {
-            throw new ApiError(httpstatus.BAD_REQUEST, `maximum upload limit exceeded`)
-        }
-
-        // FIX: Use for loop instead of forEach to properly await async operations
-        for (const photoId of photoIds) {
-            const userPhoto = await prisma.userPhoto.findUnique({ where: { id: photoId } })
-            if (userPhoto) {
-                uploadImage = await prisma.contestPhoto.create({ data: { contestId, participantId: contestParticipant!.id, photoId: userPhoto.id }, include: { photo: true } })
-                if (uploadImage) {
-                    images.push(uploadImage)
-                }
+            if (contest.coin_requirement) {
+                const participant = await joinContestByCoin(userId, contestId)
+                contestParticipant = participant
             }
-        }
-    }
+            // const userSubscription = user.subscriptions && user.subscriptions.length > 0 ? user.subscriptions[0] : null
 
+            // switch(contest.type){
+            //     case ContestPlan.OPEN:
+            //         // Open contest is available for all users, no subscription check needed
+            //         break;
+            //     case ContestPlan.PREMIUM:
+            //         if (!userSubscription || userSubscription.plan !== SubscriptionPlanEnum.PREMIUM) {
+            //             throw new ApiError(httpstatus.FORBIDDEN, `You are not allowed to upload photo to this contest. Please subscribe to premium plan to participate in this contest`)
+            //         }
+            //         break;
+            //     case ContestPlan.PRO:
+            //         if (!userSubscription || (userSubscription.plan !== SubscriptionPlanEnum.PRO && userSubscription.plan !== SubscriptionPlanEnum.PREMIUM)) {
+            //             throw new ApiError(httpstatus.FORBIDDEN, `You are not allowed to upload photo to this contest. Please subscribe to pro plan to participate in this contest`)
+            //         }
+            //         break;
+            //     default:
+            //         throw new ApiError(httpstatus.INTERNAL_SERVER_ERROR, "Invalid contest type")
+            // }
 
-    const teamMember = await prisma.teamMember.findFirst({ where: { memberId: userId } })
-    if (teamMember) {
-        await prisma.contestParticipant.update({ where: { id: contestParticipant!.id }, data: { memberId: teamMember.id } })
+            // if( (contest.type !== ContestPlan.OPEN) || 
+            //     !(userSubscription && 
+            //         (userSubscription.plan === SubscriptionPlanEnum.PREMIUM || 
+            //             userSubscription.plan === contest.type))){
 
-        // OPTION 2: Dynamic team member registration on photo upload
-        // When a team member uploads a photo in a contest with an active match,
-        // automatically register all other active team members as contestants
-        try {
-            // Check if team has an active match in this contest
-            const activeTeamMatch = await prisma.teamMatch.findFirst({
-                where: {
-                    contestId,
-                    status: 'ACTIVE',
-                    OR: [
-                        { team1Id: teamMember.teamId },
-                        { team2Id: teamMember.teamId }
-                    ]
-                }
+            //         throw new ApiError(httpstatus.FORBIDDEN, `You are not allowed to upload photo to this contest. Please subscribe to ${contest.type.toLocaleLowerCase()} plan to participate in this contest`)
+            // }
+            contestParticipant = await prisma.contestParticipant.create({
+                data: { contestId: contest.id, userId: userId }, include: { contest: true, _count: { select: { photos: true } } }
             })
 
-            // If active match exists, register all active team members
-            if (activeTeamMatch) {
-                const allTeamMembers = await prisma.teamMember.findMany({
-                    where: {
-                        teamId: teamMember.teamId,
-                        status: 'ACTIVE'
-                    },
-                    select: { id: true, memberId: true }
-                })
+            //add watcher for exposure bonus
 
-                // Bulk register all team members who aren't already participants
-                for (const member of allTeamMembers) {
-                    try {
-                        // Check if already registered
-                        const existingParticipant = await prisma.contestParticipant.findUnique({
-                            where: { contestId_userId: { contestId, userId: member.memberId } }
-                        })
+            const exposureJob = agenda.create("exposure:watcher", { contestParticipantId: contestParticipant!.id })
+            exposureJob.repeatEvery("1 minute")
+            await exposureJob.save()
+        }
 
-                        // If not registered, create entry
-                        if (!existingParticipant) {
-                            await prisma.contestParticipant.create({
-                                data: {
-                                    contestId,
-                                    userId: member.memberId,
-                                    memberId: member.id
-                                }
-                            })
-                        }
-                    } catch (err) {
-                        // Silently skip on constraint violations (already registered)
-                        if (!(err instanceof Error && err.message.includes('Unique constraint'))) {
-                            console.error(`Failed to register team member ${member.memberId}:`, err)
-                        }
+        const contestPhotosCount = await prisma.contestPhoto.count({ where: { contestId: contest.id, participantId: contestParticipant!.id } })
+
+        if (contestPhotosCount >= contest.maxUploads) {
+            throw new ApiError(httpstatus.BAD_REQUEST, "maximum photo upload limit has reached!")
+        }
+
+        let uploadImage: ContestPhoto | null = null;
+        let images: Array<ContestPhoto> = []
+
+        if (file) {
+
+            let uploadedPhoto = await profileService.uploadUserPhoto(userId, file)
+
+            uploadImage = await prisma.contestPhoto.create({ data: { contestId, participantId: contestParticipant!.id, photoId: uploadedPhoto.id } })
+
+        } else {
+            if (!photoIds || photoIds.length <= 0) {
+                throw new ApiError(httpstatus.BAD_REQUEST, "photoIds is empty or missing")
+            }
+
+            const alreadyUploadedPhotosCount = await prisma.contestPhoto.count({ where: { contestId, photo: { userId } } })
+
+            if ((photoIds.length > contest.maxUploads) || (photoIds.length > (contest.maxUploads - alreadyUploadedPhotosCount))) {
+                throw new ApiError(httpstatus.BAD_REQUEST, `maximum upload limit exceeded`)
+            }
+
+            // FIX: Use for loop instead of forEach to properly await async operations
+            for (const photoId of photoIds) {
+                const userPhoto = await prisma.userPhoto.findUnique({ where: { id: photoId } })
+                if (userPhoto) {
+                    uploadImage = await prisma.contestPhoto.create({ data: { contestId, participantId: contestParticipant!.id, photoId: userPhoto.id }, include: { photo: true } })
+                    if (uploadImage) {
+                        images.push(uploadImage)
                     }
                 }
-
-                console.log(`Team members auto-registered for contest ${contestId} via member upload`)
             }
-        } catch (err) {
-            console.error(`Error during dynamic team member registration:`, err)
-            // Don't throw - upload still succeeds even if auto-registration fails
         }
-    }
 
+
+        const teamMember = await prisma.teamMember.findFirst({ where: { memberId: userId } })
+        if (teamMember) {
+            await prisma.contestParticipant.update({ where: { id: contestParticipant!.id }, data: { memberId: teamMember.id } })
+
+            // OPTION 2: Dynamic team member registration on photo upload
+            // When a team member uploads a photo in a contest with an active match,
+            // automatically register all other active team members as contestants
+            try {
+                // Check if team has an active match in this contest
+                const activeTeamMatch = await prisma.teamMatch.findFirst({
+                    where: {
+                        contestId,
+                        status: 'ACTIVE',
+                        OR: [
+                            { team1Id: teamMember.teamId },
+                            { team2Id: teamMember.teamId }
+                        ]
+                    }
+                })
+
+                // If active match exists, register all active team members
+                if (activeTeamMatch) {
+                    const allTeamMembers = await prisma.teamMember.findMany({
+                        where: {
+                            teamId: teamMember.teamId,
+                            status: 'ACTIVE'
+                        },
+                        select: { id: true, memberId: true }
+                    })
+
+                    // Bulk register all team members who aren't already participants
+                    for (const member of allTeamMembers) {
+                        try {
+                            // Check if already registered
+                            const existingParticipant = await prisma.contestParticipant.findUnique({
+                                where: { contestId_userId: { contestId, userId: member.memberId } }
+                            })
+
+                            // If not registered, create entry
+                            if (!existingParticipant) {
+                                await prisma.contestParticipant.create({
+                                    data: {
+                                        contestId,
+                                        userId: member.memberId,
+                                        memberId: member.id
+                                    }
+                                })
+                            }
+                        } catch (err) {
+                            // Silently skip on constraint violations (already registered)
+                            if (!(err instanceof Error && err.message.includes('Unique constraint'))) {
+                                console.error(`Failed to register team member ${member.memberId}:`, err)
+                            }
+                        }
+                    }
+
+                    console.log(`Team members auto-registered for contest ${contestId} via member upload`)
+                }
+            } catch (err) {
+                console.error(`Error during dynamic team member registration:`, err)
+                // Don't throw - upload still succeeds even if auto-registration fails
+            }
+        }
+
+
+        return images
+    })
 
     return images
+
 }
 
 
