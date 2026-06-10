@@ -17,9 +17,9 @@ import v2Router from "./app/routes/v2";
 const app: Application = express();
 
 app.use(session({
-  secret:"secret123#ABC",
-  resave:false,
-  saveUninitialized:false
+  secret: "secret123#ABC",
+  resave: false,
+  saveUninitialized: false
 }))
 
 app.use(passport.initialize())
@@ -39,7 +39,7 @@ export const corsOptions = {
 };
 
 
-app.post("/webhook",express.raw({type:"application/json"}), stripeWebhook)
+app.post("/webhook", express.raw({ type: "application/json" }), stripeWebhook)
 
 // Middleware setup
 app.use(cors(corsOptions));
@@ -52,7 +52,7 @@ app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 
 app.get("/", (req: Request, res: Response) => {
-  
+
   res.status(httpStatus.OK).json({
     success: true,
     message: "Welcome to Your Capture Awards API",

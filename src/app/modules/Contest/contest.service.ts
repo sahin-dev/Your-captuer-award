@@ -1312,6 +1312,7 @@ const uploadPhotoToContest = async (contestId: string, userId: string, photoIds:
 
 
 const joinContestByCoin = async (userId: string, contestId: string) => {
+    console
     const user = await prisma.user.findUnique({ where: { id: userId } })
     if (!user) {
         throw new ApiError(httpstatus.NOT_FOUND, "user not found")
@@ -1321,7 +1322,7 @@ const joinContestByCoin = async (userId: string, contestId: string) => {
         throw new ApiError(httpstatus.NOT_FOUND, "contest not found")
     }
 
-    const userStore = await prisma.userStore.findUnique({ where: { userId } })
+    const userStore = await prisma.userStore.findUnique({ where: { userId: user.id } })
     if (!userStore) {
         throw new ApiError(httpstatus.NOT_FOUND, "user store not found")
     }
@@ -1329,7 +1330,7 @@ const joinContestByCoin = async (userId: string, contestId: string) => {
     if (contest.coin_required! > userStore.coins) {
         throw new ApiError(httpstatus.BAD_REQUEST, "Insufficient coin balance")
     }
-    await prisma.userStore.update({ where: { id: userId }, data: { coins: userStore.coins - contest.coin_required! } })
+    await prisma.userStore.update({ where: { id: userStore.id }, data: { coins: userStore.coins - contest.coin_required! } })
     const participant = await prisma.contestParticipant.create({ data: { contestId, userId, status: ContestParticipantStatus.ACTIVE } })
     return participant
 }
