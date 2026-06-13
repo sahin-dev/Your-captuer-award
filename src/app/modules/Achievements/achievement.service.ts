@@ -165,6 +165,28 @@ const getMyAchievementsByContest = async (userId:string, contestId:string) => {
     return achievements
 }
 
+const getAllPhotosAchievements = async (page: number = 1, limit: number = 10) => {
+    const { skip, limit: paginationLimit } = paginationHelper.calculatePagination({ page, limit });
+
+    const achievements = await prisma.contestAchievement.findMany({
+        where:{category:PrizeType.TOP_PHOTO},
+        skip,
+        take: paginationLimit,
+        include: {
+            photo: { select: { photo: { select: { id: true, url: true } } } },
+            participant: { select: { user: {
+                omit: { password: true, accessToken: true }
+            } } }
+        },
+        orderBy: { createdAt: 'desc' }
+    });
+
+    const total = await prisma.contestAchievement.count({where:{category:PrizeType.TOP_PHOTO}});
+    const meta = paginationHelper.getPaginationMetaData(page, paginationLimit, total);
+
+    return { data: achievements, meta };
+}
+
 // const getContestAchievements
 
 export const achievementService = {
@@ -176,5 +198,6 @@ export const achievementService = {
     getPhotoAchievements,
     getContestByAchievementsType,
     getUserPhotoAchievements,
-    getMyAchievementsByContest
+    getMyAchievementsByContest,
+    getAllPhotosAchievements
 }

@@ -84,6 +84,20 @@ const getUserPhotoAchievements =  catchAsync(async (req:Request, res:Response) =
 })
 
 
+const getAllPhotosAchievements = catchAsync(async (req:Request, res:Response) => {
+
+    const { page, limit } = req.query;
+    const result = await achievementService.getAllPhotosAchievements(page ? Number(page) : undefined, limit ? Number(limit) : undefined)
+    sendResponse(res, {
+        success:true,
+        statusCode:httpStatus.OK,
+        message:"photo achievements fetched successfully",
+        data:result.data,
+        meta:result.meta
+    })
+})
+
 export const achieveController = {
-    getAchievementsByContest, getAchievementByUser, getMyAchievements, getAchievementsByType, getUserPhotoAchievements
+    getAchievementsByContest, getAchievementByUser, getMyAchievements, 
+    getAchievementsByType, getUserPhotoAchievements, getAllPhotosAchievements
 }
