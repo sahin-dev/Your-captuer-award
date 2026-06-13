@@ -173,18 +173,32 @@ const getAllPhotosAchievements = async (page: number = 1, limit: number = 10) =>
         skip,
         take: paginationLimit,
         include: {
-            photo: { select: { photo: { select: { id: true, url: true } } } },
+            photo: { select: { id:true, photo: { select: { id: true, url: true, likes:true, views:true } } } },
             participant: { select: { user: {
                 omit: { password: true, accessToken: true }
             } } }
         },
         orderBy: { createdAt: 'desc' }
     });
+    
+    const mappedAchievements = await Promise.all(achievements.map(async (achievement) => {
+        if (achievement.photo) {
+            const photo = achievement.photo;
+
+            const voteCount = await prisma.vote.count({ where: { photoId: photo.photo.id } });
+            return {
+                ...achievement,
+                voteCount
+            };
+        }
+        return achievement;
+    }));
 
     const total = await prisma.contestAchievement.count({where:{category:PrizeType.TOP_PHOTO}});
     const meta = paginationHelper.getPaginationMetaData(page, paginationLimit, total);
+   
 
-    return { data: achievements, meta };
+    return { data: mappedAchievements, meta };
 }
 
 // const getContestAchievements
