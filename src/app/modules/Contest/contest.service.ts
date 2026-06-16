@@ -1511,14 +1511,31 @@ const tradePhoto = async (userId: string, contestId: string, contestPhotoId: str
         throw new ApiError(httpstatus.BAD_REQUEST, "you does not have enough trade")
     }
     const result = await prisma.$transaction(async (tx) => {
-        const vote = await voteService.getVoteCount(contestPhoto.photo.id)
-        await tx.contestPhoto.delete({ where: { id: contestPhoto.id } })
+        let newPhotoUrl: string;
+        if (file) {
+            const uploadedFile = await fileUploader.uploadToFilesystem(file);
+            newPhotoUrl = uploadedFile.Location;
+        } else {
+            const userPhoto = await tx.userPhoto.findUnique({ where: { id: photoId } });
+            if (!userPhoto) {
+                throw new ApiError(httpstatus.NOT_FOUND, "new photo not found");
+            }
+            newPhotoUrl = userPhoto.url;
+        }
 
-        const uploadedPhoto = await uploadPhotoToContest(contestId, userId, [photoId], file)
+        // Just update the url of the existing photo
+        await tx.userPhoto.update({
+            where: { id: contestPhoto.photoId },
+            data: { url: newPhotoUrl }
+        });
+
         //decrease trade by 1
         await tx.userStore.update({ where: { userId }, data: { swap: { decrement: 1 } } })
 
-        return await tx.contestPhoto.update({ where: { id: uploadedPhoto[0].id }, data: { initialVotes: vote } })
+        return await tx.contestPhoto.findUnique({
+            where: { id: contestPhoto.id },
+            include: { photo: true }
+        });
     })
     return result
 }
