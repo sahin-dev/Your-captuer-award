@@ -1,11 +1,11 @@
 import { Request, Response } from 'express'
-import { handleGetUserUploads, profileService } from './profile.service'
+import { handleGetUserPublicUploads, handleGetUserUploads, profileService } from './profile.service'
 import sendResponse from '../../../shared/ApiResponse'
 import httpStatus from 'http-status'
 import catchAsync from '../../../shared/catchAsync'
 
 
-export const getMyUploads = async (req: Request, res: Response) => {
+export const getMyUploads = catchAsync(async (req: Request, res: Response) => {
     const userId = req.user.id
 
     const { page, limit } = req.query as { page?: string; limit?: string }
@@ -13,7 +13,8 @@ export const getMyUploads = async (req: Request, res: Response) => {
     let pageNum = page ? Number(page) : undefined
     let limitNum = limit ? Number(limit) : undefined
 
-    const result = await handleGetUserUploads(userId, { page: pageNum, limit: limitNum })
+    // viewerId = self, so isLiked works for own photos too
+    const result = await handleGetUserUploads(userId, { page: pageNum, limit: limitNum }, userId)
 
     sendResponse(res, {
         statusCode: httpStatus.OK,
@@ -22,16 +23,18 @@ export const getMyUploads = async (req: Request, res: Response) => {
         data: result.data,
         meta: result.meta
     })
-}
+})
 
 export const getUserPhotos = catchAsync(async (req: Request, res: Response) => {
-    const userId = req.params.id
+    const targetUserId = req.params.id
+    const viewerId = req.user.id
     const { page, limit } = req.query as { page?: string; limit?: string }
 
     let pageNum = page ? Number(page) : undefined
     let limitNum = limit ? Number(limit) : undefined
 
-    const result = await handleGetUserUploads(userId, { page: pageNum, limit: limitNum })
+    // Pass viewerId so each photo includes isLiked
+    const result = await handleGetUserPublicUploads(targetUserId, { page: pageNum, limit: limitNum }, viewerId)
 
     sendResponse(res, {
         statusCode: httpStatus.OK,
@@ -69,7 +72,7 @@ const getUserStates = async (req: Request, res: Response) => {
     })
 }
 
-const getUserPublicStates = async (req:Request, res:Response) => {
+const getUserPublicStates = catchAsync(async (req:Request, res:Response) => {
     const userId = req.params.id
     const states = await profileService.getStates(userId)
 
@@ -79,14 +82,15 @@ const getUserPublicStates = async (req:Request, res:Response) => {
         message: "user states fetched successfully",
         data: states
     })
-}
+})
 
 
 const getUserPhotoDetails = catchAsync(async (req: Request, res: Response) => {
     const { photoId } = req.params
     const userId = req.user.id
+    const viewerId = req.user.id
 
-    const result = await profileService.getUserPhotoDetails(userId, photoId)
+    const result = await profileService.getUserPhotoDetails(userId, photoId, viewerId)
 
     sendResponse(res, {
         success: true,
@@ -109,6 +113,36 @@ const deleteUserPhoto = catchAsync(async (req: Request, res: Response) => {
         data: result
     })
 })
+
+// GET /profile/users/:id/profile — public user profile with isFollowed
+const getUserPublicProfile = catchAsync(async (req: Request, res: Response) => {
+    const targetUserId = req.params.id
+    const viewerId = req.user.id
+
+    const result = await profileService.getUserProfileDetails(targetUserId, viewerId)
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: "user profile fetched successfully",
+        data: result
+    })
+})
+
+// GET /profile/users/:id/photos/:photoId — public photo detail with isLiked + isFollowed + comments
+const getPublicPhotoDetails = catchAsync(async (req: Request, res: Response) => {
+    const { id: targetUserId, photoId } = req.params
+    const viewerId = req.user.id
+
+    const result = await profileService.getPublicPhotoDetails(photoId, viewerId)
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: "photo details fetched successfully",
+        data: result
+    })
+})
 export const profileController = {
     getMyUploads,
     uploadUserPhoto,
@@ -116,6 +150,7 @@ export const profileController = {
     getUserPhotoDetails,
     deleteUserPhoto,
     getUserPhotos,
-    getUserPublicStates
-
+    getUserPublicStates,
+    getUserPublicProfile,
+    getPublicPhotoDetails,
 }

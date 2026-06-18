@@ -126,7 +126,7 @@ async function scheduleContest(rContest: RecurringContest) {
     const totalTimeSpan = nextOccurrence.getTime() - previousOccurrence.getTime();
     const passedTimeSpan = Math.abs(new Date().getTime() - previousOccurrence.getTime());
 
-    const time_ratio = 0.2
+    const time_ratio = 0.8
 
 
     if (passedTimeSpan >= (totalTimeSpan * time_ratio)) {

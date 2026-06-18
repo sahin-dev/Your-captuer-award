@@ -7,8 +7,10 @@ import { MappedPhoto } from "./profile.types"
 import { voteService } from "../Vote/vote.service"
 import { followService } from "../Follow/followe.service"
 import { paginationHelper } from "../../../helpers/paginationHelper";
+import { handleGetUserComments } from "../Comment/comment.service";
 
-export const handleGetUserUploads = async (userId:string, pagination:{page?:number, limit?:number})=>{
+
+export const handleGetUserUploads = async (userId:string, pagination:{page?:number, limit?:number}, viewerId?:string)=>{
     let page = pagination.page || 1
 
     let limit = pagination.limit || 20
@@ -26,16 +28,32 @@ export const handleGetUserUploads = async (userId:string, pagination:{page?:numb
             skip
     })
 
+    // Fetch liked photo IDs for the viewer in one query
+    let likedPhotoIds = new Set<string>()
+    if (viewerId) {
+        const likedPhotos = await prisma.like.findMany({
+            where: { providerId: viewerId, photoId: { in: uploads.map(p => p.id) } },
+            select: { photoId: true }
+        })
+        likedPhotoIds = new Set(likedPhotos.map(l => l.photoId))
+    }
+
     const newUploads = uploads.map( photo => {
         const totalVotes = photo.contestUpload.reduce ( (sum, contestUploads)=>{
             return sum + (contestUploads?._count?.votes ?? 0)
         },0)
-        return { ...photo, totalVotes,likes:photo._count.likes,_count:undefined}
+        return { ...photo, totalVotes, likes: photo._count.likes, isLiked: likedPhotoIds.has(photo.id), _count: undefined }
     })
 
     const meta = paginationHelper.getPaginationMetaData(page, paginationLimit, totalUploads);
 
     return {data: newUploads, meta}
+} 
+
+
+// handleGetUserPublicUploads delegates to handleGetUserUploads with viewerId for isLiked
+export const handleGetUserPublicUploads = async (userId:string, pagination:{page?:number, limit?:number}, viewerId?:string)=>{
+    return handleGetUserUploads(userId, pagination, viewerId)
 } 
 
 //Upload photo to cloud and then add to user profile
@@ -186,29 +204,83 @@ const getStates = async (userId:string)=>{
     return {...userStates?._count, follower:followerCount, following:followingCount, achievements: (achievementsCount.top_photo + achievementsCount.top_photographer)}
 }
 
-const getUserProfileDetails = async (userId:string)=>{
-    const user = await prisma.user.findUnique({where:{id:userId}, select:{avatar:true, location:true,fullName:true, cover:true}})
+const getUserProfileDetails = async (userId:string, viewerId?:string)=>{
+    const user = await prisma.user.findUnique({
+        where:{id:userId},
+        select:{id:true, avatar:true, location:true, fullName:true, firstName:true, lastName:true, username:true, cover:true}
+    })
     if(!user){
         throw new ApiError(httpStatus.NOT_FOUND, "User not found")
     }
 
-    const totalVotes = (await voteService.getTotalOrganicVotes(userId)) +  (await voteService.getTotalPromotedVotes(userId))
+    const totalVotes = (await voteService.getTotalOrganicVotes(userId)) + (await voteService.getTotalPromotedVotes(userId))
 
-    return {...user, totalVotes}
+    // Check if the viewer follows this user
+    let isFollowed = false
+    if (viewerId && viewerId !== userId) {
+        const follow = await prisma.follow.findUnique({
+            where: { followerId_followingId: { followerId: viewerId, followingId: userId } }
+        })
+        isFollowed = !!follow
+    }
+
+    return {...user, totalVotes, isFollowed}
 }
 
 
-const getUserPhotoDetails = async (userId:string, photoId:string) => {
-    const photo = await prisma.userPhoto.findUnique({where:{id:photoId,userId}})
+const getUserPhotoDetails = async (userId:string, photoId:string, viewerId?:string) => {
+    const photo = await prisma.userPhoto.findUnique({
+        where:{id:photoId},
+        include:{
+            user:{
+                select:{
+                    id:true, avatar:true, fullName:true, firstName:true,
+                    lastName:true, username:true, location:true, cover:true
+                }
+            },
+            _count:{ select:{ likes:true } }
+        }
+    })
     if(!photo){
         throw new ApiError(httpStatus.NOT_FOUND, "photo not found")
     }
 
     const votes = await voteService.getVoteCount(photo.id)
-    const comments = await prisma.comment.findMany({where:{photoId}})
+    const { data: comments } = await handleGetUserComments(photoId, 1, 10)
     const achievememnts = await achievementService.getPhotoAchievements(photoId)
 
-    return {photo, votes, comments, achievememnts}
+    // Check if viewer follows the photo owner
+    let isFollowed = false
+    if (viewerId && viewerId !== userId) {
+        const follow = await prisma.follow.findUnique({
+            where: { followerId_followingId: { followerId: viewerId, followingId: userId } }
+        })
+        isFollowed = !!follow
+    }
+
+    // Check if viewer has liked this photo
+    let isLiked = false
+    if (viewerId) {
+        const like = await prisma.like.findFirst({
+            where: { providerId: viewerId, photoId }
+        })
+        isLiked = !!like
+    }
+
+    const { _count, ...photoData } = photo
+
+    return {
+        photo: {
+            ...photoData,
+            likes: _count.likes,
+            isLiked,
+            isFollowed
+        },
+       
+        votes,
+        comments,
+        achievememnts
+    }
 }
 
 const deleteUserPhoto = async (userId:string, photoId:string)=> {
@@ -223,6 +295,65 @@ const deleteUserPhoto = async (userId:string, photoId:string)=> {
     return deletedPhoto
 }
 
+// Fetch any photo by its ID (for viewing another user's photo detail)
+const getPublicPhotoDetails = async (photoId: string, viewerId?: string) => {
+    const photo = await prisma.userPhoto.findUnique({
+        where: { id: photoId },
+        include: {
+            user: {
+                select: {
+                    id: true, avatar: true, fullName: true, firstName: true,
+                    lastName: true, username: true, location: true, cover: true
+                }
+            },
+            _count: { select: { likes: true } }
+        }
+    })
+    if (!photo) {
+        throw new ApiError(httpStatus.NOT_FOUND, "photo not found")
+    }
+
+    const votes = await voteService.getVoteCount(photo.id)
+    const { data: comments, meta: commentsMeta } = await handleGetUserComments(photoId, 1, 20)
+    const achievememnts = await achievementService.getPhotoAchievements(photoId)
+
+    // Check if viewer follows the photo owner
+    let isFollowed = false
+    if (viewerId && viewerId !== photo.userId) {
+        const follow = await prisma.follow.findUnique({
+            where: { followerId_followingId: { followerId: viewerId, followingId: photo.userId } }
+        })
+        isFollowed = !!follow
+    }
+
+    // Check if viewer has liked this photo
+    let isLiked = false
+    if (viewerId) {
+        const like = await prisma.like.findFirst({
+            where: { providerId: viewerId, photoId }
+        })
+        isLiked = !!like
+    }
+
+    const { _count, ...photoData } = photo
+
+    return {
+        photo: {
+            ...photoData,
+            likes: _count.likes,
+            isLiked,
+        },
+        photoOwner: {
+            ...photo.user,
+            isFollowed,
+        },
+        votes,
+        comments,
+        commentsMeta,
+        achievememnts
+    }
+}
+
 export const profileService = {
     uploadUserPhoto,
     getStates,
@@ -232,6 +363,7 @@ export const profileService = {
     handleAddUpload,
     getUserProfileDetails,
     getUserPhotoDetails,
+    getPublicPhotoDetails,
     deleteUserPhoto
 
 }
