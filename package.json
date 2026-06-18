@@ -7,7 +7,7 @@
     "start": "nodemon src/server.ts",
     "prod": "node dist/server.js",
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
-    "build": "tsc",
+    "build": "npx prisma generate --schema=./prisma && tsc && cp -r src/prismaClient dist/prismaClient",
     "generate": "ts-node src/generate-module.js",
     "postinstall": "npx prisma db push --schema=./prisma",
     "test": "echo \"Error: no test specified\" && exit 1",
