@@ -9,6 +9,7 @@ import { z } from 'zod';
 export const createContestSchema = z.object({
 
     title: z.string().nonempty("title must not be empty"),
+    banner: z.string().optional(),
     description: z.string().nonempty('description must not be empty'),
     level_requirements:z.string().array().default(["50","200","400"]),
     type:z.nativeEnum(ContestPlan).default(ContestPlan.OPEN),

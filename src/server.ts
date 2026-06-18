@@ -35,44 +35,57 @@ async function startServer() {
 async function main() {
   await startServer();
   // await agenda.start()
-  const exitHandler = async () => {
+  const exitHandler = async (signalName?: string, exitCode = 0) => {
+    console.info(`Exit handler triggered by: ${signalName || "direct call"}`);
+
+    const forceExitTimeout = setTimeout(() => {
+      console.warn("Graceful shutdown timed out. Force exiting...");
+      process.exit(exitCode);
+    }, 5000);
+    forceExitTimeout.unref();
+
     if (server) {
       server.close(async () => {
         console.info("Server closed!");
-        await agenda.stop();
-        await prisma.$disconnect()
-        restartServer();
+        try {
+          await agenda.stop();
+          console.info("Agenda stopped successfully!");
+        } catch (e) {
+          console.error("Error stopping Agenda:", e);
+        }
+        try {
+          await prisma.$disconnect();
+          console.info("Prisma disconnected successfully!");
+        } catch (e) {
+          console.error("Error disconnecting Prisma:", e);
+        }
+        clearTimeout(forceExitTimeout);
+        process.exit(exitCode);
       });
     } else {
-      process.exit(1);
+      process.exit(exitCode);
     }
   };
 
-  const restartServer = () => {
-    console.info("Restarting server...");
-    main();
-  };
-
   process.on("uncaughtException", (error) => {
-    console.log("Uncaught Exception: ", error);
-    exitHandler();
+    console.error("Uncaught Exception: ", error);
+    exitHandler("uncaughtException", 1);
   });
 
   process.on("unhandledRejection", (error) => {
-    console.log("Unhandled Rejection: ", error);
-    exitHandler();
+    console.error("Unhandled Rejection: ", error);
+    exitHandler("unhandledRejection", 1);
   });
 
   // Handling the server shutdown with SIGTERM and SIGINT
   process.on("SIGTERM", () => {
     console.log("SIGTERM signal received. Shutting down gracefully...");
-    exitHandler();
+    exitHandler("SIGTERM", 0);
   });
 
   process.on("SIGINT", () => {
     console.log("SIGINT signal received. Shutting down gracefully...");
-  
-    exitHandler();
+    exitHandler("SIGINT", 0);
   });
 }
 

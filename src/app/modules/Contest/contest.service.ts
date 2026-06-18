@@ -84,8 +84,13 @@ const createContest = async (creatorId: string, body: contestData, banner: Expre
 
 
         let bannerUrl: string | null = null
-        if (banner) {
+        if (body.banner) {
+            bannerUrl = body.banner;
+        } else if (banner) {
             bannerUrl = (await fileUploader.uploadToFilesystem(banner)).Location;
+        }
+        if (!banner) {
+            throw new ApiError(httpstatus.BAD_REQUEST, "Banner is required")
         }
 
         if (body.coin_requirement) {
@@ -208,8 +213,11 @@ const createRecurringContest = async (creatorId: string, body: contestData, bann
     contestData.rules = JSON.stringify(body.rules)
     contestData.prizes = JSON.stringify(body.prizes)
 
-    let bannerUrl: string
-    if (banner) {
+    let bannerUrl: string | null = null
+    if (body.banner) {
+        bannerUrl = body.banner;
+        contestData.banner = bannerUrl
+    } else if (banner) {
         bannerUrl = (await fileUploader.uploadToFilesystem(banner)).Location;
         contestData.banner = bannerUrl
     }

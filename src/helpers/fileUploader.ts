@@ -42,11 +42,11 @@ const filesystemStorage = multer.diskStorage({
   }
 });
 
-const filesystemUpload = multer({ storage: filesystemStorage });
-
 // Multer configuration using memoryStorage (for DigitalOcean & Cloudinary)
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
+
+const filesystemUpload = multer({ storage });
 
 // ✅ Fixed Cloudinary Storage
 const cloudinaryStorage = new CloudinaryStorage({
@@ -161,8 +161,10 @@ const uploadToDigitalOcean = async (file: Express.Multer.File) => {
     await s3Client.send(new PutObjectCommand(uploadParams));
 
 
-    // Format the URL
-    const fileURL = `${process.env.DO_SPACE_ENDPOINT}/${process.env.DO_SPACE_BUCKET}/${Key}`;
+    // Format the URL using origin endpoint if configured (e.g. for custom domain/CDN or virtual hosting)
+    const fileURL = process.env.DO_SPACE_ORIGIN_ENDPOINT
+      ? `${process.env.DO_SPACE_ORIGIN_ENDPOINT}/${Key}`
+      : `${process.env.DO_SPACE_ENDPOINT}/${process.env.DO_SPACE_BUCKET}/${Key}`;
     return {
       Location: fileURL,
       Bucket: process.env.DO_SPACE_BUCKET || "",
@@ -178,31 +180,21 @@ const uploadToDigitalOcean = async (file: Express.Multer.File) => {
 
 };
 
-// ✅ Filesystem Upload Function
+// ✅ Redirected to DigitalOcean Upload
 const uploadToFilesystem = async (file: Express.Multer.File): Promise<{ Location: string; filename: string }> => {
   if (!file) {
     throw new Error("File is required for uploading.");
   }
 
   try {
-    // File is already saved by multer diskStorage middleware
-    const relativePath = `/uploads/${file.filename}`;
-    const fullPath = path.join(uploadsDir, file.filename);
-
-    // Verify file exists
-    if (!fs.existsSync(fullPath)) {
-      throw new Error("File failed to upload to filesystem.");
-    }
-
-    // Prefix with BASE_URL for full URL
-    const fullUrl = `${process.env.BASE_URL}${relativePath}`;
-
+    // Forward directly to DigitalOcean Spaces
+    const result = await uploadToDigitalOcean(file);
     return {
-      Location: fullUrl,  // Full URL with BASE_URL prefix
-      filename: file.filename,
+      Location: result.Location,
+      filename: result.Key,
     };
   } catch (error) {
-    console.error("Error uploading file to filesystem:", error);
+    console.error("Error uploading file to DigitalOcean via uploadToFilesystem:", error);
     throw error;
   }
 };
