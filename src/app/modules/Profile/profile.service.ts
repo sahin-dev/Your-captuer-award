@@ -284,16 +284,81 @@ const getUserPhotoDetails = async (userId:string, photoId:string, viewerId?:stri
 }
 
 const deleteUserPhoto = async (userId:string, photoId:string)=> {
-    const photo = await prisma.userPhoto.findUnique({where:{id:photoId, userId}})
+    const photo = await prisma.userPhoto.findUnique({
+        where: { id: photoId, userId },
+        include: { contestUpload: true }
+    })
 
     if(!photo){
         throw new ApiError(httpStatus.NOT_FOUND, "photo not found")
     }
 
-    const deletedPhoto = await prisma.userPhoto.delete({where:{id:photo.id}})
+    const contestPhotoIds = photo.contestUpload.map(cp => cp.id)
+
+    // Gather comment replies to prevent relation/orphan issues
+    let commentIdsToDelete: string[] = []
+    if (contestPhotoIds.length > 0) {
+        const rootComments = await prisma.comment.findMany({
+            where: { photoId: { in: contestPhotoIds } },
+            select: { id: true }
+        })
+        const rootCommentIds = rootComments.map(c => c.id)
+        commentIdsToDelete.push(...rootCommentIds)
+
+        if (rootCommentIds.length > 0) {
+            // Level 1 replies
+            const repliesL1 = await prisma.comment.findMany({
+                where: { parentId: { in: rootCommentIds } },
+                select: { id: true }
+            })
+            const repliesL1Ids = repliesL1.map(c => c.id)
+            commentIdsToDelete.push(...repliesL1Ids)
+
+            if (repliesL1Ids.length > 0) {
+                // Level 2 replies
+                const repliesL2 = await prisma.comment.findMany({
+                    where: { parentId: { in: repliesL1Ids } },
+                    select: { id: true }
+                })
+                const repliesL2Ids = repliesL2.map(c => c.id)
+                commentIdsToDelete.push(...repliesL2Ids)
+            }
+        }
+    }
+
+    const queries = [
+        // Delete votes on contest photos
+        ...(contestPhotoIds.length > 0 ? [
+            prisma.vote.deleteMany({ where: { photoId: { in: contestPhotoIds } } })
+        ] : []),
+        // Delete winners pointing to contest photos
+        ...(contestPhotoIds.length > 0 ? [
+            prisma.contestWinner.deleteMany({ where: { contestPhotoId: { in: contestPhotoIds } } })
+        ] : []),
+        // Delete achievements on contest photos
+        ...(contestPhotoIds.length > 0 ? [
+            prisma.contestAchievement.deleteMany({ where: { photoId: { in: contestPhotoIds } } })
+        ] : []),
+        // Delete comments and replies
+        ...(commentIdsToDelete.length > 0 ? [
+            prisma.comment.deleteMany({ where: { id: { in: commentIdsToDelete } } })
+        ] : []),
+        // Delete contest photos
+        ...(contestPhotoIds.length > 0 ? [
+            prisma.contestPhoto.deleteMany({ where: { id: { in: contestPhotoIds } } })
+        ] : []),
+        // Delete likes on user photo
+        prisma.like.deleteMany({ where: { photoId: photo.id } }),
+        // Delete the user photo
+        prisma.userPhoto.delete({ where: { id: photo.id } })
+    ]
+
+    const results = await prisma.$transaction(queries)
+    const deletedPhoto = results[results.length - 1] as typeof photo
 
     return deletedPhoto
 }
+
 
 // Fetch any photo by its ID (for viewing another user's photo detail)
 const getPublicPhotoDetails = async (photoId: string, viewerId?: string) => {
