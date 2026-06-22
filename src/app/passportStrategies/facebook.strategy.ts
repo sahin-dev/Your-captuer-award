@@ -1,29 +1,35 @@
 import facebook, {Profile, StrategyOptions} from "passport-facebook"
 import config from "../../config";
-import { userService } from "../modules/User/user.service";
 import { IUser } from "../modules/User/user.interface";
 import prisma from "../../shared/prisma";
-
-
+import globalEventHandler from "../event/eventEmitter";
+import Events from "../event/events.constant";
 
 const facebookConfig:StrategyOptions = {
     clientID:config.facebook.client_id as string, 
     clientSecret:config.facebook.client_secret as string, 
     callbackURL:config.facebook.callbackUrl as string,
-    profileFields: ['id', 'displayName', 'photos', 'email']
+    profileFields: ['id', 'displayName', 'name', 'photos', 'email']
 }
 
 const facebookCallback = async (accessToken:any, refreshToken:any, profile:Profile, done:any)=>{
     try{
+        // 1. Try to find user by social provider and social ID
         let user = await prisma.user.findFirst({
             where: { socialProvider: "facebook", socialId: profile.id }
         });
 
+        // 2. If not found by social ID, check by email
         if (!user) {
             const email = (profile.emails && profile.emails[0]?.value) || null;
             if (email) {
                 user = await prisma.user.findUnique({ where: { email } });
                 if (user) {
+                    // Check if user is blocked before linking
+                    if (user.isBlocked) {
+                        return done(new Error("Your account is blocked!"), null);
+                    }
+
                     // Link existing account
                     user = await prisma.user.update({
                         where: { id: user.id },
@@ -37,8 +43,14 @@ const facebookCallback = async (accessToken:any, refreshToken:any, profile:Profi
                     });
                 }
             }
+        } else {
+            // User was found by social ID, check if they are blocked
+            if (user.isBlocked) {
+                return done(new Error("Your account is blocked!"), null);
+            }
         }
 
+        // 3. If user still does not exist, register new user
         if (!user){
             // Fallback email if Facebook did not provide one
             const finalEmail = (profile.emails && profile.emails[0]?.value) || `facebook_${profile.id}@yourcaptureawards.com`;
@@ -70,6 +82,9 @@ const facebookCallback = async (accessToken:any, refreshToken:any, profile:Profi
 
                 return createdUser;
             });
+
+            // Publish a new user registration event
+            globalEventHandler.publish(Events.USER_REGISTERED, user);
         }
         return done(null, user);
 

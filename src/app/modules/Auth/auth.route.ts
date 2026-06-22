@@ -3,8 +3,6 @@ import { AdminSignIn, getAuthenticatedUser, registerUser, SignIn, SignOut } from
 import auth from "../../middlewares/auth.middleware";
 import { socialLogin } from "./socialLogin.service";
 import passport from "passport";
-import googleStrategy from "../../passportStrategies/google.strategy";
-import facebookStrategy from "../../passportStrategies/facebook.strategy";
 import validateRequest from "../../middlewares/validation.middleware";
 import { SignInSchema, userRegistrationSchema } from "./auth.validation";
 import { UserRole } from "../../../prismaClient";
@@ -23,14 +21,14 @@ router.get("/me",auth(), getAuthenticatedUser)
 router.post("/register", validateRequest(userRegistrationSchema), registerUser)
 
 
-router.get("/google", passport.use(googleStrategy).authenticate("google",{
+router.get("/google", passport.authenticate("google", {
   scope: ["profile", "email"],
-} ))
+}))
 
 
 router.get("/google/callback", socialLogin.googleCallback);
 
-router.get("/facebook", passport.use(facebookStrategy).authenticate("facebook", {
+router.get("/facebook", passport.authenticate("facebook", {
   scope: ["email"]
 }))
 

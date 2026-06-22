@@ -1,10 +1,9 @@
-import passport from "passport";
 import google, { Profile } from 'passport-google-oauth20'
 import config from "../../config";
-import { userService } from "../modules/User/user.service";
 import { IUser } from "../modules/User/user.interface";
 import prisma from "../../shared/prisma";
-import { userStoreService } from "../modules/User/UserStore/userStore.service";
+import globalEventHandler from "../event/eventEmitter";
+import Events from "../event/events.constant";
 
 const googleConfig = {
     clientID:config.google.client_id as string, 
@@ -20,12 +19,23 @@ const googleCallback = async (accessToken:any, refreshToken:any, profile:Profile
     }
     
     const email = profile.emails[0].value;
-    let user = await userService.getUserByEmail("google", email);
-    console.log(user);
     
-    if (user) {
-      // If the user exists but doesn't have Google linked, link it.
-      if (!user.socialProvider || !user.socialId) {
+    // 1. Try to find user by social provider and social ID
+    let user = await prisma.user.findFirst({
+      where: { socialProvider: "google", socialId: profile.id }
+    });
+
+    // 2. If not found by social ID, check by email
+    if (!user) {
+      user = await prisma.user.findUnique({ where: { email } });
+      
+      if (user) {
+        // Check if user is blocked before linking
+        if (user.isBlocked) {
+          return done(new Error("Your account is blocked!"), null);
+        }
+        
+        // Link existing account to Google
         user = await prisma.user.update({
           where: { id: user.id },
           data: {
@@ -38,6 +48,14 @@ const googleCallback = async (accessToken:any, refreshToken:any, profile:Profile
         });
       }
     } else {
+      // User was found by social ID, check if they are blocked
+      if (user.isBlocked) {
+        return done(new Error("Your account is blocked!"), null);
+      }
+    }
+
+    // 3. If user still does not exist, register new user
+    if (!user) {
       let userData:IUser = {
         socialProvider:"google",
         socialId: profile?.id,
@@ -64,6 +82,9 @@ const googleCallback = async (accessToken:any, refreshToken:any, profile:Profile
         await tx.userStore.create({ data: { userId: createdUser.id, key: 0, swap: 0, boost: 0, coins: 0 } });
         return createdUser;
       });
+
+      // Publish a new user registration event
+      globalEventHandler.publish(Events.USER_REGISTERED, user);
     }
 
     return done(null, user);
@@ -76,9 +97,5 @@ const googleCallback = async (accessToken:any, refreshToken:any, profile:Profile
 
 
 const googleStrategy = new google.Strategy(googleConfig,googleCallback)
-
-
-
-// passport.use(googleStrategy);
 
 export default googleStrategy

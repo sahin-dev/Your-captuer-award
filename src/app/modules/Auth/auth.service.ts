@@ -14,18 +14,18 @@ import { SubscriptionStatus, UserRole } from "../../../prismaClient"
 
 
 
-export const handleRegister = async (body:UserRegistrationData)=>{
+export const handleRegister = async (body: UserRegistrationData) => {
 
 
 
-    const existingUser = await prisma.user.findFirst({where:{email:body.email}})
+    const existingUser = await prisma.user.findFirst({ where: { email: body.email } })
     console.log(existingUser)
 
-    if (existingUser){
+    if (existingUser) {
         throw new ApiError(httpstatus.CONFLICT, "user already exist with this email")
     }
 
-    if ( body.confirmPassword && (body.password !== body.confirmPassword)){
+    if (body.confirmPassword && (body.password !== body.confirmPassword)) {
         throw new ApiError(httpstatus.BAD_REQUEST, "Password does not not matched")
     }
 
@@ -33,11 +33,11 @@ export const handleRegister = async (body:UserRegistrationData)=>{
 
 
 
-    const createdUser = await prisma.$transaction( async tx =>{
+    const createdUser = await prisma.$transaction(async tx => {
         let fullName = `${body.firstName} ${body.lastName}`
-        
-        const user  = await tx.user.create({data:{firstName:body.firstName, lastName:body.lastName,fullName,email:body.email as string, password:hashedPassword,phone:body.phone}})
-        
+
+        const user = await tx.user.create({ data: { firstName: body.firstName, lastName: body.lastName, fullName, email: body.email as string, password: hashedPassword, phone: body.phone } })
+
 
         // const userData = {
         //         id:createdUser.id,
@@ -48,9 +48,9 @@ export const handleRegister = async (body:UserRegistrationData)=>{
         //         role: createdUser.role,
         //         phone: createdUser.phone
         //     }
-        
+
         //create user store for every user register
-       await tx.userStore.create({data:{userId:user.id, coins:0, key:0, boost:0, swap:0}})
+        await tx.userStore.create({ data: { userId: user.id, coins: 0, key: 0, boost: 0, swap: 0 } })
 
         return user
     })
@@ -58,28 +58,32 @@ export const handleRegister = async (body:UserRegistrationData)=>{
     //Publish a event: New user registered
     globalEventHandler.publish(Events.USER_REGISTERED, createdUser)
 
-    const token = jwtHelpers.generateToken({id:createdUser.id, role:createdUser.role, email:createdUser.email})
-    await prisma.user.update({where:{id:createdUser.id}, data:{accessToken:token}})
+    const token = jwtHelpers.generateToken({ id: createdUser.id, role: createdUser.role, email: createdUser.email })
+    await prisma.user.update({ where: { id: createdUser.id }, data: { accessToken: token } })
 
-    return {user:UserDto(createdUser), token}
+    return { user: UserDto(createdUser), token }
 }
 
 
 
-export const handleSignIn = async(body:UserSignInData)=>{
-    
-    const user = await prisma.user.findFirst({where:{email:body.email}})  
-    if (!user){
-        throw new ApiError(httpstatus.NOT_FOUND,"User not found")
+export const handleSignIn = async (body: UserSignInData) => {
+
+    const user = await prisma.user.findFirst({ where: { email: body.email } })
+    if (!user) {
+        throw new ApiError(httpstatus.NOT_FOUND, "User not found")
     }
 
-    if (await bcrypt.compare(body.password, user.password!)){
-        if (!(config.jwt.jwt_secret && config.jwt.expires_in)){
+    if (user.socialProvider && !user.password) {
+        throw new ApiError(httpstatus.BAD_REQUEST, "user is registered with social provider, login with social provider")
+    }
+
+    if (await bcrypt.compare(body.password, user.password!)) {
+        if (!(config.jwt.jwt_secret && config.jwt.expires_in)) {
             throw new Error("Jwt tokens are not valid")
         }
-        let token = jwtHelpers.generateToken({id:user.id, role:user.role},config.jwt.jwt_secret as Secret, config.jwt.expires_in)
+        let token = jwtHelpers.generateToken({ id: user.id, role: user.role }, config.jwt.jwt_secret as Secret, config.jwt.expires_in)
 
-        await prisma.user.update({where:{id:user.id}, data:{accessToken:token}})
+        await prisma.user.update({ where: { id: user.id }, data: { accessToken: token } })
 
         // const userData = {
         //     id:user.id,
@@ -90,31 +94,31 @@ export const handleSignIn = async(body:UserSignInData)=>{
         //     role: user.role,
         //     phone: user.phone
         // }
-        
-        return {user:UserDto(user), token}
-    }else{
+
+        return { user: UserDto(user), token }
+    } else {
         throw new ApiError(httpstatus.BAD_REQUEST, "Invalid credentials")
     }
 }
 
 
 
-export const handleAdminSignIn = async(body:UserSignInData)=>{
-    
+export const handleAdminSignIn = async (body: UserSignInData) => {
+
     console.log(body)
-    const user = await prisma.user.findFirst({where:{email:body.email, role:UserRole.ADMIN}})  
+    const user = await prisma.user.findFirst({ where: { email: body.email, role: UserRole.ADMIN } })
 
-    if (!user){
-        throw new ApiError(httpstatus.NOT_FOUND,"User not found")
+    if (!user) {
+        throw new ApiError(httpstatus.NOT_FOUND, "User not found")
     }
 
-    if (await bcrypt.compare(body.password, user.password!)){
-        if (!(config.jwt.jwt_secret && config.jwt.expires_in)){
+    if (await bcrypt.compare(body.password, user.password!)) {
+        if (!(config.jwt.jwt_secret && config.jwt.expires_in)) {
             throw new Error("Jwt tokens are not valid")
         }
-        let token = jwtHelpers.generateToken({id:user.id, role:user.role},config.jwt.jwt_secret as Secret, config.jwt.expires_in)
+        let token = jwtHelpers.generateToken({ id: user.id, role: user.role }, config.jwt.jwt_secret as Secret, config.jwt.expires_in)
 
-        await prisma.user.update({where:{id:user.id}, data:{accessToken:token}})
+        await prisma.user.update({ where: { id: user.id }, data: { accessToken: token } })
 
         // const userData = {
         //     id:user.id,
@@ -125,29 +129,33 @@ export const handleAdminSignIn = async(body:UserSignInData)=>{
         //     role: user.role,
         //     phone: user.phone
         // }
-        
-        return {user:UserDto(user), token}
-    }else{
+
+        return { user: UserDto(user), token }
+    } else {
         throw new ApiError(httpstatus.BAD_REQUEST, "Invalid credentials")
     }
 }
 
-export const getAutheticatedUser = async (userId:string)=>{
-    const user = await prisma.user.findUnique({where:{id:userId}, include:{subscriptions:
-        {where:{status:SubscriptionStatus.VALID}}, store:true}, omit:{password:true, accessToken:true}})
+export const getAutheticatedUser = async (userId: string) => {
+    const user = await prisma.user.findUnique({
+        where: { id: userId }, include: {
+            subscriptions:
+                { where: { status: SubscriptionStatus.VALID } }, store: true
+        }, omit: { password: true, accessToken: true }
+    })
 
-    if (!user){
+    if (!user) {
         throw new ApiError(httpstatus.NOT_FOUND, "user not found")
     }
 
     return user
 }
 
-export const handleSignout = async (userId:string)=>{
-    const user  = await prisma.user.findUnique({where:{id:userId}})
-    if (!user){
+export const handleSignout = async (userId: string) => {
+    const user = await prisma.user.findUnique({ where: { id: userId } })
+    if (!user) {
         throw new ApiError(httpstatus.NOT_FOUND, 'User not found')
     }
 
-    await prisma.user.update({where:{id:userId}, data:{accessToken:null}})
+    await prisma.user.update({ where: { id: userId }, data: { accessToken: null } })
 }

@@ -11,6 +11,7 @@ import router from "./app/routes";
 import ErrorHandler from "./app/middlewares/error.middleware";
 import { User } from "./prismaClient/client";
 import './app/event'
+import './app/passportStrategies'
 import stripeWebhook from "./helpers/stripeWebhook";
 import v2Router from "./app/routes/v2";
 
