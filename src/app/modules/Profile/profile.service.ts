@@ -10,22 +10,29 @@ import { paginationHelper } from "../../../helpers/paginationHelper";
 import { handleGetUserComments } from "../Comment/comment.service";
 
 
-export const handleGetUserUploads = async (userId:string, pagination:{page?:number, limit?:number}, viewerId?:string)=>{
+export const handleGetUserUploads = async (userId: string, pagination: { page?: number, limit?: number }, viewerId?: string) => {
     let page = pagination.page || 1
 
     let limit = pagination.limit || 20
 
     const { skip, limit: paginationLimit } = paginationHelper.calculatePagination({ page, limit });
 
-    const totalUploads = await prisma.userPhoto.count({where:{userId}})
+    const totalUploads = await prisma.userPhoto.count({ where: { userId } })
 
     const uploads = await prisma.userPhoto.findMany({
-        where:{userId},include:{
-            contestUpload:{select:{achievements:{orderBy:{createdAt:'desc'}, take:1,
-            select:{category:true},},
-            _count:{select:{votes:true}}}},_count:{select:{likes:true}}},
-            take: paginationLimit, 
-            skip
+        where: { userId }, include: {
+            contestUpload: {
+                select: {
+                    achievements: {
+                        orderBy: { createdAt: 'desc' }, take: 1,
+                        select: { category: true },
+                    },
+                    _count: { select: { votes: true } }
+                }
+            }, _count: { select: { likes: true } }
+        },
+        take: paginationLimit,
+        skip
     })
 
     // Fetch liked photo IDs for the viewer in one query
@@ -38,34 +45,34 @@ export const handleGetUserUploads = async (userId:string, pagination:{page?:numb
         likedPhotoIds = new Set(likedPhotos.map(l => l.photoId))
     }
 
-    const newUploads = uploads.map( photo => {
-        const totalVotes = photo.contestUpload.reduce ( (sum, contestUploads)=>{
+    const newUploads = uploads.map(photo => {
+        const totalVotes = photo.contestUpload.reduce((sum, contestUploads) => {
             return sum + (contestUploads?._count?.votes ?? 0)
-        },0)
+        }, 0)
         return { ...photo, totalVotes, likes: photo._count.likes, isLiked: likedPhotoIds.has(photo.id), _count: undefined }
     })
 
     const meta = paginationHelper.getPaginationMetaData(page, paginationLimit, totalUploads);
 
-    return {data: newUploads, meta}
-} 
+    return { data: newUploads, meta }
+}
 
 
 // handleGetUserPublicUploads delegates to handleGetUserUploads with viewerId for isLiked
-export const handleGetUserPublicUploads = async (userId:string, pagination:{page?:number, limit?:number}, viewerId?:string)=>{
+export const handleGetUserPublicUploads = async (userId: string, pagination: { page?: number, limit?: number }, viewerId?: string) => {
     return handleGetUserUploads(userId, pagination, viewerId)
-} 
+}
 
 //Upload photo to cloud and then add to user profile
 
-export const uploadUserPhoto = async (userId:string, file:Express.Multer.File)=>{
-    if(!file){
+export const uploadUserPhoto = async (userId: string, file: Express.Multer.File) => {
+    if (!file) {
         throw new ApiError(httpStatus.BAD_REQUEST, "Sorry, file is required")
     }
 
-    const user = await prisma.user.findUnique({where:{id:userId}})
+    const user = await prisma.user.findUnique({ where: { id: userId } })
 
-    if(!user){
+    if (!user) {
         throw new ApiError(httpStatus.NOT_FOUND, "user not found")
     }
 
@@ -73,46 +80,47 @@ export const uploadUserPhoto = async (userId:string, file:Express.Multer.File)=>
     const uploadedFile = await fileUploader.uploadToFilesystem(file)
     const addedPhoto = await handleAddUpload(userId, uploadedFile.Location)
 
-    return {...addedPhoto, contestUpload: [],
-            totalVotes: 0,
-            likes: 0}
+    return {
+        ...addedPhoto, contestUpload: [],
+        totalVotes: 0,
+        likes: 0
+    }
 }
 
-export const handleAddUpload = async (userId:string, photoUrl:string)=>{
+export const handleAddUpload = async (userId: string, photoUrl: string) => {
 
-    const uploadedPhoto = await prisma.userPhoto.create({data:{url:photoUrl, userId}})
+    const uploadedPhoto = await prisma.userPhoto.create({ data: { url: photoUrl, userId } })
 
     return uploadedPhoto
 }
 
-export const getAvailablePhotoForContest = async (userId:string, contestId:string)=>{
+export const getAvailablePhotoForContest = async (userId: string, contestId: string) => {
 
-    const user = await prisma.user.findUnique({where:{id:userId}})
+    const user = await prisma.user.findUnique({ where: { id: userId } })
 
-    if(!user)
-    {
+    if (!user) {
         throw new ApiError(httpStatus.NOT_FOUND, "user does not exist!")
     }
 
-    const photos = await prisma.userPhoto.findMany({where:{userId, contestUpload:{none:{contestId}}},omit:{states:true}})
+    const photos = await prisma.userPhoto.findMany({ where: { userId, contestUpload: { none: { contestId } } }, omit: { states: true } })
 
     return photos
 }
 
-export const getParticipatedContest = async(userId:string)=> {
-    const participatedContests = await prisma.contest.findMany({where:{participants:{some:{userId}}},select:{banner:true,title:true}})
+export const getParticipatedContest = async (userId: string) => {
+    const participatedContests = await prisma.contest.findMany({ where: { participants: { some: { userId } } }, select: { banner: true, title: true } })
 
     return participatedContests
 }
 
 
-export const getPhotos = async (userId:string, sortBy:string = 'votes')=>{
+export const getPhotos = async (userId: string, sortBy: string = 'votes') => {
 
-    const contestPhotos = await prisma.contestPhoto.findMany({where:{photo:{userId}}, select:{_count:{select:{votes:true}}}})
+    const contestPhotos = await prisma.contestPhoto.findMany({ where: { photo: { userId } }, select: { _count: { select: { votes: true } } } })
 
-    const photos = await prisma.userPhoto.findMany({where:{userId}, select:{url:true, id:true, views:true,_count:{select:{likes:true}} ,contestUpload:{select:{_count:{select:{votes:true}}}}}})
-    
-    if(!photos || photos.length === 0){
+    const photos = await prisma.userPhoto.findMany({ where: { userId }, select: { url: true, id: true, views: true, _count: { select: { likes: true } }, contestUpload: { select: { _count: { select: { votes: true } } } } } })
+
+    if (!photos || photos.length === 0) {
         throw new ApiError(httpStatus.NOT_FOUND, "user does not have any photos")
     }
     // Map photos to include votes property without mutating the original type
@@ -122,7 +130,7 @@ export const getPhotos = async (userId:string, sortBy:string = 'votes')=>{
         }, 0);
 
         // Omit contestUpload property when returning the object
-        const { contestUpload,_count, ...rest } = photo;
+        const { contestUpload, _count, ...rest } = photo;
         return {
             ...rest,
             votes,
@@ -132,18 +140,18 @@ export const getPhotos = async (userId:string, sortBy:string = 'votes')=>{
 
     sortPhotos(mappedPhotos, sortBy);
 
-    
+
 
     return mappedPhotos
 }
 
-const sortPhotosByVotes = (photos: MappedPhoto[], start:number, end:number) => {
-   
-    if(end >= start){
+const sortPhotosByVotes = (photos: MappedPhoto[], start: number, end: number) => {
+
+    if (end >= start) {
         return photos
     }
 
-    let mid = (start + (end- start)) >> 1;
+    let mid = (start + (end - start)) >> 1;
 
     sortPhotosByVotes(photos, start, mid);
     sortPhotosByVotes(photos, mid + 1, end);
@@ -151,65 +159,65 @@ const sortPhotosByVotes = (photos: MappedPhoto[], start:number, end:number) => {
 
 }
 
-const merge = (photos: MappedPhoto[], start:number, mid:number, end:number) => {
+const merge = (photos: MappedPhoto[], start: number, mid: number, end: number) => {
     if (start >= mid || mid + 1 > end) {
         return;
     }
-    
-    while( start<=mid && mid <= end){
-        if (photos[start].votes < photos[mid].votes){
+
+    while (start <= mid && mid <= end) {
+        if (photos[start].votes < photos[mid].votes) {
             const tmp = photos[start];
             photos[start] = photos[mid];
             photos[mid] = tmp;
             start++;
         }
-        else{
+        else {
             mid++;
         }
     }
-   
+
 }
 
 const sortPhotos = (photos: any[], sortBy: string) => {
 
     switch (sortBy) {
         case 'votes':
-            sortPhotosByVotes(photos,0, photos.length);
+            sortPhotosByVotes(photos, 0, photos.length);
             break;
         case 'views':
             photos.sort((a, b) => b.views - a.views);
             break;
         case 'likes':
             photos.sort((a, b) => (b._count.likes || 0) - (a._count.likes || 0));
-            break; 
+            break;
 
         default:
-            photos.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());   
+            photos.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     }
 }
 
-const getStates = async (userId:string)=>{
+const getStates = async (userId: string) => {
 
-    const user = await prisma.user.findUnique({where:{id:userId}})
+    const user = await prisma.user.findUnique({ where: { id: userId } })
 
-    if(!user){
+    if (!user) {
         throw new ApiError(httpStatus.NOT_FOUND, "user not found")
     }
 
-    const userStates = await prisma.user.findUnique({where:{id:userId},select:{_count:{select:{likes:{where:{photo:{userId}}}, userPhotos:true, }}}})
+    const userStates = await prisma.user.findUnique({ where: { id: userId }, select: { _count: { select: { likes: { where: { photo: { userId } } }, userPhotos: true, } } } })
     const achievementsCount = await achievementService.getAchievementCount(userId)
     const followerCount = await followService.getFollowerCount(userId)
     const followingCount = await followService.getFollowingCount(userId)
 
-    return {...userStates?._count, follower:followerCount, following:followingCount, achievements: (achievementsCount.top_photo + achievementsCount.top_photographer)}
+    return { ...userStates?._count, follower: followerCount, following: followingCount, achievements: (achievementsCount.top_photo + achievementsCount.top_photographer) }
 }
 
-const getUserProfileDetails = async (userId:string, viewerId?:string)=>{
+const getUserProfileDetails = async (userId: string, viewerId?: string) => {
     const user = await prisma.user.findUnique({
-        where:{id:userId},
-        select:{id:true, avatar:true, location:true, fullName:true, firstName:true, lastName:true, username:true, cover:true}
+        where: { id: userId },
+        select: { id: true, avatar: true, location: true, fullName: true, firstName: true, lastName: true, username: true, cover: true, joinedTeam: { include: { team: true } } }
     })
-    if(!user){
+    if (!user) {
         throw new ApiError(httpStatus.NOT_FOUND, "User not found")
     }
 
@@ -224,24 +232,24 @@ const getUserProfileDetails = async (userId:string, viewerId?:string)=>{
         isFollowed = !!follow
     }
 
-    return {...user, totalVotes, isFollowed}
+    return { ...user, totalVotes, isFollowed }
 }
 
 
-const getUserPhotoDetails = async (userId:string, photoId:string, viewerId?:string) => {
+const getUserPhotoDetails = async (userId: string, photoId: string, viewerId?: string) => {
     const photo = await prisma.userPhoto.findUnique({
-        where:{id:photoId},
-        include:{
-            user:{
-                select:{
-                    id:true, avatar:true, fullName:true, firstName:true,
-                    lastName:true, username:true, location:true, cover:true
+        where: { id: photoId, userId },
+        include: {
+            user: {
+                select: {
+                    id: true, avatar: true, fullName: true, firstName: true,
+                    lastName: true, username: true, location: true, cover: true
                 }
             },
-            _count:{ select:{ likes:true } }
+            _count: { select: { likes: true } }
         }
     })
-    if(!photo){
+    if (!photo) {
         throw new ApiError(httpStatus.NOT_FOUND, "photo not found")
     }
 
@@ -276,20 +284,20 @@ const getUserPhotoDetails = async (userId:string, photoId:string, viewerId?:stri
             isLiked,
             isFollowed
         },
-       
+
         votes,
         comments,
         achievememnts
     }
 }
 
-const deleteUserPhoto = async (userId:string, photoId:string)=> {
+const deleteUserPhoto = async (userId: string, photoId: string) => {
     const photo = await prisma.userPhoto.findUnique({
         where: { id: photoId, userId },
         include: { contestUpload: true }
     })
 
-    if(!photo){
+    if (!photo) {
         throw new ApiError(httpStatus.NOT_FOUND, "photo not found")
     }
 

@@ -139,6 +139,7 @@ export const handleAdminSignIn = async (body: UserSignInData) => {
 export const getAutheticatedUser = async (userId: string) => {
     const user = await prisma.user.findUnique({
         where: { id: userId }, include: {
+            joinedTeam: { include: { team: true } },
             subscriptions:
                 { where: { status: SubscriptionStatus.VALID } }, store: true
         }, omit: { password: true, accessToken: true }
