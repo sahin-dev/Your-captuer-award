@@ -42,7 +42,7 @@ const getMyAchievements = catchAsync(async (req:Request, res:Response) => {
     const {type} = req.body
     const { page, limit } = req.query;
     
-    const result = await achievementService.getContestAchievementsByUser(userId, type, page ? Number(page) : undefined, limit ? Number(limit) : undefined)
+    const result = await achievementService.getContestAchievementsByUser(userId, type as any, page ? Number(page) : undefined, limit ? Number(limit) : undefined)
    
     sendResponse (res, {
         statusCode:httpStatus.OK,

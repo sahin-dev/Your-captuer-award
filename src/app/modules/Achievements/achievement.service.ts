@@ -28,43 +28,132 @@ const addAchievement = async (userId:string,contestId:string, category:PrizeType
 }
 
 //get the contest achievements for a specific user
-const getContestAchievementsByUser = async (userId:string,type?:PrizeType, page: number = 1, limit: number = 10)=>{
-    
-    const contestParticipant =  await prisma.contestParticipant.findFirst({where:{userId}})
-    
-    if (!contestParticipant){
-        throw new ApiError(httpStatus.NOT_FOUND, "participant not found")
-    }
-
+const getContestAchievementsByUser = async (userId:string,type?:PrizeType | string, page: number = 1, limit: number = 10)=>{
     const { skip, limit: paginationLimit } = paginationHelper.calculatePagination({ page, limit });
 
-    if(type){
-        const achievements = await prisma.contestAchievement.findMany({
-            where:{participantId:contestParticipant.id, category:type}, 
-            skip,
-            take: paginationLimit,
-            include:{contest:{select:{id:true,title:true, banner:true}}},
-            orderBy: { createdAt: 'desc' }
-        });
-        
-        const total = await prisma.contestAchievement.count({where:{participantId:contestParticipant.id, category:type}});
-        const meta = paginationHelper.getPaginationMetaData(page, paginationLimit, total);
-        
-        return { data: achievements, meta };
+    let prizeCategory: PrizeType | undefined = undefined;
+    if (type) {
+        const typeStr = type.toString().toUpperCase();
+        if (typeStr === 'TOP_PHOTO' || typeStr === PrizeType.TOP_PHOTO) {
+            prizeCategory = PrizeType.TOP_PHOTO;
+        } else if (typeStr === 'TOP_PHOTOGRAPHER' || typeStr === PrizeType.TOP_PHOTOGRAPHER) {
+            prizeCategory = PrizeType.TOP_PHOTOGRAPHER;
+        }
+    }
+
+    const where: any = {
+        participant: {
+            userId: userId
+        }
+    };
+
+    if (prizeCategory) {
+        where.category = prizeCategory;
     }
 
     const achievements = await prisma.contestAchievement.findMany({
-        where:{participantId:contestParticipant.id}, 
+        where,
         skip,
         take: paginationLimit,
-        include:{contest:{select:{id:true, title:true, banner:true}}},
+        include: {
+            contest: {
+                select: {
+                    id: true,
+                    title: true,
+                    banner: true,
+                    description: true,
+                    startDate: true,
+                    endDate: true
+                }
+            },
+            photo: {
+                include: {
+                    photo: {
+                        select: {
+                            id: true,
+                            url: true,
+                            title: true,
+                            description: true
+                        }
+                    },
+                    _count: {
+                        select: { votes: true }
+                    }
+                }
+            },
+            participant: {
+                include: {
+                    photos: {
+                        include: {
+                            photo: {
+                                select: {
+                                    id: true,
+                                    url: true,
+                                    title: true,
+                                    description: true
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         orderBy: { createdAt: 'desc' }
     });
-    
-    const total = await prisma.contestAchievement.count({where:{participantId:contestParticipant.id}});
+
+    const total = await prisma.contestAchievement.count({ where });
     const meta = paginationHelper.getPaginationMetaData(page, paginationLimit, total);
-    
-    return { data: achievements };
+
+    const formattedData = achievements.map(ach => {
+        const contestData = ach.contest;
+        if (ach.category === PrizeType.TOP_PHOTOGRAPHER) {
+            const uploadedPhotos = ach.participant?.photos.map(p => ({
+                id: p.id,
+                title: p.title,
+                rank: p.rank,
+                photoId: p.photoId,
+                photoDetails: p.photo,
+                createdAt: p.createdAt
+            })) || [];
+
+            return {
+                id: ach.id,
+                category: ach.category,
+                contestId: ach.contestId,
+                participantId: ach.participantId,
+                createdAt: ach.createdAt,
+                updatedAt: ach.updatedAt,
+                contest: contestData,
+                uploadedPhotos
+            };
+        } else {
+            const photoDetails = ach.photo ? {
+                id: ach.photo.id,
+                title: ach.photo.title,
+                rank: ach.photo.rank,
+                photoId: ach.photo.photoId,
+                photoDetails: ach.photo.photo,
+                createdAt: ach.photo.createdAt
+            } : null;
+
+            const totalVotes = ach.photo?._count?.votes || 0;
+
+            return {
+                id: ach.id,
+                category: ach.category,
+                contestId: ach.contestId,
+                participantId: ach.participantId,
+                photoId: ach.photoId,
+                createdAt: ach.createdAt,
+                updatedAt: ach.updatedAt,
+                contest: contestData,
+                photo: photoDetails,
+                totalVotes
+            };
+        }
+    });
+
+    return { data: formattedData, meta };
 }
 
 
