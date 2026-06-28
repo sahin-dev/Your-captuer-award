@@ -119,71 +119,85 @@ agenda.define("contest:checkRecurring", async () => {
 
 async function scheduleContest(rContest: RecurringContest) {
 
-
     const previousOccurrence = rContest.recurring.previousOccurrence || rContest.createdAt;
     const nextOccurrence = rContest.recurring.nextOccurrence;
+    const now = new Date();
 
-    const totalTimeSpan = nextOccurrence.getTime() - previousOccurrence.getTime();
-    const passedTimeSpan = Math.abs(new Date().getTime() - previousOccurrence.getTime());
+    // Duration of each contest instance (derived from the template's own start/end)
+    const duration = rContest.endDate.getTime() - rContest.startDate.getTime();
 
-    const time_ratio = 0.8
+    // The end time of the last generated contest instance.
+    // previousOccurrence holds the startDate of the last created contest, so:
+    //   lastContestEndDate = previousOccurrence (startDate) + duration
+    const lastContestEndDate = new Date(previousOccurrence.getTime() + duration);
 
-
-    if (passedTimeSpan >= (totalTimeSpan * time_ratio)) {
-
-
-        let duration = rContest.endDate.getTime() - rContest.startDate.getTime()
-
-
-
-        const newContest = await prisma.contest.create({
-            data: {
-
-                title: rContest.title,
-                banner: rContest.banner,
-                maxUploads: rContest.maxUploads,
-                isMoneyContest: rContest.isMoneyContest,
-                maxPrize: rContest.maxPrize,
-                minPrize: rContest.minPrize,
-                level_requirements: rContest.level_requirements,
-                description: rContest.description,
-                creatorId: rContest.creatorId,
-                startDate: nextOccurrence,
-                endDate: new Date(nextOccurrence.getTime() + duration),
-                status: ContestStatus.UPCOMING,
-            }
-
-        })
-
-        const rules = JSON.parse(rContest.rules as string) as ContestRule[]
-
-        for (const rule of rules) {
-            await prisma.contestRule.create({ data: { contestId: newContest.id, name: rule.name, description: rule.description } })
-        }
-
-        const prizes = JSON.parse(rContest.prizes as string) as ContestPrize[]
-
-        for (const prize of prizes) {
-            await prisma.contestPrize.create({ data: { contestId: newContest.id, category: prize.category, key: prize.key, boost: prize.boost, swap: (prize.swap) } })
-        }
-
-        const next = calculateNextOccurance(newContest.startDate, rContest.recurring.recurringType)
-
-        await prisma.recurringContest.update({
-            where: { id: rContest.id },
-            data: {
-                recurring: {
-                    recurringType: rContest.recurring.recurringType,
-                    previousOccurrence: newContest.startDate,
-                    nextOccurrence: next
-                }
-            }
-        })
-
-        console.log(`Updated next occurrence for recurring contest ID: ${newContest.id}`);
+    // Guard 1: The last generated contest must have ended before we create the next one.
+    if (now < lastContestEndDate) {
+        console.log(`Recurring ${rContest.id}: last contest hasn't ended yet (ends ${lastContestEndDate.toISOString()}), skipping.`);
+        return;
     }
 
+    // Guard 2: Calculate 80% of the gap between lastContestEndDate and nextOccurrence.
+    // Only create the next upcoming contest once 80% of that gap has elapsed.
+    const gapSpan = nextOccurrence.getTime() - lastContestEndDate.getTime();
+    const elapsedSinceEnd = now.getTime() - lastContestEndDate.getTime();
+
+    const time_ratio = 0.8;
+
+    // If there is no gap (endDate >= nextOccurrence), fire immediately after end.
+    const threshold = gapSpan > 0 ? gapSpan * time_ratio : 0;
+
+    if (elapsedSinceEnd < threshold) {
+        console.log(`Recurring ${rContest.id}: waiting for 80% gap after last contest end. Elapsed: ${Math.round(elapsedSinceEnd / 60000)}min / ${Math.round(threshold / 60000)}min needed.`);
+        return;
+    }
+
+    const newContest = await prisma.contest.create({
+        data: {
+            title: rContest.title,
+            banner: rContest.banner,
+            maxUploads: rContest.maxUploads,
+            isMoneyContest: rContest.isMoneyContest,
+            maxPrize: rContest.maxPrize,
+            minPrize: rContest.minPrize,
+            level_requirements: rContest.level_requirements,
+            description: rContest.description,
+            creatorId: rContest.creatorId,
+            startDate: nextOccurrence,
+            endDate: new Date(nextOccurrence.getTime() + duration),
+            status: ContestStatus.UPCOMING,
+        }
+    })
+
+    const rules = JSON.parse(rContest.rules as string) as ContestRule[]
+
+    for (const rule of rules) {
+        await prisma.contestRule.create({ data: { contestId: newContest.id, name: rule.name, description: rule.description } })
+    }
+
+    const prizes = JSON.parse(rContest.prizes as string) as ContestPrize[]
+
+    for (const prize of prizes) {
+        await prisma.contestPrize.create({ data: { contestId: newContest.id, category: prize.category, key: prize.key, boost: prize.boost, swap: (prize.swap) } })
+    }
+
+    const next = calculateNextOccurance(newContest.startDate, rContest.recurring.recurringType)
+
+    await prisma.recurringContest.update({
+        where: { id: rContest.id },
+        data: {
+            recurring: {
+                recurringType: rContest.recurring.recurringType,
+                previousOccurrence: newContest.startDate,
+                nextOccurrence: next
+            }
+        }
+    })
+
+    console.log(`Recurring ${rContest.id}: created upcoming contest ${newContest.id} (starts ${nextOccurrence.toISOString()}). Next occurrence set to ${next.toISOString()}`);
+
 }
+
 
 
 //contest closed if the contest endtime has passed.

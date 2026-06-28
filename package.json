@@ -11,7 +11,9 @@
     "generate": "ts-node src/generate-module.js",
     "postinstall": "npx prisma db push --schema=./prisma",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "seed": "ts-node-dev src/seeder.ts"
+    "seed": "ts-node-dev src/seeder.ts",
+    "seed:bots": "ts-node-dev src/seeder.ts seed:bots",
+    "delete:bots": "ts-node-dev src/seeder.ts delete:bots"
   },
   "repository": {
     "type": "git",
