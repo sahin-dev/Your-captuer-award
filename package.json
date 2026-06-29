@@ -13,7 +13,9 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "seed": "ts-node-dev src/seeder.ts",
     "seed:bots": "ts-node-dev src/seeder.ts seed:bots",
-    "delete:bots": "ts-node-dev src/seeder.ts delete:bots"
+    "delete:bots": "ts-node-dev src/seeder.ts delete:bots",
+    "seed:levels": "ts-node-dev src/seeder.ts seed:levels",
+    "delete:levels": "ts-node-dev src/seeder.ts delete:levels"
   },
   "repository": {
     "type": "git",

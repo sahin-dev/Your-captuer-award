@@ -13,6 +13,7 @@ import bcrypt from 'bcryptjs'
 import { voteService } from "../Vote/vote.service"
 import { userStoreService } from "./UserStore/userStore.service"
 import { paginationHelper } from "../../../helpers/paginationHelper";
+import { userLevelService } from "../Level/userLevel.service"
 
 
 
@@ -269,46 +270,7 @@ const  getUserBySocialId = async (socialProvider:string, providerId:string)=>{
 }
 
 const getUserCurrentLevel = async (userId:string)=>{
-
-    const levels = await prisma.level.findMany()
-
-    const totalPromotedVotes = await voteService.getTotalPromotedVotes(userId)
-    // const totalOrganicVotes = await voteService.getTotalOrganicVotes(userId)
-    const totalOrganicVotes = 100
-    let userLevels:{name:string,percentage:number, order:number}[] = []
-     let satisfied = true
-    levels.forEach(level => {
-       
-        let percentage = 0
-        level.requirements.forEach(requirement => {
-            
-            
-            if ( (requirement.title === 'votes')){
-                percentage = Math.min((100 * (totalOrganicVotes)) / requirement.required, 50)
-                
-            }
-            else if ((requirement.title === 'promoted_votes')){
-                percentage += Math.min((100 * (totalPromotedVotes)) / requirement.required, 50)
-            }
-    
-            
-        })
-        if(percentage >= 100){
-                
-            userLevels.push({name:level.levelName,percentage,order:level.level})
-        }else if(satisfied) {
-            userLevels.push({name:level.levelName,percentage,order:level.level})
-            satisfied = false
-        }else
-        
-            userLevels.push({name:level.levelName,percentage:0,order:level.level})
-
-       
-    })
-    
-
-    return userLevels
-
+    return await userLevelService.getUserLevelInfo(userId)
 }
 
 
@@ -328,7 +290,10 @@ const checkLevelRequirement = async ()=>{
 }
 
 const checkUserLevel = async (userId:string)=> {
-
+    const user = await prisma.user.findUnique({where:{id:userId}, select:{totalVotes:true}})
+    if (user) {
+        await userLevelService.checkAndUpdateUserLevel(userId)
+    }
 }
 
 const getPhototAchievements = async (photoId:string) => {

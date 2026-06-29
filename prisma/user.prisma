@@ -22,6 +22,7 @@ model User {
   isDeleted         Boolean               @default(false)
   currentLevel       Int @default(-1)
   voting_power       Int @default(1)
+  totalVotes         Int @default(0)
   purchased_plan    SubscriptionPlanEnum?
   level              UserLevel?
   otps               Otp?
@@ -183,6 +184,7 @@ model Level {
   id         String @id @default(auto()) @map("_id") @db.ObjectId
   level       Int
   levelName   LevelName
+  order       Int @default(0)
   requirements    LevelRequirement[]
   userLevel UserLevel[]
 
@@ -208,13 +210,18 @@ model Level {
 
 
 type LevelRequirement {
-  title    String
+  title    LevelRequirementTitle
   required    Int
 }
 
 type Badge {
   type       String
   param      String
+}
+
+enum LevelRequirementTitle {
+  votes
+  top_photographer
 }
 
 enum LevelName {

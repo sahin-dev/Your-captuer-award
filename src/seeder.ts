@@ -1,5 +1,5 @@
 import bcrypt from 'bcryptjs'
-import { PrismaClient, UserRole } from "./prismaClient"
+import { LevelName, LevelRequirementTitle, PrismaClient, UserRole } from "./prismaClient"
 
 class DatabaseSeeder {
 
@@ -151,6 +151,73 @@ class DatabaseSeeder {
         }
         this.client.user.deleteMany()
     }
+
+    async seedLevels() {
+        console.log("Seeding levels...")
+        if (!this.client) {
+            throw new Error("Client not initialized")
+        }
+
+        const levels: { order: number; levelName: LevelName; votesRequired: number }[] = [
+            { order: 1, levelName: LevelName.APPRENTICE,  votesRequired: 0    },
+            { order: 2, levelName: LevelName.STUDENT,     votesRequired: 50   },
+            { order: 3, levelName: LevelName.TRAINED,     votesRequired: 150  },
+            { order: 4, levelName: LevelName.TALENTED,    votesRequired: 350  },
+            { order: 5, levelName: LevelName.CONTENDER,   votesRequired: 700  },
+            { order: 6, levelName: LevelName.VIRTUOSO,    votesRequired: 1200 },
+            { order: 7, levelName: LevelName.LEADER,      votesRequired: 2000 },
+            { order: 8, levelName: LevelName.AVANTGARDE,  votesRequired: 3500 },
+            { order: 9, levelName: LevelName.PRO,         votesRequired: 5000 },
+        ]
+
+        let created = 0
+        let skipped = 0
+
+        for (const lvl of levels) {
+            const existing = await this.client.level.findFirst({
+                where: { levelName: lvl.levelName }
+            })
+
+            if (existing) {
+                console.log(`  ↳ Skipping ${lvl.levelName} — already exists`)
+                skipped++
+                continue
+            }
+
+            await this.client.level.create({
+                data: {
+                    level: lvl.order,
+                    order: lvl.order,
+                    levelName: lvl.levelName,
+                    requirements: [
+                        {
+                            title: LevelRequirementTitle.votes,
+                            required: lvl.votesRequired
+                        }
+                    ]
+                }
+            })
+
+            console.log(`  ✔ Created ${lvl.levelName} (order: ${lvl.order}, votes: ${lvl.votesRequired})`)
+            created++
+        }
+
+        console.log(`\nLevels seeded: ${created} created, ${skipped} skipped.`)
+    }
+
+    async deleteLevels() {
+        console.log("Deleting all levels...")
+        if (!this.client) {
+            throw new Error("Client not initialized")
+        }
+
+        // Delete dependent UserLevel records first
+        const deletedUserLevels = await this.client.userLevel.deleteMany({})
+        const deletedLevels = await this.client.level.deleteMany({})
+
+        console.log(`Successfully deleted ${deletedLevels.count} levels and ${deletedUserLevels.count} user level records.`)
+    }
+
     destroyClient(){
         this.client?.$disconnect()
     }
@@ -181,8 +248,14 @@ async function SeederCLI (){
             case "delete:bots":
                 await seeder.deleteBots()
                 break
+            case "seed:levels":
+                await seeder.seedLevels()
+                break
+            case "delete:levels":
+                await seeder.deleteLevels()
+                break
             default:
-                console.log("Unknown command. Valid options: -reset, create:admin, seed:bots, delete:bots")
+                console.log("Unknown command. Valid options: -reset, create:admin, seed:bots, delete:bots, seed:levels, delete:levels")
         }
     } catch (error) {
         console.error("Error during execution:", error)

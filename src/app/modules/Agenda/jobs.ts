@@ -8,6 +8,7 @@ import { ContestRule } from '../Contest/ContestRules/contestRules.type';
 import { ContestPrize } from '../Contest/ContestPrizes/contestPrize.type';
 import globalEventHandler from '../../event/eventEmitter';
 import Events from '../../event/events.constant';
+import { userLevelService } from '../Level/userLevel.service';
 
 
 
@@ -237,6 +238,14 @@ agenda.define("contest:watcher", async (job: Job) => {
             console.log(`Contest ${contestId} - All active team matches ended and moved to history`)
         } catch (err) {
             console.log(`Contest ${contestId} - Error awarding teams or moving matches to history:`, err)
+        }
+
+        // Calculate participant total votes and update global user levels
+        try {
+            await userLevelService.updateLevelsForContest(contestId)
+            console.log(`Contest ${contestId} - Participant global user levels updated`)
+        } catch (err) {
+            console.log(`Contest ${contestId} - Error updating global user levels:`, err)
         }
 
         console.log(`Contest ${contestId} awards completed successfully`)

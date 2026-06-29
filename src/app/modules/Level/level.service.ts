@@ -1,5 +1,5 @@
 import ApiError from "../../../errors/ApiError"
-import { LevelName, LevelRequirement } from "../../../prismaClient"
+import { LevelName, LevelRequirement, LevelRequirementTitle } from "../../../prismaClient"
 import { paginationHelper } from "../../../helpers/paginationHelper"
 import prisma from "../../../shared/prisma"
 import httpStatus from 'http-status'
@@ -20,12 +20,12 @@ import httpStatus from 'http-status'
 
 const addLevel = async (order:number, name:LevelName, requirements:LevelRequirement[])=>{
 
-    const level = await prisma.level.create({data:{level:order, levelName:name, requirements}})
+    const level = await prisma.level.create({data:{level:order, order:order, levelName:name, requirements}})
 
     return level
 }   
 
-const editLevel = async (levelId:string, newRequirements:{title:string, required:number}[])=>{
+const editLevel = async (levelId:string, newRequirements:{title:LevelRequirementTitle, required:number}[])=>{
     const level = await prisma.level.findUnique({where:{id:levelId}})
     if(!level){
         throw new ApiError(httpStatus.NOT_FOUND, "level not found")
@@ -52,7 +52,7 @@ const deleteLevl  =async (levelId:string)=> {
 const getLevels = async (page: number = 1, limit: number = 10)=>{
     const { skip, limit: paginationLimit } = paginationHelper.calculatePagination({ page, limit });
     
-    const levels = await prisma.level.findMany({skip, take: paginationLimit, orderBy: { level: 'asc' }})
+    const levels = await prisma.level.findMany({skip, take: paginationLimit, orderBy: { order: 'asc' }})
 
     const total = await prisma.level.count();
     const paginationMetaData = paginationHelper.getPaginationMetaData(page, paginationLimit, total);
