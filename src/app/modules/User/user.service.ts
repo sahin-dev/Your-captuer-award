@@ -279,10 +279,44 @@ const attachStoreToUser = async (userId:string)=>{
 
 }
 
-const searchUserByUserName = async (queryString:string) => {
-    const user = await prisma.user.findMany({where:{OR:[{username:{contains:queryString}}, {fullName:{contains:queryString}}]}, select:{id:true, avatar:true, firstName:true, username:true, lastName:true, fullName:true}})
+const searchUserByUserName = async (queryString:string, page: number = 1, limit: number = 20) => {
+    const { skip, limit: paginationLimit } = paginationHelper.calculatePagination({ page, limit });
 
-    return user
+    const whereCondition = {
+        OR: [
+            { username: { contains: queryString, mode: 'insensitive' as const } },
+            { fullName: { contains: queryString, mode: 'insensitive' as const } }
+        ]
+    };
+
+    const total = await prisma.user.count({ where: whereCondition });
+    const users = await prisma.user.findMany({
+        where: whereCondition,
+        select: {
+            id: true,
+            avatar: true,
+            firstName: true,
+            username: true,
+            lastName: true,
+            fullName: true,
+            currentLevel: true,
+            level: {
+                select: {
+                    level: {
+                        select: {
+                            levelName: true
+                        }
+                    }
+                }
+            }
+        },
+        take: paginationLimit,
+        skip
+    });
+
+    const meta = paginationHelper.getPaginationMetaData(page, paginationLimit, total);
+
+    return { data: users, meta };
 }
 
 const checkLevelRequirement = async ()=>{
