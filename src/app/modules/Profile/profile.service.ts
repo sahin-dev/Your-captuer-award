@@ -204,7 +204,7 @@ const getStates = async (userId: string) => {
         throw new ApiError(httpStatus.NOT_FOUND, "user not found")
     }
 
-    const userStates = await prisma.user.findUnique({ where: { id: userId }, select: { _count: { select: { likes: { where: { photo: { userId } } }, userPhotos: true, } } } })
+    const userStates = await prisma.user.findUnique({ where: { id: userId }, select: { _count: { select: { likes: { where: { providerId: userId } }, userPhotos: true, } } } })
     const achievementsCount = await achievementService.getAchievementCount(userId)
     const followerCount = await followService.getFollowerCount(userId)
     const followingCount = await followService.getFollowingCount(userId)
