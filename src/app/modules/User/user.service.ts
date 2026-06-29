@@ -17,200 +17,204 @@ import { userLevelService } from "../Level/userLevel.service"
 
 
 
-const getUsers = async (page: number = 1, limit: number = 20)=>{
+const getUsers = async (page: number = 1, limit: number = 20) => {
     const { skip, limit: paginationLimit } = paginationHelper.calculatePagination({ page, limit });
-    
+
     const totalUsers = await prisma.user.count()
     const users = await prisma.user.findMany({
-        omit:{password:true, createdAt:true, updatedAt:true,accessToken:true}, 
-        take: paginationLimit, 
+        omit: { password: true, createdAt: true, updatedAt: true, accessToken: true },
+        take: paginationLimit,
         skip
     })
 
     const meta = paginationHelper.getPaginationMetaData(page, paginationLimit, totalUsers);
 
-    return {data: users, meta}
+    return { data: users, meta }
 }
 
 
-const updateProfilePhoto = async (userId:string, file: Express.Multer.File)=>{
-    const user = await prisma.user.findUnique({where:{id:userId}})
+const updateProfilePhoto = async (userId: string, file: Express.Multer.File) => {
+    const user = await prisma.user.findUnique({ where: { id: userId } })
 
-    if(!user){
+    if (!user) {
         throw new ApiError(httpstatus.NOT_FOUND, "user not found")
     }
-    if(!file){
+    if (!file) {
         throw new ApiError(httpstatus.BAD_REQUEST, "avatar photo is required")
     }
 
     let url = await fileUploader.uploadToFilesystem(file)
 
-    await prisma.user.update({where:{id:userId}, data:{avatar:url.Location}})
+    await prisma.user.update({ where: { id: userId }, data: { avatar: url.Location } })
 
     return "Cover photo updated!"
 }
 
 
-const updateCoverPhoto = async (userId:string, file: Express.Multer.File)=>{
-    const user = await prisma.user.findUnique({where:{id:userId}})
+const updateCoverPhoto = async (userId: string, file: Express.Multer.File) => {
+    const user = await prisma.user.findUnique({ where: { id: userId } })
 
-    if(!user){
+    if (!user) {
         throw new ApiError(httpstatus.NOT_FOUND, "user not found")
     }
-    if(!file){
+    if (!file) {
         throw new ApiError(httpstatus.BAD_REQUEST, "cover photo is required")
     }
 
     let url = await fileUploader.uploadToFilesystem(file)
 
-    await prisma.user.update({where:{id:userId}, data:{cover:url.Location}})
+    await prisma.user.update({ where: { id: userId }, data: { cover: url.Location } })
 
     return "Cover photo updated!"
 }
 
 
 
-const updateUser = async (adminId:string,userId:string,userData:userAdminUpdateData)=>{
-    const admin = await prisma.user.findUnique({where:{id:adminId}})
+const updateUser = async (adminId: string, userId: string, userData: userAdminUpdateData) => {
+    const admin = await prisma.user.findUnique({ where: { id: adminId } })
 
-    if(!admin || (admin.role !== UserRole.ADMIN)){
+    if (!admin || (admin.role !== UserRole.ADMIN)) {
         throw new ApiError(httpstatus.FORBIDDEN, "you can not update the profile")
     }
 
-    const user = await prisma.user.findUnique({where:{id:userId}})
+    const user = await prisma.user.findUnique({ where: { id: userId } })
 
-    if(!user){
+    if (!user) {
         throw new ApiError(httpstatus.NOT_FOUND, "User not found")
     }
 
-    const updatedUser = await prisma.user.update({where:{id:user.id}, data:{
-        firstName: userData.firstName as string,
+    const updatedUser = await prisma.user.update({
+        where: { id: user.id }, data: {
+            firstName: userData.firstName as string,
 
-        lastName: userData.lastName as string,
-        location: userData.location as string,
-    }})
+            lastName: userData.lastName as string,
+            location: userData.location as string,
+        }
+    })
 
     return UserDto(updatedUser)
 }
 
 
-const updateProfile = async (userId:string,userData:userUpdateData)=>{
+const updateProfile = async (userId: string, userData: userUpdateData) => {
 
 
-    const user = await prisma.user.findUnique({where:{id:userId}})
-    
-    if(!user){
+    const user = await prisma.user.findUnique({ where: { id: userId } })
+
+    if (!user) {
         throw new ApiError(httpstatus.NOT_FOUND, "User not found")
     }
 
 
-    const updatedUser = await prisma.user.update({where:{id:user.id}, data:{
-        firstName:userData.firstName,
-        lastName:userData.lastName,
-        location:userData.location,
-    }})
+    const updatedUser = await prisma.user.update({
+        where: { id: user.id }, data: {
+            firstName: userData.firstName,
+            lastName: userData.lastName,
+            location: userData.location,
+        }
+    })
 
     return UserDto(updatedUser)
 }
 
-const getUserDetails = async (userId:string)=>{
+const getUserDetails = async (userId: string) => {
 
-    const user = await prisma.user.findUnique({where:{id:userId},include:{store:{select:{key:true, boost:true, swap:true}}}, omit:{password:true, createdAt:true, updatedAt:true,accessToken:true}})
-    if(!user){
+    const user = await prisma.user.findUnique({ where: { id: userId }, include: { store: { select: { key: true, boost: true, swap: true } } }, omit: { password: true, createdAt: true, updatedAt: true, accessToken: true } })
+    if (!user) {
         throw new ApiError(httpstatus.NOT_FOUND, "User not found")
     }
 
     return user
 }
 
-const changePassword = async (userId:string,oldPassword:string, newPassword:string)=>{
-    const user =  await prisma.user.findUnique({where:{id:userId}})
-    if(!user){
-        throw new ApiError(httpstatus.NOT_FOUND,"User not found");
+const changePassword = async (userId: string, oldPassword: string, newPassword: string) => {
+    const user = await prisma.user.findUnique({ where: { id: userId } })
+    if (!user) {
+        throw new ApiError(httpstatus.NOT_FOUND, "User not found");
     }
     const oldPasswordMatched = await bcrypt.compare(oldPassword, user.password as string)
-    if(!oldPasswordMatched){
+    if (!oldPasswordMatched) {
         throw new ApiError(httpstatus.BAD_REQUEST, "Password does not mathced!")
     }
 
     const hashedPassword = await hashing.hashPassowrd(newPassword)
-    await prisma.user.update({where:{id:userId}, data:{password:hashedPassword}})
+    await prisma.user.update({ where: { id: userId }, data: { password: hashedPassword } })
 
     return "Password updated successfully";
 
 }
 
-const resetPassword = async (email:string,passwordData:IPasswordUpdate, token:string)=>{
+const resetPassword = async (email: string, passwordData: IPasswordUpdate, token: string) => {
 
-    
-    const user = await prisma.user.findFirst({where:{email}})
-    if(!user){
+
+    const user = await prisma.user.findFirst({ where: { email } })
+    if (!user) {
         throw new ApiError(httpstatus.NOT_FOUND, 'user not found')
     }
-    const otp = await prisma.otp.findFirst({where:{id:token, otpStatus:OtpStatus.VALIDATED}})
-    if (!otp){
+    const otp = await prisma.otp.findFirst({ where: { id: token, otpStatus: OtpStatus.VALIDATED } })
+    if (!otp) {
         throw new ApiError(httpstatus.BAD_REQUEST, "Sorry, password reset request is invalid")
     }
-    
-    if (passwordData.password !== passwordData.confirmPassword){
+
+    if (passwordData.password !== passwordData.confirmPassword) {
         throw new ApiError(httpstatus.BAD_REQUEST, "Password does not matched")
-        
+
     }
     // crypt.hash(userData.password, config.bcrypt_salt_rounds as string)
     const hashedPassword = await hashing.hashPassowrd(passwordData.password)
 
-    const updatedUser = await prisma.user.update({where:{id:user.id}, data:{password:hashedPassword}})
-    await prisma.otp.delete({where:{id:otp.id}})
+    const updatedUser = await prisma.user.update({ where: { id: user.id }, data: { password: hashedPassword } })
+    await prisma.otp.delete({ where: { id: otp.id } })
 
     return UserDto(updatedUser)
 }
 
-const uploadAvatar = async (userId:string,file:Express.Multer.File)=>{
+const uploadAvatar = async (userId: string, file: Express.Multer.File) => {
 
-    if (!file){
+    if (!file) {
         throw new ApiError(httpstatus.BAD_REQUEST, "File is required")
     }
 
     const uploadedFile = await fileUploader.uploadToFilesystem(file)
 
-    await prisma.user.update({where:{id:userId}, data:{avatar:uploadedFile.Location}})
+    await prisma.user.update({ where: { id: userId }, data: { avatar: uploadedFile.Location } })
 
     return "avatar updated successfully"
 
 }
 
 
-const uploadCover = async (userId:string,file:Express.Multer.File)=>{
+const uploadCover = async (userId: string, file: Express.Multer.File) => {
 
-    if (!file){
+    if (!file) {
         throw new ApiError(httpstatus.BAD_REQUEST, "File is required")
     }
 
     const uploadedFile = await fileUploader.uploadToFilesystem(file)
 
-    await prisma.user.update({where:{id:userId}, data:{cover:uploadedFile.Location}})
+    await prisma.user.update({ where: { id: userId }, data: { cover: uploadedFile.Location } })
 
     return "cover updated successfully"
 
 }
 
-const forgetPassword = async ( email:string)=>{
-    const user = await prisma.user.findFirst({where:{email}})
+const forgetPassword = async (email: string) => {
+    const user = await prisma.user.findFirst({ where: { email } })
 
-    if(!user){
+    if (!user) {
         throw new ApiError(httpstatus.NOT_FOUND, "User not found with this email")
     }
 
-    const existingOtp = await prisma.otp.findUnique({where:{userId:user.id}})
+    const existingOtp = await prisma.otp.findUnique({ where: { userId: user.id } })
     const otp = generateOtp()
     const expires_in = new Date(Date.now() + 5 * 60 * 1000)
 
-    if(existingOtp){
-        await prisma.otp.update({where:{userId:user.id}, data:{code:otp,expires_in, expiresAt:expires_in}})
-    }else{
-        await prisma.otp.create({data:{code:otp, expires_in,userId:user.id, expiresAt:expires_in}})
+    if (existingOtp) {
+        await prisma.otp.update({ where: { userId: user.id }, data: { code: otp, expires_in, expiresAt: expires_in } })
+    } else {
+        await prisma.otp.create({ data: { code: otp, expires_in, userId: user.id, expiresAt: expires_in } })
     }
-    
+
     const html = `<div class="email-body">
       <h2>Password Reset</h2>
       <p>We got a request to reset your password</p>
@@ -219,73 +223,74 @@ const forgetPassword = async ( email:string)=>{
       <p>If you did not request this, please contact our support team immediately.</p>
     </div>`
 
-    mailer(email,html, "Your Capture Award")
-    
+    mailer(email, html, "Your Capture Award")
+
     return `Otp send successfully `
 }
 
-const verifyOtp = async (email:string, otp:string)=>{
-    const user = await prisma.user.findUnique({where:{email}})
+const verifyOtp = async (email: string, otp: string) => {
+    const user = await prisma.user.findUnique({ where: { email } })
 
-    if (!user){
+    if (!user) {
         throw new ApiError(httpstatus.NOT_FOUND, "Usre not found")
     }
 
-    const existingOtp = await prisma.otp.findUnique({where:{userId:user.id}})
+    const existingOtp = await prisma.otp.findUnique({ where: { userId: user.id } })
 
-    if(!existingOtp){
-        throw new ApiError(httpstatus.BAD_REQUEST,"Otp does not exist")
+    if (!existingOtp) {
+        throw new ApiError(httpstatus.BAD_REQUEST, "Otp does not exist")
     }
- 
- 
-    if (existingOtp.code !== otp ){
+
+
+    if (existingOtp.code !== otp) {
         throw new ApiError(httpstatus.BAD_REQUEST, 'Otp incorrect')
     }
 
-    if (existingOtp.expiresAt <= new Date()){
-         await prisma.otp.update({where:{id:existingOtp?.id}, data:{expiresAt:new Date(Date.now())}})
+    if (existingOtp.expiresAt <= new Date()) {
+        await prisma.otp.update({ where: { id: existingOtp?.id }, data: { expiresAt: new Date(Date.now()) } })
         throw new ApiError(httpstatus.BAD_REQUEST, "Otp expired")
-       
+
     }
 
-    await prisma.otp.update({where:{id:existingOtp.id}, data:{otpStatus:OtpStatus.VALIDATED}})
+    await prisma.otp.update({ where: { id: existingOtp.id }, data: { otpStatus: OtpStatus.VALIDATED } })
 
-   return {reset_password_token: existingOtp.id}
-     
+    return { reset_password_token: existingOtp.id }
+
 }
 
-const getUserByEmail = async (socialProvider:string, email:string)=>{
-    const user = await prisma.user.findFirst({where:{OR:[{socialProvider,email}, {email}]}})
+const getUserByEmail = async (socialProvider: string, email: string) => {
+    const user = await prisma.user.findFirst({ where: { OR: [{ socialProvider, email }, { email }] } })
 
     return user
 }
 
-const  getUserBySocialId = async (socialProvider:string, providerId:string)=>{
-    if(socialProvider !== "facebook"){
+const getUserBySocialId = async (socialProvider: string, providerId: string) => {
+    if (socialProvider !== "facebook") {
         throw new Error("Only facebook allowed to fetch user by unique id")
     }
-    const user = await prisma.user.findFirst({where:{socialProvider, socialId:providerId}})
+    const user = await prisma.user.findFirst({ where: { socialProvider, socialId: providerId } })
 
     return user
 }
 
-const getUserCurrentLevel = async (userId:string)=>{
+const getUserCurrentLevel = async (userId: string) => {
     return await userLevelService.getUserLevelInfo(userId)
 }
 
 
-const attachStoreToUser = async (userId:string)=>{
-    const store = await userStoreService.addStoreData(userId, {key:0, boost:0, swap:0})
+const attachStoreToUser = async (userId: string) => {
+    const store = await userStoreService.addStoreData(userId, { key: 0, boost: 0, swap: 0 })
 
 }
 
-const searchUserByUserName = async (queryString:string, page: number = 1, limit: number = 20) => {
+const searchUserByUserName = async (queryString: string, page: number = 1, limit: number = 20) => {
     const { skip, limit: paginationLimit } = paginationHelper.calculatePagination({ page, limit });
 
     const whereCondition = {
         OR: [
             { username: { contains: queryString, mode: 'insensitive' as const } },
-            { fullName: { contains: queryString, mode: 'insensitive' as const } }
+            { fullName: { contains: queryString, mode: 'insensitive' as const } },
+            { email: { contains: queryString, mode: 'insensitive' as const } }
         ]
     };
 
@@ -319,34 +324,34 @@ const searchUserByUserName = async (queryString:string, page: number = 1, limit:
     return { data: users, meta };
 }
 
-const checkLevelRequirement = async ()=>{
+const checkLevelRequirement = async () => {
 
 }
 
-const checkUserLevel = async (userId:string)=> {
-    const user = await prisma.user.findUnique({where:{id:userId}, select:{totalVotes:true}})
+const checkUserLevel = async (userId: string) => {
+    const user = await prisma.user.findUnique({ where: { id: userId }, select: { totalVotes: true } })
     if (user) {
         await userLevelService.checkAndUpdateUserLevel(userId)
     }
 }
 
-const getPhototAchievements = async (photoId:string) => {
-    const achievements = await prisma.contestAchievement.findMany({where:{photo:{photoId}}})
+const getPhototAchievements = async (photoId: string) => {
+    const achievements = await prisma.contestAchievement.findMany({ where: { photo: { photoId } } })
 
     return achievements
 }
 
-const deleteAccount = async (userId:string, password:string) => {
-    const user = await prisma.user.findUnique({where:{id:userId}})
+const deleteAccount = async (userId: string, password: string) => {
+    const user = await prisma.user.findUnique({ where: { id: userId } })
 
-    if (!user){
+    if (!user) {
         throw new ApiError(httpstatus.NOT_FOUND, "User not found")
     }
     const passwordMatched = await bcrypt.compare(password, user.password as string)
-    if (!passwordMatched){
+    if (!passwordMatched) {
         throw new ApiError(httpstatus.BAD_REQUEST, "Password does not matched")
     }
-    await prisma.user.update({where:{id:userId}, data:{isDeleted:true}})
+    await prisma.user.update({ where: { id: userId }, data: { isDeleted: true } })
 
     return "Account deleted successfully"
 }
@@ -369,5 +374,5 @@ export const userService = {
     searchUserByUserName,
     getPhototAchievements,
     deleteAccount,
-    
+
 }
