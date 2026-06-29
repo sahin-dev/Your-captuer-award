@@ -321,7 +321,7 @@ const searchUserByUserName = async (queryString: string, page: number = 1, limit
 
     const meta = paginationHelper.getPaginationMetaData(page, paginationLimit, total);
 
-    return { data: users, meta };
+    return { ...users, meta };
 }
 
 const checkLevelRequirement = async () => {

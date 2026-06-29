@@ -102,7 +102,7 @@ export const getAvailablePhotoForContest = async (userId: string, contestId: str
         throw new ApiError(httpStatus.NOT_FOUND, "user does not exist!")
     }
 
-    const photos = await prisma.userPhoto.findMany({ where: { userId, contestUpload: { none: { contestId } } }, omit: { states: true } })
+    const photos = await prisma.userPhoto.findMany({ where: { userId, contestUpload: { none: { contestId } } }, omit: { states: true }, include: { _count: { select: { likes: true } } } })
 
     return photos
 }
@@ -188,7 +188,7 @@ const sortPhotos = (photos: any[], sortBy: string) => {
             photos.sort((a, b) => b.views - a.views);
             break;
         case 'likes':
-            photos.sort((a, b) => (b._count.likes || 0) - (a._count.likes || 0));
+            photos.sort((a, b) => (b.likes || 0) - (a.likes || 0));
             break;
 
         default:
@@ -208,8 +208,9 @@ const getStates = async (userId: string) => {
     const achievementsCount = await achievementService.getAchievementCount(userId)
     const followerCount = await followService.getFollowerCount(userId)
     const followingCount = await followService.getFollowingCount(userId)
+    const likedPhotosCount = await prisma.like.count({ where: { providerId: userId } })
 
-    return { ...userStates?._count, follower: followerCount, following: followingCount, achievements: (achievementsCount.top_photo + achievementsCount.top_photographer) }
+    return { ...userStates?._count, liked: likedPhotosCount, follower: followerCount, following: followingCount, achievements: (achievementsCount.top_photo + achievementsCount.top_photographer) }
 }
 
 const getUserProfileDetails = async (userId: string, viewerId?: string) => {
