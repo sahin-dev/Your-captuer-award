@@ -42,6 +42,14 @@ class DatabaseSeeder {
         if (!this.client) {
             throw new Error("Client not initialized")
         }
+
+        // Find the APPRENTICE level once — all bots start at level 1
+        const apprenticeLevel = await this.client.level.findFirst({
+            where: { levelName: LevelName.APPRENTICE }
+        })
+        if (!apprenticeLevel) {
+            console.warn("[seedBots] APPRENTICE level not found — run `npm run seed:levels` first. Bots will be created without a level.")
+        }
         const password = "botpassword123"
         const hashedPassword = await bcrypt.hash(password, 12)
 
@@ -91,6 +99,20 @@ class DatabaseSeeder {
                                 swap: 0
                             }
                         })
+
+                        // Assign APPRENTICE level — mirrors what level.event.ts does for real users
+                        if (apprenticeLevel) {
+                            await this.client?.userLevel.upsert({
+                                where:  { userId: user.id },
+                                create: { userId: user.id, levelId: apprenticeLevel.id },
+                                update: { levelId: apprenticeLevel.id }
+                            })
+                            await this.client?.user.update({
+                                where: { id: user.id },
+                                data:  { currentLevel: apprenticeLevel.level }
+                            })
+                        }
+
                         createdCount++
                     }
                 })()

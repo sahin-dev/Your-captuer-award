@@ -57,7 +57,7 @@ model UserStore {
   boost    Int     @default(0)
   swap   Int     @default(0)
 
-  user    User?      @relation(fields: [userId], references: [id])
+  user    User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
@@ -76,7 +76,7 @@ model UserPhoto {
   description   String?
   adult         Boolean   @default(false)
 
-  user          User           @relation(fields: [userId], references: [id])
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   contestUpload ContestPhoto[]
   likes         Like[]
 
@@ -88,16 +88,15 @@ model UserPhoto {
 
 model Like {
   id         String @id @default(auto()) @map("_id") @db.ObjectId
-  providerId String @db.ObjectId
+  providerId String? @db.ObjectId
   photoId    String @db.ObjectId
-
-  provider User      @relation(fields: [providerId], references: [id])
+ 
+  provider User?     @relation(fields: [providerId], references: [id], onDelete: SetNull)
   photo    UserPhoto @relation(fields: [photoId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([photoId, providerId])
   @@map("likes")
 }
 
@@ -107,7 +106,7 @@ model Otp {
   expires_in DateTime
   userId     String   @unique @db.ObjectId
 
-  user      User      @relation(fields: [userId], references: [id])
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   otpStatus OtpStatus @default(CREATED)
 
   createdAt DateTime @default(now())
@@ -152,13 +151,13 @@ model Follow {
 
 model Vote {
   id         String @id @default(auto()) @map("_id") @db.ObjectId
-  providerId String @db.ObjectId
+  providerId String? @db.ObjectId
   photoId    String @db.ObjectId
   contestId  String @db.ObjectId
   type       VoteType
   power      Int @default(1)
 
-  provider User         @relation(fields: [providerId], references: [id])
+  provider User?         @relation(fields: [providerId], references: [id], onDelete: SetNull)
   photo    ContestPhoto @relation(fields: [photoId], references: [id])
   contest  Contest      @relation(fields: [contestId], references: [id])
 
@@ -174,7 +173,7 @@ model UserLevel {
   levelId   String @db.ObjectId
 
   level     Level     @relation(references: [id], fields: [levelId])
-  user      User?     @relation(references: [id], fields: [userId])
+  user      User?     @relation(references: [id], fields: [userId], onDelete: Cascade)
   @@map("user_levels")
 }
 
