@@ -1150,8 +1150,12 @@ const uploadPhotoToContest = async (contestId: string, userId: string, photoIds:
                 }
 
                 //add watcher for exposure bonus
-
-                await createExposureWatcher(contestParticipant!.id)
+                try{
+                     await createExposureWatcher(contestParticipant!.id)
+                }catch(err){
+                    console.log("exposure watcher creation failed for participant", contestParticipant!.id, err)
+                }
+               
             } catch (err: any) {
                 if (err.code === 'P2002' || (err.message && err.message.includes('Unique constraint'))) {
                     contestParticipant = await tx.contestParticipant.findUnique({
