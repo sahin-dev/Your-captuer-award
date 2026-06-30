@@ -257,6 +257,7 @@ agenda.define("contest:watcher", async (job: Job) => {
 
 
 agenda.define("exposure:watcher", async (job: Job) => {
+    
     const rawId = (job.attrs.data as { contestParticipantId?: unknown })?.contestParticipantId
     let contestParticipantId = ''
 
@@ -279,6 +280,8 @@ agenda.define("exposure:watcher", async (job: Job) => {
         await job.remove()
         return
     }
+
+    console.log(`Exposure watcher executing`, { contestParticipantId, type: typeof contestParticipantId, rawData: job.attrs.data })
 
     const participant = await prisma.contestParticipant.findUnique({ where: { id: contestParticipantId }, include: { contest: true } })
 

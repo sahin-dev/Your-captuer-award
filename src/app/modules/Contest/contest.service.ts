@@ -1134,9 +1134,12 @@ const uploadPhotoToContest = async (contestId: string, userId: string, photoIds:
         throw new ApiError(httpstatus.NOT_FOUND, "user not found")
     }
 
+    let contestParticipant: ContestParticipant | null = null
+    let shouldCreateWatcher = false
+
     const images = await prisma.$transaction(async tx => {
 
-        let contestParticipant: ContestParticipant | null = await tx.contestParticipant.findUnique({ where: { contestId_userId: { contestId, userId } } })
+        contestParticipant = await tx.contestParticipant.findUnique({ where: { contestId_userId: { contestId, userId } } })
 
         if (!contestParticipant) {
             try {
@@ -1149,12 +1152,7 @@ const uploadPhotoToContest = async (contestId: string, userId: string, photoIds:
                     })
                 }
 
-                //add watcher for exposure bonus
-                try{
-                     await createExposureWatcher(contestParticipant!.id)
-                }catch(err){
-                    console.log("exposure watcher creation failed for participant", contestParticipant!.id, err)
-                }
+                shouldCreateWatcher = true
                
             } catch (err: any) {
                 if (err.code === 'P2002' || (err.message && err.message.includes('Unique constraint'))) {
@@ -1277,6 +1275,16 @@ const uploadPhotoToContest = async (contestId: string, userId: string, photoIds:
 
         return images
     })
+
+    })
+
+    if (shouldCreateWatcher && contestParticipant?.id) {
+        try {
+            await createExposureWatcher(contestParticipant.id)
+        } catch (err) {
+            console.log("exposure watcher creation failed after transaction commit for participant", contestParticipant.id, err)
+        }
+    }
 
     return images
 
