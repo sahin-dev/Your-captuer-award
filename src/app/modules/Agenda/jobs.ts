@@ -293,7 +293,14 @@ agenda.define("exposure:watcher", async (job: Job) => {
 
 
 agenda.define("promotion:remove", async (job: Job) => {
-    const { contestPhotoId } = job.attrs.data as { contestPhotoId: string };
+    const { contestPhotoId } = job.attrs.data as { contestPhotoId?: string };
+
+    if (!contestPhotoId) {
+        console.log(`promotion:remove job missing contestPhotoId, removing job`);
+        await job.remove();
+        return;
+    }
+
     const contestPhoto = await prisma.contestPhoto.findUnique({ where: { id: contestPhotoId } });
     if (contestPhoto) {
         await prisma.contestPhoto.update({
@@ -305,7 +312,7 @@ agenda.define("promotion:remove", async (job: Job) => {
         console.log(`No contest photo found with ID: ${contestPhotoId}`);
     }
 
-    await job.remove()
+    await job.remove();
 });
 
 

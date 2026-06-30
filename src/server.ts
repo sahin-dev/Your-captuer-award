@@ -34,7 +34,7 @@ async function startServer() {
 
 async function main() {
   await startServer();
-  // await agenda.start()
+  await agenda.start();
   const exitHandler = async (signalName?: string, exitCode = 0) => {
     console.info(`Exit handler triggered by: ${signalName || "direct call"}`);
 

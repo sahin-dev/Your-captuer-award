@@ -19,6 +19,13 @@ import { use } from 'passport';
 import { achievementService } from '../Achievements/achievement.service';
 import { teamService } from '../Team/team.service';
 
+const createExposureWatcher = async (participantId: string) => {
+    const exposureJob = agenda.create('exposure:watcher', { contestParticipantId: participantId });
+    exposureJob.unique({ 'data.contestParticipantId': participantId });
+    exposureJob.repeatEvery('1 minute');
+    await exposureJob.save();
+};
+
 
 
 
@@ -1148,9 +1155,7 @@ const uploadPhotoToContest = async (contestId: string, userId: string, photoIds:
 
                 //add watcher for exposure bonus
 
-                const exposureJob = agenda.create("exposure:watcher", { contestParticipantId: contestParticipant!.id })
-                exposureJob.repeatEvery("1 minute")
-                await exposureJob.save()
+                await createExposureWatcher(contestParticipant!.id)
             } catch (err: any) {
                 if (err.code === 'P2002' || (err.message && err.message.includes('Unique constraint'))) {
                     contestParticipant = await tx.contestParticipant.findUnique({
@@ -1454,9 +1459,9 @@ const promoteContestPhoto = async (contestId: string, photoId: string, userId: s
     });
 
 
-    // Shcedule a job to remove promotion after 30 minutes
-    agenda.schedule('in 30 minutes', 'promotion:remove', {
-        photoId: photoId
+    // Schedule a job to remove promotion at the expiration time
+    await agenda.schedule(promotionExpiresAt, 'promotion:remove', {
+        contestPhotoId: photoId
     });
 
     console.log(`Contest photo with ID ${photoId} has been promoted until ${promotionExpiresAt}`);
@@ -1568,9 +1573,7 @@ const chargePhoto = async (userId: string, contestId: string, contestPhotoId: st
     const newContestPhoto = await prisma.contestParticipant.update({ where: { id: participant.id }, data: { exposure_bonus: 100 } })
 
 
-    const exposureJob = agenda.create("exposure:watcher", { contestParticipantId: participant.id })
-    exposureJob.repeatEvery("1 minute")
-    await exposureJob.save()
+    await createExposureWatcher(participant.id)
 
     await userStoreService.updateStoreData(userId, { key: -1 })
     return newContestPhoto
