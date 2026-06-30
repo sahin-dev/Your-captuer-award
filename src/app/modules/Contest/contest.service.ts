@@ -1568,7 +1568,7 @@ const chargePhoto = async (userId: string, contestId: string, contestPhotoId: st
     const newContestPhoto = await prisma.contestParticipant.update({ where: { id: participant.id }, data: { exposure_bonus: 100 } })
 
 
-    const exposureJob = agenda.create("exposure:watcher", { contestPhotoId: contestPhoto.id })
+    const exposureJob = agenda.create("exposure:watcher", { contestParticipantId: participant.id })
     exposureJob.repeatEvery("1 minute")
     await exposureJob.save()
 
