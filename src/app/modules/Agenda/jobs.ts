@@ -277,11 +277,17 @@ agenda.define("exposure:watcher", async (job: Job) => {
         return
     }
 
-    if (participant.exposure_bonus <= 0) return
+    if (participant.exposure_bonus <= 0) {
+        await job.remove()
+        return
+    }
 
-    const updatedBonus = Math.max(0, participant?.exposure_bonus - 10)
+    const updatedBonus = Math.max(0, participant.exposure_bonus - 1)
     await prisma.contestParticipant.update({ where: { id: contestParticipantId }, data: { exposure_bonus: updatedBonus } })
 
+    if (updatedBonus <= 0) {
+        await job.remove()
+    }
 
 })
 

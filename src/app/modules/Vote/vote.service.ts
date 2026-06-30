@@ -29,6 +29,15 @@ const getVoteType = async (photoId:string)=>{
     return voteType
 }
 
+const incrementExposureBonus = async (participantId:string, amount:number) => {
+    const participant = await prisma.contestParticipant.findUnique({ where: { id: participantId } })
+    if (!participant) {
+        throw new ApiError(httpstatus.NOT_FOUND, 'participant not found')
+    }
+
+    const updatedBonus = Math.min(100, participant.exposure_bonus + amount)
+    return prisma.contestParticipant.update({ where: { id: participantId }, data: { exposure_bonus: updatedBonus } })
+}
 
 export const addOneVote = async (userId:string, contestId:string, photoId:string)=>{
     
@@ -50,8 +59,6 @@ export const addOneVote = async (userId:string, contestId:string, photoId:string
         throw new ApiError(httpstatus.NOT_FOUND, "participant not found")
     }
 
-    await prisma.contestParticipant.update({where:{id:participant.id},data:{exposure_bonus:{increment:2}}})
-
     const contestPhoto = await prisma.contestPhoto.findFirst({where:{contestId, photo:{id:photoId}}, include:{participant:true}})
     if(!contestPhoto){
         throw new ApiError(httpstatus.NOT_FOUND, "contest photo not found")
@@ -66,7 +73,7 @@ export const addOneVote = async (userId:string, contestId:string, photoId:string
     if(!(await checkExistingVote(userId, contestId, contestPhoto.id))){
     
         const vote = await prisma.vote.create({data:{providerId:userId, contestId, photoId:contestPhoto.id, type}})
-        await prisma.contestParticipant.update({where:{id:participant.id}, data:{exposure_bonus:{increment:2}}})
+        await incrementExposureBonus(participant.id, 2)
         
         // Get total votes for the photo's participant
         const totalVotes = await getVoteCount(photoId)
