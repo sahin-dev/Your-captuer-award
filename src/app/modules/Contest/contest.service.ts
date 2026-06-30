@@ -18,7 +18,7 @@ import { voteService } from '../Vote/vote.service';
 import { use } from 'passport';
 import { achievementService } from '../Achievements/achievement.service';
 import { teamService } from '../Team/team.service';
-import { createExposureWatcher } from '../Agenda/exposureWatcher';
+import { createExposureWatcher } from '../Agenda/exposureWatcher.ts';
 
 
 

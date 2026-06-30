@@ -5,7 +5,7 @@ import { fileUploader } from '../../../helpers/fileUploader';
 import { ITeam } from './team.interface';
 import { ContestMode, ContestStatus, MemberLevel, NotificationType, TeamAccessibility } from '../../../prismaClient';
 import { contestService } from '../Contest/contest.service';
-import { createExposureWatcher } from '../Agenda/exposureWatcher';
+import { createExposureWatcher } from '../Agenda/exposureWatcher.ts';
 import { notificationService } from '../Notification/notification.service';
 import { levelService } from '../Level/level.service';
 import { voteService } from '../Vote/vote.service';
