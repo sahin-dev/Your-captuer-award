@@ -18,13 +18,7 @@ import { voteService } from '../Vote/vote.service';
 import { use } from 'passport';
 import { achievementService } from '../Achievements/achievement.service';
 import { teamService } from '../Team/team.service';
-
-const createExposureWatcher = async (participantId: string) => {
-    const exposureJob = agenda.create('exposure:watcher', { contestParticipantId: participantId });
-    exposureJob.unique({ 'data.contestParticipantId': participantId });
-    exposureJob.repeatEvery('1 minute');
-    await exposureJob.save();
-};
+import { createExposureWatcher } from '../Agenda/exposureWatcher';
 
 
 
@@ -321,6 +315,8 @@ const joinContest = async (userId: string, contestId: string) => {
     if (teamMember) {
         await prisma.contestParticipant.update({ where: { id: participant.id }, data: { memberId: teamMember.id } })
     }
+
+    await createExposureWatcher(participant.id)
 
     if (participant) {
         console.log("User has joined the contest")

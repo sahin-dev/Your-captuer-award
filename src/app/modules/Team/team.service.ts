@@ -5,6 +5,7 @@ import { fileUploader } from '../../../helpers/fileUploader';
 import { ITeam } from './team.interface';
 import { ContestMode, ContestStatus, MemberLevel, NotificationType, TeamAccessibility } from '../../../prismaClient';
 import { contestService } from '../Contest/contest.service';
+import { createExposureWatcher } from '../Agenda/exposureWatcher';
 import { notificationService } from '../Notification/notification.service';
 import { levelService } from '../Level/level.service';
 import { voteService } from '../Vote/vote.service';
@@ -376,6 +377,7 @@ const joinTeamContest = async (userId:string,contestId:string, teamId:string)=>{
         throw new ApiError(httpstatus.NOT_FOUND, "Team member does not exist")
     }
     const contestParticipant = await prisma.contestParticipant.create({data:{memberId:teamMember.id,userId:userId, contestId}})
+    await createExposureWatcher(contestParticipant.id)
 
 }
 
