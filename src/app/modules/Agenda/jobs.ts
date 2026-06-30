@@ -257,16 +257,33 @@ agenda.define("contest:watcher", async (job: Job) => {
 
 
 agenda.define("exposure:watcher", async (job: Job) => {
+    const rawId = (job.attrs.data as { contestParticipantId?: unknown })?.contestParticipantId
+    let contestParticipantId = ''
 
-    const { contestParticipantId } = job.attrs.data as { contestParticipantId: string }
+    if (rawId == null) {
+        console.log(`Exposure watcher: missing contestParticipantId, job data=`, job.attrs.data)
+        await job.remove()
+        return
+    }
+
+    if (typeof rawId === 'string') {
+        contestParticipantId = rawId
+    } else if (typeof rawId === 'object' && rawId !== null) {
+        contestParticipantId = (rawId as any).toString?.() || (rawId as any).id || (rawId as any).$oid || ''
+    } else {
+        contestParticipantId = String(rawId)
+    }
+
+    if (!contestParticipantId) {
+        console.log(`Exposure watcher: invalid contestParticipantId, job data=`, job.attrs.data)
+        await job.remove()
+        return
+    }
 
     const participant = await prisma.contestParticipant.findUnique({ where: { id: contestParticipantId }, include: { contest: true } })
 
-
-
     if (!participant) {
-        console.log(`Exposure watcher: participant ${contestParticipantId} not found, cancelling this job`)
-        // Cancel only THIS specific job, not all exposure:watcher jobs
+        console.log(`Exposure watcher: participant ${contestParticipantId} not found, cancelling this job`) 
         await job.remove()
         return
     }
