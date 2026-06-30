@@ -191,7 +191,8 @@ const searchUser = catchAsync(async (req: Request, res: Response) => {
     if (typeof pageNum === 'number' && isNaN(pageNum)) pageNum = undefined
     if (typeof limitNum === 'number' && isNaN(limitNum)) limitNum = undefined
 
-    const result = await userService.searchUserByUserName(query, pageNum, limitNum)
+    const currentUserId = req.user?.id
+    const result = await userService.searchUserByUserName(query, pageNum, limitNum, currentUserId)
     sendResponse(res, {
         success: true,
         statusCode: httpstatus.OK,

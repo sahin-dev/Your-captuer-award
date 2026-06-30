@@ -283,10 +283,10 @@ const attachStoreToUser = async (userId: string) => {
 
 }
 
-const searchUserByUserName = async (queryString: string, page: number = 1, limit: number = 20) => {
+const searchUserByUserName = async (queryString: string, page: number = 1, limit: number = 20, excludeUserId?: string) => {
     const { skip, limit: paginationLimit } = paginationHelper.calculatePagination({ page, limit });
 
-    const whereCondition = {
+    const whereCondition: any = {
         OR: [
             { username: { contains: queryString, mode: 'insensitive' as const } },
             { fullName: { contains: queryString, mode: 'insensitive' as const } },
@@ -294,9 +294,11 @@ const searchUserByUserName = async (queryString: string, page: number = 1, limit
         ]
     };
 
-    const total = await prisma.user.count({ where: whereCondition });
+    const queryWhere = excludeUserId ? { AND: [{ NOT: { id: excludeUserId } }, whereCondition] } : whereCondition;
+
+    const total = await prisma.user.count({ where: queryWhere });
     const users = await prisma.user.findMany({
-        where: whereCondition,
+        where: queryWhere,
         select: {
             id: true,
             avatar: true,
