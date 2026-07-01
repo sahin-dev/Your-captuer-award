@@ -435,7 +435,7 @@ const getAllUsers = async (pagination: { page?: string, limit?: string, search?:
     });
 
     const whereCondition: any = {}
-    const normalizedStatus = pagination.status?.toLowerCase()
+    const normalizedStatus = pagination.status?
 
     if (normalizedStatus === 'active') {
         whereCondition.isActive = true
