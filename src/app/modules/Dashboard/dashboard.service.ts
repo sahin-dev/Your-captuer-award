@@ -228,7 +228,7 @@ const getAllPaymentsHistory = async (query: { page?: string, limit?: string, sea
 }
 
 const activeUsers = async () => {
-    const users = await prisma.user.count({ where: { isActive: true } })
+    const users = await prisma.user.count({ where: { isBlocked: false } })
     return users
 }
 
