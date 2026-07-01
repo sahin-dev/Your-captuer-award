@@ -211,8 +211,8 @@ const createRecurringContest = async (creatorId: string, body: contestData, bann
         throw new ApiError(httpstatus.BAD_REQUEST, "contest rules and prizes are required")
     }
 
-    contestData.rules = JSON.stringify(body.rules)
-    contestData.prizes = JSON.stringify(body.prizes)
+    contestData.rules = body.rules
+    contestData.prizes = body.prizes
 
     let bannerUrl: string | null = null
     if (body.banner) {
@@ -247,15 +247,118 @@ const createRecurringContest = async (creatorId: string, body: contestData, bann
     } catch (err: any) {
         throw new ApiError(httpstatus.BAD_REQUEST, " recurring Contest creation failed")
     }
-
 }
 
+const parseJsonField = <T = any>(value: any): T => {
+  if (value === undefined || value === null) return value;
+  if (typeof value === 'string') {
+    try {
+      return JSON.parse(value) as T;
+    } catch {
+      return value as T;
+    }
+  }
+  return value as T;
+};
 
-const updateContest = async (contestId: string, contestData: Partial<IContest>) => {
+const getRecurringContestById = async (contestId: string) => {
+  const recurringContest = await prisma.recurringContest.findUnique({
+    where: { id: contestId },
+    include: {
+      creator: {
+        select: { id: true, avatar: true, fullName: true, firstName: true, lastName: true, cover: true }
+      }
+    }
+  });
 
+  if (!recurringContest) {
+    throw new ApiError(httpstatus.NOT_FOUND, "recurring contest not found")
+  }
+
+  return {
+    ...recurringContest,
+    rules: parseJsonField(recurringContest.rules),
+    prizes: parseJsonField(recurringContest.prizes)
+  };
+};
+
+const getRecurringContests = async (page: number = 1, limit: number = 20) => {
+  const { skip, limit: paginationLimit } = paginationHelper.calculatePagination({ page, limit });
+
+  const [contests, total] = await Promise.all([
+    prisma.recurringContest.findMany({
+      include: {
+        creator: {
+          select: { id: true, avatar: true, fullName: true, firstName: true, lastName: true, cover: true }
+        }
+      },
+      skip,
+      take: paginationLimit,
+      orderBy: { startDate: 'desc' }
+    }),
+    prisma.recurringContest.count()
+  ]);
+
+  const data = contests.map(contest => ({
+    ...contest,
+    rules: parseJsonField(contest.rules),
+    prizes: parseJsonField(contest.prizes)
+  }));
+
+  const meta = paginationHelper.getPaginationMetaData(page, paginationLimit, total);
+  return { data, meta };
+};
+
+type RecurringContestUpdatePayload = Partial<IContest> & Partial<{ rules: any; prizes: any; recurringType: string; }>
+
+const updateRecurringContest = async (contestId: string, contestData: RecurringContestUpdatePayload, banner?: Express.Multer.File) => {
+  const recurringContest = await prisma.recurringContest.findUnique({ where: { id: contestId } });
+  if (!recurringContest) {
+    throw new ApiError(httpstatus.NOT_FOUND, "recurring contest not found")
+  }
+
+  const now = new Date();
+  const contestStartDate = new Date(recurringContest.startDate);
+  if (contestStartDate <= now) {
+    throw new ApiError(httpstatus.BAD_REQUEST, "Editing contest is not allowed after contest start")
+  }
+
+  const updateData: any = { ...contestData };
+  if (banner) {
+    updateData.banner = (await fileUploader.uploadToFilesystem(banner)).Location;
+  }
+
+  if (contestData.recurringType) {
+    updateData.recurring = {
+      set: {
+        ...recurringContest.recurring,
+        recurringType: contestData.recurringType
+      }
+    };
+    delete updateData.recurringType;
+  }
+
+  if (contestData.rules) {
+    updateData.rules = parseJsonField(contestData.rules);
+  }
+
+  if (contestData.prizes) {
+    updateData.prizes = parseJsonField(contestData.prizes);
+  }
+
+  const updatedContest = await prisma.recurringContest.update({ where: { id: contestId }, data: updateData });
+
+  return {
+    ...updatedContest,
+    rules: parseJsonField(updatedContest.rules),
+    prizes: parseJsonField(updatedContest.prizes)
+  };
+};
+
+const updateContest = async (contestId: string, contestData: Partial<IContest>, banner?: Express.Multer.File) => {
     const contest = await prisma.contest.findUnique({ where: { id: contestId } })
     if (!contest) {
-        throw new ApiError(httpstatus.NOT_FOUND, "contest not found")
+      throw new ApiError(httpstatus.NOT_FOUND, "contest not found")
     }
 
     const now = new Date()
@@ -269,15 +372,19 @@ const updateContest = async (contestId: string, contestData: Partial<IContest>) 
         throw new ApiError(httpstatus.BAD_REQUEST, "Editing contest is not allowed after contest start")
     }
 
-    const updatedContest = await prisma.contest.update({ where: { id: contestId }, data: contestData })
+    if (banner) {
+        const bannerUrl = (await fileUploader.uploadToFilesystem(banner)).Location
+        contestData.banner = bannerUrl
+    }
 
+    const updatedContest = await prisma.contest.update({ where: { id: contestId }, data: contestData })
     return updatedContest
 }
 
 
 //delete a contest by the contest id
 const deleteContestByContestId = async (contestId: string) => {
-    const contest = await prisma.contest.findUnique({ where: { id: contestId } })
+    const contest = await prisma.contest.findUnique({ where: { id: contestId } });
     if (!contest) {
         throw new ApiError(httpstatus.NOT_FOUND, "contest not found!")
     }
@@ -295,7 +402,17 @@ const deleteContestByContestId = async (contestId: string) => {
         prisma.contest.delete({ where: { id: contestId } })
     ]);
 
-    return "contest deleted!"
+    return "contest deleted!";
+}
+
+const deleteRecurringContestById = async (contestId: string) => {
+    const recurringContest = await prisma.recurringContest.findUnique({ where: { id: contestId } });
+    if (!recurringContest) {
+        throw new ApiError(httpstatus.NOT_FOUND, "recurring contest not found!")
+    }
+
+    await prisma.recurringContest.delete({ where: { id: contestId } });
+    return "recurring contest deleted!";
 }
 
 
@@ -332,7 +449,7 @@ const getContestByUserId = async (userId: string, contestId: string) => {
         include: { creator: { omit: { password: true, accessToken: true } }, participants: true }
     });
     if (!contest) {
-        throw new ApiError(httpstatus.NOT_FOUND, "contest not found")
+        return await getRecurringContestById(contestId)
     }
 
     const rules = await contestRuleService.getContestRules(contestId)
@@ -340,12 +457,7 @@ const getContestByUserId = async (userId: string, contestId: string) => {
     const totalVotes = await voteService.getContestTotalVotes(contestId)
 
     if (contest.status === ContestStatus.CLOSED) {
-
         const winners = await achievementService.getAchievements(contestId)
-
-        console.log(winners)
-        console.log(contest)
-
         return { ...contest, prizes, totalVotes, winners };
     }
 
@@ -355,10 +467,8 @@ const getContestByUserId = async (userId: string, contestId: string) => {
 
     if ((await isContestParticipantExist(userId, contestId)) && (contest.status === ContestStatus.ACTIVE)) {
         const contestPhotoCount = await prisma.contestPhoto.count({ where: { contestId, photo: { userId } } })
-
         return { ...contest, joined: true, rules, prizes, totalVotes, uploadCount: contestPhotoCount }
     }
-
 
     return { ...contest, rules, prizes, totalVotes, joined: false };
 }
@@ -397,20 +507,42 @@ const getContestById = async (contestId: string) => {
 
 //Return all the contests
 const getAllContests = async (page: number = 1, limit: number = 20) => {
+    const { skip, limit: paginationLimit } = paginationHelper.calculatePagination({ page, limit });
 
-    const skip = (page - 1) * limit
-
-    const [contests, total] = await Promise.all([
+    const [regularContests, recurringContests, regularTotal, recurringTotal] = await Promise.all([
         prisma.contest.findMany({
-            include: { creator: { omit: { password: true } } },
-            skip,
-            take: limit,
-            orderBy: { startDate: "desc" }
+            include: { creator: { omit: { password: true, accessToken: true } } },
+            orderBy: { startDate: 'desc' }
         }),
-        prisma.contest.count()
-    ])
+        prisma.recurringContest.findMany({
+            include: {
+                creator: {
+                    select: { id: true, avatar: true, fullName: true, firstName: true, lastName: true, cover: true }
+                }
+            },
+            orderBy: { startDate: 'desc' }
+        }),
+        prisma.contest.count(),
+        prisma.recurringContest.count()
+    ]);
 
-    return { contests, total, page, limit };
+    const formattedRecurring = recurringContests.map(contest => ({
+        ...contest,
+        rules: parseJsonField(contest.rules),
+        prizes: parseJsonField(contest.prizes)
+    }));
+
+    const combined = [...regularContests, ...formattedRecurring].sort((a, b) => {
+        const aDate = new Date(a.startDate).getTime();
+        const bDate = new Date(b.startDate).getTime();
+        return bDate - aDate;
+    });
+
+    const pagedContests = combined.slice(skip, skip + paginationLimit);
+    const total = regularTotal + recurringTotal;
+    const meta = paginationHelper.getPaginationMetaData(page, paginationLimit, total);
+
+    return { data: pagedContests, meta };
 };
 
 //Search contest by contest status
@@ -1787,6 +1919,11 @@ export const contestService = {
     getContestUploadsToVote,
     getContestPhotoCount,
     getMatchContests,
-    getCompletedContestUploads
+    getCompletedContestUploads,
+    createRecurringContest,
+    getRecurringContests,
+    getRecurringContestById,
+    updateRecurringContest,
+    deleteRecurringContestById
 
 }

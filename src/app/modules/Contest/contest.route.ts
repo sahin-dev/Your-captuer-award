@@ -13,6 +13,8 @@ import { contestPrizeController } from './ContestPrizes/contestPrize.controller'
 const router = Router()
 
 router.route("/").post(fileUploader.filesystemUploadContestBanner,validateRequest(createContestSchema), auth(UserRole.ADMIN),  contestController.createContest).get(auth(), contestController.getContestsByStatus)
+router.route("/recurring").post(fileUploader.filesystemUploadContestBanner, validateRequest(createContestSchema), auth(UserRole.ADMIN), contestController.createRecurringContest).get(auth(UserRole.ADMIN), contestController.getRecurringContests)
+router.route("/recurring/:contestId").get(auth(UserRole.ADMIN), contestController.getRecurringContestById).put(auth(UserRole.ADMIN), fileUploader.filesystemUploadContestBanner, contestController.updateRecurringContestDetails).delete(auth(UserRole.ADMIN), contestController.deleteRecurringContest)
 router.get("/all", auth(UserRole.ADMIN), contestController.getAllContests)
 router.get("/ucontests", contestController.getPublicContestsByStatus)
 router.get("/ucontests/:contestId", contestController.getContestById)
@@ -34,7 +36,7 @@ router.get("/:contestId/rank-photographer", contestController.getContestPhotogra
 router.delete("/:contestId/photos/:photoId", auth(), contestController.deleteContestPhoto)
 
 router.post("/:contestId/upload",fileUploader.filesystemUploadUserPhoto, auth(), contestController.uploadPhoto)
-router.route("/:contestId").get(contestController.getContestById).put(auth(UserRole.ADMIN), contestController.updateContestDetails).delete(auth(UserRole.ADMIN), contestController.deleteContest)
+router.route("/:contestId").get(contestController.getContestById).put(auth(UserRole.ADMIN), fileUploader.filesystemUploadContestBanner, contestController.updateContestDetails).delete(auth(UserRole.ADMIN), contestController.deleteContest)
 router.route("/:contestId/join").post(auth(),contestController.joinContest)
 
 export const contestRoutes = router

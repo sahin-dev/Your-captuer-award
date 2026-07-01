@@ -26,6 +26,75 @@ const createContest = catchAsync( async (req: any, res: Response) => {
     });
 })
 
+const createRecurringContest = catchAsync(async (req:any, res:Response) => {
+    const creatorId = req.user.id;
+    const banner = req.file;
+    const body: contestData = req.body;
+
+    const contest = await contestService.createRecurringContest(creatorId, body, banner);
+
+    sendResponse(res, {
+        statusCode: 201,
+        success: true,
+        message: "Recurring contest created successfully",
+        data: contest,
+    });
+});
+
+const getRecurringContests = catchAsync(async (req:any, res:Response) => {
+    const { page = "1", limit = "20" } = req.query as { page?: string; limit?: string };
+    const pageNum = parseInt(page) || 1;
+    const limitNum = parseInt(limit) || 20;
+
+    const result = await contestService.getRecurringContests(pageNum, limitNum);
+
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Recurring contests fetched successfully",
+        data: result.data,
+        meta: result.meta,
+    });
+});
+
+const getRecurringContestById = catchAsync(async (req:any, res:Response) => {
+    const { contestId } = req.params;
+    const contest = await contestService.getRecurringContestById(contestId);
+
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Recurring contest fetched successfully",
+        data: contest,
+    });
+});
+
+const updateRecurringContestDetails = catchAsync(async (req:any, res:Response) => {
+    const { contestId } = req.params;
+    const contestData: Partial<IContest> = req.body;
+    const banner = req.file;
+
+    const contest = await contestService.updateRecurringContest(contestId, contestData, banner);
+
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Recurring contest updated successfully",
+        data: contest,
+    });
+});
+
+const deleteRecurringContest = catchAsync(async (req:any, res:Response) => {
+    const { contestId } = req.params;
+    await contestService.deleteRecurringContestById(contestId);
+
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Recurring contest deleted successfully",
+        data: null,
+    });
+});
 
 const getAllContests = catchAsync(async (req:any, res:Response)=>{
 
@@ -61,8 +130,9 @@ const getContestById = catchAsync(async (req:any, res:Response)=>{
 const updateContestDetails = catchAsync(async (req:any, res:Response)=>{
     const {contestId} = req.params
     const contestData:Partial<IContest> = req.body
+    const banner = req.file
 
-    const contest = await contestService.updateContest(contestId, contestData)
+    const contest = await contestService.updateContest(contestId, contestData, banner)
 
     sendResponse(res, {
         statusCode:200,
@@ -357,6 +427,11 @@ export const contestController = {
     updateContestDetails,
     getContestById,
     getAllContests,
+    createRecurringContest,
+    getRecurringContests,
+    getRecurringContestById,
+    updateRecurringContestDetails,
+    deleteRecurringContest,
     promotePhoto,
     getWinners,
     getUserRemainingPhotos,
