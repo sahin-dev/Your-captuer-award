@@ -142,24 +142,51 @@ const calcIncomeData = async () => {
 
 }
 
-const getAllPaymentsHistory = async (query: { page: string, limit: string }) => {
+const getAllPaymentsHistory = async (query: { page?: string, limit?: string, search?: string, status?: string, method?: string, planName?: string }) => {
 
     const paginationData = {
         page: query.page ? parseInt(query.page) : 1,
         limit: query.limit ? parseInt(query.limit) : 10,
+    }
 
+    const whereCondition: any = {}
+
+    if (query.status && Object.values(PaymentStatus).includes(query.status as PaymentStatus)) {
+        whereCondition.status = query.status as PaymentStatus
+    }
+
+    if (query.method) {
+        whereCondition.method = query.method
+    }
+
+    if (query.planName && Object.values(SubscriptionPlanEnum).includes(query.planName as SubscriptionPlanEnum)) {
+        whereCondition.planName = query.planName as SubscriptionPlanEnum
+    }
+
+    if (query.search) {
+        whereCondition.OR = [
+            { stripe_payment_id: { contains: query.search, mode: 'insensitive' } },
+            { stripe_session_id: { contains: query.search, mode: 'insensitive' } },
+            { description: { contains: query.search, mode: 'insensitive' } },
+            { amount: { equals: Number(query.search) } },
+            { user: { fullName: { contains: query.search, mode: 'insensitive' } } },
+            { user: { email: { contains: query.search, mode: 'insensitive' } } },
+        ]
     }
 
     const payments = await prisma.payment.findMany({
-        where: { status: PaymentStatus.SUCCEEDED }, include: {
+        where: whereCondition,
+        include: {
             user: {
                 select: { id: true, avatar: true, fullName: true, email: true }
             }
         },
-        orderBy: { createdAt: 'desc' }, skip: (paginationData.page - 1) * paginationData.limit, take: paginationData.limit
+        orderBy: { createdAt: 'desc' },
+        skip: (paginationData.page - 1) * paginationData.limit,
+        take: paginationData.limit
     })
 
-    const total = await prisma.payment.count({ where: { status: PaymentStatus.SUCCEEDED } })
+    const total = await prisma.payment.count({ where: whereCondition })
     const totalPages = Math.ceil(total / paginationData.limit)
 
     return {
@@ -180,6 +207,11 @@ const activeUsers = async () => {
 
 const inactiveUsers = async () => {
     const users = await prisma.user.count({ where: { isActive: false } })
+    return users
+}
+
+const blockedUsersCount = async () => {
+    const users = await prisma.user.count({ where: { isBlocked: true } })
     return users
 }
 const getpaidMembers = async () => {
@@ -364,27 +396,49 @@ const getAdminNotifications = async () => {
 const getUserStats = async () => {
     const totalUsers = await prisma.user.count()
     const active_user_count = await activeUsers()
-    const inactive_user_count = await inactiveUsers()
-    const paid_members_count = await getpaidMembers()
-    return { totalUsers, active_user_count, inactive_user_count, paid_members_count }
+    const blocked_user_count = await blockedUsersCount()
+    
+    return { totalUsers, active_user_count, blocked_user_count }
 }
 
-const getAllUsers = async (pagination: { page: string, limit: string }) => {
+const getAllUsers = async (pagination: { page?: string, limit?: string, search?: string, status?: string, role?: string }) => {
     const { skip, limit: paginationLimit } = paginationHelper.calculatePagination({
-        page: parseInt(pagination.page) || 1,
-        limit: parseInt(pagination.limit) || 10
+        page: parseInt(pagination.page || '1') || 1,
+        limit: parseInt(pagination.limit || '10') || 10
     });
 
+    const whereCondition: any = {}
+
+    if (pagination.status === 'active') {
+        whereCondition.isActive = true
+    } else if (pagination.status === 'inactive') {
+        whereCondition.isActive = false
+    }
+
+    if (pagination.role) {
+        whereCondition.role = pagination.role
+    }
+
+    if (pagination.search) {
+        whereCondition.OR = [
+            { fullName: { contains: pagination.search, mode: 'insensitive' } },
+            { email: { contains: pagination.search, mode: 'insensitive' } },
+            { username: { contains: pagination.search, mode: 'insensitive' } },
+            { phone: { contains: pagination.search, mode: 'insensitive' } },
+        ]
+    }
+
     const users = await prisma.user.findMany({
+        where: whereCondition,
         select: { id: true, firstName: true, lastName: true, fullName: true, email: true, username: true, avatar: true, role: true, isActive: true, createdAt: true },
         skip,
         take: paginationLimit,
         orderBy: { createdAt: 'desc' }
     });
 
-    const total = await prisma.user.count();
+    const total = await prisma.user.count({ where: whereCondition });
     const paginationMetaData = paginationHelper.getPaginationMetaData(
-        parseInt(pagination.page) || 1,
+        parseInt(pagination.page || '1') || 1,
         paginationLimit,
         total
     );
@@ -438,9 +492,23 @@ const getStoreStats = async () => {
     }
 }
 
-const getPlans = async (status?: SubscriptionPlanStatus) => {
+const getPlans = async (status?: SubscriptionPlanStatus, search?: string) => {
+    const whereCondition: any = {}
+    if (status) {
+        whereCondition.status = status
+    }
+
+    if (search) {
+        whereCondition.OR = [
+            { planName: { equals: search.toUpperCase() as SubscriptionPlanEnum } },
+            { stripe_price_id: { contains: search, mode: 'insensitive' } },
+            { stripe_product_id: { contains: search, mode: 'insensitive' } },
+            { description: { contains: search, mode: 'insensitive' } },
+        ]
+    }
+
     const plans = await prisma.subscriptionPlan.findMany({
-        where: { status },
+        where: whereCondition,
         select: { id: true, planName: true, amount: true, currency: true, recurring: true, status: true }
     })
     return plans
@@ -470,13 +538,39 @@ const getPlansStats = async () => {
     return plansWithStats
 }
 
-const getTransactions = async (query: { page: string, limit: string }) => {
+const getTransactions = async (query: { page?: string, limit?: string, search?: string, status?: string, method?: string, planName?: string }) => {
     const paginationData = {
         page: query.page ? parseInt(query.page) : 1,
         limit: query.limit ? parseInt(query.limit) : 10,
     }
 
+    const whereCondition: any = {}
+
+    if (query.status && Object.values(PaymentStatus).includes(query.status as PaymentStatus)) {
+        whereCondition.status = query.status as PaymentStatus
+    }
+
+    if (query.method) {
+        whereCondition.method = query.method
+    }
+
+    if (query.planName && Object.values(SubscriptionPlanEnum).includes(query.planName as SubscriptionPlanEnum)) {
+        whereCondition.planName = query.planName as SubscriptionPlanEnum
+    }
+
+    if (query.search) {
+        whereCondition.OR = [
+            { stripe_payment_id: { contains: query.search, mode: 'insensitive' } },
+            { stripe_session_id: { contains: query.search, mode: 'insensitive' } },
+            { description: { contains: query.search, mode: 'insensitive' } },
+            { amount: { equals: Number(query.search) } },
+            { user: { fullName: { contains: query.search, mode: 'insensitive' } } },
+            { user: { email: { contains: query.search, mode: 'insensitive' } } },
+        ]
+    }
+
     const payments = await prisma.payment.findMany({
+        where: whereCondition,
         include: {
             user: {
                 select: { id: true, avatar: true, fullName: true, email: true }
@@ -487,9 +581,9 @@ const getTransactions = async (query: { page: string, limit: string }) => {
         take: paginationData.limit
     })
 
-    const total = await prisma.payment.count()
+    const total = await prisma.payment.count({ where: whereCondition })
 
-    return { payments, total, page: paginationData.page, limit: paginationData.limit }
+    return { data: payments, meta: { page: paginationData.page, limit: paginationData.limit, total } }
 }
 
 const getTransactionStats = async () => {

@@ -7,8 +7,8 @@ import { SubscriptionPlanStatus } from "src/prismaClient"
 
 
 const getAllAPymentHistory = catchAsync(async (req: Request, res: Response) => {
-    const { page, limit } = req.query as { page: string, limit: string }
-    const result = await dashboardService.getAllPaymentsHistory({ page, limit })
+    const { page, limit, search, status, method, planName } = req.query as { page?: string, limit?: string, search?: string, status?: string, method?: string, planName?: string }
+    const result = await dashboardService.getAllPaymentsHistory({ page, limit, search, status, method, planName })
 
     sendResponse(res, {
         success: true,
@@ -97,13 +97,14 @@ const getUserStats = catchAsync(async (req: Request, res: Response) => {
 })
 
 const getAllUsers = catchAsync(async (req: Request, res: Response) => {
-    const { page, limit } = req.query as { page: string, limit: string }
-    const users = await dashboardService.getAllUsers({ page, limit })
+    const { page, limit, search, status, role } = req.query as { page?: string, limit?: string, search?: string, status?: string, role?: string }
+    const users = await dashboardService.getAllUsers({ page, limit, search, status, role })
     sendResponse(res, {
         success: true,
         statusCode: httpStatus.OK,
         message: "users fetched successfully",
-        data: users
+        data: users.data,
+        meta: users.meta
     })
 })
 
@@ -129,8 +130,8 @@ const getStoreStats = catchAsync(async (req: Request, res: Response) => {
 })
 
 const getPlans = catchAsync(async (req: Request, res: Response) => {
-    const { status } = req.query
-    const plans = await dashboardService.getPlans(status as SubscriptionPlanStatus)
+    const { status, search } = req.query as { status?: string, search?: string }
+    const plans = await dashboardService.getPlans(status as SubscriptionPlanStatus, search)
     sendResponse(res, {
         success: true,
         statusCode: httpStatus.OK,
@@ -150,13 +151,14 @@ const getPlansStats = catchAsync(async (req: Request, res: Response) => {
 })
 
 const getTransactions = catchAsync(async (req: Request, res: Response) => {
-    const { page, limit } = req.query as { page: string, limit: string }
-    const transactions = await dashboardService.getTransactions({ page, limit })
+    const { page, limit, search, status, method, planName } = req.query as { page?: string, limit?: string, search?: string, status?: string, method?: string, planName?: string }
+    const transactions = await dashboardService.getTransactions({ page, limit, search, status, method, planName })
     sendResponse(res, {
         success: true,
         statusCode: httpStatus.OK,
         message: "transactions fetched successfully",
-        data: transactions
+        data: transactions.data,
+        meta: transactions.meta
     })
 })
 
