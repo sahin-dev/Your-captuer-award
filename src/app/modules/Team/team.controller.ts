@@ -28,9 +28,9 @@ const createTeam = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getTeams = catchAsync(async (req: Request, res: Response) => {
-    const { s, page, limit } = req.query;
+    const { search, page, limit } = req.query;
     const result = await teamService.getTeams(
-        s?.toString(),
+        search?.toString(),
         page ? Number(page) : undefined,
         limit ? Number(limit) : undefined
     );
