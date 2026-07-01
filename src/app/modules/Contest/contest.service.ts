@@ -520,7 +520,6 @@ const getAllContests = async (page: number = 1, limit: number = 20) => {
     ]);
 
     
-
     const combined = [...regularContests,].sort((a, b) => {
         const aDate = new Date(a.startDate).getTime();
         const bDate = new Date(b.startDate).getTime();
@@ -531,7 +530,7 @@ const getAllContests = async (page: number = 1, limit: number = 20) => {
     const total = regularTotal;
     const meta = paginationHelper.getPaginationMetaData(page, paginationLimit, total);
 
-    return { data: pagedContests, meta };
+    return { data: pagedContests, total };
 };
 
 //Search contest by contest status
