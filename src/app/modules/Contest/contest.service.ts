@@ -261,6 +261,81 @@ const parseJsonField = <T = any>(value: any): T => {
   return value as T;
 };
 
+const sanitizeContestUpdateData = (data: any) => {
+  const allowedFields = [
+    'title',
+    'description',
+    'banner',
+    'level_requirements',
+    'type',
+    'mode',
+    'coin_requirement',
+    'coin_required',
+    'rules',
+    'prizes',
+    'startDate',
+    'endDate',
+    'isMoneyContest',
+    'maxPrize',
+    'minPrize',
+    'maxUploads'
+  ];
+
+  const sanitized: any = {};
+  for (const field of allowedFields) {
+    if (data[field] !== undefined) sanitized[field] = data[field];
+  }
+
+  if (sanitized.level_requirements !== undefined) {
+    const levels = parseJsonField<any[]>(sanitized.level_requirements);
+    sanitized.level_requirements = Array.isArray(levels)
+      ? levels.map((value) => Number(value))
+      : sanitized.level_requirements;
+  }
+
+  if (sanitized.coin_requirement !== undefined) {
+    sanitized.coin_requirement = sanitized.coin_requirement === 'true' || sanitized.coin_requirement === true;
+  }
+
+  if (sanitized.isMoneyContest !== undefined) {
+    sanitized.isMoneyContest = sanitized.isMoneyContest === 'true' || sanitized.isMoneyContest === true;
+  }
+
+  if (sanitized.maxPrize !== undefined) {
+    sanitized.maxPrize = Number(sanitized.maxPrize);
+  }
+
+  if (sanitized.minPrize !== undefined) {
+    sanitized.minPrize = Number(sanitized.minPrize);
+  }
+
+  if (sanitized.maxUploads !== undefined) {
+    sanitized.maxUploads = Number(sanitized.maxUploads);
+  }
+
+  if (sanitized.coin_required !== undefined) {
+    sanitized.coin_required = Number(sanitized.coin_required);
+  }
+
+  if (sanitized.startDate !== undefined) {
+    sanitized.startDate = new Date(sanitized.startDate);
+  }
+
+  if (sanitized.endDate !== undefined) {
+    sanitized.endDate = new Date(sanitized.endDate);
+  }
+
+  if (sanitized.rules !== undefined) {
+    sanitized.rules = parseJsonField(sanitized.rules);
+  }
+
+  if (sanitized.prizes !== undefined) {
+    sanitized.prizes = parseJsonField(sanitized.prizes);
+  }
+
+  return sanitized;
+};
+
 const getRecurringContestById = async (contestId: string) => {
   const recurringContest = await prisma.recurringContest.findUnique({
     where: { id: contestId },
@@ -372,12 +447,13 @@ const updateContest = async (contestId: string, contestData: Partial<IContest>, 
         throw new ApiError(httpstatus.BAD_REQUEST, "Editing contest is not allowed after contest start")
     }
 
+    const updateData: any = sanitizeContestUpdateData(contestData);
+
     if (banner) {
-        const bannerUrl = (await fileUploader.uploadToFilesystem(banner)).Location
-        contestData.banner = bannerUrl
+        updateData.banner = (await fileUploader.uploadToFilesystem(banner)).Location
     }
 
-    const updatedContest = await prisma.contest.update({ where: { id: contestId }, data: contestData })
+    const updatedContest = await prisma.contest.update({ where: { id: contestId }, data: updateData })
     return updatedContest
 }
 
@@ -531,7 +607,7 @@ const getAllContests = async (page: number = 1, limit: number = 20) => {
     const total = regularTotal;
     const meta = paginationHelper.getPaginationMetaData(page, paginationLimit, total);
 
-    return { contests: [...pagedContests], total };
+    return { contests: [...pagedContests], data: [...pagedContests], total, meta };
 };
 
 //Search contest by contest status
