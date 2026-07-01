@@ -531,7 +531,7 @@ const getAllContests = async (page: number = 1, limit: number = 20) => {
     const total = regularTotal;
     const meta = paginationHelper.getPaginationMetaData(page, paginationLimit, total);
 
-    return { data: [...pagedContests], meta };
+    return { contests: [...pagedContests], total };
 };
 
 //Search contest by contest status
