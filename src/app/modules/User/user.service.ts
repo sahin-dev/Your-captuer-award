@@ -223,7 +223,14 @@ const forgetPassword = async (email: string) => {
       <p>If you did not request this, please contact our support team immediately.</p>
     </div>`
 
-    mailer(email, html, "Your Capture Award")
+    try{
+        mailer(email, html, "Your Capture Award")
+    }catch(err){
+        console.error("Error sending email:", err);
+        throw new ApiError(httpstatus.INTERNAL_SERVER_ERROR, "Failed to send OTP email");
+    }
+
+
 
     return `Otp send successfully `
 }
