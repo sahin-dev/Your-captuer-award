@@ -258,21 +258,20 @@ const updateContest = async (contestId: string, contestData: Partial<IContest>) 
         throw new ApiError(httpstatus.NOT_FOUND, "contest not found")
     }
 
-    if (contest.status === ContestStatus.ACTIVE) {
-        throw new ApiError(httpstatus.BAD_REQUEST, "Editing active contest is not allowed")
-    }
+    const now = new Date()
+    const contestStartDate = new Date(contest.startDate)
 
     if (contest.status === ContestStatus.CLOSED || contest.status === ContestStatus.COMPLETED) {
         throw new ApiError(httpstatus.BAD_REQUEST, "Editing closed or completed contest is not allowed")
     }
 
-    if (contest.status === ContestStatus.UPCOMING || contest.status === ContestStatus.NEW) {
-        const updatedContest = await prisma.contest.update({ where: { id: contestId }, data: contestData })
-
-        return updatedContest
+    if (contest.status === ContestStatus.ACTIVE || contestStartDate <= now) {
+        throw new ApiError(httpstatus.BAD_REQUEST, "Editing contest is not allowed after contest start")
     }
 
-    throw new ApiError(httpstatus.BAD_REQUEST, "Editing contest not allowed")
+    const updatedContest = await prisma.contest.update({ where: { id: contestId }, data: contestData })
+
+    return updatedContest
 }
 
 
