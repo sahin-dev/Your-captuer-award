@@ -511,7 +511,7 @@ const getAllContests = async (page: number = 1, limit: number = 20) => {
 
     const [regularContests, recurringContests, regularTotal, recurringTotal] = await Promise.all([
         prisma.contest.findMany({
-            include: { creator: { omit: { password: true, accessToken: true } } },
+            include: { creator: { omit: { password: true } } },
             orderBy: { startDate: 'desc' }
         }),
         prisma.recurringContest.findMany({
