@@ -2,6 +2,7 @@ import nodemailer from "nodemailer";
 import config from "../config";
 
 const mailer = async (email: string, html: string, subject: string) => {
+  console.log(config.emailSender.email, config.emailSender.app_pass)
   const transporter = nodemailer.createTransport({
     host: "smtp.gmail.com",
     port: 587,
@@ -22,7 +23,7 @@ const mailer = async (email: string, html: string, subject: string) => {
     html,
   });
 
-  // console.log("Message sent: %s", info.messageId);
+  console.log("Message sent: %s", info.messageId);
 };
 
 export default mailer;
