@@ -489,7 +489,7 @@ const toggleBlockStatus = async (userId: string) => {
 
     const updatedUser = await prisma.user.update({
         where: { id: userId },
-        data: { isBlocked: !user.isBlocked, isActive: !user.isActive },
+        data: { isBlocked: !user.isBlocked },
         select: { id: true, fullName: true, email: true, isActive: true, isBlocked: true }
     })
 

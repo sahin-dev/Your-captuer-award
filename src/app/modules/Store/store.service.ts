@@ -237,26 +237,76 @@ const updateProduct = async (
         throw new ApiError(httpStatus.NOT_FOUND, "Product not found");
     }
 
-    // Validate amount if provided
-    if (data.amount !== undefined && data.amount < 0) {
-        throw new ApiError(httpStatus.BAD_REQUEST, "Amount cannot be negative");
+    const normalizedData: any = {};
+
+    if (data.title !== undefined) {
+        const trimmedTitle = data.title?.trim();
+        if (!trimmedTitle) {
+            throw new ApiError(httpStatus.BAD_REQUEST, "Title cannot be empty");
+        }
+        normalizedData.title = trimmedTitle;
     }
 
-    // Validate items if provided
-    if (data.items) {
+    if (data.amount !== undefined) {
+        const parsedAmount = Number(data.amount);
+        if (isNaN(parsedAmount) || parsedAmount < 0) {
+            throw new ApiError(httpStatus.BAD_REQUEST, "Amount cannot be negative");
+        }
+        normalizedData.amount = parsedAmount;
+    }
+
+    if (data.quantity !== undefined) {
+        const parsedQuantity = Number(data.quantity);
+        if (isNaN(parsedQuantity) || parsedQuantity < 0) {
+            throw new ApiError(httpStatus.BAD_REQUEST, "Quantity cannot be negative");
+        }
+        normalizedData.quantity = parsedQuantity;
+    }
+
+    if (data.items !== undefined) {
         if (!Array.isArray(data.items) || data.items.length === 0) {
             throw new ApiError(httpStatus.BAD_REQUEST, "Items array must not be empty");
         }
-        for (const item of data.items) {
-            if (!item.type || item.quantity === undefined || item.quantity <= 0) {
+
+        const normalizedItems = data.items.map((item) => {
+            const parsedQuantity = Number(item.quantity);
+            if (!item.type || isNaN(parsedQuantity) || parsedQuantity <= 0) {
                 throw new ApiError(httpStatus.BAD_REQUEST, "Each item must have a valid type and positive quantity");
             }
+            return {
+                type: item.type,
+                quantity: parsedQuantity
+            };
+        });
+
+        normalizedData.items = {
+            set: normalizedItems
+        };
+    }
+
+    if (data.description !== undefined) {
+        normalizedData.description = data.description;
+    }
+
+    if (data.image !== undefined) {
+        normalizedData.image = data.image;
+    }
+
+    if (data.icon !== undefined) {
+        normalizedData.icon = data.icon;
+    }
+
+    if (data.status !== undefined) {
+        const statusValue = String(data.status);
+        if (!Object.values(ProductStatus).includes(statusValue as ProductStatus)) {
+            throw new ApiError(httpStatus.BAD_REQUEST, "Invalid product status");
         }
+        normalizedData.status = statusValue as ProductStatus;
     }
 
     const updatedProduct = await prisma.product.update({
         where: { id: productId },
-        data
+        data: normalizedData
     });
 
     return updatedProduct;
