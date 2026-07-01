@@ -499,7 +499,7 @@ const toggleBlockStatus = async (userId: string) => {
 const getStoreStats = async () => {
     const totalProducts = await prisma.product.count()
     const totalActiveProducts = await prisma.product.count({ where: { status: "ACTIVE" } })
-    const totalPurchases = await prisma.payment.count({ where: { method: 'STORE', status: PaymentStatus.SUCCEEDED } })
+    const totalPurchases = await prisma.payment.count({ where: { type: 'STORE', status: PaymentStatus.SUCCEEDED } })
     const totalRevenue = await prisma.payment.aggregate({
         where: {
             method: 'STORE',

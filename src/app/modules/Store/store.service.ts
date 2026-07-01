@@ -26,9 +26,9 @@ const addProduct = async (userId: string, productData: {
         throw new ApiError(httpStatus.UNAUTHORIZED, "User not found or User unauthorized");
     }
 
-    if(!file){
-        throw new ApiError(httpStatus.BAD_REQUEST, "Product image is required");
-    }
+    // if(!file){
+    //     throw new ApiError(httpStatus.BAD_REQUEST, "Product image is required");
+    // }
 
     if (!productData.title || !productData.category  || productData.amount === undefined) {
 
