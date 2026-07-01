@@ -73,6 +73,10 @@ export const handleSignIn = async (body: UserSignInData) => {
         throw new ApiError(httpstatus.NOT_FOUND, "User not found")
     }
 
+    if (user.isActive === false) {
+        throw new ApiError(httpstatus.FORBIDDEN, "User is blocked, please contact support")
+    }
+
     if (user.socialProvider && !user.password) {
         throw new ApiError(httpstatus.BAD_REQUEST, "user is registered with social provider, login with social provider")
     }
