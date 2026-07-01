@@ -509,37 +509,26 @@ const getContestById = async (contestId: string) => {
 const getAllContests = async (page: number = 1, limit: number = 20) => {
     const { skip, limit: paginationLimit } = paginationHelper.calculatePagination({ page, limit });
 
-    const [regularContests, recurringContests, regularTotal, recurringTotal] = await Promise.all([
+    const [regularContests, regularTotal] = await Promise.all([
         prisma.contest.findMany({
-            include: { creator: { omit: { password: true } } },
-            orderBy: { startDate: 'desc' }
-        }),
-        prisma.recurringContest.findMany({
-            include: {
-                creator: {
-                    select: { id: true, avatar: true, fullName: true, firstName: true, lastName: true, cover: true }
-                }
-            },
+            include: { creator: { omit: { password: true , accessToken:true} } },
             orderBy: { startDate: 'desc' }
         }),
         prisma.contest.count(),
-        prisma.recurringContest.count()
+    
+       
     ]);
 
-    const formattedRecurring = recurringContests.map(contest => ({
-        ...contest,
-        rules: parseJsonField(contest.rules),
-        prizes: parseJsonField(contest.prizes)
-    }));
+    
 
-    const combined = [...regularContests, ...formattedRecurring].sort((a, b) => {
+    const combined = [...regularContests,].sort((a, b) => {
         const aDate = new Date(a.startDate).getTime();
         const bDate = new Date(b.startDate).getTime();
         return bDate - aDate;
     });
 
     const pagedContests = combined.slice(skip, skip + paginationLimit);
-    const total = regularTotal + recurringTotal;
+    const total = regularTotal;
     const meta = paginationHelper.getPaginationMetaData(page, paginationLimit, total);
 
     return { data: pagedContests, meta };
