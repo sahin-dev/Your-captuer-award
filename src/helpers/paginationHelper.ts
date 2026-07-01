@@ -18,6 +18,7 @@ type IPaginationMetaData = {
     limit: number,
     total: number,
     totalPage: number,
+    totalPages: number,
     hasNextPage: boolean,
     hasPreviousPage: boolean
 }
@@ -42,12 +43,13 @@ const calculatePagination = (options: IOptions): IOptionsResult => {
 
 const getPaginationMetaData = (page: number, limit: number, total: number): IPaginationMetaData => {
     const totalPage = Math.ceil(total / limit);
-    
+
     return {
         page,
         limit,
         total,
         totalPage,
+        totalPages: totalPage,
         hasNextPage: page < totalPage,
         hasPreviousPage: page > 1
     }

@@ -8,7 +8,28 @@ import { contestService } from "../Contest/contest.service"
 import ApiError from "../../../errors/ApiError"
 import httpStatus from "http-status"
 
+const parseNumber = (value?: string): number | null => {
+    if (!value) return null
+    const parsed = Number(value)
+    return Number.isFinite(parsed) ? parsed : null
+}
 
+const normalizeString = (value?: string): string | undefined => {
+    if (!value) return undefined
+    return value.toUpperCase()
+}
+
+const isValidSubscriptionPlanStatus = (value?: string): value is SubscriptionPlanStatus => {
+    return !!value && Object.values(SubscriptionPlanStatus).includes(value.toUpperCase() as SubscriptionPlanStatus)
+}
+
+const isValidSubscriptionPlanEnum = (value?: string): value is SubscriptionPlanEnum => {
+    return !!value && Object.values(SubscriptionPlanEnum).includes(value.toUpperCase() as SubscriptionPlanEnum)
+}
+
+const isValidPaymentStatus = (value?: string): value is PaymentStatus => {
+    return !!value && Object.values(PaymentStatus).includes(value.toUpperCase() as PaymentStatus)
+}
 
 const getContestStats = async () => {
     const runningContestCount = await prisma.contest.count({ where: { status: ContestStatus.ACTIVE } })
@@ -151,27 +172,33 @@ const getAllPaymentsHistory = async (query: { page?: string, limit?: string, sea
 
     const whereCondition: any = {}
 
-    if (query.status && Object.values(PaymentStatus).includes(query.status as PaymentStatus)) {
-        whereCondition.status = query.status as PaymentStatus
+    if (isValidPaymentStatus(normalizeString(query.status))) {
+        whereCondition.status = normalizeString(query.status) as PaymentStatus
     }
 
     if (query.method) {
         whereCondition.method = query.method
     }
 
-    if (query.planName && Object.values(SubscriptionPlanEnum).includes(query.planName as SubscriptionPlanEnum)) {
-        whereCondition.planName = query.planName as SubscriptionPlanEnum
+    if (isValidSubscriptionPlanEnum(normalizeString(query.planName))) {
+        whereCondition.planName = normalizeString(query.planName) as SubscriptionPlanEnum
     }
 
     if (query.search) {
-        whereCondition.OR = [
+        const amountSearch = parseNumber(query.search)
+        const orClauses: any[] = [
             { stripe_payment_id: { contains: query.search, mode: 'insensitive' } },
             { stripe_session_id: { contains: query.search, mode: 'insensitive' } },
             { description: { contains: query.search, mode: 'insensitive' } },
-            { amount: { equals: Number(query.search) } },
             { user: { fullName: { contains: query.search, mode: 'insensitive' } } },
             { user: { email: { contains: query.search, mode: 'insensitive' } } },
         ]
+
+        if (amountSearch !== null) {
+            orClauses.push({ amount: { equals: amountSearch } })
+        }
+
+        whereCondition.OR = orClauses
     }
 
     const payments = await prisma.payment.findMany({
@@ -408,15 +435,16 @@ const getAllUsers = async (pagination: { page?: string, limit?: string, search?:
     });
 
     const whereCondition: any = {}
+    const normalizedStatus = pagination.status?.toLowerCase()
 
-    if (pagination.status === 'active') {
+    if (normalizedStatus === 'active') {
         whereCondition.isActive = true
-    } else if (pagination.status === 'inactive') {
+    } else if (normalizedStatus === 'inactive') {
         whereCondition.isActive = false
     }
 
     if (pagination.role) {
-        whereCondition.role = pagination.role
+        whereCondition.role = pagination.role.toUpperCase()
     }
 
     if (pagination.search) {
@@ -494,17 +522,23 @@ const getStoreStats = async () => {
 
 const getPlans = async (status?: SubscriptionPlanStatus, search?: string) => {
     const whereCondition: any = {}
-    if (status) {
-        whereCondition.status = status
+    if (isValidSubscriptionPlanStatus(normalizeString(status))) {
+        whereCondition.status = normalizeString(status) as SubscriptionPlanStatus
     }
 
     if (search) {
-        whereCondition.OR = [
-            { planName: { equals: search.toUpperCase() as SubscriptionPlanEnum } },
+        const normalizedSearch = normalizeString(search)
+        const orClauses: any[] = [
             { stripe_price_id: { contains: search, mode: 'insensitive' } },
             { stripe_product_id: { contains: search, mode: 'insensitive' } },
             { description: { contains: search, mode: 'insensitive' } },
         ]
+
+        if (isValidSubscriptionPlanEnum(normalizedSearch)) {
+            orClauses.unshift({ planName: { equals: normalizedSearch as SubscriptionPlanEnum } })
+        }
+
+        whereCondition.OR = orClauses
     }
 
     const plans = await prisma.subscriptionPlan.findMany({
@@ -546,27 +580,33 @@ const getTransactions = async (query: { page?: string, limit?: string, search?: 
 
     const whereCondition: any = {}
 
-    if (query.status && Object.values(PaymentStatus).includes(query.status as PaymentStatus)) {
-        whereCondition.status = query.status as PaymentStatus
+    if (isValidPaymentStatus(normalizeString(query.status))) {
+        whereCondition.status = normalizeString(query.status) as PaymentStatus
     }
 
     if (query.method) {
         whereCondition.method = query.method
     }
 
-    if (query.planName && Object.values(SubscriptionPlanEnum).includes(query.planName as SubscriptionPlanEnum)) {
-        whereCondition.planName = query.planName as SubscriptionPlanEnum
+    if (isValidSubscriptionPlanEnum(normalizeString(query.planName))) {
+        whereCondition.planName = normalizeString(query.planName) as SubscriptionPlanEnum
     }
 
     if (query.search) {
-        whereCondition.OR = [
+        const amountSearch = parseNumber(query.search)
+        const orClauses: any[] = [
             { stripe_payment_id: { contains: query.search, mode: 'insensitive' } },
             { stripe_session_id: { contains: query.search, mode: 'insensitive' } },
             { description: { contains: query.search, mode: 'insensitive' } },
-            { amount: { equals: Number(query.search) } },
             { user: { fullName: { contains: query.search, mode: 'insensitive' } } },
             { user: { email: { contains: query.search, mode: 'insensitive' } } },
         ]
+
+        if (amountSearch !== null) {
+            orClauses.push({ amount: { equals: amountSearch } })
+        }
+
+        whereCondition.OR = orClauses
     }
 
     const payments = await prisma.payment.findMany({
