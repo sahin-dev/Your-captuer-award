@@ -17,13 +17,14 @@ const mailer = async (email: string, html: string, subject: string) => {
   });
 
   const info = await transporter.sendMail({
-    from: "<mail@yourcaptureaward.com>",
+    from: `"Your Capture Award" <${config.emailSender.email}>`,
     to: email,
     subject: `${subject}`,
     html,
   });
 
   console.log("Message sent: %s", info.messageId);
+  return info;
 };
 
 export default mailer;
