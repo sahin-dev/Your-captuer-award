@@ -30,7 +30,7 @@ const updateSupportStatus = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getAllSupports = catchAsync(async (req: Request, res: Response) => {
-  const { page, limit, search } = req.query;
+  const { page, limit, search } = req.query as { page?: string, limit?: string, search?: string };
   const pageNum = page ? Number(page) : undefined;
   const limitNum = limit ? Number(limit) : undefined;
 
