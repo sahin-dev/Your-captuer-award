@@ -106,7 +106,7 @@ const updateSupportStatus = async (id: string, status: SupportStatus) => {
   return ticket;
 };
 
-const getAllSupports = async (page: number = 1, limit: number = 10) => {
+const getAllSupports = async (page: number = 1, limit: number = 10, search?: string) => {
   const { skip, limit: paginationLimit } = paginationHelper.calculatePagination({
     page,
     limit,
@@ -117,8 +117,11 @@ const getAllSupports = async (page: number = 1, limit: number = 10) => {
       skip,
       take: paginationLimit,
       orderBy: { createdAt: "desc" },
+      where: search ? { ticket_no: { contains: search, mode: 'insensitive' }, email: { contains: search, mode: 'insensitive' } } : {}
     }),
-    prisma.support.count(),
+    prisma.support.count({
+      where: search ? { ticket_no: { contains: search, mode: 'insensitive' }, email: { contains: search, mode: 'insensitive' } } : {}
+    }),
   ]);
 
   const meta = paginationHelper.getPaginationMetaData(

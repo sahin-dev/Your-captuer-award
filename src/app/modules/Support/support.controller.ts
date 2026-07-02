@@ -30,11 +30,11 @@ const updateSupportStatus = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getAllSupports = catchAsync(async (req: Request, res: Response) => {
-  const { page, limit } = req.query;
+  const { page, limit, search } = req.query;
   const pageNum = page ? Number(page) : undefined;
   const limitNum = limit ? Number(limit) : undefined;
 
-  const result = await supportService.getAllSupports(pageNum, limitNum);
+  const result = await supportService.getAllSupports(pageNum, limitNum, search);
 
   sendResponse(res, {
     success: true,
