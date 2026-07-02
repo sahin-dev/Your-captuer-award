@@ -17,19 +17,59 @@ import { userLevelService } from "../Level/userLevel.service"
 
 
 
-const getUsers = async (page: number = 1, limit: number = 20) => {
-    const { skip, limit: paginationLimit } = paginationHelper.calculatePagination({ page, limit });
+const getUsers = async (pagination: { page?: string, limit?: string, search?: string, status?: string, role?: string }) => {
+    const { skip, limit: paginationLimit } = paginationHelper.calculatePagination({
+        page: parseInt(pagination.page || '1') || 1,
+        limit: parseInt(pagination.limit || '10') || 10
+    });
 
-    const totalUsers = await prisma.user.count()
+    console.log("Pagination parameters:", pagination);
+
+    const whereCondition: any = {}
+    const normalizedStatus = pagination.status
+
+    if (normalizedStatus === 'active') {
+        whereCondition.isActive = true
+    } else if (normalizedStatus === 'inactive') {
+        whereCondition.isActive = false
+    }
+
+    if (pagination.role) {
+        whereCondition.role = pagination.role.toUpperCase()
+    }
+
+    if (pagination.search) {
+        whereCondition.OR = [
+            { fullName: { contains: pagination.search, mode: 'insensitive' } },
+            { email: { contains: pagination.search, mode: 'insensitive' } },
+            { username: { contains: pagination.search, mode: 'insensitive' } },
+            { phone: { contains: pagination.search, mode: 'insensitive' } },
+        ]
+    }
+
     const users = await prisma.user.findMany({
-        omit: { password: true, createdAt: true, updatedAt: true, accessToken: true },
+        where: whereCondition,
+        select: { id: true, firstName: true, lastName: true, fullName: true, email: true, username: true, avatar: true, role: true, isActive: true, createdAt: true },
+        skip,
         take: paginationLimit,
-        skip
+        orderBy: { createdAt: 'desc' }
+    });
+
+    const total = await prisma.user.count({ where: whereCondition });
+    const paginationMetaData = paginationHelper.getPaginationMetaData(
+        parseInt(pagination.page || '1') || 1,
+        paginationLimit,
+        total
+    );
+
+    let mappedUsers = users.map(async user => {
+        let votes = await voteService.getUserTotalVotes(user.id)
+        return { ...user, votes }
     })
-
-    const meta = paginationHelper.getPaginationMetaData(page, paginationLimit, totalUsers);
-
-    return { data: users, meta }
+    return {
+        data: await Promise.all(mappedUsers),
+        meta: paginationMetaData
+    };
 }
 
 

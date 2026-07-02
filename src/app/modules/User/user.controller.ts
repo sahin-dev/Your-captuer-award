@@ -4,27 +4,20 @@ import { userService } from "./user.service";
 import sendResponse from "../../../shared/ApiResponse";
 import httpstatus from 'http-status'
 import ApiError from "../../../errors/ApiError";
+import httpStatus from 'http-status' 
 
 
 
 
 const getUsers = catchAsync(async (req: Request, res: Response) => {
-    const { page, limit } = req.query as { page?: string; limit?: string }
-
-    let pageNum = page ? Number(page) : undefined
-    let limitNum = limit ? Number(limit) : undefined
-
-    if (typeof pageNum === 'number' && isNaN(pageNum)) pageNum = undefined
-    if (typeof limitNum === 'number' && isNaN(limitNum)) limitNum = undefined
-
-    const result = await userService.getUsers(pageNum, limitNum)
-
+    const { page, limit, search, status, role } = req.query as { page?: string, limit?: string, search?: string, status?: string, role?: string }
+    const users = await userService.getUsers({ page, limit, search, status, role })
     sendResponse(res, {
         success: true,
-        statusCode: httpstatus.OK,
-        message: "Users fetched successfully",
-        data: result.data,
-        meta: result.meta
+        statusCode: httpStatus.OK,
+        message: "users fetched successfully",
+        data: users.data,
+        meta: users.meta
     })
 })
 
