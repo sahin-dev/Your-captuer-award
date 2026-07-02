@@ -172,9 +172,7 @@ const getAllProducts = async (
         orderBy: { createdAt: 'desc' }
     });
 
-    const total = await prisma.product.count({
-        where: { status: ProductStatus.ACTIVE }
-    });
+    const total = await prisma.product.count();
 
     const totalPages = Math.ceil(total / paginationLimit);
 
