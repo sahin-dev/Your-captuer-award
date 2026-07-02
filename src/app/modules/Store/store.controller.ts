@@ -86,10 +86,10 @@ const getProductDetails = catchAsync(async (req: Request, res: Response) => {
 const updateStoreProduct = catchAsync(async (req: Request, res: Response) => {
     const { productId } = req.params;
     const updateData = req.body;
+    const file = req.file;
 
-    console.log("Received update data:", updateData);
 
-    const updatedProduct = await storeService.updateProduct(productId, updateData);
+    const updatedProduct = await storeService.updateProduct(productId, updateData, file);
 
     sendResponse(res, {
         success: true,

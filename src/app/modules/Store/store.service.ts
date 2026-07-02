@@ -223,7 +223,8 @@ const updateProduct = async (
         image?: string;
         icon?: string;
         status?: ProductStatus;
-    }>
+    }>,
+    file?: Express.Multer.File
 ) => {
     if (!productId) {
         throw new ApiError(httpStatus.BAD_REQUEST, "Product ID is required");
@@ -304,9 +305,17 @@ const updateProduct = async (
         normalizedData.status = statusValue as ProductStatus;
     }
 
+    
+    // Upload the file
+    let imageUrl: string | null = null;
+    if (file) {
+        const uploadedFile = await fileUploader.uploadToFilesystem(file);
+        imageUrl = uploadedFile.Location;
+    }
+
     const updatedProduct = await prisma.product.update({
         where: { id: productId },
-        data: normalizedData
+        data: { ...normalizedData, ...(imageUrl ? { image: imageUrl } : {}) }
     });
 
     return updatedProduct;

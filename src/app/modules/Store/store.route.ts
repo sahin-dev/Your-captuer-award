@@ -34,7 +34,7 @@ router.get("/:productId", auth(), storeController.getProductDetails);
 /**
  * PATCH /api/store/:productId - Update product (admin only)
  */
-router.patch("/:productId", auth(UserRole.ADMIN), storeController.updateStoreProduct);
+router.patch("/:productId",fileUploader.filesystemUpload.single("image"), auth(UserRole.ADMIN), storeController.updateStoreProduct);
 
 /**
  * DELETE /api/store/:productId - Delete product (soft delete) (admin only)
