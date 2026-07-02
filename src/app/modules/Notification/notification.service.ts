@@ -84,7 +84,7 @@ const markAllRead = async (userId:string) => {
         return await prisma.notification.updateMany({where:{receiverId:userId}, data:{isRead:true}})
     }
 
-    return await prisma.notification.updateMany({where:{receiverId:'admin'}, data:{isRead:true}})
+    return await prisma.notification.updateMany({where:{OR:[{receiverId:userId}, {receiverId: 'admin'}]}, data:{isRead:true}})
 }
 
 /**
