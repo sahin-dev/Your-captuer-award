@@ -237,6 +237,13 @@ const getUserProfileDetails = async (userId: string, viewerId?: string) => {
 }
 
 
+const incrementPhotoViewCount = async (photoId: string) => {
+    await prisma.userPhoto.update({
+        where: { id: photoId },
+        data: { views: { increment: 1 } }
+    })
+}
+
 const getUserPhotoDetails = async (userId: string, photoId: string, viewerId?: string) => {
     const photo = await prisma.userPhoto.findUnique({
         where: { id: photoId, userId },
@@ -253,6 +260,11 @@ const getUserPhotoDetails = async (userId: string, photoId: string, viewerId?: s
     if (!photo) {
         throw new ApiError(httpStatus.NOT_FOUND, "photo not found")
     }
+
+    if (viewerId && viewerId !== photo.userId) {
+        await incrementPhotoViewCount(photo.id)
+    }
+
 
     const votes = await voteService.getVoteCount(photo.id)
     const { data: comments } = await handleGetUserComments(photoId, 1, 10)
@@ -385,6 +397,10 @@ const getPublicPhotoDetails = async (photoId: string, viewerId?: string) => {
     })
     if (!photo) {
         throw new ApiError(httpStatus.NOT_FOUND, "photo not found")
+    }
+
+    if (viewerId && viewerId !== photo.userId) {
+        await incrementPhotoViewCount(photo.id)
     }
 
     const votes = await voteService.getVoteCount(photo.id)
