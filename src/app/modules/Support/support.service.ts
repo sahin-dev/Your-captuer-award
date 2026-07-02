@@ -107,6 +107,7 @@ const updateSupportStatus = async (id: string, status: SupportStatus) => {
 };
 
 const getAllSupports = async (page: number = 1, limit: number = 10, search?: string) => {
+  console.log("search", search)
   const { skip, limit: paginationLimit } = paginationHelper.calculatePagination({
     page,
     limit,
