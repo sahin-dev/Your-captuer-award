@@ -167,7 +167,6 @@ const getAllProducts = async (
     });
 
     const products = await prisma.product.findMany({
-        where: { status: ProductStatus.ACTIVE },
         skip,
         take: paginationLimit,
         orderBy: { createdAt: 'desc' }
