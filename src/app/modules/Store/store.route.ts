@@ -16,6 +16,8 @@ router.get("/search", auth(), storeController.searchProducts);
  */
 router.get("/", auth(), storeController.getAllProducts);
 
+router.get("/", auth(), storeController.getAllProducts);
+
 /**
  * GET /api/store/category/:category - Get products by category
  */

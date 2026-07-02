@@ -165,6 +165,47 @@ const getAllProducts = async (
     });
 
     const products = await prisma.product.findMany({
+        where: {status: ProductStatus.ACTIVE},
+        skip,
+        take: paginationLimit,
+        orderBy: { createdAt: 'desc' }
+    });
+
+    const total = await prisma.product.count({
+        where: {status: ProductStatus.ACTIVE}
+    });
+
+    const totalPages = Math.ceil(total / paginationLimit);
+
+    return {
+        meta: {
+            page,
+            limit: paginationLimit,
+            total,
+            totalPages
+        },
+        data: products
+    };
+};
+
+const getAllActiveProducts = async (
+    category?: Category,
+    page: number = 1,
+    limit: number = 10
+) => {
+    if (category) {
+        return getAllActiveProductByCategory(category, page, limit);
+    }
+
+    const { skip, limit: paginationLimit } = paginationHelper.calculatePagination({
+        page,
+        limit
+    });
+
+    const products = await prisma.product.findMany({
+        where: {
+            status: ProductStatus.ACTIVE
+        },
         skip,
         take: paginationLimit,
         orderBy: { createdAt: 'desc' }
@@ -184,6 +225,47 @@ const getAllProducts = async (
         data: products
     };
 };
+
+const getAllActiveProductByCategory = async (
+    category: Category,
+    page: number = 1,
+    limit: number = 10
+) => {
+    const { skip, limit: paginationLimit } = paginationHelper.calculatePagination({
+        page,
+        limit
+    });
+
+    const products = await prisma.product.findMany({
+        where: {
+            status: ProductStatus.ACTIVE,
+            category: category,
+        },
+        skip,
+        take: paginationLimit,
+        orderBy: { createdAt: 'desc' }
+    });
+
+    const total = await prisma.product.count({
+        where: {
+            status: ProductStatus.ACTIVE,
+            category: category,
+        }
+    });
+
+    const totalPages = Math.ceil(total / paginationLimit);
+
+    return {
+        meta: {
+            page,
+            limit: paginationLimit,
+            total,
+            totalPages
+        },
+        data: products
+    };
+};
+
 
 /**
  * Get product details by ID
