@@ -122,7 +122,6 @@ const getAllProductByCategory = async (
     const products = await prisma.product.findMany({
         where: {
             category: category,
-            status: ProductStatus.ACTIVE
         },
         skip,
         take: paginationLimit,
@@ -132,7 +131,6 @@ const getAllProductByCategory = async (
     const total = await prisma.product.count({
         where: {
             category: category,
-            status: ProductStatus.ACTIVE
         }
     });
 
