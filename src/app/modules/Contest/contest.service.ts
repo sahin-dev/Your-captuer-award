@@ -583,6 +583,7 @@ const getContestById = async (contestId: string) => {
 
 //Return all the contests
 const getAllContests = async (page: number = 1, limit: number = 20, search?: string) => {
+    console.log("search", search)
     const { skip, limit: paginationLimit } = paginationHelper.calculatePagination({ page, limit });
 
     const [regularContests, regularTotal] = await Promise.all([
