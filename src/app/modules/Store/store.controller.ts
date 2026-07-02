@@ -87,6 +87,8 @@ const updateStoreProduct = catchAsync(async (req: Request, res: Response) => {
     const { productId } = req.params;
     const updateData = req.body;
 
+    console.log("Received update data:", updateData);
+
     const updatedProduct = await storeService.updateProduct(productId, updateData);
 
     sendResponse(res, {
