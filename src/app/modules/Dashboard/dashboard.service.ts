@@ -434,6 +434,8 @@ const getAllUsers = async (pagination: { page?: string, limit?: string, search?:
         limit: parseInt(pagination.limit || '10') || 10
     });
 
+    console.log("Pagination parameters:", pagination);
+
     const whereCondition: any = {}
     const normalizedStatus = pagination.status
 
