@@ -582,15 +582,20 @@ const getContestById = async (contestId: string) => {
 
 
 //Return all the contests
-const getAllContests = async (page: number = 1, limit: number = 20) => {
+const getAllContests = async (page: number = 1, limit: number = 20, search?: string) => {
     const { skip, limit: paginationLimit } = paginationHelper.calculatePagination({ page, limit });
 
     const [regularContests, regularTotal] = await Promise.all([
         prisma.contest.findMany({
+            where: search ? { title: { contains: search, mode: 'insensitive' } } : {},
+            skip,
+            take: paginationLimit,
             include: { creator: { omit: { password: true , accessToken:true} } },
             orderBy: { startDate: 'desc' }
         }),
-        prisma.contest.count(),
+        prisma.contest.count({
+            where: search ? { title: { contains: search, mode: 'insensitive' } } : {}
+        }),
     
        
     ]);
