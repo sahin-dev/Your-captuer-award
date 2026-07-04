@@ -73,7 +73,7 @@ export const handleSignIn = async (body: UserSignInData) => {
         throw new ApiError(httpstatus.NOT_FOUND, "User not found")
     }
 
-    if (user.isActive === false) {
+    if (user.isBlocked === true) {
         throw new ApiError(httpstatus.FORBIDDEN, "User is blocked, please contact support")
     }
 
@@ -106,6 +106,10 @@ export const handleAdminSignIn = async (body: UserSignInData) => {
 
     if (!user) {
         throw new ApiError(httpstatus.NOT_FOUND, "User not found")
+    }
+
+    if (user.isBlocked === true) {
+        throw new ApiError(httpstatus.FORBIDDEN, "User is blocked, please contact support")
     }
 
     if (await bcrypt.compare(body.password, user.password!)) {

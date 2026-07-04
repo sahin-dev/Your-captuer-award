@@ -1,0 +1,251 @@
+{
+  "info": {
+    "name": "Recurring Contests API",
+    "description": "Postman collection for recurring contest CRUD endpoints: list, get by id, update, and delete.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Recurring Contests",
+      "item": [
+        {
+          "name": "Get Recurring Contests",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{local_url}}/api/v1/contests/recurring?page=1&limit=10",
+              "host": [
+                "{{local_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "contests",
+                "recurring"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Fetch paginated recurring contests. Requires admin access."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{local_url}}/api/v1/contests/recurring?page=1&limit=10"
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"statusCode\": 200,\n  \"success\": true,\n  \"message\": \"Recurring contests fetched successfully\",\n  \"data\": [\n    {\n      \"id\": \"recurring_contest_001\",\n      \"title\": \"Weekend Photography Challenge\",\n      \"description\": \"A recurring photo contest for weekly submissions\",\n      \"banner\": \"https://example.com/banner.jpg\",\n      \"startDate\": \"2026-07-01T00:00:00.000Z\",\n      \"endDate\": \"2026-07-07T23:59:59.000Z\",\n      \"recurring\": {\n        \"recurringType\": \"DAILY\",\n        \"previousOccurrence\": null,\n        \"nextOccurrence\": \"2026-07-02T00:00:00.000Z\",\n        \"duration\": 604800000\n      },\n      \"rules\": [\n        \"Submit one photo per day\",\n        \"Only original work allowed\"\n      ],\n      \"prizes\": [\n        \"Winner gets a featured profile slot\"\n      ],\n      \"creator\": {\n        \"id\": \"user_123\",\n        \"fullName\": \"Admin User\"\n      }\n    }\n  ],\n  \"meta\": {\n    \"page\": 1,\n    \"limit\": 10,\n    \"total\": 1,\n    \"totalPages\": 1\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Recurring Contest By ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{local_url}}/api/v1/contests/recurring/:contestId",
+              "host": [
+                "{{local_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "contests",
+                "recurring",
+                ":contestId"
+              ],
+              "variable": [
+                {
+                  "key": "contestId",
+                  "value": "{{recurring_contest_id}}"
+                }
+              ]
+            },
+            "description": "Fetch a single recurring contest by its ID. Requires admin access."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"statusCode\": 200,\n  \"success\": true,\n  \"message\": \"Recurring contest fetched successfully\",\n  \"data\": {\n    \"id\": \"{{recurring_contest_id}}\",\n    \"title\": \"Weekend Photography Challenge\",\n    \"description\": \"A recurring photo contest for weekly submissions\",\n    \"banner\": \"https://example.com/banner.jpg\",\n    \"startDate\": \"2026-07-01T00:00:00.000Z\",\n    \"endDate\": \"2026-07-07T23:59:59.000Z\",\n    \"recurring\": {\n      \"recurringType\": \"DAILY\",\n      \"previousOccurrence\": null,\n      \"nextOccurrence\": \"2026-07-02T00:00:00.000Z\",\n      \"duration\": 604800000\n    },\n    \"rules\": [\n      \"Submit one photo per day\",\n      \"Only original work allowed\"\n    ],\n    \"prizes\": [\n      \"Winner gets a featured profile slot\"\n    ],\n    \"creator\": {\n      \"id\": \"user_123\",\n      \"fullName\": \"Admin User\"\n    }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Recurring Contest",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "title",
+                  "value": "Weekend Photography Challenge Updated",
+                  "type": "text"
+                },
+                {
+                  "key": "description",
+                  "value": "Updated recurring photo contest description",
+                  "type": "text"
+                },
+                {
+                  "key": "banner",
+                  "type": "file",
+                  "description": "Optional contest banner image"
+                },
+                {
+                  "key": "startDate",
+                  "value": "2026-07-08T00:00:00.000Z",
+                  "type": "text"
+                },
+                {
+                  "key": "endDate",
+                  "value": "2026-07-14T23:59:59.000Z",
+                  "type": "text"
+                },
+                {
+                  "key": "recurringType",
+                  "value": "WEEKLY",
+                  "type": "text"
+                },
+                {
+                  "key": "rules",
+                  "value": "[\"Submit one photo per week\",\"Only original work allowed\"]",
+                  "type": "text"
+                },
+                {
+                  "key": "prizes",
+                  "value": "[\"Winner gets featured profile slot\"]",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{local_url}}/api/v1/contests/recurring/:contestId",
+              "host": [
+                "{{local_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "contests",
+                "recurring",
+                ":contestId"
+              ],
+              "variable": [
+                {
+                  "key": "contestId",
+                  "value": "{{recurring_contest_id}}"
+                }
+              ]
+            },
+            "description": "Update an existing recurring contest. Requires admin access."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"statusCode\": 200,\n  \"success\": true,\n  \"message\": \"Recurring contest updated successfully\",\n  \"data\": {\n    \"id\": \"{{recurring_contest_id}}\",\n    \"title\": \"Weekend Photography Challenge Updated\",\n    \"description\": \"Updated recurring photo contest description\",\n    \"banner\": \"https://example.com/updated-banner.jpg\",\n    \"startDate\": \"2026-07-08T00:00:00.000Z\",\n    \"endDate\": \"2026-07-14T23:59:59.000Z\",\n    \"recurring\": {\n      \"recurringType\": \"WEEKLY\",\n      \"previousOccurrence\": null,\n      \"nextOccurrence\": \"2026-07-08T00:00:00.000Z\",\n      \"duration\": 518400000\n    },\n    \"rules\": [\n      \"Submit one photo per week\",\n      \"Only original work allowed\"\n    ],\n    \"prizes\": [\n      \"Winner gets featured profile slot\"\n    ]\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Recurring Contest",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{local_url}}/api/v1/contests/recurring/:contestId",
+              "host": [
+                "{{local_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "contests",
+                "recurring",
+                ":contestId"
+              ],
+              "variable": [
+                {
+                  "key": "contestId",
+                  "value": "{{recurring_contest_id}}"
+                }
+              ]
+            },
+            "description": "Delete a recurring contest by ID. Requires admin access."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"statusCode\": 200,\n  \"success\": true,\n  \"message\": \"Recurring contest deleted successfully\",\n  \"data\": null\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "local_url",
+      "value": "http://localhost:5000"
+    },
+    {
+      "key": "admin_token",
+      "value": "your_admin_jwt_token"
+    },
+    {
+      "key": "recurring_contest_id",
+      "value": "recurring_contest_001"
+    }
+  ]
+}

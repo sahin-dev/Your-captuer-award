@@ -3,7 +3,7 @@ import ApiError from '../../../errors/ApiError';
 import httpstatus from 'http-status';
 import { fileUploader } from '../../../helpers/fileUploader';
 import { paginationHelper } from '../../../helpers/paginationHelper';
-import { ContestMode, ContestParticipant, ContestParticipantStatus, ContestPhoto, ContestPlan, ContestStatus, PrizeType, SubscriptionPlanEnum, SubscriptionStatus, YCLevel } from '../../../prismaClient';
+import { ContestMode, ContestParticipant, ContestParticipantStatus, ContestPhoto, ContestPlan, ContestStatus, PrizeType, RecurringType, SubscriptionPlanEnum, SubscriptionStatus, YCLevel } from '../../../prismaClient';
 import { IContest } from './contest.interface';
 import { contestData } from './contest.type';
 import { contestRuleService } from './ContestRules/contestRules.service';
@@ -19,6 +19,7 @@ import { use } from 'passport';
 import { achievementService } from '../Achievements/achievement.service';
 import { teamService } from '../Team/team.service';
 import { createExposureWatcher } from '../Agenda/exposureWatcher';
+import { calculateNextOccurance } from '../../../helpers/nextOccurance';
 
 
 
@@ -195,6 +196,9 @@ const createRecurringContest = async (creatorId: string, body: contestData, bann
 
     }
 
+    const recurringType = body.recurringType || RecurringType.DAILY;
+    const recurringStatus = body.recurring_status === undefined ? true : Boolean(body.recurring_status);
+
     const contestData: any = {
         creatorId,
         title: body.title,
@@ -202,6 +206,8 @@ const createRecurringContest = async (creatorId: string, body: contestData, bann
         mode: body.mode || ContestMode.SOLO,
         type: body.type || ContestPlan.OPEN,
         level_requirements: levels,
+        recurringType,
+        recurring_status: recurringStatus,
         ...(body.coin_requirement === true ? { coin_required: body.coin_required, coin_requirement: body.coin_requirement } : null),
         startDate,
         endDate
@@ -234,7 +240,7 @@ const createRecurringContest = async (creatorId: string, body: contestData, bann
 
     contestData.recurring = {
         set: {
-            recurringType: body.recurringType,
+            recurringType,
             previousOccurrence: null,
             nextOccurrence: startDate,
             duration: new Date(body.endDate).getTime() - new Date(body.startDate).getTime()
@@ -242,7 +248,7 @@ const createRecurringContest = async (creatorId: string, body: contestData, bann
     }
 
     try {
-        const recurringContest = await prisma.recurringContest.create({ data: contestData })
+        const recurringContest = await prisma.recurringContest.create({ data: {...contestData, recurringStatus:true} })
         return recurringContest
     } catch (err: any) {
         throw new ApiError(httpstatus.BAD_REQUEST, " recurring Contest creation failed")
@@ -384,7 +390,7 @@ const getRecurringContests = async (page: number = 1, limit: number = 20) => {
   return { data, meta };
 };
 
-type RecurringContestUpdatePayload = Partial<IContest> & Partial<{ rules: any; prizes: any; recurringType: string; }>
+type RecurringContestUpdatePayload = Partial<IContest> & Partial<{ rules: any; prizes: any; recurringType: string; recurring_status?: boolean | string; startDate?: string | Date; endDate?: string | Date; }>
 
 const updateRecurringContest = async (contestId: string, contestData: RecurringContestUpdatePayload, banner?: Express.Multer.File) => {
   const recurringContest = await prisma.recurringContest.findUnique({ where: { id: contestId } });
@@ -403,14 +409,36 @@ const updateRecurringContest = async (contestId: string, contestData: RecurringC
     updateData.banner = (await fileUploader.uploadToFilesystem(banner)).Location;
   }
 
-  if (contestData.recurringType) {
+  if (contestData.startDate !== undefined || contestData.endDate !== undefined) {
+    const updatedStartDate = contestData.startDate !== undefined ? new Date(contestData.startDate) : new Date(recurringContest.startDate);
+    const updatedEndDate = contestData.endDate !== undefined ? new Date(contestData.endDate) : new Date(recurringContest.endDate);
+
+    if (!validateContestDate(updatedStartDate.toISOString(), updatedEndDate.toISOString())) {
+      throw new ApiError(httpstatus.BAD_REQUEST, "Start date cannot be after end date");
+    }
+
+    updateData.startDate = updatedStartDate;
+    updateData.endDate = updatedEndDate;
+  }
+
+  if (contestData.recurringType !== undefined) {
+    const normalizedRecurringType = String(contestData.recurringType).toUpperCase() as RecurringType;
+    const nextOccurrenceDate = contestData.startDate !== undefined ? new Date(contestData.startDate) : new Date(recurringContest.startDate);
+    const duration = (updateData.endDate ? new Date(updateData.endDate) : new Date(recurringContest.endDate)).getTime() - (updateData.startDate ? new Date(updateData.startDate) : new Date(recurringContest.startDate)).getTime();
+
+    updateData.recurringType = normalizedRecurringType;
     updateData.recurring = {
       set: {
-        ...recurringContest.recurring,
-        recurringType: contestData.recurringType
+        recurringType: normalizedRecurringType,
+        previousOccurrence: null,
+        nextOccurrence: calculateNextOccurance(nextOccurrenceDate, normalizedRecurringType),
+        duration
       }
     };
-    delete updateData.recurringType;
+  }
+
+  if (contestData.recurring_status !== undefined) {
+    updateData.recurring_status = Boolean(contestData.recurring_status);
   }
 
   if (contestData.rules) {

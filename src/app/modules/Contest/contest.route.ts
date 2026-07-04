@@ -4,7 +4,7 @@ import { contestController } from './contest.controller'
 import auth from '../../middlewares/auth.middleware'
 import { UserRole } from '../../../prismaClient'
 import validateRequest from '../../middlewares/validation.middleware'
-import { createContestSchema } from './contest.validation'
+import { createContestSchema, updateRecurringContestSchema } from './contest.validation'
 import { contestRuleController } from './ContestRules/contestRules.controller'
 import { contestPrizeController } from './ContestPrizes/contestPrize.controller'
 
@@ -14,7 +14,7 @@ const router = Router()
 
 router.route("/").post(fileUploader.filesystemUploadContestBanner,validateRequest(createContestSchema), auth(UserRole.ADMIN),  contestController.createContest).get(auth(), contestController.getContestsByStatus)
 router.route("/recurring").post(fileUploader.filesystemUploadContestBanner, validateRequest(createContestSchema), auth(UserRole.ADMIN), contestController.createRecurringContest).get(auth(UserRole.ADMIN), contestController.getRecurringContests)
-router.route("/recurring/:contestId").get(auth(UserRole.ADMIN), contestController.getRecurringContestById).put(auth(UserRole.ADMIN), fileUploader.filesystemUploadContestBanner, contestController.updateRecurringContestDetails).delete(auth(UserRole.ADMIN), contestController.deleteRecurringContest)
+router.route("/recurring/:contestId").get(auth(UserRole.ADMIN), contestController.getRecurringContestById).put(auth(UserRole.ADMIN), fileUploader.filesystemUploadContestBanner, validateRequest(updateRecurringContestSchema), contestController.updateRecurringContestDetails).delete(auth(UserRole.ADMIN), contestController.deleteRecurringContest)
 router.get("/all", auth(UserRole.ADMIN), contestController.getAllContests)
 router.get("/ucontests", contestController.getPublicContestsByStatus)
 router.get("/ucontests/:contestId", contestController.getContestById)
