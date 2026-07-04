@@ -49,7 +49,7 @@ const getUsers = async (pagination: { page?: string, limit?: string, search?: st
 
     const users = await prisma.user.findMany({
         where: whereCondition,
-        select: { id: true, firstName: true, lastName: true, fullName: true, email: true, username: true, avatar: true, role: true, isActive: true, createdAt: true },
+        select: { id: true, firstName: true, lastName: true, fullName: true, email: true, username: true, avatar: true, role: true, isDeleted:true,isBlocked:true, createdAt: true },
         skip,
         take: paginationLimit,
         orderBy: { createdAt: 'desc' }
