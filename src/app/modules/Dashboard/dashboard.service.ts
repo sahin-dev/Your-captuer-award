@@ -344,7 +344,7 @@ const getTotalStoreSalesRevenue = async () => {
     const storePayments = await prisma.payment.aggregate({
         where: {
             status: PaymentStatus.SUCCEEDED,
-            method: 'STORE'
+            type: 'STORE'
         },
         _sum: { amount: true }
     })

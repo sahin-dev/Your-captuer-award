@@ -54,6 +54,7 @@ const getMyAchievements = catchAsync(async (req:Request, res:Response) => {
 })
 
 const getAchievementsByType = catchAsync(async (req:Request, res:Response) => {
+    
     const {type} = req.body
     const userId = req.user.id
     const { page, limit } = req.query;
