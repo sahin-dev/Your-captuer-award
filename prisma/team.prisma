@@ -8,7 +8,7 @@ model Team {
   description   String
   accessibility TeamAccessibility   @default(PUBLIC)
   member_count   Int  @default(0)
-  member_slots   Int  @default(10)
+  member_slots   Int  @default(22)
   score         Int   @default(0)
   win           Int   @default(0)
   lost          Int   @default(0)
