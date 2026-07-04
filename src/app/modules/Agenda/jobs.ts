@@ -182,7 +182,8 @@ async function scheduleContest(rContest: RecurringContest) {
                 set: {
                     recurringType: rContest.recurring.recurringType,
                     previousOccurrence: newContest.startDate,
-                    nextOccurrence: next
+                    nextOccurrence: next,
+                    duration: duration
                 }
             }
         }
