@@ -216,8 +216,8 @@ const createRecurringContest = async (creatorId: string, body: contestData, bann
         throw new ApiError(httpstatus.BAD_REQUEST, "contest rules and prizes are required")
     }
 
-    contestData.rules = JSON.stringify(body.rules)
-    contestData.prizes = JSON.stringify(body.prizes)
+    contestData.rules = body.rules
+    contestData.prizes = body.prizes
 
     let bannerUrl: string | null = null
     if (body.banner) {
@@ -425,7 +425,6 @@ const updateRecurringContest = async (contestId: string, contestData: RecurringC
     const nextOccurrenceDate = contestData.startDate !== undefined ? new Date(contestData.startDate) : new Date(recurringContest.startDate);
     const duration = (updateData.endDate ? new Date(updateData.endDate) : new Date(recurringContest.endDate)).getTime() - (updateData.startDate ? new Date(updateData.startDate) : new Date(recurringContest.startDate)).getTime();
 
-    updateData.recurringType = normalizedRecurringType;
     updateData.recurring = {
       set: {
         recurringType: normalizedRecurringType,

@@ -127,6 +127,7 @@ agenda.define("contest:checkRecurring", async () => {
 
 async function scheduleContest(rContest: RecurringContest) {
 
+
     if (!rContest.recurring_status) {
         console.log(`Recurring ${rContest.id}: disabled, skipping.`);
         return;
@@ -160,13 +161,13 @@ async function scheduleContest(rContest: RecurringContest) {
         }
     })
 
-    const rules = JSON.parse(rContest.rules as string) as ContestRule[]
+    const rules = typeof rContest.rules === 'string' ? JSON.parse(rContest.rules) as ContestRule[] : rContest.rules as ContestRule[]
 
     for (const rule of rules) {
         await prisma.contestRule.create({ data: { contestId: newContest.id, name: rule.name, description: rule.description } })
     }
 
-    const prizes = JSON.parse(rContest.prizes as string) as ContestPrize[]
+    const prizes = typeof rContest.prizes === 'string' ? JSON.parse(rContest.prizes) as ContestPrize[] : rContest.prizes as ContestPrize[]
 
     for (const prize of prizes) {
         await prisma.contestPrize.create({ data: { contestId: newContest.id, category: prize.category, key: prize.key, boost: prize.boost, swap: (prize.swap) } })
