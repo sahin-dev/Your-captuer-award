@@ -56,7 +56,7 @@ model RecurringContest {
 
   startDate DateTime
   endDate   DateTime
-  recurringType RecurringType
+
   recurring_status Boolean @default(true)
   creatorId String        @db.ObjectId
   recurring RecurringData
