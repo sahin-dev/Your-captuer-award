@@ -943,7 +943,13 @@ const removeFromTeam = async (userId:string,memberId:string, teamId:string) => {
         throw new ApiError(httpstatus.NOT_FOUND, "team member not found")
     }
 
-    return await prisma.teamMember.delete({where:{id:memberId}})
+    const deletedMember = await prisma.$transaction(async tx => {
+        const teamMember = await prisma.teamMember.delete({where:{id:memberId}})
+        await prisma.team.update({where:{id:teamId}, data:{member_count:{decrement:1}}})
+        return teamMember
+    }) 
+
+    return deletedMember
 }
 
 /**
