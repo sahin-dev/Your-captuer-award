@@ -19,7 +19,7 @@ model Team {
   active_match_id   String?  @db.ObjectId
   leaderboard_rank  Int?
   total_matches     Int  @default(0)
-  skill_level       SkillLevel  @default(INTERMEDIATE)
+  skill_level       LevelName  @default(APPRENTICE)
   creatorId     String            @db.ObjectId
   creator       User              @relation(fields: [creatorId], references: [id])
   members       TeamMember[]

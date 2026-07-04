@@ -67,10 +67,17 @@ const getLevelByOrder = async (order:number) => {
 
     return level
 }
+
+const getLevelByName = async (name:LevelName) => {
+    const level = await prisma.level.findFirst({where:{levelName:name}})
+    return level
+}
+
 export const levelService =  {
     addLevel,
     editLevel,
     deleteLevl,
     getLevels,
-    getLevelByOrder
+    getLevelByOrder,
+    getLevelByName
 }

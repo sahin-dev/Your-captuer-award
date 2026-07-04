@@ -287,22 +287,40 @@ const isTeamExist = async (teamId:string)=>{
 export const deleteTeam = async (userId:string, teamId: string) => {
     const existingTeam = await prisma.team.findUnique({ where: { id: teamId } });
 
-
     if (!existingTeam) {
         throw new ApiError(httpstatus.NOT_FOUND, 'Team not found');
     }
 
-    const member = await prisma.teamMember.findFirst({where:{teamId:teamId, memberId:userId}})
-    if(!member){
-        throw new ApiError(httpstatus.BAD_REQUEST, "you are not member of this team.")
+    const member = await prisma.teamMember.findFirst({ where: { teamId: teamId, memberId: userId } });
+    if (!member) {
+        throw new ApiError(httpstatus.BAD_REQUEST, 'You are not member of this team.');
     }
 
-    if(!member || member.level !== MemberLevel.LEADER){
-        throw new ApiError(httpstatus.BAD_REQUEST, "You are not allowed to delete this team.")
+    if (member.level !== MemberLevel.LEADER) {
+        throw new ApiError(httpstatus.BAD_REQUEST, 'You are not allowed to delete this team.');
     }
 
+    const teamMembers = await prisma.teamMember.findMany({ where: { teamId } });
+    const teamMemberIds = teamMembers.map((m) => m.id);
 
-    await prisma.team.delete({ where: { id: teamId } });
+    await prisma.$transaction([
+        // Clear team-member references from contest participant records before deleting team members.
+        prisma.contestParticipant.updateMany({
+            where: { memberId: { in: teamMemberIds } },
+            data: { memberId: null }
+        }),
+        prisma.teamMatchHistory.deleteMany({
+            where: { OR: [{ teamId }, { opponent_team_id: teamId }] }
+        }),
+        prisma.teamJoinRequest.deleteMany({ where: { teamId } }),
+        prisma.teamInvitation.deleteMany({ where: { teamId } }),
+        prisma.teamParticipation.deleteMany({ where: { teamId } }),
+        prisma.chat.deleteMany({ where: { teamId } }),
+        prisma.room.deleteMany({ where: { teamId } }),
+        prisma.teamMatch.deleteMany({ where: { OR: [{ team1Id: teamId }, { team2Id: teamId }] } }),
+        prisma.teamMember.deleteMany({ where: { teamId } }),
+        prisma.team.delete({ where: { id: teamId } })
+    ]);
 
     return { message: 'Team deleted successfully' };
 };
@@ -322,6 +340,13 @@ const joinATeam = async (userId:string, teamId:string)=>{
     const existingTeam = await prisma.teamMember.findFirst({where:{memberId:userId}})
     if(existingTeam){
         throw new ApiError(httpstatus.BAD_REQUEST, "You are already joined a team!")
+    }
+
+    const userLevel = await userService.getUserCurrentLevel(userId)
+    const teamLevel = await levelService.getLevelByName(team.min_requirement as any)
+
+    if(userLevel.currentLevel.order < teamLevel?.order!){
+        throw new ApiError(httpstatus.BAD_REQUEST, "Sorry, you do not meet the minimum requirement to join this team")
     }
 
     if(team.accessibility === TeamAccessibility.PRIVATE){
