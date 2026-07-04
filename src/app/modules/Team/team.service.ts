@@ -12,6 +12,7 @@ import { voteService } from '../Vote/vote.service';
 import { userService } from '../User/user.service';
 import { paginationHelper } from '../../../helpers/paginationHelper';
 import { profileService } from '../Profile/profile.service';
+import { userStoreService } from '../User/UserStore/userStore.service';
 
 
 //create a team
@@ -27,6 +28,12 @@ export const createTeam = async (creatorId: string, body: ITeam, file:Express.Mu
 
     if (!user) {
         throw new ApiError(httpstatus.NOT_FOUND, "User not found")
+    }
+
+    const userStore = await userStoreService.getStoreData(creatorId)
+
+    if(userStore && userStore.key < 5){
+        throw new ApiError(httpstatus.BAD_REQUEST, "You need at least 5 keys to create a team. Please purchase keys from the store.")
     }
 
     // Check if user has an active subscription plan
@@ -50,24 +57,33 @@ export const createTeam = async (creatorId: string, body: ITeam, file:Express.Mu
     
     // Upload badge file and get URL with BASE_URL prefix
     const badgeUrl = (await fileUploader.uploadToFilesystem(file)).Location;
-    
-    const team = await prisma.team.create({
-        data: {
-            creatorId,
-            name:body.name,
-            level: body.level,
-            language: body.language,
-            country: body.country,
-            description: body.description,
-            min_requirement:`${body.min_requirement}`,
-            min_requirement_str: 'None',
-            accessibility: body.accessibility as TeamAccessibility,
-            badge: badgeUrl,
-        },
-    });
 
-    await prisma.teamMember.create({data:{memberId:creatorId,teamId:team.id, level:MemberLevel.LEADER}})
-    await prisma.team.update({where:{id:team.id}, data:{member_count:{increment:1}}})
+    const team = await prisma.$transaction(async (tx) => {
+        const team = await tx.team.create({
+            data: {
+                creatorId,
+                name:body.name,
+                level: body.level,
+                language: body.language,
+                country: body.country,
+                description: body.description,
+                min_requirement:`${body.min_requirement}`,
+                min_requirement_str: 'None',
+                accessibility: body.accessibility as TeamAccessibility,
+                badge: badgeUrl,
+            },
+        });
+
+
+
+        await tx.teamMember.create({data:{memberId:creatorId,teamId:team.id, level:MemberLevel.LEADER}})
+        await tx.team.update({where:{id:team.id}, data:{member_count:{increment:1}}})
+        await tx.userStore.update({where:{userId:creatorId}, data:{key:{decrement:5}}})
+
+        return team
+    })
+    
+    
     return team;
 };
 
