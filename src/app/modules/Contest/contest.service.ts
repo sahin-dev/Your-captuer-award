@@ -217,8 +217,8 @@ const createRecurringContest = async (creatorId: string, body: contestData, bann
         throw new ApiError(httpstatus.BAD_REQUEST, "contest rules and prizes are required")
     }
 
-    contestData.rules = body.rules
-    contestData.prizes = body.prizes
+    contestData.rules = JSON.stringify(body.rules)
+    contestData.prizes = JSON.stringify(body.prizes)
 
     let bannerUrl: string | null = null
     if (body.banner) {
