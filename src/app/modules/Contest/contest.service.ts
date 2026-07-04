@@ -197,7 +197,6 @@ const createRecurringContest = async (creatorId: string, body: contestData, bann
     }
 
     const recurringType = body.recurringType || RecurringType.DAILY;
-    const recurringStatus = body.recurring_status === undefined ? true : Boolean(body.recurring_status);
 
     const contestData: any = {
         creatorId,
@@ -206,7 +205,6 @@ const createRecurringContest = async (creatorId: string, body: contestData, bann
         mode: body.mode || ContestMode.SOLO,
         type: body.type || ContestPlan.OPEN,
         level_requirements: levels,
-        recurring_status: recurringStatus,
         ...(body.coin_requirement === true ? { coin_required: body.coin_required, coin_requirement: body.coin_requirement } : null),
         startDate,
         endDate
