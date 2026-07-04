@@ -115,7 +115,12 @@ agenda.define("contest:checkRecurring", async () => {
     }
 
     for (const contest of recurringContests) {
-        await scheduleContest(contest);
+        try{
+            await scheduleContest(contest);
+        }catch(err:any){
+            console.log(err)
+        }
+        
     }
 });
 
