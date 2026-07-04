@@ -251,7 +251,7 @@ const createRecurringContest = async (creatorId: string, body: contestData, bann
         const recurringContest = await prisma.recurringContest.create({ data: contestData })
         return recurringContest
     } catch (err: any) {
-        throw new ApiError(httpstatus.BAD_REQUEST, " recurring Contest creation failed")
+        throw new ApiError(httpstatus.BAD_REQUEST, " recurring Contest creation failed", err.message)
     }
 }
 
