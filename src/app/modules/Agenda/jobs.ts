@@ -155,13 +155,13 @@ async function scheduleContest(rContest: RecurringContest) {
         }
     })
 
-    const rules = JSON.parse(rContest.rules as string) as ContestRule[]
+    const rules = rContest.rules  as ContestRule[]
 
     for (const rule of rules) {
         await prisma.contestRule.create({ data: { contestId: newContest.id, name: rule.name, description: rule.description } })
     }
 
-    const prizes = JSON.parse(rContest.prizes as string) as ContestPrize[]
+    const prizes = rContest.prizes as ContestPrize[]
 
     for (const prize of prizes) {
         await prisma.contestPrize.create({ data: { contestId: newContest.id, category: prize.category, key: prize.key, boost: prize.boost, swap: (prize.swap) } })
