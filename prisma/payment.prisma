@@ -11,6 +11,7 @@ model Payment {
     amount          Float
     currency        String
     method          String
+    type            PaymentType
 
     user        User    @relation(references: [id], fields: [userId])
     createdAt  DateTime     @default(now())
@@ -28,6 +29,7 @@ model SubscriptionPlan {
     amount              Float
     recurring           PlanRecurringType
     currency            String @default("USD")
+    status              SubscriptionPlanStatus @default(ACTIVE)
 
     createdAt       DateTime  @default(now())
     updatedAt       DateTime    @updatedAt
@@ -53,6 +55,11 @@ model Subscription {
 
 }
 
+enum SubscriptionPlanStatus {
+    ACTIVE
+    INACTIVE
+}
+
 enum SubscriptionStatus {
     PENDING
     VALID
@@ -68,6 +75,7 @@ enum PlanRecurringType {
 enum SubscriptionPlanEnum {
     PREMIUM
     PRO
+    FREE
 }
 
 enum PaymentStatus {
@@ -75,4 +83,11 @@ enum PaymentStatus {
     SUCCEEDED
     VALID
     EXPIRED
+    FAILED
+}
+
+enum PaymentType {
+    STORE
+    SUBSCRIPTION
+    CONTEST
 }

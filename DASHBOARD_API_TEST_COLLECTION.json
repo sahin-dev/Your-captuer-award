@@ -1,0 +1,368 @@
+// Thunder Client collection for Dashboard API endpoints
+// Import this file into Thunder Client to test all endpoints
+
+{
+  "info": {
+    "name": "Dashboard API - Admin Endpoints",
+    "description": "All dashboard admin endpoints for testing",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Payment & Transaction Endpoints",
+      "item": [
+        {
+          "name": "1. Get Payment History",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{local_url}}/dashboard/payments?page=1&limit=10",
+              "host": ["{{local_url}}"],
+              "path": ["dashboard", "payments"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "2. Get Transactions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{local_url}}/dashboard/transactions?page=1&limit=19",
+              "host": ["{{local_url}}"],
+              "path": ["dashboard", "transactions"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "19"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "3. Get Transaction Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{local_url}}/dashboard/transactions/stats",
+              "host": ["{{local_url}}"],
+              "path": ["dashboard", "transactions", "stats"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "User Management Endpoints",
+      "item": [
+        {
+          "name": "4. Get All Users",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{local_url}}/dashboard/all-users?page=1&limit=10",
+              "host": ["{{local_url}}"],
+              "path": ["dashboard", "all-users"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "5. Get User Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{local_url}}/dashboard/user-stats",
+              "host": ["{{local_url}}"],
+              "path": ["dashboard", "user-stats"]
+            }
+          }
+        },
+        {
+          "name": "6. Toggle Block Status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\\n  \\\"userId\\\": \\\"6876137c34dacb19d4ab4479\\\"\\n}"
+            },
+            "url": {
+              "raw": "{{local_url}}/dashboard/toggole-block",
+              "host": ["{{local_url}}"],
+              "path": ["dashboard", "toggole-block"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Income & Revenue Endpoints",
+      "item": [
+        {
+          "name": "7. Get Total Income by Year",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{local_url}}/dashboard/income/2024",
+              "host": ["{{local_url}}"],
+              "path": ["dashboard", "income", "2024"]
+            }
+          }
+        },
+        {
+          "name": "8. Get Subscription Income by Year",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{local_url}}/dashboard/income/pro-premium/2024",
+              "host": ["{{local_url}}"],
+              "path": ["dashboard", "income", "pro-premium", "2024"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Contest & Members Endpoints",
+      "item": [
+        {
+          "name": "9. Get Contest Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{local_url}}/dashboard/contest/stats",
+              "host": ["{{local_url}}"],
+              "path": ["dashboard", "contest", "stats"]
+            }
+          }
+        },
+        {
+          "name": "10. Get Member Ratio by Year",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{local_url}}/dashboard/member-ratio/2024",
+              "host": ["{{local_url}}"],
+              "path": ["dashboard", "member-ratio", "2024"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Dashboard Overview Endpoints",
+      "item": [
+        {
+          "name": "11. Get Dashboard Overview",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{local_url}}/dashboard/overview",
+              "host": ["{{local_url}}"],
+              "path": ["dashboard", "overview"]
+            }
+          }
+        },
+        {
+          "name": "12. Get Admin Notifications",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{local_url}}/dashboard/notifications",
+              "host": ["{{local_url}}"],
+              "path": ["dashboard", "notifications"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Store Endpoints",
+      "item": [
+        {
+          "name": "13. Get Store Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{local_url}}/dashboard/store/stats",
+              "host": ["{{local_url}}"],
+              "path": ["dashboard", "store", "stats"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Subscription Plans Endpoints",
+      "item": [
+        {
+          "name": "14. Get Plans",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{local_url}}/dashboard/plans",
+              "host": ["{{local_url}}"],
+              "path": ["dashboard", "plans"]
+            }
+          }
+        },
+        {
+          "name": "15. Get Plans Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{local_url}}/dashboard/plans/stats",
+              "host": ["{{local_url}}"],
+              "path": ["dashboard", "plans", "stats"]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "name": "local_url",
+      "value": "http://localhost:5000",
+      "type": "string"
+    },
+    {
+      "name": "admin_token",
+      "value": "your_admin_token_here",
+      "type": "string"
+    }
+  ]
+}

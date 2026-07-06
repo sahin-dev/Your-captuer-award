@@ -1,5 +1,6 @@
 import { Product, ProductType } from "../../../prismaClient";
 import prisma from "../../../shared/prisma";
+import { paginationHelper } from "../../../helpers/paginationHelper";
 
 
 const addProduct = async (title:string, productType:ProductType, quantity:number, amount:number)=>{
@@ -14,27 +15,34 @@ const getAllProductByType = async (type:ProductType)=>{
 
     return products
 }
-const getAllProduct = async (type?:ProductType) => {
+const getAllProduct = async (type?:ProductType, page?: number, limit?: number) => {
 
     if(type){
         return getAllProductByType(type)
     }
 
-    const structuredData = new Map<string, Product[]>()
-    const products = await prisma.product.findMany({})
-
-    products.forEach( product => {
-        if (structuredData.has(product.productType)){
-            let productArray = structuredData.get(product.productType)
-            productArray?.push(product)
-        }else {
-            let productArray = []
-            productArray.push(product)
-            structuredData.set(product.productType, productArray)
-        }
+    const { skip, limit: paginationLimit } = paginationHelper.calculatePagination({
+        page: page || 1,
+        limit: limit || 10
     })
 
-    return Object.fromEntries(structuredData)
+    const products = await prisma.product.findMany({
+        skip,
+        take: paginationLimit
+    })
+
+    const total = await prisma.product.count()
+    const totalPages = Math.ceil(total / paginationLimit)
+
+    return {
+        meta: {
+            page: page || 1,
+            limit: paginationLimit,
+            total,
+            totalPages
+        },
+        data: products
+    }
 }
 
 

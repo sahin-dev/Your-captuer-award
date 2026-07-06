@@ -281,6 +281,14 @@ export const NotificationType: {
 export type NotificationType = (typeof NotificationType)[keyof typeof NotificationType]
 
 
+export const SubscriptionPlanStatus: {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE'
+};
+
+export type SubscriptionPlanStatus = (typeof SubscriptionPlanStatus)[keyof typeof SubscriptionPlanStatus]
+
+
 export const SubscriptionStatus: {
   PENDING: 'PENDING',
   VALID: 'VALID',
@@ -301,7 +309,8 @@ export type PlanRecurringType = (typeof PlanRecurringType)[keyof typeof PlanRecu
 
 export const SubscriptionPlanEnum: {
   PREMIUM: 'PREMIUM',
-  PRO: 'PRO'
+  PRO: 'PRO',
+  FREE: 'FREE'
 };
 
 export type SubscriptionPlanEnum = (typeof SubscriptionPlanEnum)[keyof typeof SubscriptionPlanEnum]
@@ -311,10 +320,20 @@ export const PaymentStatus: {
   PENDING: 'PENDING',
   SUCCEEDED: 'SUCCEEDED',
   VALID: 'VALID',
-  EXPIRED: 'EXPIRED'
+  EXPIRED: 'EXPIRED',
+  FAILED: 'FAILED'
 };
 
 export type PaymentStatus = (typeof PaymentStatus)[keyof typeof PaymentStatus]
+
+
+export const PaymentType: {
+  STORE: 'STORE',
+  SUBSCRIPTION: 'SUBSCRIPTION',
+  CONTEST: 'CONTEST'
+};
+
+export type PaymentType = (typeof PaymentType)[keyof typeof PaymentType]
 
 
 export const SitePolicyType: {
@@ -326,10 +345,19 @@ export const SitePolicyType: {
 export type SitePolicyType = (typeof SitePolicyType)[keyof typeof SitePolicyType]
 
 
+export const ProductStatus: {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
+  DISCONTINUED: 'DISCONTINUED'
+};
+
+export type ProductStatus = (typeof ProductStatus)[keyof typeof ProductStatus]
+
+
 export const ProductType: {
   KEY: 'KEY',
-  PROMOTE: 'PROMOTE',
-  CHARGE: 'CHARGE'
+  BOOST: 'BOOST',
+  SWAP: 'SWAP'
 };
 
 export type ProductType = (typeof ProductType)[keyof typeof ProductType]
@@ -454,6 +482,10 @@ export type NotificationType = $Enums.NotificationType
 
 export const NotificationType: typeof $Enums.NotificationType
 
+export type SubscriptionPlanStatus = $Enums.SubscriptionPlanStatus
+
+export const SubscriptionPlanStatus: typeof $Enums.SubscriptionPlanStatus
+
 export type SubscriptionStatus = $Enums.SubscriptionStatus
 
 export const SubscriptionStatus: typeof $Enums.SubscriptionStatus
@@ -470,9 +502,17 @@ export type PaymentStatus = $Enums.PaymentStatus
 
 export const PaymentStatus: typeof $Enums.PaymentStatus
 
+export type PaymentType = $Enums.PaymentType
+
+export const PaymentType: typeof $Enums.PaymentType
+
 export type SitePolicyType = $Enums.SitePolicyType
 
 export const SitePolicyType: typeof $Enums.SitePolicyType
+
+export type ProductStatus = $Enums.ProductStatus
+
+export const ProductStatus: typeof $Enums.ProductStatus
 
 export type ProductType = $Enums.ProductType
 
@@ -14703,6 +14743,7 @@ export namespace Prisma {
     amount: number | null
     currency: string | null
     method: string | null
+    type: $Enums.PaymentType | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -14720,6 +14761,7 @@ export namespace Prisma {
     amount: number | null
     currency: string | null
     method: string | null
+    type: $Enums.PaymentType | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -14737,6 +14779,7 @@ export namespace Prisma {
     amount: number
     currency: number
     method: number
+    type: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -14764,6 +14807,7 @@ export namespace Prisma {
     amount?: true
     currency?: true
     method?: true
+    type?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -14781,6 +14825,7 @@ export namespace Prisma {
     amount?: true
     currency?: true
     method?: true
+    type?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -14798,6 +14843,7 @@ export namespace Prisma {
     amount?: true
     currency?: true
     method?: true
+    type?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -14902,6 +14948,7 @@ export namespace Prisma {
     amount: number
     currency: string
     method: string
+    type: $Enums.PaymentType
     createdAt: Date
     updatedAt: Date
     _count: PaymentCountAggregateOutputType | null
@@ -14938,6 +14985,7 @@ export namespace Prisma {
     amount?: boolean
     currency?: boolean
     method?: boolean
+    type?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -14958,11 +15006,12 @@ export namespace Prisma {
     amount?: boolean
     currency?: boolean
     method?: boolean
+    type?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type PaymentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "status" | "productId" | "planId" | "subscriptionId" | "planName" | "recurring" | "userId" | "stripe_sessino_id" | "amount" | "currency" | "method" | "createdAt" | "updatedAt", ExtArgs["result"]["payment"]>
+  export type PaymentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "status" | "productId" | "planId" | "subscriptionId" | "planName" | "recurring" | "userId" | "stripe_sessino_id" | "amount" | "currency" | "method" | "type" | "createdAt" | "updatedAt", ExtArgs["result"]["payment"]>
   export type PaymentInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
   }
@@ -14985,6 +15034,7 @@ export namespace Prisma {
       amount: number
       currency: string
       method: string
+      type: $Enums.PaymentType
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["payment"]>
@@ -15392,6 +15442,7 @@ export namespace Prisma {
     readonly amount: FieldRef<"Payment", 'Float'>
     readonly currency: FieldRef<"Payment", 'String'>
     readonly method: FieldRef<"Payment", 'String'>
+    readonly type: FieldRef<"Payment", 'PaymentType'>
     readonly createdAt: FieldRef<"Payment", 'DateTime'>
     readonly updatedAt: FieldRef<"Payment", 'DateTime'>
   }
@@ -15810,6 +15861,7 @@ export namespace Prisma {
     amount: number | null
     recurring: $Enums.PlanRecurringType | null
     currency: string | null
+    status: $Enums.SubscriptionPlanStatus | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -15822,6 +15874,7 @@ export namespace Prisma {
     amount: number | null
     recurring: $Enums.PlanRecurringType | null
     currency: string | null
+    status: $Enums.SubscriptionPlanStatus | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -15834,6 +15887,7 @@ export namespace Prisma {
     amount: number
     recurring: number
     currency: number
+    status: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -15856,6 +15910,7 @@ export namespace Prisma {
     amount?: true
     recurring?: true
     currency?: true
+    status?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -15868,6 +15923,7 @@ export namespace Prisma {
     amount?: true
     recurring?: true
     currency?: true
+    status?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -15880,6 +15936,7 @@ export namespace Prisma {
     amount?: true
     recurring?: true
     currency?: true
+    status?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -15979,6 +16036,7 @@ export namespace Prisma {
     amount: number
     recurring: $Enums.PlanRecurringType
     currency: string
+    status: $Enums.SubscriptionPlanStatus
     createdAt: Date
     updatedAt: Date
     _count: SubscriptionPlanCountAggregateOutputType | null
@@ -16010,6 +16068,7 @@ export namespace Prisma {
     amount?: boolean
     recurring?: boolean
     currency?: boolean
+    status?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }, ExtArgs["result"]["subscriptionPlan"]>
@@ -16024,11 +16083,12 @@ export namespace Prisma {
     amount?: boolean
     recurring?: boolean
     currency?: boolean
+    status?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type SubscriptionPlanOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "planName" | "stripe_price_id" | "stripe_product_id" | "amount" | "recurring" | "currency" | "createdAt" | "updatedAt", ExtArgs["result"]["subscriptionPlan"]>
+  export type SubscriptionPlanOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "planName" | "stripe_price_id" | "stripe_product_id" | "amount" | "recurring" | "currency" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["subscriptionPlan"]>
 
   export type $SubscriptionPlanPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "SubscriptionPlan"
@@ -16041,6 +16101,7 @@ export namespace Prisma {
       amount: number
       recurring: $Enums.PlanRecurringType
       currency: string
+      status: $Enums.SubscriptionPlanStatus
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["subscriptionPlan"]>
@@ -16442,6 +16503,7 @@ export namespace Prisma {
     readonly amount: FieldRef<"SubscriptionPlan", 'Float'>
     readonly recurring: FieldRef<"SubscriptionPlan", 'PlanRecurringType'>
     readonly currency: FieldRef<"SubscriptionPlan", 'String'>
+    readonly status: FieldRef<"SubscriptionPlan", 'SubscriptionPlanStatus'>
     readonly createdAt: FieldRef<"SubscriptionPlan", 'DateTime'>
     readonly updatedAt: FieldRef<"SubscriptionPlan", 'DateTime'>
   }
@@ -20694,6 +20756,7 @@ export namespace Prisma {
     icon: string | null
     description: string | null
     image: string | null
+    status: $Enums.ProductStatus | null
   }
 
   export type ProductMaxAggregateOutputType = {
@@ -20706,6 +20769,7 @@ export namespace Prisma {
     icon: string | null
     description: string | null
     image: string | null
+    status: $Enums.ProductStatus | null
   }
 
   export type ProductCountAggregateOutputType = {
@@ -20718,6 +20782,7 @@ export namespace Prisma {
     icon: number
     description: number
     image: number
+    status: number
     _all: number
   }
 
@@ -20742,6 +20807,7 @@ export namespace Prisma {
     icon?: true
     description?: true
     image?: true
+    status?: true
   }
 
   export type ProductMaxAggregateInputType = {
@@ -20754,6 +20820,7 @@ export namespace Prisma {
     icon?: true
     description?: true
     image?: true
+    status?: true
   }
 
   export type ProductCountAggregateInputType = {
@@ -20766,6 +20833,7 @@ export namespace Prisma {
     icon?: true
     description?: true
     image?: true
+    status?: true
     _all?: true
   }
 
@@ -20865,6 +20933,7 @@ export namespace Prisma {
     icon: string | null
     description: string | null
     image: string | null
+    status: $Enums.ProductStatus
     _count: ProductCountAggregateOutputType | null
     _avg: ProductAvgAggregateOutputType | null
     _sum: ProductSumAggregateOutputType | null
@@ -20896,6 +20965,7 @@ export namespace Prisma {
     icon?: boolean
     description?: boolean
     image?: boolean
+    status?: boolean
   }, ExtArgs["result"]["product"]>
 
 
@@ -20910,9 +20980,10 @@ export namespace Prisma {
     icon?: boolean
     description?: boolean
     image?: boolean
+    status?: boolean
   }
 
-  export type ProductOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "productType" | "title" | "quantity" | "amount" | "currency" | "icon" | "description" | "image", ExtArgs["result"]["product"]>
+  export type ProductOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "productType" | "title" | "quantity" | "amount" | "currency" | "icon" | "description" | "image" | "status", ExtArgs["result"]["product"]>
 
   export type $ProductPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Product"
@@ -20927,6 +20998,7 @@ export namespace Prisma {
       icon: string | null
       description: string | null
       image: string | null
+      status: $Enums.ProductStatus
     }, ExtArgs["result"]["product"]>
     composites: {}
   }
@@ -21328,6 +21400,7 @@ export namespace Prisma {
     readonly icon: FieldRef<"Product", 'String'>
     readonly description: FieldRef<"Product", 'String'>
     readonly image: FieldRef<"Product", 'String'>
+    readonly status: FieldRef<"Product", 'ProductStatus'>
   }
     
 
@@ -39099,6 +39172,7 @@ export namespace Prisma {
     amount: 'amount',
     currency: 'currency',
     method: 'method',
+    type: 'type',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -39114,6 +39188,7 @@ export namespace Prisma {
     amount: 'amount',
     recurring: 'recurring',
     currency: 'currency',
+    status: 'status',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -39178,7 +39253,8 @@ export namespace Prisma {
     currency: 'currency',
     icon: 'icon',
     description: 'description',
-    image: 'image'
+    image: 'image',
+    status: 'status'
   };
 
   export type ProductScalarFieldEnum = (typeof ProductScalarFieldEnum)[keyof typeof ProductScalarFieldEnum]
@@ -39631,6 +39707,34 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'PaymentType'
+   */
+  export type EnumPaymentTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PaymentType'>
+    
+
+
+  /**
+   * Reference to a field of type 'PaymentType[]'
+   */
+  export type ListEnumPaymentTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PaymentType[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'SubscriptionPlanStatus'
+   */
+  export type EnumSubscriptionPlanStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SubscriptionPlanStatus'>
+    
+
+
+  /**
+   * Reference to a field of type 'SubscriptionPlanStatus[]'
+   */
+  export type ListEnumSubscriptionPlanStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SubscriptionPlanStatus[]'>
+    
+
+
+  /**
    * Reference to a field of type 'SubscriptionStatus'
    */
   export type EnumSubscriptionStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SubscriptionStatus'>
@@ -39669,6 +39773,20 @@ export namespace Prisma {
    * Reference to a field of type 'ProductType[]'
    */
   export type ListEnumProductTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ProductType[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'ProductStatus'
+   */
+  export type EnumProductStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ProductStatus'>
+    
+
+
+  /**
+   * Reference to a field of type 'ProductStatus[]'
+   */
+  export type ListEnumProductStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ProductStatus[]'>
     
 
 
@@ -40644,6 +40762,7 @@ export namespace Prisma {
     amount?: FloatFilter<"Payment"> | number
     currency?: StringFilter<"Payment"> | string
     method?: StringFilter<"Payment"> | string
+    type?: EnumPaymentTypeFilter<"Payment"> | $Enums.PaymentType
     createdAt?: DateTimeFilter<"Payment"> | Date | string
     updatedAt?: DateTimeFilter<"Payment"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
@@ -40662,6 +40781,7 @@ export namespace Prisma {
     amount?: SortOrder
     currency?: SortOrder
     method?: SortOrder
+    type?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     user?: UserOrderByWithRelationInput
@@ -40683,6 +40803,7 @@ export namespace Prisma {
     amount?: FloatFilter<"Payment"> | number
     currency?: StringFilter<"Payment"> | string
     method?: StringFilter<"Payment"> | string
+    type?: EnumPaymentTypeFilter<"Payment"> | $Enums.PaymentType
     createdAt?: DateTimeFilter<"Payment"> | Date | string
     updatedAt?: DateTimeFilter<"Payment"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
@@ -40701,6 +40822,7 @@ export namespace Prisma {
     amount?: SortOrder
     currency?: SortOrder
     method?: SortOrder
+    type?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: PaymentCountOrderByAggregateInput
@@ -40726,6 +40848,7 @@ export namespace Prisma {
     amount?: FloatWithAggregatesFilter<"Payment"> | number
     currency?: StringWithAggregatesFilter<"Payment"> | string
     method?: StringWithAggregatesFilter<"Payment"> | string
+    type?: EnumPaymentTypeWithAggregatesFilter<"Payment"> | $Enums.PaymentType
     createdAt?: DateTimeWithAggregatesFilter<"Payment"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Payment"> | Date | string
   }
@@ -40741,6 +40864,7 @@ export namespace Prisma {
     amount?: FloatFilter<"SubscriptionPlan"> | number
     recurring?: EnumPlanRecurringTypeFilter<"SubscriptionPlan"> | $Enums.PlanRecurringType
     currency?: StringFilter<"SubscriptionPlan"> | string
+    status?: EnumSubscriptionPlanStatusFilter<"SubscriptionPlan"> | $Enums.SubscriptionPlanStatus
     createdAt?: DateTimeFilter<"SubscriptionPlan"> | Date | string
     updatedAt?: DateTimeFilter<"SubscriptionPlan"> | Date | string
   }
@@ -40753,6 +40877,7 @@ export namespace Prisma {
     amount?: SortOrder
     recurring?: SortOrder
     currency?: SortOrder
+    status?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -40768,6 +40893,7 @@ export namespace Prisma {
     amount?: FloatFilter<"SubscriptionPlan"> | number
     recurring?: EnumPlanRecurringTypeFilter<"SubscriptionPlan"> | $Enums.PlanRecurringType
     currency?: StringFilter<"SubscriptionPlan"> | string
+    status?: EnumSubscriptionPlanStatusFilter<"SubscriptionPlan"> | $Enums.SubscriptionPlanStatus
     createdAt?: DateTimeFilter<"SubscriptionPlan"> | Date | string
     updatedAt?: DateTimeFilter<"SubscriptionPlan"> | Date | string
   }, "id">
@@ -40780,6 +40906,7 @@ export namespace Prisma {
     amount?: SortOrder
     recurring?: SortOrder
     currency?: SortOrder
+    status?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: SubscriptionPlanCountOrderByAggregateInput
@@ -40800,6 +40927,7 @@ export namespace Prisma {
     amount?: FloatWithAggregatesFilter<"SubscriptionPlan"> | number
     recurring?: EnumPlanRecurringTypeWithAggregatesFilter<"SubscriptionPlan"> | $Enums.PlanRecurringType
     currency?: StringWithAggregatesFilter<"SubscriptionPlan"> | string
+    status?: EnumSubscriptionPlanStatusWithAggregatesFilter<"SubscriptionPlan"> | $Enums.SubscriptionPlanStatus
     createdAt?: DateTimeWithAggregatesFilter<"SubscriptionPlan"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"SubscriptionPlan"> | Date | string
   }
@@ -41054,6 +41182,7 @@ export namespace Prisma {
     icon?: StringNullableFilter<"Product"> | string | null
     description?: StringNullableFilter<"Product"> | string | null
     image?: StringNullableFilter<"Product"> | string | null
+    status?: EnumProductStatusFilter<"Product"> | $Enums.ProductStatus
   }
 
   export type ProductOrderByWithRelationInput = {
@@ -41066,6 +41195,7 @@ export namespace Prisma {
     icon?: SortOrder
     description?: SortOrder
     image?: SortOrder
+    status?: SortOrder
   }
 
   export type ProductWhereUniqueInput = Prisma.AtLeast<{
@@ -41081,6 +41211,7 @@ export namespace Prisma {
     icon?: StringNullableFilter<"Product"> | string | null
     description?: StringNullableFilter<"Product"> | string | null
     image?: StringNullableFilter<"Product"> | string | null
+    status?: EnumProductStatusFilter<"Product"> | $Enums.ProductStatus
   }, "id">
 
   export type ProductOrderByWithAggregationInput = {
@@ -41093,6 +41224,7 @@ export namespace Prisma {
     icon?: SortOrder
     description?: SortOrder
     image?: SortOrder
+    status?: SortOrder
     _count?: ProductCountOrderByAggregateInput
     _avg?: ProductAvgOrderByAggregateInput
     _max?: ProductMaxOrderByAggregateInput
@@ -41113,6 +41245,7 @@ export namespace Prisma {
     icon?: StringNullableWithAggregatesFilter<"Product"> | string | null
     description?: StringNullableWithAggregatesFilter<"Product"> | string | null
     image?: StringNullableWithAggregatesFilter<"Product"> | string | null
+    status?: EnumProductStatusWithAggregatesFilter<"Product"> | $Enums.ProductStatus
   }
 
   export type PriceWhereInput = {
@@ -43262,6 +43395,7 @@ export namespace Prisma {
     amount: number
     currency: string
     method: string
+    type: $Enums.PaymentType
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutPaymentsInput
@@ -43280,6 +43414,7 @@ export namespace Prisma {
     amount: number
     currency: string
     method: string
+    type: $Enums.PaymentType
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -43295,6 +43430,7 @@ export namespace Prisma {
     amount?: FloatFieldUpdateOperationsInput | number
     currency?: StringFieldUpdateOperationsInput | string
     method?: StringFieldUpdateOperationsInput | string
+    type?: EnumPaymentTypeFieldUpdateOperationsInput | $Enums.PaymentType
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutPaymentsNestedInput
@@ -43312,6 +43448,7 @@ export namespace Prisma {
     amount?: FloatFieldUpdateOperationsInput | number
     currency?: StringFieldUpdateOperationsInput | string
     method?: StringFieldUpdateOperationsInput | string
+    type?: EnumPaymentTypeFieldUpdateOperationsInput | $Enums.PaymentType
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -43329,6 +43466,7 @@ export namespace Prisma {
     amount: number
     currency: string
     method: string
+    type: $Enums.PaymentType
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -43344,6 +43482,7 @@ export namespace Prisma {
     amount?: FloatFieldUpdateOperationsInput | number
     currency?: StringFieldUpdateOperationsInput | string
     method?: StringFieldUpdateOperationsInput | string
+    type?: EnumPaymentTypeFieldUpdateOperationsInput | $Enums.PaymentType
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -43360,6 +43499,7 @@ export namespace Prisma {
     amount?: FloatFieldUpdateOperationsInput | number
     currency?: StringFieldUpdateOperationsInput | string
     method?: StringFieldUpdateOperationsInput | string
+    type?: EnumPaymentTypeFieldUpdateOperationsInput | $Enums.PaymentType
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -43372,6 +43512,7 @@ export namespace Prisma {
     amount: number
     recurring: $Enums.PlanRecurringType
     currency?: string
+    status?: $Enums.SubscriptionPlanStatus
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -43384,6 +43525,7 @@ export namespace Prisma {
     amount: number
     recurring: $Enums.PlanRecurringType
     currency?: string
+    status?: $Enums.SubscriptionPlanStatus
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -43395,6 +43537,7 @@ export namespace Prisma {
     amount?: FloatFieldUpdateOperationsInput | number
     recurring?: EnumPlanRecurringTypeFieldUpdateOperationsInput | $Enums.PlanRecurringType
     currency?: StringFieldUpdateOperationsInput | string
+    status?: EnumSubscriptionPlanStatusFieldUpdateOperationsInput | $Enums.SubscriptionPlanStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -43406,6 +43549,7 @@ export namespace Prisma {
     amount?: FloatFieldUpdateOperationsInput | number
     recurring?: EnumPlanRecurringTypeFieldUpdateOperationsInput | $Enums.PlanRecurringType
     currency?: StringFieldUpdateOperationsInput | string
+    status?: EnumSubscriptionPlanStatusFieldUpdateOperationsInput | $Enums.SubscriptionPlanStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -43418,6 +43562,7 @@ export namespace Prisma {
     amount: number
     recurring: $Enums.PlanRecurringType
     currency?: string
+    status?: $Enums.SubscriptionPlanStatus
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -43429,6 +43574,7 @@ export namespace Prisma {
     amount?: FloatFieldUpdateOperationsInput | number
     recurring?: EnumPlanRecurringTypeFieldUpdateOperationsInput | $Enums.PlanRecurringType
     currency?: StringFieldUpdateOperationsInput | string
+    status?: EnumSubscriptionPlanStatusFieldUpdateOperationsInput | $Enums.SubscriptionPlanStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -43440,6 +43586,7 @@ export namespace Prisma {
     amount?: FloatFieldUpdateOperationsInput | number
     recurring?: EnumPlanRecurringTypeFieldUpdateOperationsInput | $Enums.PlanRecurringType
     currency?: StringFieldUpdateOperationsInput | string
+    status?: EnumSubscriptionPlanStatusFieldUpdateOperationsInput | $Enums.SubscriptionPlanStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -43687,6 +43834,7 @@ export namespace Prisma {
     icon?: string | null
     description?: string | null
     image?: string | null
+    status?: $Enums.ProductStatus
   }
 
   export type ProductUncheckedCreateInput = {
@@ -43699,6 +43847,7 @@ export namespace Prisma {
     icon?: string | null
     description?: string | null
     image?: string | null
+    status?: $Enums.ProductStatus
   }
 
   export type ProductUpdateInput = {
@@ -43710,6 +43859,7 @@ export namespace Prisma {
     icon?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     image?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumProductStatusFieldUpdateOperationsInput | $Enums.ProductStatus
   }
 
   export type ProductUncheckedUpdateInput = {
@@ -43721,6 +43871,7 @@ export namespace Prisma {
     icon?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     image?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumProductStatusFieldUpdateOperationsInput | $Enums.ProductStatus
   }
 
   export type ProductCreateManyInput = {
@@ -43733,6 +43884,7 @@ export namespace Prisma {
     icon?: string | null
     description?: string | null
     image?: string | null
+    status?: $Enums.ProductStatus
   }
 
   export type ProductUpdateManyMutationInput = {
@@ -43744,6 +43896,7 @@ export namespace Prisma {
     icon?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     image?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumProductStatusFieldUpdateOperationsInput | $Enums.ProductStatus
   }
 
   export type ProductUncheckedUpdateManyInput = {
@@ -43755,6 +43908,7 @@ export namespace Prisma {
     icon?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     image?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumProductStatusFieldUpdateOperationsInput | $Enums.ProductStatus
   }
 
   export type PriceCreateInput = {
@@ -46019,6 +46173,13 @@ export namespace Prisma {
     not?: NestedFloatFilter<$PrismaModel> | number
   }
 
+  export type EnumPaymentTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.PaymentType | EnumPaymentTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.PaymentType[] | ListEnumPaymentTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.PaymentType[] | ListEnumPaymentTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumPaymentTypeFilter<$PrismaModel> | $Enums.PaymentType
+  }
+
   export type PaymentCountOrderByAggregateInput = {
     id?: SortOrder
     status?: SortOrder
@@ -46032,6 +46193,7 @@ export namespace Prisma {
     amount?: SortOrder
     currency?: SortOrder
     method?: SortOrder
+    type?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -46053,6 +46215,7 @@ export namespace Prisma {
     amount?: SortOrder
     currency?: SortOrder
     method?: SortOrder
+    type?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -46070,6 +46233,7 @@ export namespace Prisma {
     amount?: SortOrder
     currency?: SortOrder
     method?: SortOrder
+    type?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -46126,6 +46290,16 @@ export namespace Prisma {
     _max?: NestedFloatFilter<$PrismaModel>
   }
 
+  export type EnumPaymentTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.PaymentType | EnumPaymentTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.PaymentType[] | ListEnumPaymentTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.PaymentType[] | ListEnumPaymentTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumPaymentTypeWithAggregatesFilter<$PrismaModel> | $Enums.PaymentType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumPaymentTypeFilter<$PrismaModel>
+    _max?: NestedEnumPaymentTypeFilter<$PrismaModel>
+  }
+
   export type EnumSubscriptionPlanEnumFilter<$PrismaModel = never> = {
     equals?: $Enums.SubscriptionPlanEnum | EnumSubscriptionPlanEnumFieldRefInput<$PrismaModel>
     in?: $Enums.SubscriptionPlanEnum[] | ListEnumSubscriptionPlanEnumFieldRefInput<$PrismaModel>
@@ -46140,6 +46314,13 @@ export namespace Prisma {
     not?: NestedEnumPlanRecurringTypeFilter<$PrismaModel> | $Enums.PlanRecurringType
   }
 
+  export type EnumSubscriptionPlanStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.SubscriptionPlanStatus | EnumSubscriptionPlanStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.SubscriptionPlanStatus[] | ListEnumSubscriptionPlanStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.SubscriptionPlanStatus[] | ListEnumSubscriptionPlanStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumSubscriptionPlanStatusFilter<$PrismaModel> | $Enums.SubscriptionPlanStatus
+  }
+
   export type SubscriptionPlanCountOrderByAggregateInput = {
     id?: SortOrder
     planName?: SortOrder
@@ -46148,6 +46329,7 @@ export namespace Prisma {
     amount?: SortOrder
     recurring?: SortOrder
     currency?: SortOrder
+    status?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -46164,6 +46346,7 @@ export namespace Prisma {
     amount?: SortOrder
     recurring?: SortOrder
     currency?: SortOrder
+    status?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -46176,6 +46359,7 @@ export namespace Prisma {
     amount?: SortOrder
     recurring?: SortOrder
     currency?: SortOrder
+    status?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -46202,6 +46386,16 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumPlanRecurringTypeFilter<$PrismaModel>
     _max?: NestedEnumPlanRecurringTypeFilter<$PrismaModel>
+  }
+
+  export type EnumSubscriptionPlanStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.SubscriptionPlanStatus | EnumSubscriptionPlanStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.SubscriptionPlanStatus[] | ListEnumSubscriptionPlanStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.SubscriptionPlanStatus[] | ListEnumSubscriptionPlanStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumSubscriptionPlanStatusWithAggregatesFilter<$PrismaModel> | $Enums.SubscriptionPlanStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumSubscriptionPlanStatusFilter<$PrismaModel>
+    _max?: NestedEnumSubscriptionPlanStatusFilter<$PrismaModel>
   }
 
   export type EnumSubscriptionStatusFilter<$PrismaModel = never> = {
@@ -46358,6 +46552,13 @@ export namespace Prisma {
     not?: NestedEnumProductTypeFilter<$PrismaModel> | $Enums.ProductType
   }
 
+  export type EnumProductStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.ProductStatus | EnumProductStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.ProductStatus[] | ListEnumProductStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ProductStatus[] | ListEnumProductStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumProductStatusFilter<$PrismaModel> | $Enums.ProductStatus
+  }
+
   export type ProductCountOrderByAggregateInput = {
     id?: SortOrder
     productType?: SortOrder
@@ -46368,6 +46569,7 @@ export namespace Prisma {
     icon?: SortOrder
     description?: SortOrder
     image?: SortOrder
+    status?: SortOrder
   }
 
   export type ProductAvgOrderByAggregateInput = {
@@ -46385,6 +46587,7 @@ export namespace Prisma {
     icon?: SortOrder
     description?: SortOrder
     image?: SortOrder
+    status?: SortOrder
   }
 
   export type ProductMinOrderByAggregateInput = {
@@ -46397,6 +46600,7 @@ export namespace Prisma {
     icon?: SortOrder
     description?: SortOrder
     image?: SortOrder
+    status?: SortOrder
   }
 
   export type ProductSumOrderByAggregateInput = {
@@ -46412,6 +46616,16 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumProductTypeFilter<$PrismaModel>
     _max?: NestedEnumProductTypeFilter<$PrismaModel>
+  }
+
+  export type EnumProductStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ProductStatus | EnumProductStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.ProductStatus[] | ListEnumProductStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ProductStatus[] | ListEnumProductStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumProductStatusWithAggregatesFilter<$PrismaModel> | $Enums.ProductStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumProductStatusFilter<$PrismaModel>
+    _max?: NestedEnumProductStatusFilter<$PrismaModel>
   }
 
   export type PriceCountOrderByAggregateInput = {
@@ -48273,6 +48487,10 @@ export namespace Prisma {
     divide?: number
   }
 
+  export type EnumPaymentTypeFieldUpdateOperationsInput = {
+    set?: $Enums.PaymentType
+  }
+
   export type UserUpdateOneRequiredWithoutPaymentsNestedInput = {
     create?: XOR<UserCreateWithoutPaymentsInput, UserUncheckedCreateWithoutPaymentsInput>
     connectOrCreate?: UserCreateOrConnectWithoutPaymentsInput
@@ -48287,6 +48505,10 @@ export namespace Prisma {
 
   export type EnumPlanRecurringTypeFieldUpdateOperationsInput = {
     set?: $Enums.PlanRecurringType
+  }
+
+  export type EnumSubscriptionPlanStatusFieldUpdateOperationsInput = {
+    set?: $Enums.SubscriptionPlanStatus
   }
 
   export type UserCreateNestedOneWithoutSubscriptionsInput = {
@@ -48341,6 +48563,10 @@ export namespace Prisma {
 
   export type EnumProductTypeFieldUpdateOperationsInput = {
     set?: $Enums.ProductType
+  }
+
+  export type EnumProductStatusFieldUpdateOperationsInput = {
+    set?: $Enums.ProductStatus
   }
 
   export type UserCreateNestedOneWithoutCreatedTeamInput = {
@@ -50169,6 +50395,13 @@ export namespace Prisma {
     isSet?: boolean
   }
 
+  export type NestedEnumPaymentTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.PaymentType | EnumPaymentTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.PaymentType[] | ListEnumPaymentTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.PaymentType[] | ListEnumPaymentTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumPaymentTypeFilter<$PrismaModel> | $Enums.PaymentType
+  }
+
   export type NestedEnumPaymentStatusWithAggregatesFilter<$PrismaModel = never> = {
     equals?: $Enums.PaymentStatus | EnumPaymentStatusFieldRefInput<$PrismaModel>
     in?: $Enums.PaymentStatus[] | ListEnumPaymentStatusFieldRefInput<$PrismaModel>
@@ -50217,6 +50450,16 @@ export namespace Prisma {
     _max?: NestedFloatFilter<$PrismaModel>
   }
 
+  export type NestedEnumPaymentTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.PaymentType | EnumPaymentTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.PaymentType[] | ListEnumPaymentTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.PaymentType[] | ListEnumPaymentTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumPaymentTypeWithAggregatesFilter<$PrismaModel> | $Enums.PaymentType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumPaymentTypeFilter<$PrismaModel>
+    _max?: NestedEnumPaymentTypeFilter<$PrismaModel>
+  }
+
   export type NestedEnumSubscriptionPlanEnumFilter<$PrismaModel = never> = {
     equals?: $Enums.SubscriptionPlanEnum | EnumSubscriptionPlanEnumFieldRefInput<$PrismaModel>
     in?: $Enums.SubscriptionPlanEnum[] | ListEnumSubscriptionPlanEnumFieldRefInput<$PrismaModel>
@@ -50229,6 +50472,13 @@ export namespace Prisma {
     in?: $Enums.PlanRecurringType[] | ListEnumPlanRecurringTypeFieldRefInput<$PrismaModel>
     notIn?: $Enums.PlanRecurringType[] | ListEnumPlanRecurringTypeFieldRefInput<$PrismaModel>
     not?: NestedEnumPlanRecurringTypeFilter<$PrismaModel> | $Enums.PlanRecurringType
+  }
+
+  export type NestedEnumSubscriptionPlanStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.SubscriptionPlanStatus | EnumSubscriptionPlanStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.SubscriptionPlanStatus[] | ListEnumSubscriptionPlanStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.SubscriptionPlanStatus[] | ListEnumSubscriptionPlanStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumSubscriptionPlanStatusFilter<$PrismaModel> | $Enums.SubscriptionPlanStatus
   }
 
   export type NestedEnumSubscriptionPlanEnumWithAggregatesFilter<$PrismaModel = never> = {
@@ -50249,6 +50499,16 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumPlanRecurringTypeFilter<$PrismaModel>
     _max?: NestedEnumPlanRecurringTypeFilter<$PrismaModel>
+  }
+
+  export type NestedEnumSubscriptionPlanStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.SubscriptionPlanStatus | EnumSubscriptionPlanStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.SubscriptionPlanStatus[] | ListEnumSubscriptionPlanStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.SubscriptionPlanStatus[] | ListEnumSubscriptionPlanStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumSubscriptionPlanStatusWithAggregatesFilter<$PrismaModel> | $Enums.SubscriptionPlanStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumSubscriptionPlanStatusFilter<$PrismaModel>
+    _max?: NestedEnumSubscriptionPlanStatusFilter<$PrismaModel>
   }
 
   export type NestedEnumSubscriptionStatusFilter<$PrismaModel = never> = {
@@ -50292,6 +50552,13 @@ export namespace Prisma {
     not?: NestedEnumProductTypeFilter<$PrismaModel> | $Enums.ProductType
   }
 
+  export type NestedEnumProductStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.ProductStatus | EnumProductStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.ProductStatus[] | ListEnumProductStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ProductStatus[] | ListEnumProductStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumProductStatusFilter<$PrismaModel> | $Enums.ProductStatus
+  }
+
   export type NestedEnumProductTypeWithAggregatesFilter<$PrismaModel = never> = {
     equals?: $Enums.ProductType | EnumProductTypeFieldRefInput<$PrismaModel>
     in?: $Enums.ProductType[] | ListEnumProductTypeFieldRefInput<$PrismaModel>
@@ -50300,6 +50567,16 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumProductTypeFilter<$PrismaModel>
     _max?: NestedEnumProductTypeFilter<$PrismaModel>
+  }
+
+  export type NestedEnumProductStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ProductStatus | EnumProductStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.ProductStatus[] | ListEnumProductStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ProductStatus[] | ListEnumProductStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumProductStatusWithAggregatesFilter<$PrismaModel> | $Enums.ProductStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumProductStatusFilter<$PrismaModel>
+    _max?: NestedEnumProductStatusFilter<$PrismaModel>
   }
 
   export type NestedEnumTeamAccessibilityFilter<$PrismaModel = never> = {
@@ -55097,6 +55374,7 @@ export namespace Prisma {
     amount: number
     currency: string
     method: string
+    type: $Enums.PaymentType
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -55113,6 +55391,7 @@ export namespace Prisma {
     amount: number
     currency: string
     method: string
+    type: $Enums.PaymentType
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -55541,6 +55820,7 @@ export namespace Prisma {
     amount?: FloatFilter<"Payment"> | number
     currency?: StringFilter<"Payment"> | string
     method?: StringFilter<"Payment"> | string
+    type?: EnumPaymentTypeFilter<"Payment"> | $Enums.PaymentType
     createdAt?: DateTimeFilter<"Payment"> | Date | string
     updatedAt?: DateTimeFilter<"Payment"> | Date | string
   }
@@ -58685,6 +58965,7 @@ export namespace Prisma {
     amount: number
     currency: string
     method: string
+    type: $Enums.PaymentType
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -59081,6 +59362,7 @@ export namespace Prisma {
     amount?: FloatFieldUpdateOperationsInput | number
     currency?: StringFieldUpdateOperationsInput | string
     method?: StringFieldUpdateOperationsInput | string
+    type?: EnumPaymentTypeFieldUpdateOperationsInput | $Enums.PaymentType
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -59096,6 +59378,7 @@ export namespace Prisma {
     amount?: FloatFieldUpdateOperationsInput | number
     currency?: StringFieldUpdateOperationsInput | string
     method?: StringFieldUpdateOperationsInput | string
+    type?: EnumPaymentTypeFieldUpdateOperationsInput | $Enums.PaymentType
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -59111,6 +59394,7 @@ export namespace Prisma {
     amount?: FloatFieldUpdateOperationsInput | number
     currency?: StringFieldUpdateOperationsInput | string
     method?: StringFieldUpdateOperationsInput | string
+    type?: EnumPaymentTypeFieldUpdateOperationsInput | $Enums.PaymentType
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

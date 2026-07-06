@@ -1247,6 +1247,12 @@ const getContestTopPhotographers =  async (contestId:string, page?:number, limit
 
 }
 
+const getContestPhotoCount = async (contestId:string) => {
+    const photoCount = await prisma.contestPhoto.count({where:{contestId:contestId}})
+
+    return photoCount
+}
+
 
 
 
@@ -1277,6 +1283,7 @@ export const contestService = {
     getContestPhotosSortedByVote,
     getContestTopPhotographers,
     getContestByUserId,
-    getContestUploadsToVote
+    getContestUploadsToVote,
+    getContestPhotoCount
 
 }

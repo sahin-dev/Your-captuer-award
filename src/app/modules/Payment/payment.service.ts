@@ -46,7 +46,7 @@ export class PaymentService {
     if(!plan) {
       throw new ApiError(httpStatus.NOT_FOUND, "plan not found")
     }
-    const payment = await prisma.payment.create({data:{amount:plan.amount, currency:plan.currency,method:"SUBSCRIPTION", userId,planName:plan.planName,recurring:plan.recurring,planId:plan.id}})
+    const payment = await prisma.payment.create({data:{amount:plan.amount, currency:plan.currency,method:"card",type:"SUBSCRIPTION", userId,planName:plan.planName,recurring:plan.recurring,planId:plan.id}})
 
     let startDate = new Date(Date.now())
     let endDate = plan.recurring === PlanRecurringType.MONTHLY? new Date(startDate.getTime() + 30 * 24 * 60 * 60 * 1000):new Date(startDate.getTime() + 365 * 24 * 60 * 60 * 1000)
@@ -68,7 +68,7 @@ export class PaymentService {
     if(!product){
       throw new ApiError(httpStatus.NOT_FOUND, "product not found")
     }
-    const payment = await prisma.payment.create({data:{amount:product.amount,currency:product.currency,productId:product.id,method:"cards",userId, recurring:PlanRecurringType.ONETIME}})
+    const payment = await prisma.payment.create({data:{amount:product.amount,type:"STORE",currency:product.currency,productId:product.id,method:"card",userId, recurring:PlanRecurringType.ONETIME}})
 
     const provider = PaymentRegistry.getProvider("STRIPE")
     const session = await provider.initializePaymentSession(userId,product.amount,product.currency,success_url, cancel_url,{userId,payment_id:payment.id, product_id:product.id})
@@ -94,6 +94,8 @@ export class PaymentService {
     const provider = PaymentRegistry.getProvider(providerName);
     return await provider.refundPayment(paymentId, amount);
   }
+
+
 
 }
 

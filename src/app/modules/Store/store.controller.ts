@@ -22,14 +22,15 @@ const addStoreProduct = catchAsync(async (req:Request, res:Response) => {
 
 const getAllProducts = catchAsync(async (req:Request, res:Response) => {
 
-    const {type} = req.query as {type:ProductType}
-    const products = await storeService.getAllProduct(type)
+    const {type, page, limit} = req.query as {type?:ProductType, page?: string, limit?: string}
+    const products = await storeService.getAllProduct(type, Number(page), Number(limit))
 
     sendResponse(res, {
         success:true,
         statusCode:httpStatus.OK,
         message:"store products fetched successfully",
         data:products
+   
 })
 })
 

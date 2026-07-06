@@ -3,17 +3,19 @@ import sendResponse from "../../../shared/ApiResponse"
 import catchAsync from "../../../shared/catchAsync"
 import { dashboardService } from "./dashboard.service"
 import httpStatus from 'http-status'
+import { SubscriptionPlanStatus } from "src/prismaClient"
 
 
 const getAllAPymentHistory = catchAsync(async (req:Request, res:Response) => {
     const {page, limit} = req.query as {page:string, limit:string}
-    const payments = await dashboardService.getAllPaymentsHistory({page, limit})
+    const result = await dashboardService.getAllPaymentsHistory({page, limit})
 
     sendResponse(res, {
         success:true,
         statusCode:httpStatus.OK,
         message:"payments fetched successfully",
-        data:payments
+        data:result.data,
+        meta:result.meta
     })
 })
 
@@ -105,6 +107,79 @@ const getAllUsers = catchAsync(async (req:Request, res:Response) => {
 })
 })
 
+const toggleBlockStatus = catchAsync(async (req:Request, res:Response) => {
+    const {userId} = req.body
+    const user = await dashboardService.toggleBlockStatus(userId)
+    sendResponse(res, {
+        success:true,
+        statusCode:httpStatus.OK,
+        message:"user block status toggled successfully",
+        data:user
+    })
+})
+
+const getStoreStats = catchAsync(async (req:Request, res:Response) => {
+    const stats = await dashboardService.getStoreStats()
+    sendResponse(res, {
+        success:true,
+        statusCode:httpStatus.OK,
+        message:"store stats fetched successfully",
+        data:stats
+    })
+})
+
+const getPlans = catchAsync(async (req:Request, res:Response) => {
+    const {status} = req.query
+    const plans = await dashboardService.getPlans(status as SubscriptionPlanStatus)
+    sendResponse(res, {
+        success:true,
+        statusCode:httpStatus.OK,
+        message:"plans fetched successfully",
+        data:plans
+    })
+})
+
+const getPlansStats = catchAsync(async (req:Request, res:Response) => {
+    const stats = await dashboardService.getPlansStats()
+    sendResponse(res, {
+        success:true,
+        statusCode:httpStatus.OK,
+        message:"plans stats fetched successfully",
+        data:stats
+    })
+})
+
+const getTransactions = catchAsync(async (req:Request, res:Response) => {
+    const {page, limit} = req.query as {page:string, limit:string}
+    const transactions = await dashboardService.getTransactions({page, limit})
+    sendResponse(res, {
+        success:true,
+        statusCode:httpStatus.OK,
+        message:"transactions fetched successfully",
+        data:transactions
+    })
+})
+
+const getTransactionStats = catchAsync(async (req:Request, res:Response) => {
+    const stats = await dashboardService.getTransactionStats()
+    sendResponse(res, {
+        success:true,
+        statusCode:httpStatus.OK,
+        message:"transaction stats fetched successfully",
+        data:stats
+    })
+})
+
+const getSubscriptionStats = catchAsync(async (req:Request, res:Response) => {
+    const stats = await dashboardService.getSubscriptionStats()
+    sendResponse(res, {
+        success:true,
+        statusCode:httpStatus.OK,
+        message:"subscription stats fetched successfully",
+        data:stats
+    })
+})
+
 export const dashboardController = {
     getAllAPymentHistory,
     getProPreminumIncomeByYear,
@@ -114,6 +189,13 @@ export const dashboardController = {
     getDashboardOverview,
     getAdminNotifications,
     getUserStats,
-    getAllUsers
+    getAllUsers,
+    toggleBlockStatus,
+    getStoreStats,
+    getPlans,
+    getPlansStats,
+    getTransactions,
+    getTransactionStats,
+    getSubscriptionStats
     
 }
