@@ -627,17 +627,17 @@ const getAllContests = async (page: number = 1, limit: number = 20, search?: str
 
     
 
-    const combined = [...regularContests,].sort((a, b) => {
-        const aDate = new Date(a.startDate).getTime();
-        const bDate = new Date(b.startDate).getTime();
-        return bDate - aDate;
-    });
+    // const combined = [...regularContests,].sort((a, b) => {
+    //     const aDate = new Date(a.startDate).getTime();
+    //     const bDate = new Date(b.startDate).getTime();
+    //     return bDate - aDate;
+    // });
 
-    const pagedContests = combined.slice(skip, skip + paginationLimit);
+    // const pagedContests = combined.slice(skip, skip + paginationLimit);
     const total = regularTotal;
     const meta = paginationHelper.getPaginationMetaData(page, paginationLimit, total);
 
-    return { contests: [...pagedContests], data: [...pagedContests], total, meta };
+    return { contests: [...regularContests], total, meta };
 };
 
 //Search contest by contest status
