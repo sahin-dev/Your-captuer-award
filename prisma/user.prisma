@@ -51,6 +51,7 @@ model UserStore {
   key      Int     @default(0)
   boost    Int     @default(0)
   swap   Int     @default(0)
+  coin   Int     @default(0)
 
   user    User?      @relation(fields: [userId], references: [id])
 

@@ -1,19 +1,21 @@
-import { ContestStatus, RecurringContest } from '../../../prismaClient';
-import { Job } from "agenda";
+import { ContestStatus, RecurringContest, RecurringContestStatus } from '../../../prismaClient';
+import { Agenda, Job } from "agenda";
 import prisma from '../../../shared/prisma';
-import agenda from "./init";
 import {contestService } from '../Contest/contest.service';
 import { calculateNextOccurance } from '../../../helpers/nextOccurance';
 import { ContestRule } from '../Contest/ContestRules/contestRules.type';
 import { ContestPrize } from '../Contest/ContestPrizes/contestPrize.type';
 import globalEventHandler from '../../event/eventEmitter';
 import Events from '../../event/events.constant';
+import { prizeService } from '../Prize/prize.service';
 
 
 
 //Check all upcoming contest
 // If found any upcoming contest which startdate has arrived or passed the scheduler start the contest and change the contest to OPEN
 //Also shcedule a job for every contest which will end the contest at the end time
+
+export const registerAgendaJobs = (agenda:Agenda) => {
 
 agenda.define('contest:checkUpcoming', async () => {
 
@@ -95,38 +97,45 @@ agenda.define("contest:active", async ()=>{
 
 agenda.define("contest:checkRecurring", async ()=>{
 
-    const recurringContests = await prisma.recurringContest.findMany();
+    const recurringContests = await prisma.recurringContest.findMany({
+        where:{status:RecurringContestStatus.ACTIVE}
+    });
     console.log(`Found ${recurringContests.length} recurring contests to process.`);
 
-    recurringContests.forEach(async (contest) => {
+    for(const contest of recurringContests){
         await scheduleContest(contest);
-    });
+    }
 });
 
 
 async function scheduleContest(rContest:RecurringContest){
- 
-
-
     const previousOccurrence = rContest.recurring.previousOccurrence || rContest.createdAt;
     const nextOccurrence = rContest.recurring.nextOccurrence;
 
     const totalTimeSpan = nextOccurrence.getTime() - previousOccurrence.getTime();
-    const passedTimeSpan = Math.abs(new Date().getTime() - previousOccurrence.getTime());
+    const passedTimeSpan = new Date().getTime() - previousOccurrence.getTime();
 
-    const time_ratio = 0.2
+    const generationThreshold = 0.8
    
 
-    if (passedTimeSpan >= (totalTimeSpan * time_ratio)) {
-       
+    if (totalTimeSpan <= 0 || passedTimeSpan < (totalTimeSpan * generationThreshold)) {
+        return
+    }
 
-        let duration = rContest.endDate.getTime() - rContest.startDate.getTime()
+    const existingContest = await prisma.contest.findFirst({
+        where:{
+            recurringContestId:rContest.id,
+            startDate:nextOccurrence
+        }
+    })
 
-        
+    let newContest = existingContest
 
-        const newContest = await prisma.contest.create({
+    if(!newContest){
+        let duration = rContest.recurring.duration || (rContest.endDate.getTime() - rContest.startDate.getTime())
+
+        newContest = await prisma.contest.create({
             data: {
-        
                 title: rContest.title,
                 banner:rContest.banner,
                 maxUploads:rContest.maxUploads,
@@ -136,40 +145,47 @@ async function scheduleContest(rContest:RecurringContest){
                 level_requirements:rContest.level_requirements,
                 description: rContest.description,
                 creatorId: rContest.creatorId,
+                recurringContestId:rContest.id,
                 startDate: nextOccurrence,
                 endDate: new Date(nextOccurrence.getTime() + duration),
                 status: ContestStatus.UPCOMING,
             }
-        
         })
 
         const rules = JSON.parse(rContest.rules as string) as ContestRule[]
 
-        rules.forEach(async rule => {
-            await prisma.contestRule.create({data:{contestId:newContest.id, name:rule.name, description:rule.name}})
-        })
+        await Promise.all(rules.map(rule => 
+            prisma.contestRule.create({data:{contestId:newContest!.id, name:rule.name, description:rule.description, icon:rule.icon}})
+        ))
 
-        const prizes = JSON.parse(rContest.prizes as string) as ContestPrize[]
+        await prizeService.copyRecurringAwardsToContest(rContest.id, newContest.id)
 
-        prizes.forEach(async prize => {
-            await prisma.contestPrize.create({data:{contestId:newContest.id, category:prize.category, key:prize.key, boost:prize.boost, swap:(prize.swap)}})
-        });
+        if(rContest.prizes){
+            const prizes = JSON.parse(rContest.prizes as string) as ContestPrize[]
 
-        const next = calculateNextOccurance(newContest.startDate, rContest.recurring.recurringType)
-       
-        await prisma.recurringContest.update({
-            where: { id: rContest.id },
-            data: {
-                recurring: {
-                    recurringType: rContest.recurring.recurringType,
-                    previousOccurrence: newContest.startDate,
+            await Promise.all(prizes.map(prize => 
+                prisma.contestPrize.create({data:{contestId:newContest!.id, category:prize.category, key:prize.key, boost:prize.boost, swap:prize.swap, coin:prize.coin || 0}})
+            ))
+        }
+    }
+
+    const next = calculateNextOccurance(nextOccurrence, rContest.recurring.recurringType)
+    
+    await prisma.recurringContest.update({
+        where: { id: rContest.id },
+        data: {
+            lastGeneratedContestId:newContest.id,
+            recurring: {
+                set:{
+                    ...rContest.recurring,
+                    previousOccurrence: nextOccurrence,
                     nextOccurrence: next
                 }
             }
-        })
+        }
+    })
 
-        console.log(`Updated next occurrence for recurring contest ID: ${newContest.id}`);
-    }
+    console.log(`Generated recurring contest instance ${newContest.id} from template ${rContest.id}`);
 
 }
 
@@ -228,5 +244,4 @@ agenda.define("promotion:remove", async (job: Job) => {
     }
 });
 
-
-export default agenda;
+}

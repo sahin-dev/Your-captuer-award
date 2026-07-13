@@ -128,6 +128,7 @@ exports.Prisma.ContestScalarFieldEnum = {
   startDate: 'startDate',
   endDate: 'endDate',
   startedAt: 'startedAt',
+  recurringContestId: 'recurringContestId',
   creatorId: 'creatorId',
   rules: 'rules',
   prizes: 'prizes',
@@ -148,8 +149,25 @@ exports.Prisma.RecurringContestScalarFieldEnum = {
   startDate: 'startDate',
   endDate: 'endDate',
   creatorId: 'creatorId',
+  status: 'status',
+  lastGeneratedContestId: 'lastGeneratedContestId',
   rules: 'rules',
   prizes: 'prizes',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.PrizeScalarFieldEnum = {
+  id: 'id',
+  category: 'category',
+  title: 'title',
+  description: 'description',
+  icon: 'icon',
+  boost: 'boost',
+  swap: 'swap',
+  key: 'key',
+  coin: 'coin',
+  isActive: 'isActive',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -207,7 +225,36 @@ exports.Prisma.ContestPrizeScalarFieldEnum = {
   boost: 'boost',
   swap: 'swap',
   key: 'key',
+  coin: 'coin',
   contestId: 'contestId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.ContestAwardScalarFieldEnum = {
+  id: 'id',
+  category: 'category',
+  icon: 'icon',
+  boost: 'boost',
+  swap: 'swap',
+  key: 'key',
+  coin: 'coin',
+  contestId: 'contestId',
+  prizeId: 'prizeId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.RecurringContestAwardScalarFieldEnum = {
+  id: 'id',
+  category: 'category',
+  icon: 'icon',
+  boost: 'boost',
+  swap: 'swap',
+  key: 'key',
+  coin: 'coin',
+  recurringContestId: 'recurringContestId',
+  prizeId: 'prizeId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -417,6 +464,7 @@ exports.Prisma.UserStoreScalarFieldEnum = {
   key: 'key',
   boost: 'boost',
   swap: 'swap',
+  coin: 'coin',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -520,6 +568,27 @@ exports.ContestMode = exports.$Enums.ContestMode = {
   TEAM: 'TEAM'
 };
 
+exports.RecurringContestStatus = exports.$Enums.RecurringContestStatus = {
+  ACTIVE: 'ACTIVE',
+  PAUSED: 'PAUSED',
+  ENDED: 'ENDED'
+};
+
+exports.PrizeType = exports.$Enums.PrizeType = {
+  TOP_PHOTO: 'TOP_PHOTO',
+  TOP_PHOTOGRAPHER: 'TOP_PHOTOGRAPHER',
+  AMATEUR: 'AMATEUR',
+  TALENTED: 'TALENTED',
+  SUPREME: 'SUPREME',
+  SUPERIOR: 'SUPERIOR',
+  YC_PICK: 'YC_PICK',
+  TOP_100: 'TOP_100',
+  TOP_50: 'TOP_50',
+  TOP_20: 'TOP_20',
+  TOP_10: 'TOP_10',
+  WINNER: 'WINNER'
+};
+
 exports.ContestParticipantStatus = exports.$Enums.ContestParticipantStatus = {
   ACTIVE: 'ACTIVE',
   BLOCKED: 'BLOCKED'
@@ -532,11 +601,6 @@ exports.YCLevel = exports.$Enums.YCLevel = {
   SUPREME: 'SUPREME',
   SUPERIOR: 'SUPERIOR',
   TOP_NOTCH: 'TOP_NOTCH'
-};
-
-exports.PrizeType = exports.$Enums.PrizeType = {
-  TOP_PHOTO: 'TOP_PHOTO',
-  TOP_PHOTOGRAPHER: 'TOP_PHOTOGRAPHER'
 };
 
 exports.NotificationType = exports.$Enums.NotificationType = {
@@ -593,7 +657,8 @@ exports.SitePolicyType = exports.$Enums.SitePolicyType = {
 exports.ProductType = exports.$Enums.ProductType = {
   KEY: 'KEY',
   BOOST: 'BOOST',
-  SWAP: 'SWAP'
+  SWAP: 'SWAP',
+  COIN: 'COIN'
 };
 
 exports.ProductStatus = exports.$Enums.ProductStatus = {
@@ -666,11 +731,14 @@ exports.RecurringType = exports.$Enums.RecurringType = {
 exports.Prisma.ModelName = {
   Contest: 'Contest',
   RecurringContest: 'RecurringContest',
+  Prize: 'Prize',
   ContestRule: 'ContestRule',
   ContestPhoto: 'ContestPhoto',
   ContestWinner: 'ContestWinner',
   ContestParticipant: 'ContestParticipant',
   ContestPrize: 'ContestPrize',
+  ContestAward: 'ContestAward',
+  RecurringContestAward: 'RecurringContestAward',
   ContestAchievement: 'ContestAchievement',
   Notification: 'Notification',
   Payment: 'Payment',

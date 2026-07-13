@@ -2,7 +2,7 @@ import prisma from '../../../shared/prisma';
 import ApiError from '../../../errors/ApiError';
 import httpstatus from 'http-status';
 import { fileUploader } from '../../../helpers/fileUploader';
-import { ContestMode, ContestParticipant, ContestPhoto, ContestStatus, PrizeType, YCLevel } from '../../../prismaClient';
+import { ContestMode, ContestParticipant, ContestPhoto, ContestStatus, PrizeType, RecurringType, YCLevel } from '../../../prismaClient';
 import { IContest } from './contest.interface';
 import { contestData } from './contest.type';
 import { contestRuleService } from './ContestRules/contestRules.service';
@@ -14,8 +14,9 @@ import agenda from '../Agenda';
 import { validateContestDate } from '../../../helpers/validateDate';
 import { userStoreService } from '../User/UserStore/userStore.service';
 import { voteService } from '../Vote/vote.service';
-import { use } from 'passport';
 import { achievementService } from '../Achievements/achievement.service';
+import { levelService } from '../Level/level.service';
+import { prizeService } from '../Prize/prize.service';
 
 
 
@@ -128,7 +129,9 @@ const createContest = async (creatorId: string, body: contestData, banner:Expres
         createdRules = await contestRuleService.addContestRules(contest.id, rules)
     }
    
-    if(body.prizes){
+    if(body.awardPrizeIds && body.awardPrizeIds.length > 0){
+        createdPrizes = await prizeService.createContestAwardsFromPrizeIds(contest.id, body.awardPrizeIds)
+    } else if(body.prizes){
          const prizes:ContestPrize[] = body.prizes
         createdPrizes = await addContestPrizes(contest.id, prizes)
     }
@@ -174,12 +177,14 @@ const createRecurringContest  =  async (creatorId: string, body: contestData, ba
         endDate
 
     }
-    if(!body.rules || !body.prizes){
-        throw new ApiError(httpstatus.BAD_REQUEST, "contest rules and prizes are required")
+    if(!body.rules){
+        throw new ApiError(httpstatus.BAD_REQUEST, "contest rules are required")
     }
 
     contestData.rules = JSON.stringify(body.rules)
-    contestData.prizes = JSON.stringify(body.prizes)
+    if(body.prizes){
+        contestData.prizes = JSON.stringify(body.prizes)
+    }
    
     let bannerUrl:string
     if (banner){
@@ -197,7 +202,7 @@ const createRecurringContest  =  async (creatorId: string, body: contestData, ba
     }
 
     contestData.recurring ={set: {
-        recurringType:body.recurringType,
+        recurringType:body.recurringType || RecurringType.DAILY,
         previousOccurrence:null,
         nextOccurrence:startDate,
         duration:new Date(body.endDate).getTime() - new Date(body.startDate).getTime()
@@ -206,7 +211,11 @@ const createRecurringContest  =  async (creatorId: string, body: contestData, ba
 
     try{
          const recurringContest = await prisma.recurringContest.create({data:contestData})
-            return recurringContest
+         let awards:any[] = []
+         if(body.awardPrizeIds && body.awardPrizeIds.length > 0){
+            awards = await prizeService.createRecurringContestAwardsFromPrizeIds(recurringContest.id, body.awardPrizeIds)
+         }
+            return {...recurringContest, awards}
     }catch(err:any){
         throw new ApiError(httpstatus.BAD_REQUEST, " recurring Contest creation failed")
     }
@@ -575,7 +584,7 @@ const getClosedContestsWithWinner = async () => {
         if (contestPhotos && contestPhotos.length > 0) {
             let maxVotes = -1;
             for (const contestPhoto of contestPhotos) {
-                const voteCount = await prisma.vote.count({ where: { photoId: contestPhoto.id } });
+                const voteCount = await voteService.getVoteCount(contestPhoto.id);
                 if (voteCount > maxVotes) {
                     maxVotes = voteCount;
                     winner = contestPhoto.photo;
@@ -603,7 +612,7 @@ const identifyWinner = async (contestId:string)=>{
     if(contest.mode === ContestMode.TEAM){
         return await identifyTeamWinner(contestId)
     }
-    let winners:ContestParticipant[];
+    const enabledAwardCategories = await getEnabledAwardCategories(contestId)
 
     const participants = await getContestParticipants(contestId)
 
@@ -612,26 +621,76 @@ const identifyWinner = async (contestId:string)=>{
         let maxVote = Number.MIN_SAFE_INTEGER
         let maxPhoto:ContestPhoto | null = null
 
-        uploadedPhotos.forEach(async photo => {
-            const votes = await prisma.vote.count({where:{contestId,photoId:photo.id}})
+        for(const photo of uploadedPhotos){
+            const votes = await voteService.getVoteCount(photo.id)
 
             if (votes > maxVote){
                 maxVote = votes
                 maxPhoto = photo
             }
-        })
+        }
 
-        const totalVotes = await prisma.vote.count({where:{contestId, photo:{participantId:participant.id}}})
+        const totalVotes = await voteService.totalVotesOfParticipant(participant.id, contestId)
         return {...participant, totalVotes, singlePhotoVote:maxVote, maxPhoto}
     }))
 
-    let top_photographer = participant.sort((a, b) => b.totalVotes - a.totalVotes)[0]
+    const rankedParticipants = participant.sort((a, b) => b.totalVotes - a.totalVotes)
+    if(rankedParticipants.length <= 0){
+        return
+    }
 
-    await awardWinner(top_photographer, contestId, PrizeType.TOP_PHOTOGRAPHER)
-    let top_photo = participant.sort((a,b) => b.singlePhotoVote - a.singlePhotoVote)[0]
+    let top_photographer = rankedParticipants[0]
 
-    await awardWinner(top_photo, contestId, PrizeType.TOP_PHOTO)
+    if(enabledAwardCategories.has(PrizeType.TOP_PHOTOGRAPHER)){
+        await awardWinner(top_photographer, contestId, PrizeType.TOP_PHOTOGRAPHER)
+    }
+    let top_photo = [...participant].sort((a,b) => b.singlePhotoVote - a.singlePhotoVote)[0]
 
+    if(top_photo?.maxPhoto){
+        if(enabledAwardCategories.has(PrizeType.TOP_PHOTO)){
+            await awardWinner(top_photo, contestId, PrizeType.TOP_PHOTO, top_photo.maxPhoto.id)
+        }
+        if(enabledAwardCategories.has(PrizeType.YC_PICK)){
+            await awardWinner(top_photo, contestId, PrizeType.YC_PICK, top_photo.maxPhoto.id)
+        }
+    }
+
+    for(const rankedParticipant of rankedParticipants){
+        const rank = rankedParticipants.findIndex(participant => participant.id === rankedParticipant.id) + 1
+        const contestLevel = getContestBadgeLevel(rankedParticipant.totalVotes, contest.level_requirements)
+        const participantUpdateData:{rank:number; level?:YCLevel} = {rank}
+
+        if(contestLevel){
+            participantUpdateData.level = contestLevel
+        }
+
+        await prisma.contestParticipant.update({
+            where:{id:rankedParticipant.id},
+            data:participantUpdateData
+        })
+
+        await awardRankBadges(rankedParticipant, contestId, rank, enabledAwardCategories)
+        if(contestLevel){
+            const levelBadge = getPrizeTypeByYCLevel(contestLevel)
+            if(levelBadge && enabledAwardCategories.has(levelBadge)){
+                await awardWinner(rankedParticipant, contestId, levelBadge)
+            }
+        }
+
+        await levelService.evaluateAndUpdateUserLevel(rankedParticipant.userId)
+    }
+
+}
+
+const getEnabledAwardCategories = async (contestId:string) => {
+    const contestAwards = await prisma.contestAward.findMany({where:{contestId}, select:{category:true}})
+
+    if(contestAwards.length > 0){
+        return new Set(contestAwards.map(award => award.category))
+    }
+
+    const legacyPrizes = await prisma.contestPrize.findMany({where:{contestId}, select:{category:true}})
+    return new Set(legacyPrizes.map(prize => prize.category))
 }
 
 
@@ -705,30 +764,91 @@ const identifyTeamWinner = async (contestId:string)=>{
     const participants = await getContestParticipants(contestId)
 
     let participantVote = await Promise.all(participants.map( async participant => {
-        let votes = await prisma.vote.count({where:{contestId, photo:{participant:{id:participant.id}}}})
+        let votes = await voteService.totalVotesOfParticipant(participant.id, contestId)
 
         return {id:participant.id, voteCount:votes}
     }))
 }
 
-//Award prize to the winners
+const awardRankBadges = async (participant:ContestParticipant, contestId:string, rank:number, enabledAwardCategories:Set<PrizeType>) => {
+    if(rank <= 100 && enabledAwardCategories.has(PrizeType.TOP_100)){
+        await awardWinner(participant, contestId, PrizeType.TOP_100)
+    }
+    if(rank <= 50 && enabledAwardCategories.has(PrizeType.TOP_50)){
+        await awardWinner(participant, contestId, PrizeType.TOP_50)
+    }
+    if(rank <= 20 && enabledAwardCategories.has(PrizeType.TOP_20)){
+        await awardWinner(participant, contestId, PrizeType.TOP_20)
+    }
+    if(rank <= 10 && enabledAwardCategories.has(PrizeType.TOP_10)){
+        await awardWinner(participant, contestId, PrizeType.TOP_10)
+    }
+    if(rank === 1 && enabledAwardCategories.has(PrizeType.WINNER)){
+        await awardWinner(participant, contestId, PrizeType.WINNER)
+    }
+}
 
-const awardWinner = async (winner:ContestParticipant, contestId:string, prizeType:PrizeType)=>{
-
-    const contestPrize = await prisma.contestPrize.findFirst({where:{contestId, category:prizeType}})
-
-    if(!contestPrize){
-        throw new Error("Prize is not available")
+const getPrizeTypeByYCLevel = (level:YCLevel) => {
+    const badgeMap:Partial<Record<YCLevel, PrizeType>> = {
+        [YCLevel.AMATEUR]:PrizeType.AMATEUR,
+        [YCLevel.TALENTED]:PrizeType.TALENTED,
+        [YCLevel.SUPREME]:PrizeType.SUPREME,
+        [YCLevel.SUPERIOR]:PrizeType.SUPERIOR,
     }
 
+    return badgeMap[level]
+}
+
+const getContestBadgeLevel = (totalVotes:number, levelRequirements:number[]) => {
+    let currentLevel:YCLevel | null = null
+    const ycLevels = getYCLevelByOrder()
+
+    levelRequirements.forEach((requiredVotes, idx) => {
+        if(totalVotes >= requiredVotes && ycLevels[idx]){
+            currentLevel = ycLevels[idx]
+        }
+    })
+
+    return currentLevel
+}
+
+//Award prize to the winners
+
+const awardWinner = async (winner:ContestParticipant, contestId:string, prizeType:PrizeType, photoId?:string | null)=>{
+
+    const existingAchievement = await prisma.contestAchievement.findFirst({
+        where:{
+            participantId:winner.id,
+            contestId,
+            category:prizeType,
+            photoId: photoId || null
+        }
+    })
+
+    if(existingAchievement){
+        return existingAchievement
+    }
+
+    const contestAward = await prisma.contestAward.findFirst({where:{contestId, category:prizeType}})
+    const contestPrize = contestAward || await prisma.contestPrize.findFirst({where:{contestId, category:prizeType}})
+
+    const achievement = await achievementService.addContestAchievement(winner.id, contestId, prizeType, photoId)
+
     const winnerStore = await prisma.userStore.findFirst({where:{userId:winner.userId as string}})
-    if(!winnerStore){
-        throw new Error('Winner store is not available')
+    if(!contestPrize || !winnerStore){
+        return achievement
     }
 
     await prisma.userStore.update({
         where:{id:winnerStore.id}, 
-        data:{key: winnerStore.key + contestPrize.key , boost: winnerStore.boost + contestPrize.boost, swap: winnerStore.swap + contestPrize.swap}})
+        data:{
+            key:{increment:contestPrize.key},
+            boost:{increment:contestPrize.boost},
+            swap:{increment:contestPrize.swap},
+            coin:{increment:contestPrize.coin || 0}
+        }})
+
+    return achievement
 
 }
 
@@ -851,7 +971,7 @@ const getContestUploads = async (userId:string,contestId:string)=>{
         })
     }
     const uploads =  await Promise.all(contestUploads.map(async upload => {
-        const voteCount = await prisma.vote.count({where:{contestId, photoId:upload.id}})
+        const voteCount = await voteService.getVoteCount(upload.id)
 
         return {id:upload.photo.id, url:upload.photo.url, voteCount}
     }))
@@ -970,12 +1090,7 @@ const uploadPhotoToContest = async (contestId:string,userId:string, photoIds:str
 
 const getParticipantTotalVotes =  async(contestId:string, participantId:string)=>{
 
-    // const contestPhotos = await prisma.contestPhoto.findMany({where:{contestId, participantId}})
-    // contestPhotos.forEach(async photo => {
-    //     const vote = await  voteService.getVoteCount(photo.id)
-    // })
-    
-    const votes = await prisma.vote.count({where:{contestId, photo:{participant:{id:participantId}}}})
+    const votes = await voteService.totalVotesOfParticipant(participantId, contestId)
     
     return votes
 }
@@ -999,9 +1114,9 @@ const getYCLevelByOrder = ()=>{
     return [
        
         YCLevel.AMATEUR,
-        YCLevel.SUPERIOR,
-        YCLevel.SUPREME,
         YCLevel.TALENTED,
+        YCLevel.SUPREME,
+        YCLevel.SUPERIOR,
         YCLevel.TOP_NOTCH
     ]
     

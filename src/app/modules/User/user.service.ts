@@ -10,8 +10,8 @@ import { hashing } from "../../../helpers/hash"
 import { OtpStatus, UserRole } from "../../../prismaClient"
 import { userAdminUpdateData, userUpdateData } from "./user.types"
 import bcrypt from 'bcryptjs'
-import { voteService } from "../Vote/vote.service"
 import { userStoreService } from "./UserStore/userStore.service"
+import { levelService } from "../Level/level.service"
 
 
 
@@ -110,7 +110,7 @@ const updateProfile = async (userId:string,userData:userUpdateData)=>{
 
 const getUserDetails = async (userId:string)=>{
 
-    const user = await prisma.user.findUnique({where:{id:userId},include:{store:{select:{key:true, boost:true, swap:true}}}, omit:{password:true, createdAt:true, updatedAt:true,accessToken:true}})
+    const user = await prisma.user.findUnique({where:{id:userId},include:{store:{select:{key:true, boost:true, swap:true, coin:true}}}, omit:{password:true, createdAt:true, updatedAt:true,accessToken:true}})
     if(!user){
         throw new ApiError(httpstatus.NOT_FOUND, "User not found")
     }
@@ -266,50 +266,13 @@ const  getUserBySocialId = async (socialProvider:string, providerId:string)=>{
 
 const getUserCurrentLevel = async (userId:string)=>{
 
-    const levels = await prisma.level.findMany()
-
-    const totalPromotedVotes = await voteService.getTotalPromotedVotes(userId)
-    // const totalOrganicVotes = await voteService.getTotalOrganicVotes(userId)
-    const totalOrganicVotes = 100
-    let userLevels:{name:string,percentage:number, order:number}[] = []
-     let satisfied = true
-    levels.forEach(level => {
-       
-        let percentage = 0
-        level.requirements.forEach(requirement => {
-            
-            
-            if ( (requirement.title === 'votes')){
-                percentage = Math.min((100 * (totalOrganicVotes)) / requirement.required, 50)
-                
-            }
-            else if ((requirement.title === 'promoted_votes')){
-                percentage += Math.min((100 * (totalPromotedVotes)) / requirement.required, 50)
-            }
-    
-            
-        })
-        if(percentage >= 100){
-                
-            userLevels.push({name:level.levelName,percentage,order:level.level})
-        }else if(satisfied) {
-            userLevels.push({name:level.levelName,percentage,order:level.level})
-            satisfied = false
-        }else
-        
-            userLevels.push({name:level.levelName,percentage:0,order:level.level})
-
-       
-    })
-    
-
-    return userLevels
+    return levelService.evaluateAndUpdateUserLevel(userId)
 
 }
 
 
 const attachStoreToUser = async (userId:string)=>{
-    const store = await userStoreService.addStoreData(userId, {key:0, boost:0, swap:0})
+    const store = await userStoreService.addStoreData(userId, {key:0, boost:0, swap:0, coin:0})
 
 }
 

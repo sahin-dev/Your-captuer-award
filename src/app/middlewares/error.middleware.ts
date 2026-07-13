@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { Prisma } from "../../prismaClient";
 import { NextFunction, Request, Response } from "express";
 import httpStatus from "http-status";
 import { ZodError } from "zod";
@@ -46,7 +46,7 @@ const ErrorHandler = (
   }
   // Prisma Client Initialization Error
   else if (err instanceof Prisma.PrismaClientInitializationError) {
-    statusCode = httpStatus.INTERNAL_SERVER_ERROR;
+    statusCode = httpStatus.SERVICE_UNAVAILABLE;
     message =
       "Failed to initialize Prisma Client. Check your database connection or Prisma configuration.";
     errorSources.push("Prisma Client Initialization Error");
@@ -63,6 +63,11 @@ const ErrorHandler = (
     statusCode = httpStatus.INTERNAL_SERVER_ERROR;
     message = "An unknown error occurred while processing the request.";
     errorSources.push("Prisma Client Unknown Request Error");
+  }
+  else if (err?.code === "ECONNREFUSED" || err?.message?.includes("querySrv")) {
+    statusCode = httpStatus.SERVICE_UNAVAILABLE;
+    message = "Database connection failed. Check MongoDB Atlas DNS/network access and DATABASE_URL.";
+    errorSources.push("Database Connection Error");
   }
   // Generic Error Handling (e.g., JavaScript Errors)
   else if (err instanceof SyntaxError) {

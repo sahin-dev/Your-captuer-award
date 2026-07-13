@@ -5,6 +5,7 @@ import { ContestStatus, Vote, VoteType } from '../../../prismaClient'
 import globalEventHandler from '../../event/eventEmitter'
 import Events from '../../event/events.constant'
 import { ObjectId } from 'mongodb'
+import { levelService } from '../Level/level.service'
 
 const checkExistingVote = async (userId:string, contestId:string, photoId:string)=>{
     const exisitngVote = await prisma.vote.findFirst({where:{providerId:userId, contestId, photoId}})
@@ -62,9 +63,10 @@ export const addOneVote = async (userId:string, contestId:string, photoId:string
     const type = await getVoteType(photoId)
 
     if(!(await checkExistingVote(userId, contestId,photoId))){
-        const vote = await prisma.vote.create({data:{providerId:userId, contestId, photoId, type}})
+        const vote = await prisma.vote.create({data:{providerId:userId, contestId, photoId, type, power:user.voting_power || 1}})
         await prisma.contestParticipant.update({where:{id:participant.id}, data:{exposure_bonus:{increment:2}}})
         globalEventHandler.publish(Events.NEW_VOTE,{photoId, contestId})
+        await levelService.evaluateAndUpdateUserLevel(contestPhoto.participant.userId)
         return vote
     }
     
@@ -84,33 +86,26 @@ export const addVotes = async (userId:string,contestId:string, photoIds:string[]
         throw new  ApiError(httpstatus.NOT_FOUND, 'User is not valid to vote')
     }
 
-   
-    let votes:Vote[] = [];
+    const votes = (await Promise.all(photoIds.map(async (photoId:string)=>{
+        return addOneVote(userId,contestId,photoId)
+    }))).filter((vote): vote is Vote => Boolean(vote))
 
-    try{
-        photoIds.forEach( async (photoId:string)=>{
-       
-       const vote = await addOneVote(userId,contestId,photoId)
-       if(vote)
-            votes.push(vote)
-
-        //publish a event if new vote added 
-        return await Promise.all(votes)
-    })
-
-    }catch(err){
-       throw err
-    }
-
-  
-
-    
+    return votes
 }
 
 
+const sumVotePower = async (where:any) => {
+    const voteAggregate = await prisma.vote.aggregate({
+        where,
+        _sum:{power:true}
+    })
+
+    return voteAggregate._sum.power || 0
+}
+
 export const getVoteCount = async (photoId:string)=>{
 
-    const votesCount = await prisma.vote.count({where:{photoId}})
+    const votesCount = await sumVotePower({photoId})
 
     return votesCount
 }
@@ -125,33 +120,33 @@ export const getVoteUsers = async (photoId:string)=>{
 
 
 const getTotalPromotedVotes = async (userId:string)=>{
-    const totalPromotedVotes = await prisma.vote.count({where:{photo:{participant:{userId}}, type:VoteType.Promoted}})
+    const totalPromotedVotes = await sumVotePower({photo:{participant:{userId}}, type:VoteType.Promoted})
 
     return totalPromotedVotes
 }
 
 const getTotalOrganicVotes = async (userId:string)=>{
-    const totalOrganicVotes = await prisma.vote.count({where:{photo:{participant:{userId}}, type:VoteType.Organic}})
+    const totalOrganicVotes = await sumVotePower({photo:{participant:{userId}}, type:VoteType.Organic})
 
     return totalOrganicVotes
 }
 
 const getTeamTotalVotes = async (contestId:string , teamId:string) => {
 
-    const votes = await prisma.vote.count({where:{contestId, photo:{photo:{user:{joinedTeam:{id:teamId}}}}}})
+    const votes = await sumVotePower({contestId, photo:{photo:{user:{joinedTeam:{id:teamId}}}}})
 
     return votes
 }
 
 const getUserTotalVotes = async (userId:string) => {
 
-    const totalVote = await prisma.vote.count({where:{photo:{participant:{userId}}}})
+    const totalVote = await sumVotePower({photo:{participant:{userId}}})
 
     return totalVote
 }
 
 const getUserContestSpecificVote = async (contestId:string, userId:string) => {
-    const totalVote = await prisma.vote.count({where:{contestId,photo:{participant:{userId}}}})
+    const totalVote = await sumVotePower({contestId,photo:{participant:{userId}}})
 
     return totalVote
 }
@@ -171,14 +166,14 @@ const getParticipantTotalVotes = async (photos:{id:string, url:string}[])=>{
 }
 
 const totalVotesOfParticipant = async (participantId:string, contestId:string)=> {
-    const totalVotes = await prisma.vote.count({where:{contestId, photo:{participantId}}})
+    const totalVotes = await sumVotePower({contestId, photo:{participantId}})
 
     return totalVotes
 }
 
 
 const getContestTotalVotes = async (contestId:string)=> {
-    const votes = await prisma.vote.count({where:{contestId}})
+    const votes = await sumVotePower({contestId})
 
     return votes
 }

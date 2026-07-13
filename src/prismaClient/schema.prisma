@@ -13,9 +13,10 @@ model Contest {
   minPrize           Int?          @default(0)
   level_requirements Int[]
 
-  startDate DateTime
-  endDate   DateTime
-  startedAt DateTime?
+  startDate          DateTime
+  endDate            DateTime
+  startedAt          DateTime?
+  recurringContestId String?   @db.ObjectId
 
   creatorId String @db.ObjectId
   rules     Json?
@@ -27,8 +28,10 @@ model Contest {
   votes              Vote[]
   contestRules       ContestRule[]
   contestPrizes      ContestPrize[]
+  contestAwards      ContestAward[]
   achievements       ContestAchievement[]
   teamMatch          TeamMatch[]
+  recurringContest   RecurringContest?    @relation(fields: [recurringContestId], references: [id])
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @updatedAt
 
@@ -49,15 +52,40 @@ model RecurringContest {
   startDate DateTime
   endDate   DateTime
 
-  creatorId String        @db.ObjectId
-  recurring RecurringData
+  creatorId              String                 @db.ObjectId
+  status                 RecurringContestStatus @default(ACTIVE)
+  recurring              RecurringData
+  lastGeneratedContestId String?                @db.ObjectId
 
-  rules     Json
-  prizes    Json
+  rules            Json
+  prizes           Json?
+  contestAwards    RecurringContestAward[]
+  contestInstances Contest[]
+  createdAt        DateTime                @default(now())
+  updatedAt        DateTime                @updatedAt
+
+  @@map("recurring_contests")
+}
+
+model Prize {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  category    PrizeType
+  title       String?
+  description String?
+  icon        String?
+  boost       Int       @default(0)
+  swap        Int       @default(0)
+  key         Int       @default(0)
+  coin        Int       @default(0)
+  isActive    Boolean   @default(true)
+
+  contestAwards          ContestAward[]
+  recurringContestAwards RecurringContestAward[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@map("recurring_contests")
+  @@map("prizes")
 }
 
 model ContestRule {
@@ -142,6 +170,7 @@ model ContestPrize {
   boost    Int       @default(0)
   swap     Int       @default(0)
   key      Int       @default(0)
+  coin     Int       @default(0)
 
   contestId String  @db.ObjectId
   contest   Contest @relation(fields: [contestId], references: [id], onDelete: Cascade)
@@ -150,6 +179,48 @@ model ContestPrize {
   updatedAt DateTime @updatedAt
 
   @@map("contest_prizes")
+}
+
+model ContestAward {
+  id       String    @id @default(auto()) @map("_id") @db.ObjectId
+  category PrizeType
+  icon     String?
+  boost    Int       @default(0)
+  swap     Int       @default(0)
+  key      Int       @default(0)
+  coin     Int       @default(0)
+
+  contestId String  @db.ObjectId
+  prizeId   String  @db.ObjectId
+  contest   Contest @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  prize     Prize   @relation(fields: [prizeId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([contestId, category])
+  @@map("contest_awards")
+}
+
+model RecurringContestAward {
+  id       String    @id @default(auto()) @map("_id") @db.ObjectId
+  category PrizeType
+  icon     String?
+  boost    Int       @default(0)
+  swap     Int       @default(0)
+  key      Int       @default(0)
+  coin     Int       @default(0)
+
+  recurringContestId String           @db.ObjectId
+  prizeId            String           @db.ObjectId
+  recurringContest   RecurringContest @relation(fields: [recurringContestId], references: [id], onDelete: Cascade)
+  prize              Prize            @relation(fields: [prizeId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([recurringContestId, category])
+  @@map("recurring_contest_awards")
 }
 
 model ContestAchievement {
@@ -186,6 +257,16 @@ type RecurringData {
 enum PrizeType {
   TOP_PHOTO
   TOP_PHOTOGRAPHER
+  AMATEUR
+  TALENTED
+  SUPREME
+  SUPERIOR
+  YC_PICK
+  TOP_100
+  TOP_50
+  TOP_20
+  TOP_10
+  WINNER
 }
 
 enum ContestMode {
@@ -212,6 +293,12 @@ enum RecurringType {
   DAILY
   WEEKLY
   MONTHLY
+}
+
+enum RecurringContestStatus {
+  ACTIVE
+  PAUSED
+  ENDED
 }
 
 enum ContestLevel {
@@ -441,6 +528,7 @@ enum ProductType {
   KEY
   BOOST
   SWAP
+  COIN
 }
 
 model Team {
@@ -615,6 +703,7 @@ model UserStore {
   key    Int    @default(0)
   boost  Int    @default(0)
   swap   Int    @default(0)
+  coin   Int    @default(0)
 
   user User? @relation(fields: [userId], references: [id])
 

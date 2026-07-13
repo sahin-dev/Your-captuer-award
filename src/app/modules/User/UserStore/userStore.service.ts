@@ -9,13 +9,13 @@ const getStoreData = async (userId: string) => {
   
     const storeData = await prisma.userStore.findUnique({
       where: { userId },
-      select:{id:true,key:true, boost:true, swap:true}
+      select:{id:true,key:true, boost:true, swap:true, coin:true}
     });
     return storeData;
   
 }   
 
-const addStoreData = async (userId: string, data: {key:number, boost:number, swap:number}) => {  
+const addStoreData = async (userId: string, data: {key:number, boost:number, swap:number, coin?:number}) => {  
     const store  = await prisma.userStore.findUnique({where:{userId}})
     if (store) {
         throw new Error("User store already exists");
@@ -25,7 +25,8 @@ const addStoreData = async (userId: string, data: {key:number, boost:number, swa
         userId,
         boost: data.boost || 0,
         key: data.key || 0,
-        swap: data.swap || 0
+        swap: data.swap || 0,
+        coin: data.coin || 0
       }
     });
     return newStore;
@@ -44,7 +45,8 @@ const updateStoreData = async (userId: string, data: Partial<UserStore>) => {
       data:{
         boost: {increment:(data.boost || 0)},
         swap: {increment:(data.swap || 0)},
-        key: {increment: (data.key || 0)}    
+        key: {increment: (data.key || 0)},
+        coin: {increment: (data.coin || 0)}
       }
     });
 

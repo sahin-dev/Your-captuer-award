@@ -39,4 +39,5 @@ enum ProductType {
     KEY
     BOOST   
     SWAP
+    COIN
 }

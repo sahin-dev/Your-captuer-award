@@ -1,7 +1,8 @@
 import ApiError from "../../../errors/ApiError"
-import { LevelName, LevelRequirement } from "../../../prismaClient"
+import { LevelName, LevelRequirement, VoteType } from "../../../prismaClient"
 import prisma from "../../../shared/prisma"
 import httpStatus from 'http-status'
+import { LEVEL_BADGE_TYPES, LEVEL_RULES, LevelRule } from "./level.config"
 
 
 
@@ -49,7 +50,7 @@ const deleteLevl  =async (levelId:string)=> {
 }
 
 const getLevels = async ()=>{
-    const levels = await prisma.level.findMany()
+    const levels = await prisma.level.findMany({orderBy:{level:"asc"}})
 
     return levels
 }
@@ -61,10 +62,184 @@ const getLevelByOrder = async (order:number) => {
 
     return level
 }
+
+const getLevelRuleByOrder = (order:number) => {
+    return LEVEL_RULES.find(rule => rule.order === order)
+}
+
+const getBadgeCounts = async (userId:string) => {
+    const badgeCounts:Record<string, number> = {}
+
+    await Promise.all(LEVEL_BADGE_TYPES.map(async category => {
+        badgeCounts[category] = await prisma.contestAchievement.count({
+            where:{
+                category,
+                participant:{userId}
+            }
+        })
+    }))
+
+    return badgeCounts
+}
+
+const getReceivedVoteStats = async (userId:string) => {
+    const receivedVoteAggregate = await prisma.vote.aggregate({
+        where:{photo:{participant:{userId}}},
+        _count:{id:true},
+        _sum:{power:true}
+    })
+
+    const promotedVoteAggregate = await prisma.vote.aggregate({
+        where:{photo:{participant:{userId}}, type:VoteType.Promoted},
+        _count:{id:true},
+        _sum:{power:true}
+    })
+
+    return {
+        receivedVotes: receivedVoteAggregate._sum.power || 0,
+        receivedVoteCount: receivedVoteAggregate._count.id || 0,
+        promotedVotes: promotedVoteAggregate._sum.power || 0,
+        promotedVoteCount: promotedVoteAggregate._count.id || 0,
+    }
+}
+
+const isRuleSatisfied = (
+    rule:LevelRule,
+    stats:{receivedVotes:number; promotedVotes:number; badgeCounts:Record<string, number>}
+) => {
+    const badgesSatisfied = rule.badges.every(badge => {
+        return (stats.badgeCounts[badge.category] || 0) >= badge.required
+    })
+
+    return stats.receivedVotes >= rule.receivedVotes &&
+        stats.promotedVotes >= rule.promotedVotes &&
+        badgesSatisfied
+}
+
+const buildLevelProgress = (
+    rule:LevelRule,
+    stats:{receivedVotes:number; promotedVotes:number; badgeCounts:Record<string, number>}
+) => {
+    const requirements = [
+        {
+            type:"received_votes",
+            required:rule.receivedVotes,
+            current:stats.receivedVotes,
+            percentage:Math.min(100, Math.floor((stats.receivedVotes * 100) / rule.receivedVotes)),
+            satisfied:stats.receivedVotes >= rule.receivedVotes
+        },
+        {
+            type:"promoted_votes",
+            required:rule.promotedVotes,
+            current:stats.promotedVotes,
+            percentage:Math.min(100, Math.floor((stats.promotedVotes * 100) / rule.promotedVotes)),
+            satisfied:stats.promotedVotes >= rule.promotedVotes
+        },
+        ...rule.badges.map(badge => {
+            const current = stats.badgeCounts[badge.category] || 0
+            return {
+                type:"badge",
+                badge:badge.category,
+                required:badge.required,
+                current,
+                percentage:Math.min(100, Math.floor((current * 100) / badge.required)),
+                satisfied:current >= badge.required
+            }
+        })
+    ]
+
+    return {
+        order:rule.order,
+        name:rule.levelName,
+        votePower:rule.votePower,
+        eligible:requirements.every(requirement => requirement.satisfied),
+        requirements
+    }
+}
+
+const getEligibleLevel = (
+    stats:{receivedVotes:number; promotedVotes:number; badgeCounts:Record<string, number>}
+) => {
+    let eligibleLevel:LevelRule | null = null
+
+    LEVEL_RULES.forEach(rule => {
+        if(isRuleSatisfied(rule, stats)){
+            eligibleLevel = rule
+        }
+    })
+
+    return eligibleLevel
+}
+
+const persistUserLevel = async (userId:string, eligibleLevel:LevelRule | null) => {
+    const user = await prisma.user.findUnique({where:{id:userId}})
+
+    if(!user){
+        throw new ApiError(httpStatus.NOT_FOUND, "user not found")
+    }
+
+    const eligibleOrder = eligibleLevel?.order ?? -1
+    const targetOrder = Math.max(user.currentLevel ?? -1, eligibleOrder)
+    const targetRule = getLevelRuleByOrder(targetOrder)
+    const targetVotePower = targetRule?.votePower ?? user.voting_power ?? 1
+
+    await prisma.user.update({
+        where:{id:userId},
+        data:{
+            currentLevel:targetOrder,
+            voting_power:targetVotePower
+        }
+    })
+
+    if(targetRule){
+        const level = await prisma.level.findFirst({
+            where:{OR:[{level:targetRule.order}, {levelName:targetRule.levelName}]}
+        })
+
+        if(level){
+            await prisma.userLevel.upsert({
+                where:{userId},
+                update:{levelId:level.id},
+                create:{userId, levelId:level.id}
+            })
+        }
+    }
+
+    return {
+        order:targetOrder,
+        name:targetRule?.levelName ?? "NEW",
+        votingPower:targetVotePower
+    }
+}
+
+const evaluateAndUpdateUserLevel = async (userId:string) => {
+    const voteStats = await getReceivedVoteStats(userId)
+    const badgeCounts = await getBadgeCounts(userId)
+    const stats = {...voteStats, badgeCounts}
+    const eligibleLevel = getEligibleLevel(stats)
+    const currentStatus = await persistUserLevel(userId, eligibleLevel)
+    const levels = LEVEL_RULES.map(rule => buildLevelProgress(rule, stats))
+
+    return {
+        currentStatus:{
+            ...currentStatus,
+            receivedVotes:voteStats.receivedVotes,
+            receivedVoteCount:voteStats.receivedVoteCount,
+            promotedVotes:voteStats.promotedVotes,
+            promotedVoteCount:voteStats.promotedVoteCount,
+            badges:badgeCounts
+        },
+        nextLevel:levels.find(rule => rule.order > currentStatus.order) || null,
+        levels
+    }
+}
 export const levelService =  {
     addLevel,
     editLevel,
     deleteLevl,
     getLevels,
-    getLevelByOrder
+    getLevelByOrder,
+    evaluateAndUpdateUserLevel,
+    getReceivedVoteStats,
+    getBadgeCounts
 }

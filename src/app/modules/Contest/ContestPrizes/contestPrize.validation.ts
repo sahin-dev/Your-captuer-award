@@ -6,4 +6,5 @@ export const contestPrizeSchema = z.object({
     key:z.number({ required_error:"keys are required"}),
     boost:z.number({ required_error:"Boost are required"}),
     swap:z.number({ required_error:"Swap are required"}),
+    coin:z.number().default(0),
 })

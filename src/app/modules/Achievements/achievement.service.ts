@@ -11,22 +11,46 @@ const addAchievement = async (userId:string,contestId:string, category:PrizeType
     if(!participant){
         throw new ApiError(httpStatus.NOT_FOUND, "user does not exist in this contest")
     }
-     const achievement = await prisma.contestAchievement.create({data:{photoId:photoId, contestId, category}})
+     const achievement = await addContestAchievement(participant.id, contestId, category, photoId)
 
      return achievement
+}
+
+const addContestAchievement = async (participantId:string, contestId:string, category:PrizeType, photoId?:string | null) => {
+    const existingAchievement = await prisma.contestAchievement.findFirst({
+        where:{
+            participantId,
+            contestId,
+            category,
+            photoId:photoId || null
+        }
+    })
+
+    if(existingAchievement){
+        return existingAchievement
+    }
+
+    return prisma.contestAchievement.create({
+        data:{
+            participantId,
+            contestId,
+            category,
+            ...(photoId && {photoId})
+        }
+    })
 }
 
 //get the contest achievements for a specific user
 const getContestAchievementsByUser = async (userId:string,type?:PrizeType)=>{
     
-    const contestParticipant =  await prisma.contestParticipant.findFirst({where:{userId}})
-    if (!contestParticipant){
+    const participantCount = await prisma.contestParticipant.count({where:{userId}})
+    if (participantCount <= 0){
         throw new ApiError(httpStatus.NOT_FOUND, "participant not found")
     }
     if(type){
-        return prisma.contestAchievement.findMany({where:{participantId:contestParticipant.id, category:type}, include:{contest:{select:{id:true,title:true, banner:true}}}})
+        return prisma.contestAchievement.findMany({where:{participant:{userId}, category:type}, include:{contest:{select:{id:true,title:true, banner:true}}}})
     }
-    const achievements = await prisma.contestAchievement.findMany({where:{participantId:contestParticipant.id}, include:{contest:{select:{id:true, title:true, banner:true}}}})
+    const achievements = await prisma.contestAchievement.findMany({where:{participant:{userId}}, include:{contest:{select:{id:true, title:true, banner:true}}}})
     return achievements
 }
 
@@ -76,7 +100,7 @@ const getContestByAchievementsType = async (userId:string,type:PrizeType)=>{
 
 const getUserPhotoAchievements = async (userId:string, photoId:string) => {
 
-    const achievements = await prisma.contestAchievement.findMany({where:{photo:{photoId}, participantId:userId}})
+    const achievements = await prisma.contestAchievement.findMany({where:{photo:{photoId}, participant:{userId}}})
 
     return achievements
 }
@@ -99,6 +123,7 @@ const getMyAchievementsByContest = async (userId:string, contestId:string) => {
 
 export const achievementService = {
     addAchievement,
+    addContestAchievement,
     getContestAchievementsByUser,
     getContestAchievements,
     getAchievements,
