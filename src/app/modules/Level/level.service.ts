@@ -3,6 +3,7 @@ import { LevelName, LevelRequirement, VoteType } from "../../../prismaClient"
 import prisma from "../../../shared/prisma"
 import httpStatus from 'http-status'
 import { LEVEL_BADGE_TYPES, LEVEL_RULES, LevelRule } from "./level.config"
+import { getVoteWeightStats } from "../Vote/voteWeight.service"
 
 
 
@@ -83,23 +84,14 @@ const getBadgeCounts = async (userId:string) => {
 }
 
 const getReceivedVoteStats = async (userId:string) => {
-    const receivedVoteAggregate = await prisma.vote.aggregate({
-        where:{photo:{participant:{userId}}},
-        _count:{id:true},
-        _sum:{power:true}
-    })
-
-    const promotedVoteAggregate = await prisma.vote.aggregate({
-        where:{photo:{participant:{userId}}, type:VoteType.Promoted},
-        _count:{id:true},
-        _sum:{power:true}
-    })
+    const receivedVoteAggregate = await getVoteWeightStats({photo:{participant:{userId}}})
+    const promotedVoteAggregate = await getVoteWeightStats({photo:{participant:{userId}}, type:VoteType.Promoted})
 
     return {
-        receivedVotes: receivedVoteAggregate._sum.power || 0,
-        receivedVoteCount: receivedVoteAggregate._count.id || 0,
-        promotedVotes: promotedVoteAggregate._sum.power || 0,
-        promotedVoteCount: promotedVoteAggregate._count.id || 0,
+        receivedVotes: receivedVoteAggregate.weight,
+        receivedVoteCount: receivedVoteAggregate.count,
+        promotedVotes: promotedVoteAggregate.weight,
+        promotedVoteCount: promotedVoteAggregate.count,
     }
 }
 

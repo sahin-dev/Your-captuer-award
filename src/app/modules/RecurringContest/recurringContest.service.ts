@@ -4,18 +4,18 @@ import { RecurringContestStatus, RecurringType } from "../../../prismaClient";
 import { calculateNextOccurance } from "../../../helpers/nextOccurance";
 import prisma from "../../../shared/prisma";
 import { prizeService } from "../Prize/prize.service";
+import { ContestRuleConfigInput } from "../Contest/ContestRules/contestRules.type";
+import { contestRuleService } from "../Contest/ContestRules/contestRules.service";
 
 type RecurringUpdateData = {
   title?: string;
   description?: string;
   startDate?: string;
   endDate?: string;
-  maxUploads?: number;
   isMoneyContest?: boolean;
   maxPrize?: number;
   minPrize?: number;
-  level_requirements?: number[];
-  rules?: Array<{ name: string; description: string; icon?: string }>;
+  rules?: ContestRuleConfigInput[];
 };
 
 const getRecurringContests = async (page = 1, limit = 20) => {
@@ -56,6 +56,19 @@ const updateRecurringContest = async (recurringContestId: string, data: Recurrin
   }
 
   const duration = endDate.getTime() - startDate.getTime();
+  const rules = data.rules ? contestRuleService.normalizeContestRules(data.rules) : undefined;
+  const recurring = data.startDate || data.endDate
+    ? {
+        set: {
+          ...recurringContest.recurring,
+          ...(data.startDate && {
+            previousOccurrence: null,
+            nextOccurrence: startDate,
+          }),
+          duration,
+        },
+      }
+    : undefined;
 
   return prisma.recurringContest.update({
     where: { id: recurringContestId },
@@ -64,21 +77,11 @@ const updateRecurringContest = async (recurringContestId: string, data: Recurrin
       description: data.description,
       startDate: data.startDate ? startDate : undefined,
       endDate: data.endDate ? endDate : undefined,
-      maxUploads: data.maxUploads,
       isMoneyContest: data.isMoneyContest,
       maxPrize: data.maxPrize,
       minPrize: data.minPrize,
-      level_requirements: data.level_requirements,
-      rules: data.rules ? JSON.stringify(data.rules) : undefined,
-      recurring:
-        data.startDate || data.endDate
-          ? {
-              set: {
-                ...recurringContest.recurring,
-                duration,
-              },
-            }
-          : undefined,
+      rules,
+      recurring,
     },
   });
 };

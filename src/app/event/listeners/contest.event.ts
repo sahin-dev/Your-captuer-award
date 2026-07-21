@@ -13,10 +13,10 @@ globalEventHandler.on(Events.NEW_VOTE, async ({photoId, contestId}:{photoId:stri
 
 globalEventHandler.on(Events.CONTEST_ENDED, async (contestId:string)=>{
     
-    const contest = await prisma.contest.findUnique({where:{id:contestId, status:ContestStatus.CLOSED}})
+    const contest = await prisma.contest.findUnique({where:{id:contestId, status:ContestStatus.COMPLETED}})
 
     if(!contest){
-        throw new Error("No contest found")
+        return
     }
 
    

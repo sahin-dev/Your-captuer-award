@@ -1,25 +1,17 @@
 import { RecurringType } from "../prismaClient";
+import { addDays, addMonths, addWeeks } from "date-fns";
 
-//Calculate next occurance time of a recurring contest based on recurring type
-export const calculateNextOccurance = (date:Date, type:RecurringType = 'DAILY'):Date=>{
-
-    let result = new Date(date);
-    
+export const calculateNextOccurrence = (date:Date, type:RecurringType = RecurringType.DAILY):Date=>{
     switch(type){
         case RecurringType.DAILY:
-            result.setDate(result.getDate() + 1)
-            break
+            return addDays(date, 1)
         case RecurringType.WEEKLY:
-            result.setDate(result.getDate() + 7)
-            break
+            return addWeeks(date, 1)
         case RecurringType.MONTHLY:
-            result.setDate(result.getDate() + 30)
-            break
+            return addMonths(date, 1)
         default:
-            result.setDate(result.getDate() + 1)
-
+            return addDays(date, 1)
     }
-
-    return result
-    
 }
+
+export const calculateNextOccurance = calculateNextOccurrence

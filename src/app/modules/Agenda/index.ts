@@ -29,6 +29,7 @@ export const startAgenda = async () => {
     await scheduler.start();
     await scheduler.every("five minute", "contest:checkRecurring");
     await scheduler.every("5 seconds", "contest:active");
+    await scheduler.every("30 seconds", "contest:watchEnded");
     console.log("Agenda scheduler started");
 
     return scheduler;

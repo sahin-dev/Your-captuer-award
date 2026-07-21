@@ -1,7 +1,10 @@
 
 import { checkObjectId } from '../../../helpers/checkObjectId';
-import { PrizeType, RecurringType } from '../../../prismaClient';
+import { AwardTarget, PrizeType, RecurringType } from '../../../prismaClient';
 import { z } from 'zod';
+import { contestRuleInputArraySchema } from './ContestRules/contestRule.validation';
+import { contestAwardInputArraySchema } from '../Prize/prize.validation';
+import { isContestPrizeCategory } from '../Awards/award.definitions';
 
 const parseJsonValue = (val: unknown) => {
     if (typeof val === "string") {
@@ -17,19 +20,31 @@ const parseNumberField = (val: unknown) => {
     return val;
 }
 
+const parseOptionalNumberField = (val: unknown) => {
+    if (val === undefined || val === null || val === "") {
+        return undefined;
+    }
+
+    return Number(val);
+}
+
 
 export const createContestSchema = z.object({
 
     title: z.string().nonempty("title must not be empty"),
     description: z.string().nonempty('description must not be empty'),
-    level_requirements:z.string().array().default(["50","200","400"]),
     recurring: z.enum(['true', 'false'],{invalid_type_error: "'recurring' must be true or false"}).optional().transform( v => v && v === 'true'),
     recurringType: z.nativeEnum(RecurringType, {invalid_type_error:"Invalid recurring type"}).optional(),
     awardPrizeIds: z.preprocess(parseJsonValue, z.array(z.string()).default([])).optional(),
+    awards: z.preprocess(parseJsonValue, contestAwardInputArraySchema).optional(),
     prizes: z.preprocess(parseJsonValue,
         z.array(
             z.object({
-                category: z.nativeEnum(PrizeType),
+                category: z.nativeEnum(PrizeType).refine(isContestPrizeCategory, {
+                    message: "Contest level badges cannot be configured as prizes",
+                }),
+                target: z.nativeEnum(AwardTarget).optional(),
+                rankLimit: z.preprocess(parseOptionalNumberField, z.number().int().positive().optional()),
                 boost: z.preprocess(parseNumberField, z.number()).default(0),
                 key: z.preprocess(parseNumberField, z.number()).default(0),
                 swap: z.preprocess(parseNumberField, z.number()).default(0),
@@ -39,24 +54,12 @@ export const createContestSchema = z.object({
     ).optional(),
 
     // ⬇️ PARSE JSON STRING → VALIDATE AS ARRAY
-    rules: z.preprocess(parseJsonValue,
-        z.array(
-            z.object({
-                name: z.string(),
-                description: z.string(),
-                icon: z.string().optional(),
-            })
-        )
-    ).optional(),
+    rules: z.preprocess(parseJsonValue, contestRuleInputArraySchema).optional(),
     startDate: z.string().nonempty("start date must not be empty"),
     endDate: z.string().nonempty('End Date is required'),
     isMoneyContest:z.enum(['true', 'false']).transform((val) => val === 'true'),
-    maxPrize:z.string().optional().transform(val=> {
-        if(val)
-            return parseInt(val)
-    }),
-    minPrize:z.string().optional().transform(val => Number(val)),
-    maxUploads:z.string().optional().transform(val => Number(val)),
+    maxPrize:z.preprocess(parseOptionalNumberField, z.number().optional()),
+    minPrize:z.preprocess(parseOptionalNumberField, z.number().optional()),
 });
 
  
@@ -67,4 +70,8 @@ export const joinContestSchema = z.object({
     body: z.object({
         contestId: z.string().min(1, 'Contest ID is required').refine(checkObjectId, { message: 'Invalid Contest ID' }),
     })
+});
+
+export const contestAwardSelectionSchema = z.object({
+    photoId: z.string().min(1, "Photo ID is required"),
 });

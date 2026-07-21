@@ -75,8 +75,9 @@ const updateContestDetails = catchAsync(async (req:any, res:Response)=>{
 const joinContest = catchAsync(async (req:any, res:Response)=>{
     const userId = req.user.id
     const {contestId} = req.params
+    const {acceptedRuleKeys} = req.body || {}
 
-    const joinData = await contestService.joinContest(userId, contestId)
+    const joinData = await contestService.joinContest(userId, contestId, acceptedRuleKeys)
 
     sendResponse(res, {
         statusCode:200,
@@ -118,12 +119,12 @@ const getUploadedPhotosToVote =  catchAsync(async  (req:any, res: Response)=>{
 
 const uploadPhoto = catchAsync(async (req:any, res:Response)=>{
     const user = req.user
-    const { photoIds} = req.body
+    const { photoIds, acceptedRuleKeys} = req.body
     const {contestId} = req.params
 
     const file = req.file as Express.Multer.File
 
-    const uploadedPhoto = await contestService.uploadPhotoToContest(contestId, user.id, photoIds, file)
+    const uploadedPhoto = await contestService.uploadPhotoToContest(contestId, user.id, photoIds, file, acceptedRuleKeys)
 
      sendResponse(res, {
         statusCode:200,
@@ -261,8 +262,8 @@ const chargePhoto = catchAsync(async (req:Request, res:Response) => {
 const getContestPhotosSortedByVote = catchAsync(async (req:Request, res:Response)=> {
 
     const {contestId} = req.params
-    const {page, limit} = req.query as {page:string, limit:string}
-    const photos = await contestService.getContestPhotosSortedByVote(contestId, parseInt(page), parseInt(limit))
+    const {page = "1", limit = "20", level} = req.query as {page:string, limit:string, level?:string}
+    const photos = await contestService.getContestPhotosSortedByVote(contestId, Number(page), Number(limit), level)
 
     sendResponse(res, {
         statusCode:200,
@@ -277,13 +278,56 @@ const getContestPhotosSortedByVote = catchAsync(async (req:Request, res:Response
 const getContestPhotographers = catchAsync(async (req:Request, res:Response)=> {
 
     const {contestId} = req.params
-    const {page =1, limit = 20} = req.query as {page:string, limit:string}
-    const photos = await contestService.getContestTopPhotographers(contestId, Number(page), Number(limit))
+    const userId = req.user.id
+    const {page = "1", limit = "20", level} = req.query as {page:string, limit:string, level?:string}
+    const photos = await contestService.getContestTopPhotographers(contestId, userId, Number(page), Number(limit), level)
 
     sendResponse(res, {
         statusCode:200,
         success:true,
         message:'photographer fetched successfully',
+        data:photos
+    })
+})
+
+const selectAwardPhoto = catchAsync(async (req:Request, res:Response) => {
+    const {contestId, awardId} = req.params
+    const selection = await contestService.selectAwardPhoto(
+        contestId,
+        awardId,
+        req.body.photoId,
+        req.user.id
+    )
+
+    sendResponse(res, {
+        success:true,
+        statusCode:httpStatus.OK,
+        message:"award photo selected successfully",
+        data:selection
+    })
+})
+
+const getAwardSelections = catchAsync(async (req:Request, res:Response) => {
+    const selections = await contestService.getContestAwardSelections(req.params.contestId)
+
+    sendResponse(res, {
+        success:true,
+        statusCode:httpStatus.OK,
+        message:"contest award selections fetched successfully",
+        data:selections
+    })
+})
+
+const getContestYCTopPicks = catchAsync(async (req:Request, res:Response)=> {
+
+    const {contestId} = req.params
+    const {page = "1", limit = "20", level} = req.query as {page:string, limit:string, level?:string}
+    const photos = await contestService.getContestYCTopPicks(contestId, Number(page), Number(limit), level)
+
+    sendResponse(res, {
+        statusCode:200,
+        success:true,
+        message:'yc top picks fetched successfully',
         data:photos
     })
 })
@@ -306,6 +350,9 @@ export const contestController = {
     deleteContestPhoto,
     getContestPhotosSortedByVote,
     getContestPhotographers,
+    getContestYCTopPicks,
+    selectAwardPhoto,
+    getAwardSelections,
     getUploadedPhotosToVote
 
 }

@@ -1,13 +1,12 @@
-import { ContestStatus, RecurringContest, RecurringContestStatus } from '../../../prismaClient';
+import { ContestOccurrenceStatus, ContestStatus, RecurringContest, RecurringContestStatus } from '../../../prismaClient';
 import { Agenda, Job } from "agenda";
 import prisma from '../../../shared/prisma';
 import {contestService } from '../Contest/contest.service';
 import { calculateNextOccurance } from '../../../helpers/nextOccurance';
-import { ContestRule } from '../Contest/ContestRules/contestRules.type';
+import { ContestRuleConfigInput } from '../Contest/ContestRules/contestRules.type';
 import { ContestPrize } from '../Contest/ContestPrizes/contestPrize.type';
-import globalEventHandler from '../../event/eventEmitter';
-import Events from '../../event/events.constant';
-import { prizeService } from '../Prize/prize.service';
+import { contestRuleService } from '../Contest/ContestRules/contestRules.service';
+import { getAwardSlotKey, normalizeAwardIdentity } from '../Awards/award.definitions';
 
 
 
@@ -78,19 +77,20 @@ agenda.define('contest:checkUpcoming', async () => {
 // });
 
 agenda.define("contest:active", async ()=>{
-    const upcomingContest = await contestService.getUpcomingContest()
-    console.log(`Found ${upcomingContest.length} upcoming contests`)
-    upcomingContest.forEach(async  (contest) => {
-        let contestStartDate = new Date(contest.startDate).getTime()
-        let currentDate = new Date().getTime()
-        console.log(contestStartDate)
-        console.log(currentDate)
-        if(currentDate >= contestStartDate){
-            await prisma.contest.update({where:{id:contest.id}, data:{status:ContestStatus.ACTIVE}})
-            agenda.schedule(contest.endDate,"contest:watcher", {contestId:contest.id})
-        }
-        
+    const now = new Date()
+    const upcomingContest = await prisma.contest.findMany({
+        where:{status:ContestStatus.UPCOMING, startDate:{lte:now}}
     })
+    console.log(`Found ${upcomingContest.length} upcoming contests`)
+    for(const contest of upcomingContest){
+        const activated = await prisma.contest.updateMany({
+            where:{id:contest.id, status:ContestStatus.UPCOMING},
+            data:{status:ContestStatus.ACTIVE, startedAt:now}
+        })
+        if(activated.count === 1){
+            await agenda.schedule(contest.endDate,"contest:watcher", {contestId:contest.id})
+        }
+    }
 })
 
 
@@ -103,7 +103,11 @@ agenda.define("contest:checkRecurring", async ()=>{
     console.log(`Found ${recurringContests.length} recurring contests to process.`);
 
     for(const contest of recurringContests){
-        await scheduleContest(contest);
+        try{
+            await scheduleContest(contest);
+        }catch(error){
+            console.error(`Failed to generate recurring contest ${contest.id}`, error)
+        }
     }
 });
 
@@ -111,82 +115,148 @@ agenda.define("contest:checkRecurring", async ()=>{
 async function scheduleContest(rContest:RecurringContest){
     const previousOccurrence = rContest.recurring.previousOccurrence || rContest.createdAt;
     const nextOccurrence = rContest.recurring.nextOccurrence;
-
     const totalTimeSpan = nextOccurrence.getTime() - previousOccurrence.getTime();
-    const passedTimeSpan = new Date().getTime() - previousOccurrence.getTime();
+    const generationLeadTime = Math.min(Math.max(totalTimeSpan * 0.2, 0), 24 * 60 * 60 * 1000)
+    const generationAt = nextOccurrence.getTime() - generationLeadTime
 
-    const generationThreshold = 0.8
-   
-
-    if (totalTimeSpan <= 0 || passedTimeSpan < (totalTimeSpan * generationThreshold)) {
+    if(Date.now() < generationAt){
         return
     }
 
-    const existingContest = await prisma.contest.findFirst({
-        where:{
-            recurringContestId:rContest.id,
-            startDate:nextOccurrence
-        }
+    const occurrenceKey = `${rContest.id}:${nextOccurrence.toISOString()}`
+    const occurrence = await prisma.recurringContestOccurrence.upsert({
+        where:{occurrenceKey},
+        update:{},
+        create:{occurrenceKey, recurringContestId:rContest.id, scheduledAt:nextOccurrence}
     })
 
-    let newContest = existingContest
-
-    if(!newContest){
-        let duration = rContest.recurring.duration || (rContest.endDate.getTime() - rContest.startDate.getTime())
-
-        newContest = await prisma.contest.create({
-            data: {
-                title: rContest.title,
-                banner:rContest.banner,
-                maxUploads:rContest.maxUploads,
-                isMoneyContest: rContest.isMoneyContest,
-                maxPrize:rContest.maxPrize,
-                minPrize:rContest.minPrize,
-                level_requirements:rContest.level_requirements,
-                description: rContest.description,
-                creatorId: rContest.creatorId,
-                recurringContestId:rContest.id,
-                startDate: nextOccurrence,
-                endDate: new Date(nextOccurrence.getTime() + duration),
-                status: ContestStatus.UPCOMING,
-            }
-        })
-
-        const rules = JSON.parse(rContest.rules as string) as ContestRule[]
-
-        await Promise.all(rules.map(rule => 
-            prisma.contestRule.create({data:{contestId:newContest!.id, name:rule.name, description:rule.description, icon:rule.icon}})
-        ))
-
-        await prizeService.copyRecurringAwardsToContest(rContest.id, newContest.id)
-
-        if(rContest.prizes){
-            const prizes = JSON.parse(rContest.prizes as string) as ContestPrize[]
-
-            await Promise.all(prizes.map(prize => 
-                prisma.contestPrize.create({data:{contestId:newContest!.id, category:prize.category, key:prize.key, boost:prize.boost, swap:prize.swap, coin:prize.coin || 0}})
-            ))
-        }
+    if(occurrence.status === ContestOccurrenceStatus.MATERIALIZED){
+        return
     }
 
-    const next = calculateNextOccurance(nextOccurrence, rContest.recurring.recurringType)
-    
-    await prisma.recurringContest.update({
-        where: { id: rContest.id },
-        data: {
-            lastGeneratedContestId:newContest.id,
-            recurring: {
-                set:{
-                    ...rContest.recurring,
-                    previousOccurrence: nextOccurrence,
-                    nextOccurrence: next
-                }
-            }
-        }
+    const staleBefore = new Date(Date.now() - 15 * 60 * 1000)
+    const claimed = await prisma.recurringContestOccurrence.updateMany({
+        where:{
+            occurrenceKey,
+            OR:[
+                {status:{in:[ContestOccurrenceStatus.PENDING, ContestOccurrenceStatus.FAILED]}},
+                {status:ContestOccurrenceStatus.MATERIALIZING, startedAt:{lte:staleBefore}}
+            ]
+        },
+        data:{status:ContestOccurrenceStatus.MATERIALIZING, startedAt:new Date(), error:null}
     })
+    if(claimed.count !== 1){
+        return
+    }
 
-    console.log(`Generated recurring contest instance ${newContest.id} from template ${rContest.id}`);
+    try{
+        const duration = rContest.recurring.duration || (rContest.endDate.getTime() - rContest.startDate.getTime())
+        const endDate = new Date(nextOccurrence.getTime() + duration)
+        const initialStatus = nextOccurrence <= new Date() ? ContestStatus.ACTIVE : ContestStatus.UPCOMING
+        const rawRules = typeof rContest.rules === "string"
+            ? JSON.parse(rContest.rules) as ContestRuleConfigInput[]
+            : rContest.rules as ContestRuleConfigInput[]
+        const rules = contestRuleService.normalizeContestRules(rawRules)
+        const awards = await prisma.recurringContestAward.findMany({where:{recurringContestId:rContest.id}})
+        const legacyPrizes = rContest.prizes
+            ? (typeof rContest.prizes === "string" ? JSON.parse(rContest.prizes) : rContest.prizes) as ContestPrize[]
+            : []
+        const next = calculateNextOccurance(nextOccurrence, rContest.recurring.recurringType)
 
+        const newContest = await prisma.$transaction(async tx => {
+            const contest = await tx.contest.create({
+                data:{
+                    title:rContest.title,
+                    banner:rContest.banner,
+                    isMoneyContest:rContest.isMoneyContest,
+                    maxPrize:rContest.maxPrize,
+                    minPrize:rContest.minPrize,
+                    description:rContest.description,
+                    creatorId:rContest.creatorId,
+                    recurringContestId:rContest.id,
+                    startDate:nextOccurrence,
+                    endDate,
+                    status:initialStatus,
+                    ...(initialStatus === ContestStatus.ACTIVE && {startedAt:new Date()})
+                }
+            })
+
+            await tx.contestRuleConfig.createMany({
+                data:rules.map(rule => ({
+                    contestId:contest.id,
+                    key:rule.key,
+                    value:rule.value,
+                    enabled:rule.enabled ?? true,
+                    order:rule.order ?? 0
+                }))
+            })
+
+            if(awards.length > 0){
+                await tx.contestAward.createMany({
+                    data:awards.map(award => ({
+                        contestId:contest.id,
+                        prizeId:award.prizeId,
+                        category:award.category,
+                        type:award.type,
+                        target:award.target,
+                        rankLimit:award.rankLimit,
+                        slotKey:award.slotKey || getAwardSlotKey(award),
+                        title:award.title,
+                        description:award.description,
+                        icon:award.icon,
+                        key:award.key,
+                        boost:award.boost,
+                        swap:award.swap,
+                        coin:award.coin
+                    }))
+                })
+            }
+
+            if(legacyPrizes.length > 0){
+                await tx.contestPrize.createMany({
+                    data:legacyPrizes.map(prize => {
+                        const identity = normalizeAwardIdentity(prize)
+                        return {
+                            contestId:contest.id,
+                            category:identity.category,
+                            type:identity.type,
+                            target:identity.target,
+                            rankLimit:identity.rankLimit,
+                            key:prize.key,
+                            boost:prize.boost,
+                            swap:prize.swap,
+                            coin:prize.coin || 0
+                        }
+                    })
+                })
+            }
+
+            await tx.recurringContestOccurrence.update({
+                where:{occurrenceKey},
+                data:{status:ContestOccurrenceStatus.MATERIALIZED, contestId:contest.id, error:null}
+            })
+            await tx.recurringContest.update({
+                where:{id:rContest.id},
+                data:{
+                    lastGeneratedContestId:contest.id,
+                    recurring:{set:{...rContest.recurring, previousOccurrence:nextOccurrence, nextOccurrence:next}}
+                }
+            })
+
+            return contest
+        })
+
+        if(initialStatus === ContestStatus.ACTIVE){
+            await agenda.schedule(endDate, "contest:watcher", {contestId:newContest.id})
+        }
+        console.log(`Generated recurring contest instance ${newContest.id} from template ${rContest.id}`)
+    }catch(error){
+        await prisma.recurringContestOccurrence.update({
+            where:{occurrenceKey},
+            data:{status:ContestOccurrenceStatus.FAILED, error:error instanceof Error ? error.message : String(error)}
+        })
+        throw error
+    }
 }
 
 
@@ -198,18 +268,34 @@ async function scheduleContest(rContest:RecurringContest){
 agenda.define("contest:watcher", async (job: Job) => {
     const { contestId} = job.attrs.data as {  contestId:string };
 
-    const contest = await contestService.getContestById(contestId)
+    const contest = await prisma.contest.findUnique({where:{id:contestId}})
     if (!contest){
         throw new Error("'Contest:watcher, contest not found")
     }
-    
-    await prisma.contest.update({where:{id:contestId}, data:{status:ContestStatus.CLOSED}})
-    globalEventHandler.emit(Events.CONTEST_ENDED,contestId)
-    console.log(`Contest has ended ${contestId}`)
-    
+
     await contestService.identifyWinner(contestId)
-    // await contestService.awardTeams(contest.id)
+    console.log(`Contest has been finalized ${contestId}`)
 });
+
+agenda.define("contest:watchEnded", async () => {
+    const contests = await prisma.contest.findMany({
+        where:{
+            OR:[
+                {status:ContestStatus.ACTIVE, endDate:{lte:new Date()}},
+                {status:ContestStatus.FINALIZATION_FAILED}
+            ]
+        },
+        select:{id:true}
+    })
+
+    for(const contest of contests){
+        try{
+            await contestService.identifyWinner(contest.id)
+        }catch(error){
+            console.error(`Failed to finalize contest ${contest.id}`, error)
+        }
+    }
+})
 
 agenda.define("exposure:watcher", async (job:Job) => {
     const {contestPhotoId}  = job.attrs.data as {contestPhotoId:string}

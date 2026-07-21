@@ -1,5 +1,6 @@
 import bcrypt from 'bcryptjs'
 import {
+    AwardTarget,
     ContestParticipant,
     ContestPhoto,
     ContestStatus,
@@ -10,6 +11,8 @@ import {
     VoteType
 } from "./prismaClient"
 import { LEVEL_RULES, LevelRule } from "./app/modules/Level/level.config"
+import { contestRuleDefinitions } from "./app/modules/Contest/ContestRules/contestRule.definitions"
+import { normalizeAwardIdentity } from "./app/modules/Awards/award.definitions"
 
 type SeedUserDefinition = {
     email:string;
@@ -198,7 +201,6 @@ class DatabaseSeeder {
                 data:{
                     creatorId,
                     status:ContestStatus.CLOSED,
-                    level_requirements:[100, 250, 500, 1000, 1500],
                     startDate:new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
                     endDate:new Date(Date.now() - 24 * 60 * 60 * 1000)
                 }
@@ -211,7 +213,6 @@ class DatabaseSeeder {
                 title,
                 description:"Seed contest used to demonstrate achievement badges and user level progression.",
                 status:ContestStatus.CLOSED,
-                level_requirements:[100, 250, 500, 1000, 1500],
                 startDate:new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
                 endDate:new Date(Date.now() - 24 * 60 * 60 * 1000)
             }
@@ -294,7 +295,8 @@ class DatabaseSeeder {
                 contestId,
                 photoId,
                 type,
-                power
+                power,
+                weight:power
             }
         })
     }
@@ -342,6 +344,247 @@ class DatabaseSeeder {
         await this.db.contestAchievement.create({
             data:{participantId, contestId, photoId, category:PrizeType.TOP_PHOTOGRAPHER}
         })
+    }
+
+    private getSeedContestRules(){
+        return [
+            {
+                key:"SUBMISSION_LIMIT",
+                value:4,
+                enabled:true,
+                order:contestRuleDefinitions.SUBMISSION_LIMIT.order
+            },
+            {
+                key:"SUBMISSION_RULES",
+                value:{
+                    intro:"Do not post:",
+                    disallowed:[
+                        "Non-relevant images",
+                        "Similar images: Images with the same combination of subject, background, foreground and location are not allowed. Images must be distinct",
+                        "Same image multiple times (cropped, angle change or tone changes)",
+                        "AI images"
+                    ],
+                    removalNotice:"Images that don't comply may be removed from the challenge.",
+                    allowAiImages:false,
+                    duplicatePolicy:"DISALLOW_SAME_PHOTO"
+                },
+                enabled:true,
+                order:contestRuleDefinitions.SUBMISSION_RULES.order
+            },
+            {
+                key:"LEVEL_REQUIREMENTS",
+                value:[
+                    {level:"POPULAR", votes:50},
+                    {level:"SKILLED", votes:250},
+                    {level:"PREMIER", votes:900},
+                    {level:"ELITE", votes:1900},
+                    {level:"ALL_STAR", votes:5000}
+                ],
+                enabled:true,
+                order:contestRuleDefinitions.LEVEL_REQUIREMENTS.order
+            },
+            {
+                key:"SUBMISSION_FORMAT",
+                value:{
+                    mimeTypes:["image/jpeg", "image/png"],
+                    minWidth:700,
+                    minHeight:700,
+                    maxSizeMB:25
+                },
+                enabled:true,
+                order:contestRuleDefinitions.SUBMISSION_FORMAT.order
+            },
+            {
+                key:"ELIGIBILITY",
+                value:{
+                    minAge:18,
+                    text:"Open to all photographers ages 18 and above. Photos must not contain obscene, provocative, defamatory, sexually explicit, or otherwise objectionable or inappropriate content. Photos deemed inappropriate will be disqualified. Challenge void where prohibited.",
+                    requiresAcceptance:true
+                },
+                enabled:true,
+                order:contestRuleDefinitions.ELIGIBILITY.order
+            },
+            {
+                key:"COPYRIGHT",
+                value:{
+                    text:"You maintain the copyrights to all photos you submit. You must own all submitted images.",
+                    requiresOwnership:true,
+                    requiresAcceptance:true
+                },
+                enabled:true,
+                order:contestRuleDefinitions.COPYRIGHT.order
+            },
+            {
+                key:"VOTING",
+                value:{
+                    text:"Voting is done by members of the site only. The voting system uses a blind voting method which is designed to keep the voting as fair as possible.",
+                    membersOnly:true,
+                    requireContestParticipant:true,
+                    disallowSelfVote:true,
+                    blindVoting:true
+                },
+                enabled:true,
+                order:contestRuleDefinitions.VOTING.order
+            },
+            {
+                key:"PARTICIPATION",
+                value:{
+                    text:"By entering this challenge you accept the standard Terms of Use.",
+                    requiresTermsAcceptance:true,
+                    termsUrl:"/terms"
+                },
+                enabled:true,
+                order:contestRuleDefinitions.PARTICIPATION.order
+            }
+        ]
+    }
+
+    private async upsertPrizeDefinition(category:PrizeType, title:string, description:string, icon:string, values:{boost?:number; key?:number; swap?:number; coin?:number}, options:{target?:AwardTarget; rankLimit?:number} = {}){
+        const identity = normalizeAwardIdentity({category, ...options})
+        const existingPrize = await this.db.prize.findFirst({
+            where:{
+                type:identity.type,
+                target:identity.target,
+                rankLimit:identity.rankLimit
+            }
+        })
+        const data = {
+            category:identity.category,
+            type:identity.type,
+            target:identity.target,
+            rankLimit:identity.rankLimit,
+            title,
+            description,
+            icon,
+            boost:values.boost || 0,
+            key:values.key || 0,
+            swap:values.swap || 0,
+            coin:values.coin || 0,
+            isActive:true
+        }
+
+        if(existingPrize){
+            return this.db.prize.update({
+                where:{id:existingPrize.id},
+                data
+            })
+        }
+
+        return this.db.prize.create({data})
+    }
+
+    async seedContestConfigDemo(){
+        const adminEmail = process.env.ADMIN_EMAIL || "admin@email.com"
+        const adminPassword = process.env.ADMIN_PASSWORD || "admin1122"
+        await this.createAdmin(adminEmail, adminPassword)
+
+        const admin = await this.db.user.findUnique({where:{email:adminEmail}})
+        if(!admin){
+            throw new Error("Admin user was not created")
+        }
+
+        const prizes = await Promise.all([
+            this.upsertPrizeDefinition(
+                PrizeType.TOP_PHOTO,
+                "Top Photo",
+                "Awarded to the strongest single photo in the contest.",
+                "trophy",
+                {boost:10, key:1, swap:1, coin:500}
+            ),
+            this.upsertPrizeDefinition(
+                PrizeType.TOP_PHOTOGRAPHER,
+                "Top Photographer",
+                "Awarded to the photographer with the highest total contest performance.",
+                "camera",
+                {boost:20, key:2, swap:2, coin:1000}
+            ),
+            this.upsertPrizeDefinition(
+                PrizeType.YC_PICK,
+                "YC Pick",
+                "Editorial pick selected by Your Capture Award.",
+                "star",
+                {boost:5, key:1, swap:0, coin:250}
+            ),
+            this.upsertPrizeDefinition(
+                PrizeType.WINNER,
+                "Winner",
+                "Grand winner badge for the contest.",
+                "medal",
+                {boost:30, key:3, swap:3, coin:1500}
+            ),
+            this.upsertPrizeDefinition(
+                PrizeType.TOP_10,
+                "Top 10 Photos",
+                "Awarded to each photo ranked in the contest top 10.",
+                "image",
+                {boost:5, key:1, swap:0, coin:500},
+                {target:AwardTarget.PHOTO, rankLimit:10}
+            ),
+            this.upsertPrizeDefinition(
+                PrizeType.TOP_10,
+                "Top 10 Photographers",
+                "Awarded to each photographer ranked in the contest top 10.",
+                "users",
+                {boost:10, key:2, swap:1, coin:1000},
+                {target:AwardTarget.PHOTOGRAPHER, rankLimit:10}
+            )
+        ])
+
+        const title = "Seed Configurable Rules Contest"
+        const rules = this.getSeedContestRules()
+        const existingContest = await this.db.contest.findFirst({where:{title}})
+        const contestData = {
+            creatorId:admin.id,
+            title,
+            description:"Seed contest with configurable rules and contest-specific awards.",
+            status:ContestStatus.ACTIVE,
+            startDate:new Date(Date.now() - 60 * 60 * 1000),
+            endDate:new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
+            rules,
+            prizes:null
+        }
+
+        const contest = existingContest
+            ? await this.db.contest.update({where:{id:existingContest.id}, data:contestData})
+            : await this.db.contest.create({data:contestData})
+
+        await this.db.contestRuleConfig.deleteMany({where:{contestId:contest.id}})
+        await this.db.contestRuleConfig.createMany({
+            data:rules.map(rule => ({
+                contestId:contest.id,
+                key:rule.key,
+                value:rule.value,
+                enabled:rule.enabled,
+                order:rule.order
+            }))
+        })
+
+        await this.db.contestAward.deleteMany({where:{contestId:contest.id}})
+        await this.db.contestAward.createMany({
+            data:prizes.map(prize => ({
+                contestId:contest.id,
+                prizeId:prize.id,
+                category:prize.category,
+                title:`Seed ${prize.title}`,
+                description:`Contest-specific ${prize.description}`,
+                icon:prize.icon,
+                boost:prize.boost,
+                key:prize.key,
+                swap:prize.swap,
+                coin:prize.coin
+            }))
+        })
+
+        const seededRules = await this.db.contestRuleConfig.findMany({where:{contestId:contest.id}, orderBy:{order:"asc"}})
+        const seededAwards = await this.db.contestAward.findMany({where:{contestId:contest.id}, include:{prize:true}})
+
+        console.log("Seeded configurable contest data")
+        console.log(`Contest ID: ${contest.id}`)
+        console.log(`Admin: ${adminEmail} / ${adminPassword}`)
+        console.log(`Rules: ${seededRules.length}`)
+        console.log(`Awards: ${seededAwards.length}`)
+        console.log("Prize definitions:")
+        prizes.forEach(prize => console.log(`- ${prize.category}: ${prize.id}`))
     }
 
     async seedLevelDemo(){
@@ -437,8 +680,11 @@ async function SeederCLI (){
             case "seed:levels-demo":
                 await seeder.seedLevelDemo()
                 break
+            case "seed:contest-config":
+                await seeder.seedContestConfigDemo()
+                break
             default:
-                console.log("Available commands: create:admin, seed:levels-demo, -reset")
+                console.log("Available commands: create:admin, seed:levels-demo, seed:contest-config, -reset")
         }
     }finally{
         await seeder.destroyClient()

@@ -2,12 +2,12 @@ import prisma from '../../../shared/prisma';
 import ApiError from '../../../errors/ApiError';
 import httpstatus from 'http-status';
 import { fileUploader } from '../../../helpers/fileUploader';
-import { ContestMode, ContestParticipant, ContestPhoto, ContestStatus, PrizeType, RecurringType, YCLevel } from '../../../prismaClient';
+import { AchievementKind, ContestParticipant, ContestPhoto, ContestStatus, PrizeType, RecurringType, YCLevel } from '../../../prismaClient';
 import { IContest } from './contest.interface';
 import { contestData } from './contest.type';
 import { contestRuleService } from './ContestRules/contestRules.service';
-import { addContestPrizes, getContestPrizes } from './ContestPrizes/contestPrize.service';
-import { ContestRule } from './ContestRules/contestRules.type';
+import { getContestPrizes } from './ContestPrizes/contestPrize.service';
+import { ContestRuleConfigInput } from './ContestRules/contestRules.type';
 import { ContestPrize } from './ContestPrizes/contestPrize.type';
 import { profileService } from '../Profile/profile.service';
 import agenda from '../Agenda';
@@ -15,9 +15,14 @@ import { validateContestDate } from '../../../helpers/validateDate';
 import { userStoreService } from '../User/UserStore/userStore.service';
 import { voteService } from '../Vote/vote.service';
 import { achievementService } from '../Achievements/achievement.service';
-import { levelService } from '../Level/level.service';
 import { prizeService } from '../Prize/prize.service';
+import { contestRuleEngine } from './ContestRules/contestRule.engine';
+import { contestFinalizationService } from './ContestFinalization/contestFinalization.service';
+import { getAwardSlotKey, normalizeAwardIdentity } from '../Awards/award.definitions';
+import { contestRankingService } from './ContestRanking/contestRanking.service';
 
+const completedContestStatuses:ContestStatus[] = [ContestStatus.COMPLETED, ContestStatus.CLOSED]
+const isCompletedContest = (status:ContestStatus) => completedContestStatuses.includes(status)
 
 
 
@@ -43,7 +48,6 @@ const createContestBuilderApproach = async (creatorId:string, body:contestData, 
         .title(body.title)
         .description(body.description)
         .banner(bannerUrl)
-        .levelRequirements(body.level_requirements)
         .dates(body.startDate, body.endDate)
 
 
@@ -67,12 +71,8 @@ const createContestBuilderApproach = async (creatorId:string, body:contestData, 
 */
 
 //Create a new contest
-//mode: ContestMode
-
 const createContest = async (creatorId: string, body: contestData, banner:Express.Multer.File) => {
-
-    try{
-        if(!validateContestDate(body.startDate, body.endDate)){
+    if(!validateContestDate(body.startDate, body.endDate)){
         throw new ApiError(httpstatus.BAD_REQUEST, "Start date cannot be after end date");
     }
 
@@ -82,17 +82,24 @@ const createContest = async (creatorId: string, body: contestData, banner:Expres
     }
 
 
-    let bannerUrl = banner? (await fileUploader.uploadToDigitalOcean(banner)).Location: null
+    const bannerUrl = banner? (await fileUploader.uploadToDigitalOcean(banner)).Location: null
 
-    let levels = body.level_requirements.map(levels => parseInt(levels))
+    const normalizedRules = contestRuleService.normalizeContestRules(body.rules)
+    const awardRows = await prizeService.resolveAwardRows(body.awardPrizeIds || [], body.awards || [])
+    const legacyPrizes = (body.prizes || []).map((prize:ContestPrize) => ({
+        ...prize,
+        ...normalizeAwardIdentity(prize)
+    }))
+    const legacySlots = legacyPrizes.map(prize => getAwardSlotKey(prize))
+    if(new Set(legacySlots).size !== legacySlots.length){
+        throw new ApiError(httpstatus.BAD_REQUEST, "Only one award threshold can be selected per award type and target")
+    }
   
     const contestData:any = {
         creatorId,
         title: body.title,
         description: body.description,
         status: ContestStatus.UPCOMING,
-        level_requirements:levels,
-        maxUploads: Number(body.maxUploads),
         ...(bannerUrl && {banner:bannerUrl})
     }
     // If contest is money contest, add money contest data like max prize and min prize for the paerticipants
@@ -114,36 +121,40 @@ const createContest = async (creatorId: string, body: contestData, banner:Expres
     contestData.startDate = new Date(body.startDate) < new Date(Date.now()) ? new Date(Date.now()) : new Date(body.startDate)
     contestData.endDate = new Date(body.endDate)
 
-    console.log(contestData)
+    return prisma.$transaction(async tx => {
+        const contest = await tx.contest.create({data:contestData})
+        await tx.contestRuleConfig.createMany({
+            data:normalizedRules.map(rule => ({
+                contestId:contest.id,
+                key:rule.key,
+                value:rule.value,
+                enabled:rule.enabled ?? true,
+                order:rule.order ?? 0
+            }))
+        })
 
-    // Create a normal contest entry for all type of contest
-       let contest = await prisma.contest.create({
-            data: contestData
-        });
+        if(awardRows.length > 0){
+            await tx.contestAward.createMany({
+                data:awardRows.map(award => ({contestId:contest.id, ...award}))
+            })
+        }else if(legacyPrizes.length > 0){
+            await tx.contestPrize.createMany({
+                data:legacyPrizes.map(prize => ({
+                    contestId:contest.id,
+                    category:prize.category,
+                    type:prize.type,
+                    target:prize.target,
+                    rankLimit:prize.rankLimit,
+                    boost:prize.boost,
+                    swap:prize.swap,
+                    key:prize.key,
+                    coin:prize.coin || 0
+                }))
+            })
+        }
 
-        let createdRules, createdPrizes
-
-    if(body.rules){
-        const rules:ContestRule[] = body.rules
-    
-        createdRules = await contestRuleService.addContestRules(contest.id, rules)
-    }
-   
-    if(body.awardPrizeIds && body.awardPrizeIds.length > 0){
-        createdPrizes = await prizeService.createContestAwardsFromPrizeIds(contest.id, body.awardPrizeIds)
-    } else if(body.prizes){
-         const prizes:ContestPrize[] = body.prizes
-        createdPrizes = await addContestPrizes(contest.id, prizes)
-    }
-
-    const updatedContest = await prisma.contest.update({where:{id:contest.id}, data:{rules:createdRules, prizes:createdPrizes}})
-
-    return updatedContest
-    }catch(err){
-        console.log(err)
-        throw new ApiError(httpstatus.BAD_REQUEST, 'contest creation failed')
-    }
-    
+        return {...contest, rules:normalizedRules, awards:awardRows, prizes:awardRows.length > 0 ? awardRows : legacyPrizes}
+    })
 };
 
 
@@ -164,24 +175,19 @@ const createRecurringContest  =  async (creatorId: string, body: contestData, ba
     const startDate = new Date(body.startDate)
     const endDate = new Date(body.endDate)
 
-    console.log(startDate)
-
-    let levels = body.level_requirements.map(levels => parseInt(levels))
+    const normalizedRules = contestRuleService.normalizeContestRules(body.rules)
+    const awardRows = await prizeService.resolveAwardRows(body.awardPrizeIds || [], body.awards || [])
 
     const contestData:any = {
         creatorId,
         title: body.title,
         description: body.description,
-        level_requirements: levels,
         startDate,
         endDate
 
     }
-    if(!body.rules){
-        throw new ApiError(httpstatus.BAD_REQUEST, "contest rules are required")
-    }
 
-    contestData.rules = JSON.stringify(body.rules)
+    contestData.rules = normalizedRules
     if(body.prizes){
         contestData.prizes = JSON.stringify(body.prizes)
     }
@@ -209,17 +215,15 @@ const createRecurringContest  =  async (creatorId: string, body: contestData, ba
     }
     }
 
-    try{
-         const recurringContest = await prisma.recurringContest.create({data:contestData})
-         let awards:any[] = []
-         if(body.awardPrizeIds && body.awardPrizeIds.length > 0){
-            awards = await prizeService.createRecurringContestAwardsFromPrizeIds(recurringContest.id, body.awardPrizeIds)
-         }
-            return {...recurringContest, awards}
-    }catch(err:any){
-        throw new ApiError(httpstatus.BAD_REQUEST, " recurring Contest creation failed")
-    }
-
+    return prisma.$transaction(async tx => {
+        const recurringContest = await tx.recurringContest.create({data:contestData})
+        if(awardRows.length > 0){
+            await tx.recurringContestAward.createMany({
+                data:awardRows.map(award => ({recurringContestId:recurringContest.id, ...award}))
+            })
+        }
+        return {...recurringContest, awards:awardRows}
+    })
 }
 
 
@@ -229,7 +233,13 @@ const updateContest = async (contestId:string, contestData:Partial<IContest>)=>{
         throw new ApiError(httpstatus.NOT_FOUND, "contest not found")
     }
 
-    if(contest.status === ContestStatus.ACTIVE || ContestStatus.CLOSED){
+    const lockedStatuses:ContestStatus[] = [
+        ContestStatus.ACTIVE,
+        ContestStatus.FINALIZING,
+        ContestStatus.COMPLETED,
+        ContestStatus.CLOSED
+    ]
+    if(lockedStatuses.includes(contest.status)){
         throw new ApiError(httpstatus.BAD_REQUEST, "Editing contest not allowed")
     }
 
@@ -256,23 +266,22 @@ const deleteContestByContestId =async (contestId:string)=>{
 
 // add a user to the contest participant list
 
-const joinContest = async (userId:string,contestId:string)=>{
+const joinContest = async (userId:string,contestId:string, acceptedRuleKeys?:unknown)=>{
     const contest = await prisma.contest.findUnique({where:{id:contestId}})
 
     if (!contest || contest.status != ContestStatus.ACTIVE){
         throw new ApiError(httpstatus.NOT_FOUND, "Contest is not available to participate")
     }
-    
-    if (contest.mode === ContestMode.TEAM){
-        const team = await prisma.teamMember.findFirst({where:{member:{id:userId}}})
-        if(!team){
-            throw new ApiError(httpstatus.NOT_FOUND, 'Team not found')
-        }
-        const teamContest = await prisma.teamParticipation.findUnique({where:{teamId_contestId:{teamId:team.id, contestId}}})
-       
+
+    let participant = await prisma.contestParticipant.findUnique({where:{contestId_userId:{contestId,userId}}})
+
+    if(participant){
+        return {contest_id:contestId, participant_id:participant.id}
     }
 
-    const participant = await prisma.contestParticipant.create({data:{contestId,userId}})
+    await contestRuleEngine.validateJoinRules(contestId, userId, acceptedRuleKeys)
+
+    participant = await prisma.contestParticipant.create({data:{contestId,userId}})
     
     if (participant){
         console.log("User has joined the contest")
@@ -292,28 +301,28 @@ const getContestByUserId = async ( userId:string, contestId: string) => {
         throw new ApiError(httpstatus.NOT_FOUND, "contest not found")
     }
 
-    const rules = await contestRuleService.getContestRules(contestId)
-    const prizes = await getContestPrizes(contestId)
-    const totalVotes = await voteService.getContestTotalVotes(contestId)
+    const [rules, prizes, totalVotes, finalization, awardSelections] = await Promise.all([
+        contestRuleService.getContestRules(contestId),
+        getContestPrizes(contestId),
+        voteService.getContestTotalVotes(contestId),
+        prisma.contestFinalization.findUnique({where:{contestId}}),
+        contestFinalizationService.getContestAwardSelections(contestId)
+    ])
+    const baseContestDetails = {...contest, rules, prizes, awards:prizes, totalVotes, finalization, awardSelections}
 
-    if(contest.status === ContestStatus.CLOSED){
-
-        const winners = await achievementService.getAchievements(contestId)
-
-        console.log(winners)
-        console.log(contest)
-
-        return {...contest, prizes, totalVotes, winners};
+    if(isCompletedContest(contest.status)){
+        const winners = await getContestWinners(contestId)
+        return {...baseContestDetails, winners};
     }
 
     if( (await isContestParticipantExist(userId, contestId)) && (contest.status === ContestStatus.ACTIVE)){
         const contestPhotoCount =  await prisma.contestPhoto.count({where:{contestId, photo:{userId}}})
 
-        return {...contest, joined:true,rules, prizes, totalVotes, uploadCount:contestPhotoCount}
+        return {...baseContestDetails, joined:true, uploadCount:contestPhotoCount}
     }
 
 
-    return {...contest, rules, prizes, totalVotes, joined:false};
+    return {...baseContestDetails, joined:false};
 }
 
 
@@ -328,22 +337,22 @@ const getContestById = async ( contestId: string) => {
         throw new ApiError(httpstatus.NOT_FOUND, "contest not found")
     }
 
-    const rules = await contestRuleService.getContestRules(contestId)
-    const prizes = await getContestPrizes(contestId)
-    const totalVotes = await voteService.getContestTotalVotes(contestId)
+    const [rules, prizes, totalVotes, finalization, awardSelections] = await Promise.all([
+        contestRuleService.getContestRules(contestId),
+        getContestPrizes(contestId),
+        voteService.getContestTotalVotes(contestId),
+        prisma.contestFinalization.findUnique({where:{contestId}}),
+        contestFinalizationService.getContestAwardSelections(contestId)
+    ])
+    const baseContestDetails = {...contest, rules, prizes, awards:prizes, totalVotes, finalization, awardSelections}
 
-    if(contest.status === ContestStatus.CLOSED){
-
-        const winners = await achievementService.getAchievements(contestId)
-
-        console.log(winners)
-        console.log(contest)
-
-        return {...contest, prizes, totalVotes, winners};
+    if(isCompletedContest(contest.status)){
+        const winners = await getContestWinners(contestId)
+        return {...baseContestDetails, winners};
     }
 
 
-    return {...contest, rules, prizes, totalVotes};
+    return baseContestDetails;
 }
 
 
@@ -525,12 +534,16 @@ const getMyCompletedContest = async (userId:string) => {
         throw new ApiError(httpstatus.NOT_FOUND, "User not found")
     }
 
-    const myParticipatedContest = await prisma.contest.findMany({where:{status:ContestStatus.CLOSED, participants:{some:{userId}}}})
+    const myParticipatedContest = await prisma.contest.findMany({where:{status:{in:completedContestStatuses}, participants:{some:{userId}}}})
 
     const mappetdCompletedContest =await Promise.all( myParticipatedContest.map(async contest => {
         const details = await getContestById(contest.id)
-        const photos = await getContestUploads(userId, contest.id)
-        const achievements = await achievementService.getContestAchievementsByUser(userId)
+        const participantPhotos = await getContestUploadsByUserId(contest.id, userId)
+        const photos = await Promise.all(participantPhotos.map(async photo => ({
+            ...photo,
+            voteCount:await voteService.getVoteCount(photo.id)
+        })))
+        const achievements = await achievementService.getMyAchievementsByContest(userId, contest.id)
         const totalVotes =  photos.reduce((pre, photo) => photo.voteCount + pre, 0)
         return {...details, photos, totalVotes, achievements}
     }))
@@ -545,23 +558,44 @@ const getMyCompletedContest = async (userId:string) => {
 
 
 const getContestWinners = async (contestId:string) => {
-    const contest = await prisma.contest.findUnique({where:{id:contestId, status:ContestStatus.CLOSED}})
+    const contest = await prisma.contest.findFirst({where:{id:contestId, status:{in:completedContestStatuses}}})
 
     if(!contest){
         throw new ApiError(httpstatus.NOT_FOUND, "contest not found")
     }
 
-    const winners = await prisma.contestAchievement.findMany({where:{contestId:contest.id}, include:{participant:{include:{user:{select:{avatar:true, fullName:true, firstName:true, lastName:true}}}}}})
+    const grants = await contestFinalizationService.getContestAwardResults(contestId)
+    if(grants.length > 0){
+        const [users, photos] = await Promise.all([
+            prisma.user.findMany({
+                where:{id:{in:[...new Set(grants.map(grant => grant.userId))]}},
+                select:{id:true, avatar:true, fullName:true, firstName:true, lastName:true}
+            }),
+            prisma.contestPhoto.findMany({
+                where:{id:{in:grants.flatMap(grant => grant.photoId ? [grant.photoId] : [])}},
+                include:{photo:{select:{id:true, url:true, title:true}}}
+            })
+        ])
+        const userById = new Map(users.map(user => [user.id,user]))
+        const photoById = new Map(photos.map(photo => [photo.id,photo]))
+        return grants.map(grant => ({
+            ...grant,
+            user:userById.get(grant.userId),
+            photo:grant.photoId ? photoById.get(grant.photoId) : null
+        }))
+    }
 
-    return winners
+    return prisma.contestAchievement.findMany({
+        where:{contestId:contest.id, kind:AchievementKind.CONTEST_AWARD},
+        include:{participant:{include:{user:{select:{avatar:true, fullName:true, firstName:true, lastName:true}}}}}
+    })
 }
 
 
 // Fetch completed contest details with winner
 const getClosedContestsWithWinner = async () => {
-    // Fetch contests with status 'COMPLETED' (enum)
     const contests = await prisma.contest.findMany({
-        where: { status: ContestStatus.CLOSED },
+        where: { status: {in:completedContestStatuses} },
         include: {
             creator: true,
             participants: {
@@ -572,231 +606,28 @@ const getClosedContestsWithWinner = async () => {
         }
     });
 
-    // For each contest, fetch photos and determine the winner
-    const results:Array<any> = [];
-    for (const contest of contests) {
-        // Fetch all contest photos for this contest
-        const contestPhotos = await prisma.contestPhoto.findMany({
-            where: { contestId: contest.id },
-            include: { photo: true }
-        });
-        let winner:any;
-        if (contestPhotos && contestPhotos.length > 0) {
-            let maxVotes = -1;
-            for (const contestPhoto of contestPhotos) {
-                const voteCount = await voteService.getVoteCount(contestPhoto.id);
-                if (voteCount > maxVotes) {
-                    maxVotes = voteCount;
-                    winner = contestPhoto.photo;
-                }
-            }
-        }
-        results.push({
+    return Promise.all(contests.map(async contest => {
+        const winners = await getContestWinners(contest.id)
+        return {
             ...contest,
-            winner,
-        });
-    }
-    return results;
+            winner:winners[0] || null,
+            winners
+        }
+    }))
 };
 
 // Identify the winner after contest ended
 
 const identifyWinner = async (contestId:string)=>{
-    console.log('Identifying winners....')
-
-    const contest = await getContestById(contestId)
-    if(!contest){
-        throw new ApiError(httpstatus.NOT_FOUND, "contest not found")
-    }
-
-    if(contest.mode === ContestMode.TEAM){
-        return await identifyTeamWinner(contestId)
-    }
-    const enabledAwardCategories = await getEnabledAwardCategories(contestId)
-
-    const participants = await getContestParticipants(contestId)
-
-    let participant = await Promise.all(participants.map(async participant => {
-        const uploadedPhotos = await prisma.contestPhoto.findMany({where:{contestId,participantId:participant.id}})
-        let maxVote = Number.MIN_SAFE_INTEGER
-        let maxPhoto:ContestPhoto | null = null
-
-        for(const photo of uploadedPhotos){
-            const votes = await voteService.getVoteCount(photo.id)
-
-            if (votes > maxVote){
-                maxVote = votes
-                maxPhoto = photo
-            }
-        }
-
-        const totalVotes = await voteService.totalVotesOfParticipant(participant.id, contestId)
-        return {...participant, totalVotes, singlePhotoVote:maxVote, maxPhoto}
-    }))
-
-    const rankedParticipants = participant.sort((a, b) => b.totalVotes - a.totalVotes)
-    if(rankedParticipants.length <= 0){
-        return
-    }
-
-    let top_photographer = rankedParticipants[0]
-
-    if(enabledAwardCategories.has(PrizeType.TOP_PHOTOGRAPHER)){
-        await awardWinner(top_photographer, contestId, PrizeType.TOP_PHOTOGRAPHER)
-    }
-    let top_photo = [...participant].sort((a,b) => b.singlePhotoVote - a.singlePhotoVote)[0]
-
-    if(top_photo?.maxPhoto){
-        if(enabledAwardCategories.has(PrizeType.TOP_PHOTO)){
-            await awardWinner(top_photo, contestId, PrizeType.TOP_PHOTO, top_photo.maxPhoto.id)
-        }
-        if(enabledAwardCategories.has(PrizeType.YC_PICK)){
-            await awardWinner(top_photo, contestId, PrizeType.YC_PICK, top_photo.maxPhoto.id)
-        }
-    }
-
-    for(const rankedParticipant of rankedParticipants){
-        const rank = rankedParticipants.findIndex(participant => participant.id === rankedParticipant.id) + 1
-        const contestLevel = getContestBadgeLevel(rankedParticipant.totalVotes, contest.level_requirements)
-        const participantUpdateData:{rank:number; level?:YCLevel} = {rank}
-
-        if(contestLevel){
-            participantUpdateData.level = contestLevel
-        }
-
-        await prisma.contestParticipant.update({
-            where:{id:rankedParticipant.id},
-            data:participantUpdateData
-        })
-
-        await awardRankBadges(rankedParticipant, contestId, rank, enabledAwardCategories)
-        if(contestLevel){
-            const levelBadge = getPrizeTypeByYCLevel(contestLevel)
-            if(levelBadge && enabledAwardCategories.has(levelBadge)){
-                await awardWinner(rankedParticipant, contestId, levelBadge)
-            }
-        }
-
-        await levelService.evaluateAndUpdateUserLevel(rankedParticipant.userId)
-    }
-
+    return contestFinalizationService.finalizeContest(contestId)
 }
 
-const getEnabledAwardCategories = async (contestId:string) => {
-    const contestAwards = await prisma.contestAward.findMany({where:{contestId}, select:{category:true}})
-
-    if(contestAwards.length > 0){
-        return new Set(contestAwards.map(award => award.category))
-    }
-
-    const legacyPrizes = await prisma.contestPrize.findMany({where:{contestId}, select:{category:true}})
-    return new Set(legacyPrizes.map(prize => prize.category))
+const selectAwardPhoto = async (contestId:string, awardId:string, photoId:string, selectedById:string) => {
+    return contestFinalizationService.selectAwardPhoto(contestId, awardId, photoId, selectedById)
 }
 
-
-const awardTeams = async (contestId:string) => {
-    const teamMatches = await prisma.teamMatch.findMany({where:{contestId}})
-
-    if(!teamMatches || teamMatches.length <= 0){
-        console.log("No team match found for this contest")
-        return
-    }
-
-    teamMatches.forEach(async teamMatch => {
-       await awardTeam(teamMatch.id)
-    }) 
-}
-
-const awardTeam = async (matchId:string) => {
-    const teamMatch = await prisma.teamMatch.findUnique({where:{id:matchId}})
-
-    if(!teamMatch){
-        console.log("match not found")
-        return
-    }
-
-    const team1Votes = await voteService.getTeamTotalVotes(teamMatch.contestId, teamMatch.team1Id)
-    const team2Votes = await voteService.getTeamTotalVotes(teamMatch.contestId, teamMatch.team2Id)
-
-    await prisma.team.update({where:{id:teamMatch.team1Id}, data:{score:{increment:team1Votes}, }})
-    await prisma.team.update({where:{id:teamMatch.team2Id}, data:{score:{increment:team2Votes}}})
-
-    if(team1Votes > team2Votes){
-        await prisma.team.update({where:{id:teamMatch.team1Id}, data:{win:{increment:1}}})
-        await prisma.team.update({where:{id:teamMatch.team2Id}, data:{ lost:{increment:1}}})
-    }else if(team1Votes === team2Votes) {
-        await prisma.team.update({where:{id:teamMatch.team1Id}, data:{ win:{increment:1}}})
-        await prisma.team.update({where:{id:teamMatch.team2Id}, data:{ win:{increment:1}}})
-    }else {
-        await prisma.team.update({where:{id:teamMatch.team1Id}, data:{ lost:{increment:1}}})
-        await prisma.team.update({where:{id:teamMatch.team2Id}, data:{ win:{increment:1}}})       
-    }
-
-}
-
-const getTeamParticipant = async (contestId:string, teamId:string) => {
-    const participants = await prisma.contestParticipant.findMany({where:{user:{joinedTeam:{id:teamId}}, contestId, }})
-
-    return participants
-}
-
-
-const identifyTopPhoto = async (contestId:string)=>{
-    const contest = await prisma.contest.findUnique({where:{id:contestId}})
-
-    if(!contest){
-        throw new ApiError(httpstatus.NOT_FOUND, "contest not found")
-    }
-
-    const contestPhoto = await prisma.vote.groupBy({by:['photoId'], where:{contestId}, _count:{photoId:true},orderBy:{_count:{photoId:'desc'}}, take:1})
-}
-
-const identifyTeamWinner = async (contestId:string)=>{
-    const contest = await getContestById(contestId)
-    if(!contest){
-        throw new ApiError(httpstatus.NOT_FOUND, "contest not found")
-    }
-
-    if(contest.mode !== ContestMode.TEAM){
-        throw new ApiError(httpstatus.BAD_REQUEST, "contest is not for team")
-    }
-
-    const participants = await getContestParticipants(contestId)
-
-    let participantVote = await Promise.all(participants.map( async participant => {
-        let votes = await voteService.totalVotesOfParticipant(participant.id, contestId)
-
-        return {id:participant.id, voteCount:votes}
-    }))
-}
-
-const awardRankBadges = async (participant:ContestParticipant, contestId:string, rank:number, enabledAwardCategories:Set<PrizeType>) => {
-    if(rank <= 100 && enabledAwardCategories.has(PrizeType.TOP_100)){
-        await awardWinner(participant, contestId, PrizeType.TOP_100)
-    }
-    if(rank <= 50 && enabledAwardCategories.has(PrizeType.TOP_50)){
-        await awardWinner(participant, contestId, PrizeType.TOP_50)
-    }
-    if(rank <= 20 && enabledAwardCategories.has(PrizeType.TOP_20)){
-        await awardWinner(participant, contestId, PrizeType.TOP_20)
-    }
-    if(rank <= 10 && enabledAwardCategories.has(PrizeType.TOP_10)){
-        await awardWinner(participant, contestId, PrizeType.TOP_10)
-    }
-    if(rank === 1 && enabledAwardCategories.has(PrizeType.WINNER)){
-        await awardWinner(participant, contestId, PrizeType.WINNER)
-    }
-}
-
-const getPrizeTypeByYCLevel = (level:YCLevel) => {
-    const badgeMap:Partial<Record<YCLevel, PrizeType>> = {
-        [YCLevel.AMATEUR]:PrizeType.AMATEUR,
-        [YCLevel.TALENTED]:PrizeType.TALENTED,
-        [YCLevel.SUPREME]:PrizeType.SUPREME,
-        [YCLevel.SUPERIOR]:PrizeType.SUPERIOR,
-    }
-
-    return badgeMap[level]
+const getContestAwardSelections = async (contestId:string) => {
+    return contestFinalizationService.getContestAwardSelections(contestId)
 }
 
 const getContestBadgeLevel = (totalVotes:number, levelRequirements:number[]) => {
@@ -810,46 +641,6 @@ const getContestBadgeLevel = (totalVotes:number, levelRequirements:number[]) => 
     })
 
     return currentLevel
-}
-
-//Award prize to the winners
-
-const awardWinner = async (winner:ContestParticipant, contestId:string, prizeType:PrizeType, photoId?:string | null)=>{
-
-    const existingAchievement = await prisma.contestAchievement.findFirst({
-        where:{
-            participantId:winner.id,
-            contestId,
-            category:prizeType,
-            photoId: photoId || null
-        }
-    })
-
-    if(existingAchievement){
-        return existingAchievement
-    }
-
-    const contestAward = await prisma.contestAward.findFirst({where:{contestId, category:prizeType}})
-    const contestPrize = contestAward || await prisma.contestPrize.findFirst({where:{contestId, category:prizeType}})
-
-    const achievement = await achievementService.addContestAchievement(winner.id, contestId, prizeType, photoId)
-
-    const winnerStore = await prisma.userStore.findFirst({where:{userId:winner.userId as string}})
-    if(!contestPrize || !winnerStore){
-        return achievement
-    }
-
-    await prisma.userStore.update({
-        where:{id:winnerStore.id}, 
-        data:{
-            key:{increment:contestPrize.key},
-            boost:{increment:contestPrize.boost},
-            swap:{increment:contestPrize.swap},
-            coin:{increment:contestPrize.coin || 0}
-        }})
-
-    return achievement
-
 }
 
 const getRemainingPhotos = async (userId:string, contestId:string)=>{
@@ -984,7 +775,7 @@ const getContestUploads = async (userId:string,contestId:string)=>{
 
 //Upload photo to a contest, user can upload photo from pforile or can upload directly from computer
 
-const uploadPhotoToContest = async (contestId:string,userId:string, photoIds:string[], file:Express.Multer.File)=>{
+const uploadPhotoToContest = async (contestId:string,userId:string, photoIds:string[], file:Express.Multer.File, acceptedRuleKeys?:unknown)=>{
 
     if(!contestId){
         throw new ApiError(httpstatus.BAD_REQUEST, "contest id is required")
@@ -1001,55 +792,70 @@ const uploadPhotoToContest = async (contestId:string,userId:string, photoIds:str
         throw new ApiError(httpstatus.NOT_FOUND, "user not found")
     }
 
-    let contestParticipant:ContestParticipant | null = await prisma.contestParticipant.findUnique({where:{contestId_userId:{contestId,userId}}})
+    const contestParticipant = await prisma.contestParticipant.findUnique({where:{contestId_userId:{contestId,userId}}})
+    const isJoiningThroughUpload = !contestParticipant
+    const parsedPhotoIds = Array.isArray(photoIds)
+        ? photoIds
+        : typeof photoIds === "string"
+            ? [photoIds]
+            : []
 
+    await contestRuleEngine.validateUploadRules({
+        contestId,
+        userId,
+        participantId:contestParticipant?.id,
+        file,
+        photoIds:parsedPhotoIds,
+        acceptedRuleKeys,
+        isJoiningThroughUpload
+    })
 
-    if(!contestParticipant){
-        contestParticipant = await prisma.contestParticipant.create({data:{contestId:contest.id,userId:userId}, include:{contest:true, _count:{select:{photos:true}}}})
-    }
-
-    const contestPhotosCount = await prisma.contestPhoto.count({where:{contestId:contest.id, participantId:contestParticipant!.id}})
-
-    if (contestPhotosCount >= contest.maxUploads) {
-        throw new ApiError(httpstatus.BAD_REQUEST, "maximum photo upload limit has reached!")
-    }
-
-    let uploadImage:ContestPhoto | null = null;
-    let images:Array<ContestPhoto> = []
-
+    let selectedPhotoIds:string[] = []
     if(file){
-
-        let uploadedPhoto = await profileService.uploadUserPhoto(userId, file)
-
-        uploadImage = await prisma.contestPhoto.create({data:{contestId,participantId:contestParticipant!.id,photoId:uploadedPhoto.id}})
-
+        const uploadedPhoto = await profileService.uploadUserPhoto(userId, file)
+        selectedPhotoIds = [uploadedPhoto.id]
     }else{
-        if(!photoIds || photoIds.length <= 0){
+        if(parsedPhotoIds.length <= 0){
             throw new ApiError(httpstatus.BAD_REQUEST,"photoIds is empty or missing")
         }
 
-        const alreadyUploadedPhotosCount = await prisma.contestPhoto.count({where:{contestId,photo:{userId}}})
+        const userPhotos = await prisma.userPhoto.findMany({where:{id:{in:parsedPhotoIds}, userId}})
+        if(userPhotos.length !== parsedPhotoIds.length){
+            throw new ApiError(httpstatus.BAD_REQUEST, "One or more photos do not belong to this user")
+        }
+        selectedPhotoIds = userPhotos.map(userPhoto => userPhoto.id)
+    }
 
-        if((photoIds.length > contest.maxUploads) || (photoIds.length > (contest.maxUploads - alreadyUploadedPhotosCount))){
-            throw new ApiError(httpstatus.BAD_REQUEST, `maximum upload limit exceeded`)
+    const submissionLimit = await contestRuleService.getEnabledRuleValue<number>(contestId, "SUBMISSION_LIMIT")
+    const images = await prisma.$transaction(async tx => {
+        const activeContest = await tx.contest.findFirst({where:{id:contestId, status:ContestStatus.ACTIVE}})
+        if(!activeContest){
+            throw new ApiError(httpstatus.BAD_REQUEST, "Contest is no longer accepting submissions")
         }
 
-        photoIds.forEach(async photoId => {
-            const userPhoto = await prisma.userPhoto.findUnique({where:{id:photoId}})
-            if(userPhoto){
-    uploadImage = await prisma.contestPhoto.create({data:{contestId,participantId:contestParticipant!.id,photoId:userPhoto.id}, include:{photo:true} })
-    if (uploadImage) {
-        images.push(uploadImage)
-        agenda.every("1 minute", "exposure:watcher",{contestPhotoId:uploadImage.id})
-    }
-                }
+        const participant = await tx.contestParticipant.upsert({
+            where:{contestId_userId:{contestId,userId}},
+            update:{},
+            create:{contestId,userId}
         })
+        if(submissionLimit !== null){
+            const existingUploadCount = await tx.contestPhoto.count({where:{contestId,participantId:participant.id}})
+            if(existingUploadCount + selectedPhotoIds.length > submissionLimit){
+                throw new ApiError(httpstatus.BAD_REQUEST, "Maximum upload limit exceeded")
+            }
+        }
 
- 
-    }
-    //add watcher for exposure bonus
+        const createdPhotos:ContestPhoto[] = []
+        for(const photoId of selectedPhotoIds){
+            createdPhotos.push(await tx.contestPhoto.create({
+                data:{contestId,participantId:participant.id,photoId},
+                include:{photo:true}
+            }))
+        }
+        return createdPhotos
+    })
 
-   
+    await Promise.all(images.map(image => agenda.every("1 minute", "exposure:watcher", {contestPhotoId:image.id})))
 
     return images
 }
@@ -1128,10 +934,16 @@ const getContestLevelRequirements = async (contestId:string)=>{
         throw new ApiError(httpstatus.NOT_FOUND, "contest not found")
     }
     let ycLevels = getYCLevelByOrder()
+    const configuredLevels = await contestRuleEngine.getLevelRequirements(contestId)
 
-    let levels = contest.level_requirements.map((level, idx) => ({levelName:ycLevels[idx], point: level}))
+    let levels = configuredLevels.map((level, idx) => ({levelName:ycLevels[idx], point: level.votes, displayLevel: level.level}))
 
     return levels
+}
+
+const getContestLevelPointValues = async (contestId:string) => {
+    const configuredLevels = await contestRuleEngine.getLevelRequirements(contestId)
+    return configuredLevels.map(level => level.votes)
 }
 
 const getParticipantLevelData = async (contestId:string,userId:string)=>{
@@ -1270,7 +1082,7 @@ const tradePhoto = async (userId:string,contestId:string, contestPhotoId:string,
     if (!userStore || userStore.swap <= 0 ){
         throw new ApiError(httpstatus.BAD_REQUEST, "you does not have enough trade")
     }
-    const vote = await voteService.getVoteCount(contestPhoto.photo.id)
+    const vote = await voteService.getVoteCount(contestPhoto.id)
     await prisma.contestPhoto.delete({where:{id:contestPhoto.id}})
 
     const uploadedPhoto = await uploadPhotoToContest(contestId,userId,[photoId], file)
@@ -1307,28 +1119,129 @@ const chargePhoto = async (userId:string, contestId:string, contestPhotoId:strin
     return newContestPhoto
 }
 
-const getContestPhotosSortedByVote = async (contestId:string, page?:number, limit?:number) => {
+const rankLevelTabs = ['POPULAR', 'SKILLED', 'PREMIER', 'ELITE', 'ALL_STAR'] as const
+type RankLevelTab = typeof rankLevelTabs[number]
+
+const normalizeRankLevel = (level?: string): RankLevelTab => {
+    const normalizedLevel = level?.toUpperCase().replace(/-/g, '_') as RankLevelTab
+    return rankLevelTabs.includes(normalizedLevel) ? normalizedLevel : 'POPULAR'
+}
+
+const getDesignLevelFromYCLevel = (level?: YCLevel | null): RankLevelTab => {
+    const levelMap:Record<YCLevel, RankLevelTab> = {
+        [YCLevel.NEW]:'POPULAR',
+        [YCLevel.AMATEUR]:'POPULAR',
+        [YCLevel.TALENTED]:'SKILLED',
+        [YCLevel.SUPREME]:'PREMIER',
+        [YCLevel.SUPERIOR]:'ELITE',
+        [YCLevel.TOP_NOTCH]:'ALL_STAR'
+    }
+
+    return level ? levelMap[level] : 'POPULAR'
+}
+
+const getParticipantDesignLevel = (totalVotes:number, levelRequirements:number[]): RankLevelTab => {
+    const ycLevel = getContestBadgeLevel(totalVotes, levelRequirements)
+    return getDesignLevelFromYCLevel(ycLevel)
+}
+
+const getPagination = (page?:number, limit?:number) => {
+    const safePage = page && page > 0 ? page : 1
+    const safeLimit = limit && limit > 0 ? limit : 20
+    const skip = (safePage - 1) * safeLimit
+
+    return {page:safePage, limit:safeLimit, skip}
+}
+
+const paginateRankedData = <T>(data:T[], page?:number, limit?:number) => {
+    const pagination = getPagination(page, limit)
+    const paginatedData = data.slice(pagination.skip, pagination.skip + pagination.limit)
+
+    return {
+        data:paginatedData,
+        meta:{
+            page:pagination.page,
+            limit:pagination.limit,
+            total:data.length
+        }
+    }
+}
+
+const getContestPhotoVoteScore = async (contestPhoto:{id:string; initialVotes?:number | null}) => {
+    const voteCount = await voteService.getVoteCount(contestPhoto.id)
+    return voteCount + (contestPhoto.initialVotes || 0)
+}
+
+const getFollowedUserIds = async (currentUserId:string, followingIds:string[]) => {
+    if(!currentUserId || followingIds.length <= 0){
+        return new Set<string>()
+    }
+
+    const follows = await prisma.follow.findMany({
+        where:{
+            followerId:currentUserId,
+            followingId:{in:followingIds}
+        },
+        select:{followingId:true}
+    })
+
+    return new Set(follows.map(follow => follow.followingId))
+}
+
+const getContestPhotosSortedByVote = async (contestId:string, page?:number, limit?:number, level?:string) => {
 
     const contest = await prisma.contest.findUnique({where:{id:contestId}})
 
     if(!contest){
         throw new ApiError(httpstatus.NOT_FOUND, 'Contest not found')
     }
-    const contestUploads = await prisma.contestPhoto.findMany({where:{contestId}, include:{participant:{include:{user:{select:{id:true, avatar:true, country:true, fullName:true}}}}, photo:{select:{id:true, url:true}}}})  
+    const activeLevel = normalizeRankLevel(level)
+    const ranking = await contestRankingService.buildContestRanking(contestId)
+    const contestUploads = await prisma.contestPhoto.findMany({
+        where:{id:{in:ranking.photos.map(photo => photo.photoId)}},
+        include:{
+            participant:{
+                include:{
+                    user:{select:{id:true, avatar:true, country:true, fullName:true}}
+                }
+            },
+            photo:{select:{id:true, url:true, title:true}}
+        }
+    })
+    const uploadById = new Map(contestUploads.map(upload => [upload.id,upload]))
+    const photographerByParticipant = new Map(ranking.photographers.map(photographer => [photographer.participantId,photographer]))
+    const sortedUploads = ranking.photos
+        .map(photo => {
+            const upload = uploadById.get(photo.photoId)
+            const photographerRanking = photographerByParticipant.get(photo.participantId)
+            if(!upload || !photographerRanking){
+                return null
+            }
+            return {
+                contestPhotoId:upload.id,
+                userPhotoId:upload.photo.id,
+                url:upload.photo.url,
+                title:upload.photo.title,
+                voteCount:photo.score,
+                rank:photo.rank,
+                level:getDesignLevelFromYCLevel(photographerRanking.level),
+                photographer:upload.participant.user
+            }
+        })
+        .filter((upload): upload is NonNullable<typeof upload> => Boolean(upload))
+        .filter(upload => upload.level === activeLevel)
+        .map((upload, index) => ({...upload, levelRank:index + 1}))
 
-    const uploadsWithVotes = await Promise.all(contestUploads.map( async upload => {
-        const voteCount = await voteService.getVoteCount(upload.id)
-
-        const user = upload.participant.user
-        const userPhoto = upload.photo
-        return {id:upload.id, voteCount, user,userPhoto:userPhoto}
-    }))
-
-    const sortedUploads = uploadsWithVotes.sort((a,b) => b.voteCount - a.voteCount)
-    return sortedUploads
+    const paginatedPhotos = paginateRankedData(sortedUploads, page, limit)
+    return {
+        levelTabs:rankLevelTabs,
+        activeLevel,
+        photos:paginatedPhotos.data,
+        meta:paginatedPhotos.meta
+    }
 }
 
-const getContestTopPhotographers =  async (contestId:string, page?:number, limit?:number)=>{
+const getContestTopPhotographers =  async (contestId:string, currentUserId:string, page?:number, limit?:number, level?:string)=>{
 
     const contest = await prisma.contest.findUnique({where:{id:contestId}})
 
@@ -1336,30 +1249,129 @@ const getContestTopPhotographers =  async (contestId:string, page?:number, limit
         throw new ApiError(httpstatus.NOT_FOUND, "contest not found")
     }
 
+    const activeLevel = normalizeRankLevel(level)
+    const ranking = await contestRankingService.buildContestRanking(contestId)
+    const contestParticipants = await prisma.contestParticipant.findMany({
+        where:{id:{in:ranking.photographers.map(photographer => photographer.participantId)}},
+        include:{
+            photos:{select:{photo:{select:{id:true, url:true, title:true}}, id:true}},
+            user:{select:{id:true, avatar:true, country:true, fullName:true}}
+        }
+    })
+    const participantById = new Map(contestParticipants.map(participant => [participant.id,participant]))
+    const photoScoreById = new Map(ranking.photos.map(photo => [photo.photoId,photo.score]))
+    const participantWithVote = ranking.photographers.flatMap(photographer => {
+        const participant = participantById.get(photographer.participantId)
+        if(!participant){
+            return []
+        }
+        return [{
+            participantId:participant.id,
+            rank:photographer.rank,
+            level:getDesignLevelFromYCLevel(photographer.level),
+            user:participant.user,
+            photos:participant.photos.map(photo => ({
+                contestPhotoId:photo.id,
+                userPhotoId:photo.photo.id,
+                url:photo.photo.url,
+                title:photo.photo.title,
+                voteCount:photoScoreById.get(photo.id) || 0
+            })).sort((a,b) => b.voteCount - a.voteCount),
+            totalVotes:photographer.score
+        }]
+    })
 
-    const contestParticipants = await prisma.contestParticipant.findMany({where:{contestId},take:limit,
-         include:{photos:{select:{photo:{select:{id:true, url:true}}, id:true}}, user:{select:{id:true, avatar:true, fullName:true}}}})
-
-    const participantWithVote =  await Promise.all(contestParticipants.map(async  participant => {
-        const photos = participant.photos
-        const totalVotes = await voteService.totalVotesOfParticipant(participant.id, contestId)
-
-        const user = participant.user
-        const mappedPhotos = await Promise.all(photos.map(async photo => {
-            const voteCount = await voteService.getVoteCount(photo.id)
-
-            return {...photo, voteCount}
+    const contesttotalVotes = ranking.photographers.reduce((total, participant) => total + participant.score, 0)
+    const followingIds = await getFollowedUserIds(currentUserId, participantWithVote.map(participant => participant.user.id))
+    const sortedParticipant = participantWithVote
+        .filter(participant => participant.level === activeLevel)
+        .map((participant, idx) => ({
+            ...participant,
+            levelRank:idx + 1,
+            user:{
+                ...participant.user,
+                isFollowing:followingIds.has(participant.user.id)
+            }
         }))
 
-        return {...participant,user,photos:mappedPhotos, totalVotes}
+    const paginatedParticipants = paginateRankedData(sortedParticipant, page, limit)
+
+    return {
+        contestTotalVotes:contesttotalVotes,
+        levelTabs:rankLevelTabs,
+        activeLevel,
+        participants: paginatedParticipants.data,
+        meta:paginatedParticipants.meta
+    }
+
+}
+
+const getContestYCTopPicks = async (contestId:string, page?:number, limit?:number, level?:string) => {
+    const contest = await prisma.contest.findUnique({where:{id:contestId}})
+
+    if(!contest){
+        throw new ApiError(httpstatus.NOT_FOUND, "contest not found")
+    }
+
+    const activeLevel = normalizeRankLevel(level)
+    const contestLevelPoints = await getContestLevelPointValues(contestId)
+    const ycPickAchievements = await prisma.contestAchievement.findMany({
+        where:{contestId, category:PrizeType.YC_PICK, photoId:{not:null}},
+        include:{
+            photo:{
+                include:{
+                    photo:{select:{id:true, url:true, title:true}},
+                    participant:{include:{user:{select:{id:true, avatar:true, country:true, fullName:true}}, photos:{select:{id:true, initialVotes:true}}}}
+                }
+            }
+        }
+    })
+
+    if(ycPickAchievements.length <= 0){
+        const rankedPhotos = await getContestPhotosSortedByVote(contestId, page, limit, activeLevel)
+        return {
+            ...rankedPhotos,
+            selectionType:'VOTE_RANKED_FALLBACK'
+        }
+    }
+
+    const ycPicks = await Promise.all(ycPickAchievements.map(async achievement => {
+        if(!achievement.photo){
+            return null
+        }
+
+        const voteCount = await getContestPhotoVoteScore(achievement.photo)
+        const participantPhotoScores = await Promise.all(achievement.photo.participant.photos.map(photo => getContestPhotoVoteScore(photo)))
+        const participantTotalVotes = participantPhotoScores.reduce((prev, curr) => prev + curr, 0)
+        const designLevel = getParticipantDesignLevel(participantTotalVotes, contestLevelPoints)
+
+        return {
+            contestPhotoId:achievement.photo.id,
+            userPhotoId:achievement.photo.photo.id,
+            url:achievement.photo.photo.url,
+            title:achievement.photo.photo.title,
+            voteCount,
+            level:designLevel,
+            photographer:achievement.photo.participant.user,
+            pickedAt:achievement.createdAt
+        }
     }))
 
-    const sortedParticipant = participantWithVote.sort((a,b) => b.totalVotes - a.totalVotes)
-    const contesttotalVotes = participantWithVote.reduce( (prev, curr) => prev + curr.totalVotes, 0)
+    const sortedPicks = ycPicks
+        .filter((pick): pick is NonNullable<typeof pick> => Boolean(pick))
+        .filter(pick => pick.level === activeLevel)
+        .sort((a,b) => b.voteCount - a.voteCount)
+        .map((pick, idx) => ({rank:idx + 1, ...pick}))
 
+    const paginatedPicks = paginateRankedData(sortedPicks, page, limit)
 
-    return {contestTotalVotes:contesttotalVotes, participants: sortedParticipant}
-
+    return {
+        levelTabs:rankLevelTabs,
+        activeLevel,
+        selectionType:'YC_PICK',
+        photos:paginatedPicks.data,
+        meta:paginatedPicks.meta
+    }
 }
 
 const getContestPhotoCount = async (contestId:string) => {
@@ -1390,13 +1402,15 @@ export const contestService = {
     getParticipantLevelData,
     identifyWinner,
     getContestWinners,
+    selectAwardPhoto,
+    getContestAwardSelections,
     getRemainingPhotos,
-    awardTeams,
     tradePhoto,
     chargePhoto,
     deleteContestUploadById,
     getContestPhotosSortedByVote,
     getContestTopPhotographers,
+    getContestYCTopPicks,
     getContestByUserId,
     getContestUploadsToVote,
     getContestPhotoCount

@@ -119,19 +119,18 @@ exports.Prisma.ContestScalarFieldEnum = {
   description: 'description',
   banner: 'banner',
   status: 'status',
-  mode: 'mode',
-  maxUploads: 'maxUploads',
   isMoneyContest: 'isMoneyContest',
   maxPrize: 'maxPrize',
   minPrize: 'minPrize',
-  level_requirements: 'level_requirements',
   startDate: 'startDate',
   endDate: 'endDate',
   startedAt: 'startedAt',
+  endedAt: 'endedAt',
+  finalizedAt: 'finalizedAt',
   recurringContestId: 'recurringContestId',
+  configVersion: 'configVersion',
+  scoringVersion: 'scoringVersion',
   creatorId: 'creatorId',
-  rules: 'rules',
-  prizes: 'prizes',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -141,11 +140,9 @@ exports.Prisma.RecurringContestScalarFieldEnum = {
   title: 'title',
   description: 'description',
   banner: 'banner',
-  maxUploads: 'maxUploads',
   isMoneyContest: 'isMoneyContest',
   maxPrize: 'maxPrize',
   minPrize: 'minPrize',
-  level_requirements: 'level_requirements',
   startDate: 'startDate',
   endDate: 'endDate',
   creatorId: 'creatorId',
@@ -157,9 +154,25 @@ exports.Prisma.RecurringContestScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.RecurringContestOccurrenceScalarFieldEnum = {
+  id: 'id',
+  occurrenceKey: 'occurrenceKey',
+  recurringContestId: 'recurringContestId',
+  scheduledAt: 'scheduledAt',
+  contestId: 'contestId',
+  status: 'status',
+  startedAt: 'startedAt',
+  error: 'error',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.PrizeScalarFieldEnum = {
   id: 'id',
   category: 'category',
+  type: 'type',
+  target: 'target',
+  rankLimit: 'rankLimit',
   title: 'title',
   description: 'description',
   icon: 'icon',
@@ -182,6 +195,17 @@ exports.Prisma.ContestRuleScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.ContestRuleConfigScalarFieldEnum = {
+  id: 'id',
+  contestId: 'contestId',
+  key: 'key',
+  value: 'value',
+  enabled: 'enabled',
+  order: 'order',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.ContestPhotoScalarFieldEnum = {
   id: 'id',
   title: 'title',
@@ -192,15 +216,6 @@ exports.Prisma.ContestPhotoScalarFieldEnum = {
   promoted: 'promoted',
   promotionExpiresAt: 'promotionExpiresAt',
   initialVotes: 'initialVotes',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-};
-
-exports.Prisma.ContestWinnerScalarFieldEnum = {
-  id: 'id',
-  participantId: 'participantId',
-  contestId: 'contestId',
-  contestPhotoId: 'contestPhotoId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -221,6 +236,9 @@ exports.Prisma.ContestParticipantScalarFieldEnum = {
 exports.Prisma.ContestPrizeScalarFieldEnum = {
   id: 'id',
   category: 'category',
+  type: 'type',
+  target: 'target',
+  rankLimit: 'rankLimit',
   icon: 'icon',
   boost: 'boost',
   swap: 'swap',
@@ -231,9 +249,24 @@ exports.Prisma.ContestPrizeScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.ContestRuleAcceptanceScalarFieldEnum = {
+  id: 'id',
+  contestId: 'contestId',
+  userId: 'userId',
+  key: 'key',
+  acceptedAt: 'acceptedAt',
+  ruleVersion: 'ruleVersion'
+};
+
 exports.Prisma.ContestAwardScalarFieldEnum = {
   id: 'id',
   category: 'category',
+  type: 'type',
+  target: 'target',
+  rankLimit: 'rankLimit',
+  slotKey: 'slotKey',
+  title: 'title',
+  description: 'description',
   icon: 'icon',
   boost: 'boost',
   swap: 'swap',
@@ -248,6 +281,12 @@ exports.Prisma.ContestAwardScalarFieldEnum = {
 exports.Prisma.RecurringContestAwardScalarFieldEnum = {
   id: 'id',
   category: 'category',
+  type: 'type',
+  target: 'target',
+  rankLimit: 'rankLimit',
+  slotKey: 'slotKey',
+  title: 'title',
+  description: 'description',
   icon: 'icon',
   boost: 'boost',
   swap: 'swap',
@@ -262,11 +301,98 @@ exports.Prisma.RecurringContestAwardScalarFieldEnum = {
 exports.Prisma.ContestAchievementScalarFieldEnum = {
   id: 'id',
   category: 'category',
+  kind: 'kind',
+  type: 'type',
+  target: 'target',
+  rankLimit: 'rankLimit',
+  levelBadge: 'levelBadge',
+  levelOrder: 'levelOrder',
   photoId: 'photoId',
   participantId: 'participantId',
   contestId: 'contestId',
+  grantKey: 'grantKey',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
+};
+
+exports.Prisma.ContestFinalizationScalarFieldEnum = {
+  id: 'id',
+  contestId: 'contestId',
+  status: 'status',
+  attemptCount: 'attemptCount',
+  scoringVersion: 'scoringVersion',
+  startedAt: 'startedAt',
+  completedAt: 'completedAt',
+  error: 'error',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.ContestRankingResultScalarFieldEnum = {
+  id: 'id',
+  resultKey: 'resultKey',
+  contestId: 'contestId',
+  scope: 'scope',
+  participantId: 'participantId',
+  photoId: 'photoId',
+  score: 'score',
+  rank: 'rank',
+  level: 'level',
+  tieBreakKey: 'tieBreakKey',
+  scoringVersion: 'scoringVersion',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.ContestAwardGrantScalarFieldEnum = {
+  id: 'id',
+  grantKey: 'grantKey',
+  contestId: 'contestId',
+  contestAwardId: 'contestAwardId',
+  participantId: 'participantId',
+  userId: 'userId',
+  photoId: 'photoId',
+  category: 'category',
+  kind: 'kind',
+  type: 'type',
+  target: 'target',
+  rankLimit: 'rankLimit',
+  levelBadge: 'levelBadge',
+  levelOrder: 'levelOrder',
+  rank: 'rank',
+  keyReward: 'keyReward',
+  boostReward: 'boostReward',
+  swapReward: 'swapReward',
+  coinReward: 'coinReward',
+  status: 'status',
+  error: 'error',
+  processedAt: 'processedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.ContestAwardSelectionScalarFieldEnum = {
+  id: 'id',
+  selectionKey: 'selectionKey',
+  contestId: 'contestId',
+  contestAwardId: 'contestAwardId',
+  slotKey: 'slotKey',
+  photoId: 'photoId',
+  participantId: 'participantId',
+  selectedById: 'selectedById',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.ContestRewardTransactionScalarFieldEnum = {
+  id: 'id',
+  grantId: 'grantId',
+  userId: 'userId',
+  key: 'key',
+  boost: 'boost',
+  swap: 'swap',
+  coin: 'coin',
+  createdAt: 'createdAt'
 };
 
 exports.Prisma.NotificationScalarFieldEnum = {
@@ -526,6 +652,7 @@ exports.Prisma.VoteScalarFieldEnum = {
   contestId: 'contestId',
   type: 'type',
   power: 'power',
+  weight: 'weight',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -559,19 +686,23 @@ exports.ContestStatus = exports.$Enums.ContestStatus = {
   NEW: 'NEW',
   UPCOMING: 'UPCOMING',
   ACTIVE: 'ACTIVE',
+  FINALIZING: 'FINALIZING',
+  FINALIZATION_FAILED: 'FINALIZATION_FAILED',
   COMPLETED: 'COMPLETED',
   CLOSED: 'CLOSED'
-};
-
-exports.ContestMode = exports.$Enums.ContestMode = {
-  SOLO: 'SOLO',
-  TEAM: 'TEAM'
 };
 
 exports.RecurringContestStatus = exports.$Enums.RecurringContestStatus = {
   ACTIVE: 'ACTIVE',
   PAUSED: 'PAUSED',
   ENDED: 'ENDED'
+};
+
+exports.ContestOccurrenceStatus = exports.$Enums.ContestOccurrenceStatus = {
+  PENDING: 'PENDING',
+  MATERIALIZING: 'MATERIALIZING',
+  MATERIALIZED: 'MATERIALIZED',
+  FAILED: 'FAILED'
 };
 
 exports.PrizeType = exports.$Enums.PrizeType = {
@@ -589,6 +720,19 @@ exports.PrizeType = exports.$Enums.PrizeType = {
   WINNER: 'WINNER'
 };
 
+exports.AwardType = exports.$Enums.AwardType = {
+  TOP_RANK: 'TOP_RANK',
+  TOP_PHOTO: 'TOP_PHOTO',
+  TOP_PHOTOGRAPHER: 'TOP_PHOTOGRAPHER',
+  WINNER: 'WINNER',
+  YC_PICK: 'YC_PICK'
+};
+
+exports.AwardTarget = exports.$Enums.AwardTarget = {
+  PHOTO: 'PHOTO',
+  PHOTOGRAPHER: 'PHOTOGRAPHER'
+};
+
 exports.ContestParticipantStatus = exports.$Enums.ContestParticipantStatus = {
   ACTIVE: 'ACTIVE',
   BLOCKED: 'BLOCKED'
@@ -601,6 +745,37 @@ exports.YCLevel = exports.$Enums.YCLevel = {
   SUPREME: 'SUPREME',
   SUPERIOR: 'SUPERIOR',
   TOP_NOTCH: 'TOP_NOTCH'
+};
+
+exports.AchievementKind = exports.$Enums.AchievementKind = {
+  CONTEST_AWARD: 'CONTEST_AWARD',
+  CONTEST_LEVEL: 'CONTEST_LEVEL'
+};
+
+exports.ContestLevelBadge = exports.$Enums.ContestLevelBadge = {
+  AMATEUR: 'AMATEUR',
+  TALENTED: 'TALENTED',
+  SUPREME: 'SUPREME',
+  SUPERIOR: 'SUPERIOR'
+};
+
+exports.ContestFinalizationStatus = exports.$Enums.ContestFinalizationStatus = {
+  PENDING: 'PENDING',
+  RUNNING: 'RUNNING',
+  COMPLETED: 'COMPLETED',
+  FAILED: 'FAILED'
+};
+
+exports.ContestRankingScope = exports.$Enums.ContestRankingScope = {
+  PHOTO: 'PHOTO',
+  PHOTOGRAPHER: 'PHOTOGRAPHER'
+};
+
+exports.ContestGrantStatus = exports.$Enums.ContestGrantStatus = {
+  PENDING: 'PENDING',
+  PROCESSING: 'PROCESSING',
+  COMPLETED: 'COMPLETED',
+  FAILED: 'FAILED'
 };
 
 exports.NotificationType = exports.$Enums.NotificationType = {
@@ -731,15 +906,22 @@ exports.RecurringType = exports.$Enums.RecurringType = {
 exports.Prisma.ModelName = {
   Contest: 'Contest',
   RecurringContest: 'RecurringContest',
+  RecurringContestOccurrence: 'RecurringContestOccurrence',
   Prize: 'Prize',
   ContestRule: 'ContestRule',
+  ContestRuleConfig: 'ContestRuleConfig',
   ContestPhoto: 'ContestPhoto',
-  ContestWinner: 'ContestWinner',
   ContestParticipant: 'ContestParticipant',
   ContestPrize: 'ContestPrize',
+  ContestRuleAcceptance: 'ContestRuleAcceptance',
   ContestAward: 'ContestAward',
   RecurringContestAward: 'RecurringContestAward',
   ContestAchievement: 'ContestAchievement',
+  ContestFinalization: 'ContestFinalization',
+  ContestRankingResult: 'ContestRankingResult',
+  ContestAwardGrant: 'ContestAwardGrant',
+  ContestAwardSelection: 'ContestAwardSelection',
+  ContestRewardTransaction: 'ContestRewardTransaction',
   Notification: 'Notification',
   Payment: 'Payment',
   SubscriptionPlan: 'SubscriptionPlan',

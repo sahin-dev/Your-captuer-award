@@ -1,32 +1,32 @@
 //Contest models
 
 model Contest {
-  id                 String        @id @default(auto()) @map("_id") @db.ObjectId
-  title              String
-  description        String
-  banner             String?       @default("https://images.unsplash.com/photo-1689539137236-b68e436248de?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D")
-  status             ContestStatus @default(UPCOMING)
-  mode               ContestMode   @default(SOLO)
-  maxUploads         Int           @default(1)
-  isMoneyContest     Boolean       @default(false)
-  maxPrize           Int?          @default(0)
-  minPrize           Int?          @default(0)
-  level_requirements Int[]
+  id             String        @id @default(auto()) @map("_id") @db.ObjectId
+  title          String
+  description    String
+  banner         String?       @default("https://images.unsplash.com/photo-1689539137236-b68e436248de?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D")
+  status         ContestStatus @default(UPCOMING)
+  isMoneyContest Boolean       @default(false)
+  maxPrize       Int?          @default(0)
+  minPrize       Int?          @default(0)
 
   startDate          DateTime
   endDate            DateTime
   startedAt          DateTime?
+  endedAt            DateTime?
+  finalizedAt        DateTime?
   recurringContestId String?   @db.ObjectId
+  configVersion      Int       @default(1)
+  scoringVersion     Int       @default(1)
 
   creatorId String @db.ObjectId
-  rules     Json?
-  prizes    Json?
 
   creator            User                 @relation(fields: [creatorId], references: [id])
   participants       ContestParticipant[]
   teamParticipations TeamParticipation[]
   votes              Vote[]
   contestRules       ContestRule[]
+  ruleConfigs        ContestRuleConfig[]
   contestPrizes      ContestPrize[]
   contestAwards      ContestAward[]
   achievements       ContestAchievement[]
@@ -35,19 +35,20 @@ model Contest {
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @updatedAt
 
+  @@index([status, startDate])
+  @@index([status, endDate])
+  @@index([recurringContestId, startDate])
   @@map("contests")
 }
 
 model RecurringContest {
-  id                 String  @id @default(auto()) @map("_id") @db.ObjectId
-  title              String
-  description        String
-  banner             String? @default("https://images.unsplash.com/photo-1689539137236-b68e436248de?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D")
-  maxUploads         Int     @default(1)
-  isMoneyContest     Boolean @default(false)
-  maxPrize           Int?    @default(0)
-  minPrize           Int?    @default(0)
-  level_requirements Int[]
+  id             String  @id @default(auto()) @map("_id") @db.ObjectId
+  title          String
+  description    String
+  banner         String? @default("https://images.unsplash.com/photo-1689539137236-b68e436248de?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D")
+  isMoneyContest Boolean @default(false)
+  maxPrize       Int?    @default(0)
+  minPrize       Int?    @default(0)
 
   startDate DateTime
   endDate   DateTime
@@ -64,20 +65,40 @@ model RecurringContest {
   createdAt        DateTime                @default(now())
   updatedAt        DateTime                @updatedAt
 
+  @@index([status])
   @@map("recurring_contests")
 }
 
+model RecurringContestOccurrence {
+  id                 String                  @id @default(auto()) @map("_id") @db.ObjectId
+  occurrenceKey      String                  @unique
+  recurringContestId String                  @db.ObjectId
+  scheduledAt        DateTime
+  contestId          String?                 @db.ObjectId
+  status             ContestOccurrenceStatus @default(PENDING)
+  startedAt          DateTime?
+  error              String?
+  createdAt          DateTime                @default(now())
+  updatedAt          DateTime                @updatedAt
+
+  @@index([recurringContestId, scheduledAt])
+  @@map("recurring_contest_occurrences")
+}
+
 model Prize {
-  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  id          String       @id @default(auto()) @map("_id") @db.ObjectId
   category    PrizeType
+  type        AwardType?
+  target      AwardTarget?
+  rankLimit   Int?
   title       String?
   description String?
   icon        String?
-  boost       Int       @default(0)
-  swap        Int       @default(0)
-  key         Int       @default(0)
-  coin        Int       @default(0)
-  isActive    Boolean   @default(true)
+  boost       Int          @default(0)
+  swap        Int          @default(0)
+  key         Int          @default(0)
+  coin        Int          @default(0)
+  isActive    Boolean      @default(true)
 
   contestAwards          ContestAward[]
   recurringContestAwards RecurringContestAward[]
@@ -85,6 +106,7 @@ model Prize {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@unique([type, target, rankLimit])
   @@map("prizes")
 }
 
@@ -100,6 +122,23 @@ model ContestRule {
   updatedAt DateTime @updatedAt
 
   @@map("contest_rules")
+}
+
+model ContestRuleConfig {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  contestId String  @db.ObjectId
+  key       String
+  value     Json
+  enabled   Boolean @default(true)
+  order     Int     @default(0)
+
+  contest Contest @relation(fields: [contestId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([contestId, key])
+  @@map("contest_rule_configs")
 }
 
 model ContestPhoto {
@@ -118,25 +157,13 @@ model ContestPhoto {
   photo              UserPhoto            @relation(fields: [photoId], references: [id], onDelete: Cascade)
   comments           Comment[]
   achievements       ContestAchievement[]
-  ContestWinner      ContestWinner[]
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @updatedAt
 
+  @@unique([contestId, photoId])
+  @@index([contestId, participantId])
+  @@index([contestId, createdAt])
   @@map("contest_photos")
-}
-
-model ContestWinner {
-  id             String @id @default(auto()) @map("_id") @db.ObjectId
-  participantId  String @db.ObjectId
-  contestId      String @db.ObjectId
-  contestPhotoId String @db.ObjectId
-
-  participant ContestParticipant @relation(fields: [participantId], references: [id], onDelete: Cascade)
-  photo       ContestPhoto       @relation(fields: [contestPhotoId], references: [id])
-  createdAt   DateTime           @default(now())
-  updatedAt   DateTime           @updatedAt
-
-  @@map("contest_winners")
 }
 
 model ContestParticipant {
@@ -153,7 +180,6 @@ model ContestParticipant {
   user               User                 @relation(fields: [userId], references: [id])
   member             TeamMember?          @relation(fields: [memberId], references: [id])
   photos             ContestPhoto[]
-  ContestWinner      ContestWinner[]
   contestAchievement ContestAchievement[]
 
   createdAt DateTime @default(now())
@@ -164,13 +190,16 @@ model ContestParticipant {
 }
 
 model ContestPrize {
-  id       String    @id @default(auto()) @map("_id") @db.ObjectId
-  category PrizeType
-  icon     String?
-  boost    Int       @default(0)
-  swap     Int       @default(0)
-  key      Int       @default(0)
-  coin     Int       @default(0)
+  id        String       @id @default(auto()) @map("_id") @db.ObjectId
+  category  PrizeType
+  type      AwardType?
+  target    AwardTarget?
+  rankLimit Int?
+  icon      String?
+  boost     Int          @default(0)
+  swap      Int          @default(0)
+  key       Int          @default(0)
+  coin      Int          @default(0)
 
   contestId String  @db.ObjectId
   contest   Contest @relation(fields: [contestId], references: [id], onDelete: Cascade)
@@ -178,17 +207,37 @@ model ContestPrize {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@unique([contestId, type, target, rankLimit])
   @@map("contest_prizes")
 }
 
+model ContestRuleAcceptance {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  contestId   String   @db.ObjectId
+  userId      String   @db.ObjectId
+  key         String
+  acceptedAt  DateTime @default(now())
+  ruleVersion Int      @default(1)
+
+  @@unique([contestId, userId, key])
+  @@index([userId, contestId])
+  @@map("contest_rule_acceptances")
+}
+
 model ContestAward {
-  id       String    @id @default(auto()) @map("_id") @db.ObjectId
-  category PrizeType
-  icon     String?
-  boost    Int       @default(0)
-  swap     Int       @default(0)
-  key      Int       @default(0)
-  coin     Int       @default(0)
+  id          String       @id @default(auto()) @map("_id") @db.ObjectId
+  category    PrizeType
+  type        AwardType?
+  target      AwardTarget?
+  rankLimit   Int?
+  slotKey     String?
+  title       String?
+  description String?
+  icon        String?
+  boost       Int          @default(0)
+  swap        Int          @default(0)
+  key         Int          @default(0)
+  coin        Int          @default(0)
 
   contestId String  @db.ObjectId
   prizeId   String  @db.ObjectId
@@ -198,18 +247,24 @@ model ContestAward {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([contestId, category])
+  @@unique([contestId, type, target, rankLimit])
   @@map("contest_awards")
 }
 
 model RecurringContestAward {
-  id       String    @id @default(auto()) @map("_id") @db.ObjectId
-  category PrizeType
-  icon     String?
-  boost    Int       @default(0)
-  swap     Int       @default(0)
-  key      Int       @default(0)
-  coin     Int       @default(0)
+  id          String       @id @default(auto()) @map("_id") @db.ObjectId
+  category    PrizeType
+  type        AwardType?
+  target      AwardTarget?
+  rankLimit   Int?
+  slotKey     String?
+  title       String?
+  description String?
+  icon        String?
+  boost       Int          @default(0)
+  swap        Int          @default(0)
+  key         Int          @default(0)
+  coin        Int          @default(0)
 
   recurringContestId String           @db.ObjectId
   prizeId            String           @db.ObjectId
@@ -219,16 +274,23 @@ model RecurringContestAward {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([recurringContestId, category])
+  @@unique([recurringContestId, type, target, rankLimit])
   @@map("recurring_contest_awards")
 }
 
 model ContestAchievement {
-  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  id            String             @id @default(auto()) @map("_id") @db.ObjectId
   category      PrizeType
-  photoId       String?   @db.ObjectId
-  participantId String?   @db.ObjectId
-  contestId     String    @db.ObjectId
+  kind          AchievementKind    @default(CONTEST_AWARD)
+  type          AwardType?
+  target        AwardTarget?
+  rankLimit     Int?
+  levelBadge    ContestLevelBadge?
+  levelOrder    Int?
+  photoId       String?            @db.ObjectId
+  participantId String?            @db.ObjectId
+  contestId     String             @db.ObjectId
+  grantKey      String?
 
   photo   ContestPhoto? @relation(fields: [photoId], references: [id])
   contest Contest       @relation(fields: [contestId], references: [id])
@@ -238,7 +300,106 @@ model ContestAchievement {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@index([contestId, kind])
+  @@index([participantId, contestId])
   @@map("contest_achievements")
+}
+
+model ContestFinalization {
+  id             String                    @id @default(auto()) @map("_id") @db.ObjectId
+  contestId      String                    @unique @db.ObjectId
+  status         ContestFinalizationStatus @default(PENDING)
+  attemptCount   Int                       @default(0)
+  scoringVersion Int                       @default(1)
+  startedAt      DateTime?
+  completedAt    DateTime?
+  error          String?
+  createdAt      DateTime                  @default(now())
+  updatedAt      DateTime                  @updatedAt
+
+  @@index([status, updatedAt])
+  @@map("contest_finalizations")
+}
+
+model ContestRankingResult {
+  id             String              @id @default(auto()) @map("_id") @db.ObjectId
+  resultKey      String              @unique
+  contestId      String              @db.ObjectId
+  scope          ContestRankingScope
+  participantId  String              @db.ObjectId
+  photoId        String?             @db.ObjectId
+  score          Int
+  rank           Int
+  level          YCLevel?
+  tieBreakKey    String
+  scoringVersion Int                 @default(1)
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+
+  @@unique([contestId, scope, rank])
+  @@index([contestId, scope, score])
+  @@map("contest_ranking_results")
+}
+
+model ContestAwardGrant {
+  id             String             @id @default(auto()) @map("_id") @db.ObjectId
+  grantKey       String             @unique
+  contestId      String             @db.ObjectId
+  contestAwardId String?            @db.ObjectId
+  participantId  String             @db.ObjectId
+  userId         String             @db.ObjectId
+  photoId        String?            @db.ObjectId
+  category       PrizeType
+  kind           AchievementKind    @default(CONTEST_AWARD)
+  type           AwardType?
+  target         AwardTarget?
+  rankLimit      Int?
+  levelBadge     ContestLevelBadge?
+  levelOrder     Int?
+  rank           Int?
+  keyReward      Int                @default(0)
+  boostReward    Int                @default(0)
+  swapReward     Int                @default(0)
+  coinReward     Int                @default(0)
+  status         ContestGrantStatus @default(PENDING)
+  error          String?
+  processedAt    DateTime?
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  @@index([contestId, status])
+  @@index([participantId, contestId])
+  @@map("contest_award_grants")
+}
+
+model ContestAwardSelection {
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  selectionKey   String   @unique
+  contestId      String   @db.ObjectId
+  contestAwardId String   @db.ObjectId
+  slotKey        String
+  photoId        String   @db.ObjectId
+  participantId  String   @db.ObjectId
+  selectedById   String   @db.ObjectId
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([contestId, slotKey])
+  @@map("contest_award_selections")
+}
+
+model ContestRewardTransaction {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  grantId   String   @unique @db.ObjectId
+  userId    String   @db.ObjectId
+  key       Int      @default(0)
+  boost     Int      @default(0)
+  swap      Int      @default(0)
+  coin      Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@map("contest_reward_transactions")
 }
 
 type Rules {
@@ -269,9 +430,29 @@ enum PrizeType {
   WINNER
 }
 
-enum ContestMode {
-  SOLO
-  TEAM
+enum AwardType {
+  TOP_RANK
+  TOP_PHOTO
+  TOP_PHOTOGRAPHER
+  WINNER
+  YC_PICK
+}
+
+enum AwardTarget {
+  PHOTO
+  PHOTOGRAPHER
+}
+
+enum AchievementKind {
+  CONTEST_AWARD
+  CONTEST_LEVEL
+}
+
+enum ContestLevelBadge {
+  AMATEUR
+  TALENTED
+  SUPREME
+  SUPERIOR
 }
 
 enum ContestStatus {
@@ -280,8 +461,36 @@ enum ContestStatus {
   NEW // Just created, not started yet
   UPCOMING // Contest is upcoming, not started yet
   ACTIVE // Contest is currently active
+  FINALIZING // Voting is frozen and final results are being calculated
+  FINALIZATION_FAILED // Finalization can be retried safely
   COMPLETED // Contest has ended and winners are announced
   CLOSED // Contest is closed for new participants
+}
+
+enum ContestOccurrenceStatus {
+  PENDING
+  MATERIALIZING
+  MATERIALIZED
+  FAILED
+}
+
+enum ContestFinalizationStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
+enum ContestRankingScope {
+  PHOTO
+  PHOTOGRAPHER
+}
+
+enum ContestGrantStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
 }
 
 enum ContestType {
@@ -299,14 +508,6 @@ enum RecurringContestStatus {
   ACTIVE
   PAUSED
   ENDED
-}
-
-enum ContestLevel {
-  POPULAR
-  SKILLED
-  PREMIER
-  ELITE
-  ALL_STAR
 }
 
 enum YCLevel {
@@ -804,6 +1005,7 @@ model Vote {
   contestId  String   @db.ObjectId
   type       VoteType
   power      Int      @default(1)
+  weight     Int      @default(1)
 
   provider User         @relation(fields: [providerId], references: [id])
   photo    ContestPhoto @relation(fields: [photoId], references: [id], onDelete: Cascade)
@@ -812,6 +1014,9 @@ model Vote {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@unique([providerId, contestId, photoId])
+  @@index([contestId, photoId])
+  @@index([contestId, providerId])
   @@map("votes")
 }
 

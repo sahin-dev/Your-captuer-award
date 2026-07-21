@@ -7,6 +7,8 @@ import { createPrizeSchema, updatePrizeSchema } from "./prize.validation";
 
 const router = Router();
 
+router.get("/award-definitions", auth(UserRole.ADMIN), prizeController.getAwardDefinitions);
+
 router
   .route("/")
   .post(auth(UserRole.ADMIN), validateRequest(createPrizeSchema), prizeController.createPrize)

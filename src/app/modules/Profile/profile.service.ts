@@ -20,16 +20,15 @@ export const handleGetUserUploads = async (userId:string, pagination:{page?:numb
         where:{userId},include:{
             contestUpload:{select:{achievements:{orderBy:{createdAt:'desc'}, take:1,
             select:{category:true},},
-            _count:{select:{votes:true}}}},_count:{select:{likes:true}}},
+            id:true}},_count:{select:{likes:true}}},
             take:limit, skip
     })
 
-    const newUploads = uploads.map( photo => {
-        const totalVotes = photo.contestUpload.reduce ( (sum, contestUploads)=>{
-            return sum + (contestUploads?._count?.votes ?? 0)
-        },0)
+    const newUploads = await Promise.all(uploads.map( async photo => {
+        const contestUploadVotes = await Promise.all(photo.contestUpload.map(contestUpload => voteService.getVoteCount(contestUpload.id)))
+        const totalVotes = contestUploadVotes.reduce((sum, votes) => sum + votes, 0)
         return { ...photo, totalVotes,likes:photo._count.likes,_count:undefined}
-    })
+    }))
 
     return {photos:newUploads, count:totalUploads, page, limit}
 } 
@@ -86,18 +85,15 @@ export const getParticipatedContest = async(userId:string)=> {
 
 export const getPhotos = async (userId:string, sortBy:string = 'votes')=>{
 
-    const contestPhotos = await prisma.contestPhoto.findMany({where:{photo:{userId}}, select:{_count:{select:{votes:true}}}})
-
-    const photos = await prisma.userPhoto.findMany({where:{userId}, select:{url:true, id:true, views:true,_count:{select:{likes:true}} ,contestUpload:{select:{_count:{select:{votes:true}}}}}})
+    const photos = await prisma.userPhoto.findMany({where:{userId}, select:{url:true, id:true, views:true,_count:{select:{likes:true}} ,contestUpload:{select:{id:true}}}})
     
     if(!photos || photos.length === 0){
         throw new ApiError(httpStatus.NOT_FOUND, "user does not have any photos")
     }
     // Map photos to include votes property without mutating the original type
-    const mappedPhotos = photos.map((photo) => {
-        const votes = photo.contestUpload.reduce((acc: number, obj: any) => {
-            return acc + (obj._count.votes || 0);
-        }, 0);
+    const mappedPhotos = await Promise.all(photos.map(async (photo) => {
+        const contestUploadVotes = await Promise.all(photo.contestUpload.map(contestUpload => voteService.getVoteCount(contestUpload.id)))
+        const votes = contestUploadVotes.reduce((acc, voteCount) => acc + voteCount, 0);
 
         // Omit contestUpload property when returning the object
         const { contestUpload,_count, ...rest } = photo;
@@ -106,7 +102,7 @@ export const getPhotos = async (userId:string, sortBy:string = 'votes')=>{
             votes,
             likes: _count.likes
         };
-    });
+    }));
 
     sortPhotos(mappedPhotos, sortBy);
 
@@ -158,7 +154,7 @@ const sortPhotos = (photos: any[], sortBy: string) => {
             photos.sort((a, b) => b.views - a.views);
             break;
         case 'likes':
-            photos.sort((a, b) => (b._count.likes || 0) - (a._count.likes || 0));
+            photos.sort((a, b) => (b.likes || 0) - (a.likes || 0));
             break; 
 
         default:
@@ -200,7 +196,7 @@ const getUserPhotoDetails = async (userId:string, photoId:string) => {
         throw new ApiError(httpStatus.NOT_FOUND, "photo not found")
     }
 
-    const votes = await voteService.getVoteCount(photo.id)
+    const votes = await voteService.getUserPhotoVoteCount(photo.id)
     const comments = await prisma.comment.findMany({where:{photoId}})
     const achievememnts = await achievementService.getPhotoAchievements(photoId)
 

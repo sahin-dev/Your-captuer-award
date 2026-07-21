@@ -10,7 +10,7 @@ import { contestService } from "../Contest/contest.service"
 const getContestStats = async () => {
     const runningContestCount = await prisma.contest.count({where:{status:ContestStatus.ACTIVE}})
     const upcomignContestCount = await prisma.contest.count({where:{status:ContestStatus.UPCOMING}})
-    const completedContestCount = await prisma.contest.count({where:{status:ContestStatus.CLOSED}})
+    const completedContestCount = await prisma.contest.count({where:{status:{in:[ContestStatus.COMPLETED, ContestStatus.CLOSED]}}})
 
     return {running:runningContestCount, upcoming:upcomignContestCount, completed:completedContestCount}
 }

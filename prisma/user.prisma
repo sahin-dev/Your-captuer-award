@@ -153,6 +153,7 @@ model Vote {
   contestId  String @db.ObjectId
   type       VoteType
   power      Int @default(1)
+  weight     Int @default(1)
 
   provider User         @relation(fields: [providerId], references: [id])
   photo    ContestPhoto @relation(fields: [photoId], references: [id], onDelete: Cascade)
@@ -161,6 +162,9 @@ model Vote {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@unique([providerId, contestId, photoId])
+  @@index([contestId, photoId])
+  @@index([contestId, providerId])
   @@map("votes")
 }
 

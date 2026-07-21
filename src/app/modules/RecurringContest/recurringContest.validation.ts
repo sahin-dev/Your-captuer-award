@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { RecurringType } from "../../../prismaClient";
+import { contestRuleInputArraySchema } from "../Contest/ContestRules/contestRule.validation";
 
 const parseJsonArray = (value: unknown) => {
   if (typeof value === "string") {
@@ -13,21 +14,10 @@ export const updateRecurringContestSchema = z.object({
   description: z.string().optional(),
   startDate: z.string().datetime().optional(),
   endDate: z.string().datetime().optional(),
-  maxUploads: z.preprocess((value) => Number(value), z.number().int().positive()).optional(),
   isMoneyContest: z.boolean().optional(),
   maxPrize: z.preprocess((value) => Number(value), z.number().int().min(0)).optional(),
   minPrize: z.preprocess((value) => Number(value), z.number().int().min(0)).optional(),
-  level_requirements: z.preprocess(parseJsonArray, z.array(z.number().int().min(0))).optional(),
-  rules: z.preprocess(
-    parseJsonArray,
-    z.array(
-      z.object({
-        name: z.string(),
-        description: z.string(),
-        icon: z.string().optional(),
-      })
-    )
-  ).optional(),
+  rules: z.preprocess(parseJsonArray, contestRuleInputArraySchema).optional(),
 });
 
 export const updateRecurringIntervalSchema = z.object({

@@ -9,7 +9,9 @@
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
     "build": "tsc",
     "generate": "ts-node src/generate-module.js",
-    "postinstall": "npx prisma db push --schema=./prisma",
+    "postinstall": "prisma generate --schema=./prisma",
+    "db:push": "prisma db push --schema=./prisma",
+    "prisma:validate": "prisma validate --schema=./prisma",
     "test": "echo \"Error: no test specified\" && exit 1",
     "seed": "ts-node-dev src/seeder.ts"
   },

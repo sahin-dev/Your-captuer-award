@@ -3,7 +3,7 @@ import ApiError from '../../../errors/ApiError';
 import httpstatus from 'http-status';
 import { fileUploader } from '../../../helpers/fileUploader';
 import { ITeam } from './team.interface';
-import { ContestMode, ContestStatus, MemberLevel, NotificationType, TeamAccessibility } from '../../../prismaClient';
+import { ContestStatus, MemberLevel, NotificationType, TeamAccessibility } from '../../../prismaClient';
 import { contestService } from '../Contest/contest.service';
 import { notificationService } from '../Notification/notification.service';
 import { levelService } from '../Level/level.service';
@@ -263,11 +263,8 @@ const isAlreaderJoinedTeam =async (userId:string)=>{
 
 const joinTeamContest = async (userId:string,contestId:string, teamId:string)=>{
     const contest = await contestService.getContestById(contestId)
-    if(contest?.mode !== ContestMode.TEAM){
-        throw new ApiError(httpstatus.BAD_REQUEST, "Contest is only for solo participation")
-    }
     if(!contest){
-        throw new ApiError(httpstatus.NOT_FOUND, "Team contest not found")
+        throw new ApiError(httpstatus.NOT_FOUND, "Contest not found")
     }
     const teamMember = await prisma.teamMember.findFirst({where:{memberId:userId, teamId}})
     if(!teamMember){
@@ -375,7 +372,7 @@ const getMyTeamMatches = async (userId:string ) => {
     if(!teamMember){
         throw new ApiError(httpstatus.NOT_FOUND, "team not found")
     }
-    const teamMatch = await prisma.teamMatch.findMany({where:{OR:[{team1Id:teamMember.teamId}, {team2Id:teamMember.teamId}]}, include:{contest:{select:{title:true, banner:true, maxUploads:true}}}})
+    const teamMatch = await prisma.teamMatch.findMany({where:{OR:[{team1Id:teamMember.teamId}, {team2Id:teamMember.teamId}]}, include:{contest:{select:{title:true, banner:true}}}})
 
     return teamMatch
 }

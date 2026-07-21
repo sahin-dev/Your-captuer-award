@@ -39,6 +39,11 @@ export type Contest = $Result.DefaultSelection<Prisma.$ContestPayload>
  */
 export type RecurringContest = $Result.DefaultSelection<Prisma.$RecurringContestPayload>
 /**
+ * Model RecurringContestOccurrence
+ * 
+ */
+export type RecurringContestOccurrence = $Result.DefaultSelection<Prisma.$RecurringContestOccurrencePayload>
+/**
  * Model Prize
  * 
  */
@@ -49,15 +54,15 @@ export type Prize = $Result.DefaultSelection<Prisma.$PrizePayload>
  */
 export type ContestRule = $Result.DefaultSelection<Prisma.$ContestRulePayload>
 /**
+ * Model ContestRuleConfig
+ * 
+ */
+export type ContestRuleConfig = $Result.DefaultSelection<Prisma.$ContestRuleConfigPayload>
+/**
  * Model ContestPhoto
  * 
  */
 export type ContestPhoto = $Result.DefaultSelection<Prisma.$ContestPhotoPayload>
-/**
- * Model ContestWinner
- * 
- */
-export type ContestWinner = $Result.DefaultSelection<Prisma.$ContestWinnerPayload>
 /**
  * Model ContestParticipant
  * 
@@ -68,6 +73,11 @@ export type ContestParticipant = $Result.DefaultSelection<Prisma.$ContestPartici
  * 
  */
 export type ContestPrize = $Result.DefaultSelection<Prisma.$ContestPrizePayload>
+/**
+ * Model ContestRuleAcceptance
+ * 
+ */
+export type ContestRuleAcceptance = $Result.DefaultSelection<Prisma.$ContestRuleAcceptancePayload>
 /**
  * Model ContestAward
  * 
@@ -83,6 +93,31 @@ export type RecurringContestAward = $Result.DefaultSelection<Prisma.$RecurringCo
  * 
  */
 export type ContestAchievement = $Result.DefaultSelection<Prisma.$ContestAchievementPayload>
+/**
+ * Model ContestFinalization
+ * 
+ */
+export type ContestFinalization = $Result.DefaultSelection<Prisma.$ContestFinalizationPayload>
+/**
+ * Model ContestRankingResult
+ * 
+ */
+export type ContestRankingResult = $Result.DefaultSelection<Prisma.$ContestRankingResultPayload>
+/**
+ * Model ContestAwardGrant
+ * 
+ */
+export type ContestAwardGrant = $Result.DefaultSelection<Prisma.$ContestAwardGrantPayload>
+/**
+ * Model ContestAwardSelection
+ * 
+ */
+export type ContestAwardSelection = $Result.DefaultSelection<Prisma.$ContestAwardSelectionPayload>
+/**
+ * Model ContestRewardTransaction
+ * 
+ */
+export type ContestRewardTransaction = $Result.DefaultSelection<Prisma.$ContestRewardTransactionPayload>
 /**
  * Model Notification
  * 
@@ -226,12 +261,41 @@ export namespace $Enums {
 export type PrizeType = (typeof PrizeType)[keyof typeof PrizeType]
 
 
-export const ContestMode: {
-  SOLO: 'SOLO',
-  TEAM: 'TEAM'
+export const AwardType: {
+  TOP_RANK: 'TOP_RANK',
+  TOP_PHOTO: 'TOP_PHOTO',
+  TOP_PHOTOGRAPHER: 'TOP_PHOTOGRAPHER',
+  WINNER: 'WINNER',
+  YC_PICK: 'YC_PICK'
 };
 
-export type ContestMode = (typeof ContestMode)[keyof typeof ContestMode]
+export type AwardType = (typeof AwardType)[keyof typeof AwardType]
+
+
+export const AwardTarget: {
+  PHOTO: 'PHOTO',
+  PHOTOGRAPHER: 'PHOTOGRAPHER'
+};
+
+export type AwardTarget = (typeof AwardTarget)[keyof typeof AwardTarget]
+
+
+export const AchievementKind: {
+  CONTEST_AWARD: 'CONTEST_AWARD',
+  CONTEST_LEVEL: 'CONTEST_LEVEL'
+};
+
+export type AchievementKind = (typeof AchievementKind)[keyof typeof AchievementKind]
+
+
+export const ContestLevelBadge: {
+  AMATEUR: 'AMATEUR',
+  TALENTED: 'TALENTED',
+  SUPREME: 'SUPREME',
+  SUPERIOR: 'SUPERIOR'
+};
+
+export type ContestLevelBadge = (typeof ContestLevelBadge)[keyof typeof ContestLevelBadge]
 
 
 export const ContestStatus: {
@@ -240,11 +304,51 @@ export const ContestStatus: {
   NEW: 'NEW',
   UPCOMING: 'UPCOMING',
   ACTIVE: 'ACTIVE',
+  FINALIZING: 'FINALIZING',
+  FINALIZATION_FAILED: 'FINALIZATION_FAILED',
   COMPLETED: 'COMPLETED',
   CLOSED: 'CLOSED'
 };
 
 export type ContestStatus = (typeof ContestStatus)[keyof typeof ContestStatus]
+
+
+export const ContestOccurrenceStatus: {
+  PENDING: 'PENDING',
+  MATERIALIZING: 'MATERIALIZING',
+  MATERIALIZED: 'MATERIALIZED',
+  FAILED: 'FAILED'
+};
+
+export type ContestOccurrenceStatus = (typeof ContestOccurrenceStatus)[keyof typeof ContestOccurrenceStatus]
+
+
+export const ContestFinalizationStatus: {
+  PENDING: 'PENDING',
+  RUNNING: 'RUNNING',
+  COMPLETED: 'COMPLETED',
+  FAILED: 'FAILED'
+};
+
+export type ContestFinalizationStatus = (typeof ContestFinalizationStatus)[keyof typeof ContestFinalizationStatus]
+
+
+export const ContestRankingScope: {
+  PHOTO: 'PHOTO',
+  PHOTOGRAPHER: 'PHOTOGRAPHER'
+};
+
+export type ContestRankingScope = (typeof ContestRankingScope)[keyof typeof ContestRankingScope]
+
+
+export const ContestGrantStatus: {
+  PENDING: 'PENDING',
+  PROCESSING: 'PROCESSING',
+  COMPLETED: 'COMPLETED',
+  FAILED: 'FAILED'
+};
+
+export type ContestGrantStatus = (typeof ContestGrantStatus)[keyof typeof ContestGrantStatus]
 
 
 export const ContestType: {
@@ -271,17 +375,6 @@ export const RecurringContestStatus: {
 };
 
 export type RecurringContestStatus = (typeof RecurringContestStatus)[keyof typeof RecurringContestStatus]
-
-
-export const ContestLevel: {
-  POPULAR: 'POPULAR',
-  SKILLED: 'SKILLED',
-  PREMIER: 'PREMIER',
-  ELITE: 'ELITE',
-  ALL_STAR: 'ALL_STAR'
-};
-
-export type ContestLevel = (typeof ContestLevel)[keyof typeof ContestLevel]
 
 
 export const YCLevel: {
@@ -485,13 +578,41 @@ export type PrizeType = $Enums.PrizeType
 
 export const PrizeType: typeof $Enums.PrizeType
 
-export type ContestMode = $Enums.ContestMode
+export type AwardType = $Enums.AwardType
 
-export const ContestMode: typeof $Enums.ContestMode
+export const AwardType: typeof $Enums.AwardType
+
+export type AwardTarget = $Enums.AwardTarget
+
+export const AwardTarget: typeof $Enums.AwardTarget
+
+export type AchievementKind = $Enums.AchievementKind
+
+export const AchievementKind: typeof $Enums.AchievementKind
+
+export type ContestLevelBadge = $Enums.ContestLevelBadge
+
+export const ContestLevelBadge: typeof $Enums.ContestLevelBadge
 
 export type ContestStatus = $Enums.ContestStatus
 
 export const ContestStatus: typeof $Enums.ContestStatus
+
+export type ContestOccurrenceStatus = $Enums.ContestOccurrenceStatus
+
+export const ContestOccurrenceStatus: typeof $Enums.ContestOccurrenceStatus
+
+export type ContestFinalizationStatus = $Enums.ContestFinalizationStatus
+
+export const ContestFinalizationStatus: typeof $Enums.ContestFinalizationStatus
+
+export type ContestRankingScope = $Enums.ContestRankingScope
+
+export const ContestRankingScope: typeof $Enums.ContestRankingScope
+
+export type ContestGrantStatus = $Enums.ContestGrantStatus
+
+export const ContestGrantStatus: typeof $Enums.ContestGrantStatus
 
 export type ContestType = $Enums.ContestType
 
@@ -504,10 +625,6 @@ export const RecurringType: typeof $Enums.RecurringType
 export type RecurringContestStatus = $Enums.RecurringContestStatus
 
 export const RecurringContestStatus: typeof $Enums.RecurringContestStatus
-
-export type ContestLevel = $Enums.ContestLevel
-
-export const ContestLevel: typeof $Enums.ContestLevel
 
 export type YCLevel = $Enums.YCLevel
 
@@ -699,6 +816,16 @@ export class PrismaClient<
   get recurringContest(): Prisma.RecurringContestDelegate<ExtArgs, ClientOptions>;
 
   /**
+   * `prisma.recurringContestOccurrence`: Exposes CRUD operations for the **RecurringContestOccurrence** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more RecurringContestOccurrences
+    * const recurringContestOccurrences = await prisma.recurringContestOccurrence.findMany()
+    * ```
+    */
+  get recurringContestOccurrence(): Prisma.RecurringContestOccurrenceDelegate<ExtArgs, ClientOptions>;
+
+  /**
    * `prisma.prize`: Exposes CRUD operations for the **Prize** model.
     * Example usage:
     * ```ts
@@ -719,6 +846,16 @@ export class PrismaClient<
   get contestRule(): Prisma.ContestRuleDelegate<ExtArgs, ClientOptions>;
 
   /**
+   * `prisma.contestRuleConfig`: Exposes CRUD operations for the **ContestRuleConfig** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more ContestRuleConfigs
+    * const contestRuleConfigs = await prisma.contestRuleConfig.findMany()
+    * ```
+    */
+  get contestRuleConfig(): Prisma.ContestRuleConfigDelegate<ExtArgs, ClientOptions>;
+
+  /**
    * `prisma.contestPhoto`: Exposes CRUD operations for the **ContestPhoto** model.
     * Example usage:
     * ```ts
@@ -727,16 +864,6 @@ export class PrismaClient<
     * ```
     */
   get contestPhoto(): Prisma.ContestPhotoDelegate<ExtArgs, ClientOptions>;
-
-  /**
-   * `prisma.contestWinner`: Exposes CRUD operations for the **ContestWinner** model.
-    * Example usage:
-    * ```ts
-    * // Fetch zero or more ContestWinners
-    * const contestWinners = await prisma.contestWinner.findMany()
-    * ```
-    */
-  get contestWinner(): Prisma.ContestWinnerDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.contestParticipant`: Exposes CRUD operations for the **ContestParticipant** model.
@@ -757,6 +884,16 @@ export class PrismaClient<
     * ```
     */
   get contestPrize(): Prisma.ContestPrizeDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.contestRuleAcceptance`: Exposes CRUD operations for the **ContestRuleAcceptance** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more ContestRuleAcceptances
+    * const contestRuleAcceptances = await prisma.contestRuleAcceptance.findMany()
+    * ```
+    */
+  get contestRuleAcceptance(): Prisma.ContestRuleAcceptanceDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.contestAward`: Exposes CRUD operations for the **ContestAward** model.
@@ -787,6 +924,56 @@ export class PrismaClient<
     * ```
     */
   get contestAchievement(): Prisma.ContestAchievementDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.contestFinalization`: Exposes CRUD operations for the **ContestFinalization** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more ContestFinalizations
+    * const contestFinalizations = await prisma.contestFinalization.findMany()
+    * ```
+    */
+  get contestFinalization(): Prisma.ContestFinalizationDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.contestRankingResult`: Exposes CRUD operations for the **ContestRankingResult** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more ContestRankingResults
+    * const contestRankingResults = await prisma.contestRankingResult.findMany()
+    * ```
+    */
+  get contestRankingResult(): Prisma.ContestRankingResultDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.contestAwardGrant`: Exposes CRUD operations for the **ContestAwardGrant** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more ContestAwardGrants
+    * const contestAwardGrants = await prisma.contestAwardGrant.findMany()
+    * ```
+    */
+  get contestAwardGrant(): Prisma.ContestAwardGrantDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.contestAwardSelection`: Exposes CRUD operations for the **ContestAwardSelection** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more ContestAwardSelections
+    * const contestAwardSelections = await prisma.contestAwardSelection.findMany()
+    * ```
+    */
+  get contestAwardSelection(): Prisma.ContestAwardSelectionDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.contestRewardTransaction`: Exposes CRUD operations for the **ContestRewardTransaction** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more ContestRewardTransactions
+    * const contestRewardTransactions = await prisma.contestRewardTransaction.findMany()
+    * ```
+    */
+  get contestRewardTransaction(): Prisma.ContestRewardTransactionDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.notification`: Exposes CRUD operations for the **Notification** model.
@@ -1470,15 +1657,22 @@ export namespace Prisma {
   export const ModelName: {
     Contest: 'Contest',
     RecurringContest: 'RecurringContest',
+    RecurringContestOccurrence: 'RecurringContestOccurrence',
     Prize: 'Prize',
     ContestRule: 'ContestRule',
+    ContestRuleConfig: 'ContestRuleConfig',
     ContestPhoto: 'ContestPhoto',
-    ContestWinner: 'ContestWinner',
     ContestParticipant: 'ContestParticipant',
     ContestPrize: 'ContestPrize',
+    ContestRuleAcceptance: 'ContestRuleAcceptance',
     ContestAward: 'ContestAward',
     RecurringContestAward: 'RecurringContestAward',
     ContestAchievement: 'ContestAchievement',
+    ContestFinalization: 'ContestFinalization',
+    ContestRankingResult: 'ContestRankingResult',
+    ContestAwardGrant: 'ContestAwardGrant',
+    ContestAwardSelection: 'ContestAwardSelection',
+    ContestRewardTransaction: 'ContestRewardTransaction',
     Notification: 'Notification',
     Payment: 'Payment',
     SubscriptionPlan: 'SubscriptionPlan',
@@ -1521,7 +1715,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "contest" | "recurringContest" | "prize" | "contestRule" | "contestPhoto" | "contestWinner" | "contestParticipant" | "contestPrize" | "contestAward" | "recurringContestAward" | "contestAchievement" | "notification" | "payment" | "subscriptionPlan" | "subscription" | "sitePolicy" | "room" | "chat" | "product" | "price" | "team" | "teamMatch" | "teamMember" | "teamParticipation" | "teamInvitation" | "user" | "userStore" | "userPhoto" | "like" | "otp" | "comment" | "follow" | "vote" | "userLevel" | "level"
+      modelProps: "contest" | "recurringContest" | "recurringContestOccurrence" | "prize" | "contestRule" | "contestRuleConfig" | "contestPhoto" | "contestParticipant" | "contestPrize" | "contestRuleAcceptance" | "contestAward" | "recurringContestAward" | "contestAchievement" | "contestFinalization" | "contestRankingResult" | "contestAwardGrant" | "contestAwardSelection" | "contestRewardTransaction" | "notification" | "payment" | "subscriptionPlan" | "subscription" | "sitePolicy" | "room" | "chat" | "product" | "price" | "team" | "teamMatch" | "teamMember" | "teamParticipation" | "teamInvitation" | "user" | "userStore" | "userPhoto" | "like" | "otp" | "comment" | "follow" | "vote" | "userLevel" | "level"
       txIsolationLevel: never
     }
     model: {
@@ -1673,6 +1867,80 @@ export namespace Prisma {
           }
         }
       }
+      RecurringContestOccurrence: {
+        payload: Prisma.$RecurringContestOccurrencePayload<ExtArgs>
+        fields: Prisma.RecurringContestOccurrenceFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.RecurringContestOccurrenceFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RecurringContestOccurrencePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.RecurringContestOccurrenceFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RecurringContestOccurrencePayload>
+          }
+          findFirst: {
+            args: Prisma.RecurringContestOccurrenceFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RecurringContestOccurrencePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.RecurringContestOccurrenceFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RecurringContestOccurrencePayload>
+          }
+          findMany: {
+            args: Prisma.RecurringContestOccurrenceFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RecurringContestOccurrencePayload>[]
+          }
+          create: {
+            args: Prisma.RecurringContestOccurrenceCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RecurringContestOccurrencePayload>
+          }
+          createMany: {
+            args: Prisma.RecurringContestOccurrenceCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.RecurringContestOccurrenceDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RecurringContestOccurrencePayload>
+          }
+          update: {
+            args: Prisma.RecurringContestOccurrenceUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RecurringContestOccurrencePayload>
+          }
+          deleteMany: {
+            args: Prisma.RecurringContestOccurrenceDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.RecurringContestOccurrenceUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.RecurringContestOccurrenceUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RecurringContestOccurrencePayload>
+          }
+          aggregate: {
+            args: Prisma.RecurringContestOccurrenceAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateRecurringContestOccurrence>
+          }
+          groupBy: {
+            args: Prisma.RecurringContestOccurrenceGroupByArgs<ExtArgs>
+            result: $Utils.Optional<RecurringContestOccurrenceGroupByOutputType>[]
+          }
+          findRaw: {
+            args: Prisma.RecurringContestOccurrenceFindRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          aggregateRaw: {
+            args: Prisma.RecurringContestOccurrenceAggregateRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          count: {
+            args: Prisma.RecurringContestOccurrenceCountArgs<ExtArgs>
+            result: $Utils.Optional<RecurringContestOccurrenceCountAggregateOutputType> | number
+          }
+        }
+      }
       Prize: {
         payload: Prisma.$PrizePayload<ExtArgs>
         fields: Prisma.PrizeFieldRefs
@@ -1821,6 +2089,80 @@ export namespace Prisma {
           }
         }
       }
+      ContestRuleConfig: {
+        payload: Prisma.$ContestRuleConfigPayload<ExtArgs>
+        fields: Prisma.ContestRuleConfigFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.ContestRuleConfigFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContestRuleConfigPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.ContestRuleConfigFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContestRuleConfigPayload>
+          }
+          findFirst: {
+            args: Prisma.ContestRuleConfigFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContestRuleConfigPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.ContestRuleConfigFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContestRuleConfigPayload>
+          }
+          findMany: {
+            args: Prisma.ContestRuleConfigFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContestRuleConfigPayload>[]
+          }
+          create: {
+            args: Prisma.ContestRuleConfigCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContestRuleConfigPayload>
+          }
+          createMany: {
+            args: Prisma.ContestRuleConfigCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.ContestRuleConfigDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContestRuleConfigPayload>
+          }
+          update: {
+            args: Prisma.ContestRuleConfigUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContestRuleConfigPayload>
+          }
+          deleteMany: {
+            args: Prisma.ContestRuleConfigDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.ContestRuleConfigUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.ContestRuleConfigUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContestRuleConfigPayload>
+          }
+          aggregate: {
+            args: Prisma.ContestRuleConfigAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateContestRuleConfig>
+          }
+          groupBy: {
+            args: Prisma.ContestRuleConfigGroupByArgs<ExtArgs>
+            result: $Utils.Optional<ContestRuleConfigGroupByOutputType>[]
+          }
+          findRaw: {
+            args: Prisma.ContestRuleConfigFindRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          aggregateRaw: {
+            args: Prisma.ContestRuleConfigAggregateRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          count: {
+            args: Prisma.ContestRuleConfigCountArgs<ExtArgs>
+            result: $Utils.Optional<ContestRuleConfigCountAggregateOutputType> | number
+          }
+        }
+      }
       ContestPhoto: {
         payload: Prisma.$ContestPhotoPayload<ExtArgs>
         fields: Prisma.ContestPhotoFieldRefs
@@ -1892,80 +2234,6 @@ export namespace Prisma {
           count: {
             args: Prisma.ContestPhotoCountArgs<ExtArgs>
             result: $Utils.Optional<ContestPhotoCountAggregateOutputType> | number
-          }
-        }
-      }
-      ContestWinner: {
-        payload: Prisma.$ContestWinnerPayload<ExtArgs>
-        fields: Prisma.ContestWinnerFieldRefs
-        operations: {
-          findUnique: {
-            args: Prisma.ContestWinnerFindUniqueArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ContestWinnerPayload> | null
-          }
-          findUniqueOrThrow: {
-            args: Prisma.ContestWinnerFindUniqueOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ContestWinnerPayload>
-          }
-          findFirst: {
-            args: Prisma.ContestWinnerFindFirstArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ContestWinnerPayload> | null
-          }
-          findFirstOrThrow: {
-            args: Prisma.ContestWinnerFindFirstOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ContestWinnerPayload>
-          }
-          findMany: {
-            args: Prisma.ContestWinnerFindManyArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ContestWinnerPayload>[]
-          }
-          create: {
-            args: Prisma.ContestWinnerCreateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ContestWinnerPayload>
-          }
-          createMany: {
-            args: Prisma.ContestWinnerCreateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          delete: {
-            args: Prisma.ContestWinnerDeleteArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ContestWinnerPayload>
-          }
-          update: {
-            args: Prisma.ContestWinnerUpdateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ContestWinnerPayload>
-          }
-          deleteMany: {
-            args: Prisma.ContestWinnerDeleteManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateMany: {
-            args: Prisma.ContestWinnerUpdateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          upsert: {
-            args: Prisma.ContestWinnerUpsertArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ContestWinnerPayload>
-          }
-          aggregate: {
-            args: Prisma.ContestWinnerAggregateArgs<ExtArgs>
-            result: $Utils.Optional<AggregateContestWinner>
-          }
-          groupBy: {
-            args: Prisma.ContestWinnerGroupByArgs<ExtArgs>
-            result: $Utils.Optional<ContestWinnerGroupByOutputType>[]
-          }
-          findRaw: {
-            args: Prisma.ContestWinnerFindRawArgs<ExtArgs>
-            result: JsonObject
-          }
-          aggregateRaw: {
-            args: Prisma.ContestWinnerAggregateRawArgs<ExtArgs>
-            result: JsonObject
-          }
-          count: {
-            args: Prisma.ContestWinnerCountArgs<ExtArgs>
-            result: $Utils.Optional<ContestWinnerCountAggregateOutputType> | number
           }
         }
       }
@@ -2114,6 +2382,80 @@ export namespace Prisma {
           count: {
             args: Prisma.ContestPrizeCountArgs<ExtArgs>
             result: $Utils.Optional<ContestPrizeCountAggregateOutputType> | number
+          }
+        }
+      }
+      ContestRuleAcceptance: {
+        payload: Prisma.$ContestRuleAcceptancePayload<ExtArgs>
+        fields: Prisma.ContestRuleAcceptanceFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.ContestRuleAcceptanceFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContestRuleAcceptancePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.ContestRuleAcceptanceFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContestRuleAcceptancePayload>
+          }
+          findFirst: {
+            args: Prisma.ContestRuleAcceptanceFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContestRuleAcceptancePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.ContestRuleAcceptanceFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContestRuleAcceptancePayload>
+          }
+          findMany: {
+            args: Prisma.ContestRuleAcceptanceFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContestRuleAcceptancePayload>[]
+          }
+          create: {
+            args: Prisma.ContestRuleAcceptanceCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContestRuleAcceptancePayload>
+          }
+          createMany: {
+            args: Prisma.ContestRuleAcceptanceCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.ContestRuleAcceptanceDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContestRuleAcceptancePayload>
+          }
+          update: {
+            args: Prisma.ContestRuleAcceptanceUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContestRuleAcceptancePayload>
+          }
+          deleteMany: {
+            args: Prisma.ContestRuleAcceptanceDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.ContestRuleAcceptanceUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.ContestRuleAcceptanceUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContestRuleAcceptancePayload>
+          }
+          aggregate: {
+            args: Prisma.ContestRuleAcceptanceAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateContestRuleAcceptance>
+          }
+          groupBy: {
+            args: Prisma.ContestRuleAcceptanceGroupByArgs<ExtArgs>
+            result: $Utils.Optional<ContestRuleAcceptanceGroupByOutputType>[]
+          }
+          findRaw: {
+            args: Prisma.ContestRuleAcceptanceFindRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          aggregateRaw: {
+            args: Prisma.ContestRuleAcceptanceAggregateRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          count: {
+            args: Prisma.ContestRuleAcceptanceCountArgs<ExtArgs>
+            result: $Utils.Optional<ContestRuleAcceptanceCountAggregateOutputType> | number
           }
         }
       }
@@ -2336,6 +2678,376 @@ export namespace Prisma {
           count: {
             args: Prisma.ContestAchievementCountArgs<ExtArgs>
             result: $Utils.Optional<ContestAchievementCountAggregateOutputType> | number
+          }
+        }
+      }
+      ContestFinalization: {
+        payload: Prisma.$ContestFinalizationPayload<ExtArgs>
+        fields: Prisma.ContestFinalizationFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.ContestFinalizationFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContestFinalizationPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.ContestFinalizationFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContestFinalizationPayload>
+          }
+          findFirst: {
+            args: Prisma.ContestFinalizationFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContestFinalizationPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.ContestFinalizationFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContestFinalizationPayload>
+          }
+          findMany: {
+            args: Prisma.ContestFinalizationFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContestFinalizationPayload>[]
+          }
+          create: {
+            args: Prisma.ContestFinalizationCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContestFinalizationPayload>
+          }
+          createMany: {
+            args: Prisma.ContestFinalizationCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.ContestFinalizationDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContestFinalizationPayload>
+          }
+          update: {
+            args: Prisma.ContestFinalizationUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContestFinalizationPayload>
+          }
+          deleteMany: {
+            args: Prisma.ContestFinalizationDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.ContestFinalizationUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.ContestFinalizationUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContestFinalizationPayload>
+          }
+          aggregate: {
+            args: Prisma.ContestFinalizationAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateContestFinalization>
+          }
+          groupBy: {
+            args: Prisma.ContestFinalizationGroupByArgs<ExtArgs>
+            result: $Utils.Optional<ContestFinalizationGroupByOutputType>[]
+          }
+          findRaw: {
+            args: Prisma.ContestFinalizationFindRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          aggregateRaw: {
+            args: Prisma.ContestFinalizationAggregateRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          count: {
+            args: Prisma.ContestFinalizationCountArgs<ExtArgs>
+            result: $Utils.Optional<ContestFinalizationCountAggregateOutputType> | number
+          }
+        }
+      }
+      ContestRankingResult: {
+        payload: Prisma.$ContestRankingResultPayload<ExtArgs>
+        fields: Prisma.ContestRankingResultFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.ContestRankingResultFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContestRankingResultPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.ContestRankingResultFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContestRankingResultPayload>
+          }
+          findFirst: {
+            args: Prisma.ContestRankingResultFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContestRankingResultPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.ContestRankingResultFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContestRankingResultPayload>
+          }
+          findMany: {
+            args: Prisma.ContestRankingResultFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContestRankingResultPayload>[]
+          }
+          create: {
+            args: Prisma.ContestRankingResultCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContestRankingResultPayload>
+          }
+          createMany: {
+            args: Prisma.ContestRankingResultCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.ContestRankingResultDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContestRankingResultPayload>
+          }
+          update: {
+            args: Prisma.ContestRankingResultUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContestRankingResultPayload>
+          }
+          deleteMany: {
+            args: Prisma.ContestRankingResultDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.ContestRankingResultUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.ContestRankingResultUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContestRankingResultPayload>
+          }
+          aggregate: {
+            args: Prisma.ContestRankingResultAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateContestRankingResult>
+          }
+          groupBy: {
+            args: Prisma.ContestRankingResultGroupByArgs<ExtArgs>
+            result: $Utils.Optional<ContestRankingResultGroupByOutputType>[]
+          }
+          findRaw: {
+            args: Prisma.ContestRankingResultFindRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          aggregateRaw: {
+            args: Prisma.ContestRankingResultAggregateRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          count: {
+            args: Prisma.ContestRankingResultCountArgs<ExtArgs>
+            result: $Utils.Optional<ContestRankingResultCountAggregateOutputType> | number
+          }
+        }
+      }
+      ContestAwardGrant: {
+        payload: Prisma.$ContestAwardGrantPayload<ExtArgs>
+        fields: Prisma.ContestAwardGrantFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.ContestAwardGrantFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContestAwardGrantPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.ContestAwardGrantFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContestAwardGrantPayload>
+          }
+          findFirst: {
+            args: Prisma.ContestAwardGrantFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContestAwardGrantPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.ContestAwardGrantFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContestAwardGrantPayload>
+          }
+          findMany: {
+            args: Prisma.ContestAwardGrantFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContestAwardGrantPayload>[]
+          }
+          create: {
+            args: Prisma.ContestAwardGrantCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContestAwardGrantPayload>
+          }
+          createMany: {
+            args: Prisma.ContestAwardGrantCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.ContestAwardGrantDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContestAwardGrantPayload>
+          }
+          update: {
+            args: Prisma.ContestAwardGrantUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContestAwardGrantPayload>
+          }
+          deleteMany: {
+            args: Prisma.ContestAwardGrantDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.ContestAwardGrantUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.ContestAwardGrantUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContestAwardGrantPayload>
+          }
+          aggregate: {
+            args: Prisma.ContestAwardGrantAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateContestAwardGrant>
+          }
+          groupBy: {
+            args: Prisma.ContestAwardGrantGroupByArgs<ExtArgs>
+            result: $Utils.Optional<ContestAwardGrantGroupByOutputType>[]
+          }
+          findRaw: {
+            args: Prisma.ContestAwardGrantFindRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          aggregateRaw: {
+            args: Prisma.ContestAwardGrantAggregateRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          count: {
+            args: Prisma.ContestAwardGrantCountArgs<ExtArgs>
+            result: $Utils.Optional<ContestAwardGrantCountAggregateOutputType> | number
+          }
+        }
+      }
+      ContestAwardSelection: {
+        payload: Prisma.$ContestAwardSelectionPayload<ExtArgs>
+        fields: Prisma.ContestAwardSelectionFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.ContestAwardSelectionFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContestAwardSelectionPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.ContestAwardSelectionFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContestAwardSelectionPayload>
+          }
+          findFirst: {
+            args: Prisma.ContestAwardSelectionFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContestAwardSelectionPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.ContestAwardSelectionFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContestAwardSelectionPayload>
+          }
+          findMany: {
+            args: Prisma.ContestAwardSelectionFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContestAwardSelectionPayload>[]
+          }
+          create: {
+            args: Prisma.ContestAwardSelectionCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContestAwardSelectionPayload>
+          }
+          createMany: {
+            args: Prisma.ContestAwardSelectionCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.ContestAwardSelectionDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContestAwardSelectionPayload>
+          }
+          update: {
+            args: Prisma.ContestAwardSelectionUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContestAwardSelectionPayload>
+          }
+          deleteMany: {
+            args: Prisma.ContestAwardSelectionDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.ContestAwardSelectionUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.ContestAwardSelectionUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContestAwardSelectionPayload>
+          }
+          aggregate: {
+            args: Prisma.ContestAwardSelectionAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateContestAwardSelection>
+          }
+          groupBy: {
+            args: Prisma.ContestAwardSelectionGroupByArgs<ExtArgs>
+            result: $Utils.Optional<ContestAwardSelectionGroupByOutputType>[]
+          }
+          findRaw: {
+            args: Prisma.ContestAwardSelectionFindRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          aggregateRaw: {
+            args: Prisma.ContestAwardSelectionAggregateRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          count: {
+            args: Prisma.ContestAwardSelectionCountArgs<ExtArgs>
+            result: $Utils.Optional<ContestAwardSelectionCountAggregateOutputType> | number
+          }
+        }
+      }
+      ContestRewardTransaction: {
+        payload: Prisma.$ContestRewardTransactionPayload<ExtArgs>
+        fields: Prisma.ContestRewardTransactionFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.ContestRewardTransactionFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContestRewardTransactionPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.ContestRewardTransactionFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContestRewardTransactionPayload>
+          }
+          findFirst: {
+            args: Prisma.ContestRewardTransactionFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContestRewardTransactionPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.ContestRewardTransactionFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContestRewardTransactionPayload>
+          }
+          findMany: {
+            args: Prisma.ContestRewardTransactionFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContestRewardTransactionPayload>[]
+          }
+          create: {
+            args: Prisma.ContestRewardTransactionCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContestRewardTransactionPayload>
+          }
+          createMany: {
+            args: Prisma.ContestRewardTransactionCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.ContestRewardTransactionDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContestRewardTransactionPayload>
+          }
+          update: {
+            args: Prisma.ContestRewardTransactionUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContestRewardTransactionPayload>
+          }
+          deleteMany: {
+            args: Prisma.ContestRewardTransactionDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.ContestRewardTransactionUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.ContestRewardTransactionUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContestRewardTransactionPayload>
+          }
+          aggregate: {
+            args: Prisma.ContestRewardTransactionAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateContestRewardTransaction>
+          }
+          groupBy: {
+            args: Prisma.ContestRewardTransactionGroupByArgs<ExtArgs>
+            result: $Utils.Optional<ContestRewardTransactionGroupByOutputType>[]
+          }
+          findRaw: {
+            args: Prisma.ContestRewardTransactionFindRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          aggregateRaw: {
+            args: Prisma.ContestRewardTransactionAggregateRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          count: {
+            args: Prisma.ContestRewardTransactionCountArgs<ExtArgs>
+            result: $Utils.Optional<ContestRewardTransactionCountAggregateOutputType> | number
           }
         }
       }
@@ -4196,15 +4908,22 @@ export namespace Prisma {
   export type GlobalOmitConfig = {
     contest?: ContestOmit
     recurringContest?: RecurringContestOmit
+    recurringContestOccurrence?: RecurringContestOccurrenceOmit
     prize?: PrizeOmit
     contestRule?: ContestRuleOmit
+    contestRuleConfig?: ContestRuleConfigOmit
     contestPhoto?: ContestPhotoOmit
-    contestWinner?: ContestWinnerOmit
     contestParticipant?: ContestParticipantOmit
     contestPrize?: ContestPrizeOmit
+    contestRuleAcceptance?: ContestRuleAcceptanceOmit
     contestAward?: ContestAwardOmit
     recurringContestAward?: RecurringContestAwardOmit
     contestAchievement?: ContestAchievementOmit
+    contestFinalization?: ContestFinalizationOmit
+    contestRankingResult?: ContestRankingResultOmit
+    contestAwardGrant?: ContestAwardGrantOmit
+    contestAwardSelection?: ContestAwardSelectionOmit
+    contestRewardTransaction?: ContestRewardTransactionOmit
     notification?: NotificationOmit
     payment?: PaymentOmit
     subscriptionPlan?: SubscriptionPlanOmit
@@ -4313,6 +5032,7 @@ export namespace Prisma {
     teamParticipations: number
     votes: number
     contestRules: number
+    ruleConfigs: number
     contestPrizes: number
     contestAwards: number
     achievements: number
@@ -4324,6 +5044,7 @@ export namespace Prisma {
     teamParticipations?: boolean | ContestCountOutputTypeCountTeamParticipationsArgs
     votes?: boolean | ContestCountOutputTypeCountVotesArgs
     contestRules?: boolean | ContestCountOutputTypeCountContestRulesArgs
+    ruleConfigs?: boolean | ContestCountOutputTypeCountRuleConfigsArgs
     contestPrizes?: boolean | ContestCountOutputTypeCountContestPrizesArgs
     contestAwards?: boolean | ContestCountOutputTypeCountContestAwardsArgs
     achievements?: boolean | ContestCountOutputTypeCountAchievementsArgs
@@ -4367,6 +5088,13 @@ export namespace Prisma {
    */
   export type ContestCountOutputTypeCountContestRulesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: ContestRuleWhereInput
+  }
+
+  /**
+   * ContestCountOutputType without action
+   */
+  export type ContestCountOutputTypeCountRuleConfigsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ContestRuleConfigWhereInput
   }
 
   /**
@@ -4486,14 +5214,12 @@ export namespace Prisma {
     votes: number
     comments: number
     achievements: number
-    ContestWinner: number
   }
 
   export type ContestPhotoCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     votes?: boolean | ContestPhotoCountOutputTypeCountVotesArgs
     comments?: boolean | ContestPhotoCountOutputTypeCountCommentsArgs
     achievements?: boolean | ContestPhotoCountOutputTypeCountAchievementsArgs
-    ContestWinner?: boolean | ContestPhotoCountOutputTypeCountContestWinnerArgs
   }
 
   // Custom InputTypes
@@ -4528,13 +5254,6 @@ export namespace Prisma {
     where?: ContestAchievementWhereInput
   }
 
-  /**
-   * ContestPhotoCountOutputType without action
-   */
-  export type ContestPhotoCountOutputTypeCountContestWinnerArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: ContestWinnerWhereInput
-  }
-
 
   /**
    * Count Type ContestParticipantCountOutputType
@@ -4542,13 +5261,11 @@ export namespace Prisma {
 
   export type ContestParticipantCountOutputType = {
     photos: number
-    ContestWinner: number
     contestAchievement: number
   }
 
   export type ContestParticipantCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     photos?: boolean | ContestParticipantCountOutputTypeCountPhotosArgs
-    ContestWinner?: boolean | ContestParticipantCountOutputTypeCountContestWinnerArgs
     contestAchievement?: boolean | ContestParticipantCountOutputTypeCountContestAchievementArgs
   }
 
@@ -4568,13 +5285,6 @@ export namespace Prisma {
    */
   export type ContestParticipantCountOutputTypeCountPhotosArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: ContestPhotoWhereInput
-  }
-
-  /**
-   * ContestParticipantCountOutputType without action
-   */
-  export type ContestParticipantCountOutputTypeCountContestWinnerArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: ContestWinnerWhereInput
   }
 
   /**
@@ -5137,17 +5847,17 @@ export namespace Prisma {
   }
 
   export type ContestAvgAggregateOutputType = {
-    maxUploads: number | null
     maxPrize: number | null
     minPrize: number | null
-    level_requirements: number | null
+    configVersion: number | null
+    scoringVersion: number | null
   }
 
   export type ContestSumAggregateOutputType = {
-    maxUploads: number | null
     maxPrize: number | null
     minPrize: number | null
-    level_requirements: number[]
+    configVersion: number | null
+    scoringVersion: number | null
   }
 
   export type ContestMinAggregateOutputType = {
@@ -5156,15 +5866,17 @@ export namespace Prisma {
     description: string | null
     banner: string | null
     status: $Enums.ContestStatus | null
-    mode: $Enums.ContestMode | null
-    maxUploads: number | null
     isMoneyContest: boolean | null
     maxPrize: number | null
     minPrize: number | null
     startDate: Date | null
     endDate: Date | null
     startedAt: Date | null
+    endedAt: Date | null
+    finalizedAt: Date | null
     recurringContestId: string | null
+    configVersion: number | null
+    scoringVersion: number | null
     creatorId: string | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -5176,15 +5888,17 @@ export namespace Prisma {
     description: string | null
     banner: string | null
     status: $Enums.ContestStatus | null
-    mode: $Enums.ContestMode | null
-    maxUploads: number | null
     isMoneyContest: boolean | null
     maxPrize: number | null
     minPrize: number | null
     startDate: Date | null
     endDate: Date | null
     startedAt: Date | null
+    endedAt: Date | null
+    finalizedAt: Date | null
     recurringContestId: string | null
+    configVersion: number | null
+    scoringVersion: number | null
     creatorId: string | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -5196,19 +5910,18 @@ export namespace Prisma {
     description: number
     banner: number
     status: number
-    mode: number
-    maxUploads: number
     isMoneyContest: number
     maxPrize: number
     minPrize: number
-    level_requirements: number
     startDate: number
     endDate: number
     startedAt: number
+    endedAt: number
+    finalizedAt: number
     recurringContestId: number
+    configVersion: number
+    scoringVersion: number
     creatorId: number
-    rules: number
-    prizes: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -5216,17 +5929,17 @@ export namespace Prisma {
 
 
   export type ContestAvgAggregateInputType = {
-    maxUploads?: true
     maxPrize?: true
     minPrize?: true
-    level_requirements?: true
+    configVersion?: true
+    scoringVersion?: true
   }
 
   export type ContestSumAggregateInputType = {
-    maxUploads?: true
     maxPrize?: true
     minPrize?: true
-    level_requirements?: true
+    configVersion?: true
+    scoringVersion?: true
   }
 
   export type ContestMinAggregateInputType = {
@@ -5235,15 +5948,17 @@ export namespace Prisma {
     description?: true
     banner?: true
     status?: true
-    mode?: true
-    maxUploads?: true
     isMoneyContest?: true
     maxPrize?: true
     minPrize?: true
     startDate?: true
     endDate?: true
     startedAt?: true
+    endedAt?: true
+    finalizedAt?: true
     recurringContestId?: true
+    configVersion?: true
+    scoringVersion?: true
     creatorId?: true
     createdAt?: true
     updatedAt?: true
@@ -5255,15 +5970,17 @@ export namespace Prisma {
     description?: true
     banner?: true
     status?: true
-    mode?: true
-    maxUploads?: true
     isMoneyContest?: true
     maxPrize?: true
     minPrize?: true
     startDate?: true
     endDate?: true
     startedAt?: true
+    endedAt?: true
+    finalizedAt?: true
     recurringContestId?: true
+    configVersion?: true
+    scoringVersion?: true
     creatorId?: true
     createdAt?: true
     updatedAt?: true
@@ -5275,19 +5992,18 @@ export namespace Prisma {
     description?: true
     banner?: true
     status?: true
-    mode?: true
-    maxUploads?: true
     isMoneyContest?: true
     maxPrize?: true
     minPrize?: true
-    level_requirements?: true
     startDate?: true
     endDate?: true
     startedAt?: true
+    endedAt?: true
+    finalizedAt?: true
     recurringContestId?: true
+    configVersion?: true
+    scoringVersion?: true
     creatorId?: true
-    rules?: true
-    prizes?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -5385,19 +6101,18 @@ export namespace Prisma {
     description: string
     banner: string | null
     status: $Enums.ContestStatus
-    mode: $Enums.ContestMode
-    maxUploads: number
     isMoneyContest: boolean
     maxPrize: number | null
     minPrize: number | null
-    level_requirements: number[]
     startDate: Date
     endDate: Date
     startedAt: Date | null
+    endedAt: Date | null
+    finalizedAt: Date | null
     recurringContestId: string | null
+    configVersion: number
+    scoringVersion: number
     creatorId: string
-    rules: JsonValue | null
-    prizes: JsonValue | null
     createdAt: Date
     updatedAt: Date
     _count: ContestCountAggregateOutputType | null
@@ -5427,19 +6142,18 @@ export namespace Prisma {
     description?: boolean
     banner?: boolean
     status?: boolean
-    mode?: boolean
-    maxUploads?: boolean
     isMoneyContest?: boolean
     maxPrize?: boolean
     minPrize?: boolean
-    level_requirements?: boolean
     startDate?: boolean
     endDate?: boolean
     startedAt?: boolean
+    endedAt?: boolean
+    finalizedAt?: boolean
     recurringContestId?: boolean
+    configVersion?: boolean
+    scoringVersion?: boolean
     creatorId?: boolean
-    rules?: boolean
-    prizes?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     creator?: boolean | UserDefaultArgs<ExtArgs>
@@ -5447,6 +6161,7 @@ export namespace Prisma {
     teamParticipations?: boolean | Contest$teamParticipationsArgs<ExtArgs>
     votes?: boolean | Contest$votesArgs<ExtArgs>
     contestRules?: boolean | Contest$contestRulesArgs<ExtArgs>
+    ruleConfigs?: boolean | Contest$ruleConfigsArgs<ExtArgs>
     contestPrizes?: boolean | Contest$contestPrizesArgs<ExtArgs>
     contestAwards?: boolean | Contest$contestAwardsArgs<ExtArgs>
     achievements?: boolean | Contest$achievementsArgs<ExtArgs>
@@ -5463,30 +6178,30 @@ export namespace Prisma {
     description?: boolean
     banner?: boolean
     status?: boolean
-    mode?: boolean
-    maxUploads?: boolean
     isMoneyContest?: boolean
     maxPrize?: boolean
     minPrize?: boolean
-    level_requirements?: boolean
     startDate?: boolean
     endDate?: boolean
     startedAt?: boolean
+    endedAt?: boolean
+    finalizedAt?: boolean
     recurringContestId?: boolean
+    configVersion?: boolean
+    scoringVersion?: boolean
     creatorId?: boolean
-    rules?: boolean
-    prizes?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type ContestOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "description" | "banner" | "status" | "mode" | "maxUploads" | "isMoneyContest" | "maxPrize" | "minPrize" | "level_requirements" | "startDate" | "endDate" | "startedAt" | "recurringContestId" | "creatorId" | "rules" | "prizes" | "createdAt" | "updatedAt", ExtArgs["result"]["contest"]>
+  export type ContestOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "description" | "banner" | "status" | "isMoneyContest" | "maxPrize" | "minPrize" | "startDate" | "endDate" | "startedAt" | "endedAt" | "finalizedAt" | "recurringContestId" | "configVersion" | "scoringVersion" | "creatorId" | "createdAt" | "updatedAt", ExtArgs["result"]["contest"]>
   export type ContestInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     creator?: boolean | UserDefaultArgs<ExtArgs>
     participants?: boolean | Contest$participantsArgs<ExtArgs>
     teamParticipations?: boolean | Contest$teamParticipationsArgs<ExtArgs>
     votes?: boolean | Contest$votesArgs<ExtArgs>
     contestRules?: boolean | Contest$contestRulesArgs<ExtArgs>
+    ruleConfigs?: boolean | Contest$ruleConfigsArgs<ExtArgs>
     contestPrizes?: boolean | Contest$contestPrizesArgs<ExtArgs>
     contestAwards?: boolean | Contest$contestAwardsArgs<ExtArgs>
     achievements?: boolean | Contest$achievementsArgs<ExtArgs>
@@ -5503,6 +6218,7 @@ export namespace Prisma {
       teamParticipations: Prisma.$TeamParticipationPayload<ExtArgs>[]
       votes: Prisma.$VotePayload<ExtArgs>[]
       contestRules: Prisma.$ContestRulePayload<ExtArgs>[]
+      ruleConfigs: Prisma.$ContestRuleConfigPayload<ExtArgs>[]
       contestPrizes: Prisma.$ContestPrizePayload<ExtArgs>[]
       contestAwards: Prisma.$ContestAwardPayload<ExtArgs>[]
       achievements: Prisma.$ContestAchievementPayload<ExtArgs>[]
@@ -5515,19 +6231,18 @@ export namespace Prisma {
       description: string
       banner: string | null
       status: $Enums.ContestStatus
-      mode: $Enums.ContestMode
-      maxUploads: number
       isMoneyContest: boolean
       maxPrize: number | null
       minPrize: number | null
-      level_requirements: number[]
       startDate: Date
       endDate: Date
       startedAt: Date | null
+      endedAt: Date | null
+      finalizedAt: Date | null
       recurringContestId: string | null
+      configVersion: number
+      scoringVersion: number
       creatorId: string
-      rules: Prisma.JsonValue | null
-      prizes: Prisma.JsonValue | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["contest"]>
@@ -5898,6 +6613,7 @@ export namespace Prisma {
     teamParticipations<T extends Contest$teamParticipationsArgs<ExtArgs> = {}>(args?: Subset<T, Contest$teamParticipationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TeamParticipationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     votes<T extends Contest$votesArgs<ExtArgs> = {}>(args?: Subset<T, Contest$votesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VotePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     contestRules<T extends Contest$contestRulesArgs<ExtArgs> = {}>(args?: Subset<T, Contest$contestRulesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ContestRulePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    ruleConfigs<T extends Contest$ruleConfigsArgs<ExtArgs> = {}>(args?: Subset<T, Contest$ruleConfigsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ContestRuleConfigPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     contestPrizes<T extends Contest$contestPrizesArgs<ExtArgs> = {}>(args?: Subset<T, Contest$contestPrizesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ContestPrizePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     contestAwards<T extends Contest$contestAwardsArgs<ExtArgs> = {}>(args?: Subset<T, Contest$contestAwardsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ContestAwardPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     achievements<T extends Contest$achievementsArgs<ExtArgs> = {}>(args?: Subset<T, Contest$achievementsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ContestAchievementPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -5937,19 +6653,18 @@ export namespace Prisma {
     readonly description: FieldRef<"Contest", 'String'>
     readonly banner: FieldRef<"Contest", 'String'>
     readonly status: FieldRef<"Contest", 'ContestStatus'>
-    readonly mode: FieldRef<"Contest", 'ContestMode'>
-    readonly maxUploads: FieldRef<"Contest", 'Int'>
     readonly isMoneyContest: FieldRef<"Contest", 'Boolean'>
     readonly maxPrize: FieldRef<"Contest", 'Int'>
     readonly minPrize: FieldRef<"Contest", 'Int'>
-    readonly level_requirements: FieldRef<"Contest", 'Int[]'>
     readonly startDate: FieldRef<"Contest", 'DateTime'>
     readonly endDate: FieldRef<"Contest", 'DateTime'>
     readonly startedAt: FieldRef<"Contest", 'DateTime'>
+    readonly endedAt: FieldRef<"Contest", 'DateTime'>
+    readonly finalizedAt: FieldRef<"Contest", 'DateTime'>
     readonly recurringContestId: FieldRef<"Contest", 'String'>
+    readonly configVersion: FieldRef<"Contest", 'Int'>
+    readonly scoringVersion: FieldRef<"Contest", 'Int'>
     readonly creatorId: FieldRef<"Contest", 'String'>
-    readonly rules: FieldRef<"Contest", 'Json'>
-    readonly prizes: FieldRef<"Contest", 'Json'>
     readonly createdAt: FieldRef<"Contest", 'DateTime'>
     readonly updatedAt: FieldRef<"Contest", 'DateTime'>
   }
@@ -6418,6 +7133,30 @@ export namespace Prisma {
   }
 
   /**
+   * Contest.ruleConfigs
+   */
+  export type Contest$ruleConfigsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContestRuleConfig
+     */
+    select?: ContestRuleConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContestRuleConfig
+     */
+    omit?: ContestRuleConfigOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContestRuleConfigInclude<ExtArgs> | null
+    where?: ContestRuleConfigWhereInput
+    orderBy?: ContestRuleConfigOrderByWithRelationInput | ContestRuleConfigOrderByWithRelationInput[]
+    cursor?: ContestRuleConfigWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ContestRuleConfigScalarFieldEnum | ContestRuleConfigScalarFieldEnum[]
+  }
+
+  /**
    * Contest.contestPrizes
    */
   export type Contest$contestPrizesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -6564,17 +7303,13 @@ export namespace Prisma {
   }
 
   export type RecurringContestAvgAggregateOutputType = {
-    maxUploads: number | null
     maxPrize: number | null
     minPrize: number | null
-    level_requirements: number | null
   }
 
   export type RecurringContestSumAggregateOutputType = {
-    maxUploads: number | null
     maxPrize: number | null
     minPrize: number | null
-    level_requirements: number[]
   }
 
   export type RecurringContestMinAggregateOutputType = {
@@ -6582,7 +7317,6 @@ export namespace Prisma {
     title: string | null
     description: string | null
     banner: string | null
-    maxUploads: number | null
     isMoneyContest: boolean | null
     maxPrize: number | null
     minPrize: number | null
@@ -6600,7 +7334,6 @@ export namespace Prisma {
     title: string | null
     description: string | null
     banner: string | null
-    maxUploads: number | null
     isMoneyContest: boolean | null
     maxPrize: number | null
     minPrize: number | null
@@ -6618,11 +7351,9 @@ export namespace Prisma {
     title: number
     description: number
     banner: number
-    maxUploads: number
     isMoneyContest: number
     maxPrize: number
     minPrize: number
-    level_requirements: number
     startDate: number
     endDate: number
     creatorId: number
@@ -6637,17 +7368,13 @@ export namespace Prisma {
 
 
   export type RecurringContestAvgAggregateInputType = {
-    maxUploads?: true
     maxPrize?: true
     minPrize?: true
-    level_requirements?: true
   }
 
   export type RecurringContestSumAggregateInputType = {
-    maxUploads?: true
     maxPrize?: true
     minPrize?: true
-    level_requirements?: true
   }
 
   export type RecurringContestMinAggregateInputType = {
@@ -6655,7 +7382,6 @@ export namespace Prisma {
     title?: true
     description?: true
     banner?: true
-    maxUploads?: true
     isMoneyContest?: true
     maxPrize?: true
     minPrize?: true
@@ -6673,7 +7399,6 @@ export namespace Prisma {
     title?: true
     description?: true
     banner?: true
-    maxUploads?: true
     isMoneyContest?: true
     maxPrize?: true
     minPrize?: true
@@ -6691,11 +7416,9 @@ export namespace Prisma {
     title?: true
     description?: true
     banner?: true
-    maxUploads?: true
     isMoneyContest?: true
     maxPrize?: true
     minPrize?: true
-    level_requirements?: true
     startDate?: true
     endDate?: true
     creatorId?: true
@@ -6799,11 +7522,9 @@ export namespace Prisma {
     title: string
     description: string
     banner: string | null
-    maxUploads: number
     isMoneyContest: boolean
     maxPrize: number | null
     minPrize: number | null
-    level_requirements: number[]
     startDate: Date
     endDate: Date
     creatorId: string
@@ -6839,11 +7560,9 @@ export namespace Prisma {
     title?: boolean
     description?: boolean
     banner?: boolean
-    maxUploads?: boolean
     isMoneyContest?: boolean
     maxPrize?: boolean
     minPrize?: boolean
-    level_requirements?: boolean
     startDate?: boolean
     endDate?: boolean
     creatorId?: boolean
@@ -6866,11 +7585,9 @@ export namespace Prisma {
     title?: boolean
     description?: boolean
     banner?: boolean
-    maxUploads?: boolean
     isMoneyContest?: boolean
     maxPrize?: boolean
     minPrize?: boolean
-    level_requirements?: boolean
     startDate?: boolean
     endDate?: boolean
     creatorId?: boolean
@@ -6882,7 +7599,7 @@ export namespace Prisma {
     updatedAt?: boolean
   }
 
-  export type RecurringContestOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "description" | "banner" | "maxUploads" | "isMoneyContest" | "maxPrize" | "minPrize" | "level_requirements" | "startDate" | "endDate" | "creatorId" | "status" | "recurring" | "lastGeneratedContestId" | "rules" | "prizes" | "createdAt" | "updatedAt", ExtArgs["result"]["recurringContest"]>
+  export type RecurringContestOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "description" | "banner" | "isMoneyContest" | "maxPrize" | "minPrize" | "startDate" | "endDate" | "creatorId" | "status" | "recurring" | "lastGeneratedContestId" | "rules" | "prizes" | "createdAt" | "updatedAt", ExtArgs["result"]["recurringContest"]>
   export type RecurringContestInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     contestAwards?: boolean | RecurringContest$contestAwardsArgs<ExtArgs>
     contestInstances?: boolean | RecurringContest$contestInstancesArgs<ExtArgs>
@@ -6900,11 +7617,9 @@ export namespace Prisma {
       title: string
       description: string
       banner: string | null
-      maxUploads: number
       isMoneyContest: boolean
       maxPrize: number | null
       minPrize: number | null
-      level_requirements: number[]
       startDate: Date
       endDate: Date
       creatorId: string
@@ -7314,11 +8029,9 @@ export namespace Prisma {
     readonly title: FieldRef<"RecurringContest", 'String'>
     readonly description: FieldRef<"RecurringContest", 'String'>
     readonly banner: FieldRef<"RecurringContest", 'String'>
-    readonly maxUploads: FieldRef<"RecurringContest", 'Int'>
     readonly isMoneyContest: FieldRef<"RecurringContest", 'Boolean'>
     readonly maxPrize: FieldRef<"RecurringContest", 'Int'>
     readonly minPrize: FieldRef<"RecurringContest", 'Int'>
-    readonly level_requirements: FieldRef<"RecurringContest", 'Int[]'>
     readonly startDate: FieldRef<"RecurringContest", 'DateTime'>
     readonly endDate: FieldRef<"RecurringContest", 'DateTime'>
     readonly creatorId: FieldRef<"RecurringContest", 'String'>
@@ -7765,6 +8478,993 @@ export namespace Prisma {
 
 
   /**
+   * Model RecurringContestOccurrence
+   */
+
+  export type AggregateRecurringContestOccurrence = {
+    _count: RecurringContestOccurrenceCountAggregateOutputType | null
+    _min: RecurringContestOccurrenceMinAggregateOutputType | null
+    _max: RecurringContestOccurrenceMaxAggregateOutputType | null
+  }
+
+  export type RecurringContestOccurrenceMinAggregateOutputType = {
+    id: string | null
+    occurrenceKey: string | null
+    recurringContestId: string | null
+    scheduledAt: Date | null
+    contestId: string | null
+    status: $Enums.ContestOccurrenceStatus | null
+    startedAt: Date | null
+    error: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type RecurringContestOccurrenceMaxAggregateOutputType = {
+    id: string | null
+    occurrenceKey: string | null
+    recurringContestId: string | null
+    scheduledAt: Date | null
+    contestId: string | null
+    status: $Enums.ContestOccurrenceStatus | null
+    startedAt: Date | null
+    error: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type RecurringContestOccurrenceCountAggregateOutputType = {
+    id: number
+    occurrenceKey: number
+    recurringContestId: number
+    scheduledAt: number
+    contestId: number
+    status: number
+    startedAt: number
+    error: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type RecurringContestOccurrenceMinAggregateInputType = {
+    id?: true
+    occurrenceKey?: true
+    recurringContestId?: true
+    scheduledAt?: true
+    contestId?: true
+    status?: true
+    startedAt?: true
+    error?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type RecurringContestOccurrenceMaxAggregateInputType = {
+    id?: true
+    occurrenceKey?: true
+    recurringContestId?: true
+    scheduledAt?: true
+    contestId?: true
+    status?: true
+    startedAt?: true
+    error?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type RecurringContestOccurrenceCountAggregateInputType = {
+    id?: true
+    occurrenceKey?: true
+    recurringContestId?: true
+    scheduledAt?: true
+    contestId?: true
+    status?: true
+    startedAt?: true
+    error?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type RecurringContestOccurrenceAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which RecurringContestOccurrence to aggregate.
+     */
+    where?: RecurringContestOccurrenceWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of RecurringContestOccurrences to fetch.
+     */
+    orderBy?: RecurringContestOccurrenceOrderByWithRelationInput | RecurringContestOccurrenceOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: RecurringContestOccurrenceWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` RecurringContestOccurrences from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` RecurringContestOccurrences.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned RecurringContestOccurrences
+    **/
+    _count?: true | RecurringContestOccurrenceCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: RecurringContestOccurrenceMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: RecurringContestOccurrenceMaxAggregateInputType
+  }
+
+  export type GetRecurringContestOccurrenceAggregateType<T extends RecurringContestOccurrenceAggregateArgs> = {
+        [P in keyof T & keyof AggregateRecurringContestOccurrence]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateRecurringContestOccurrence[P]>
+      : GetScalarType<T[P], AggregateRecurringContestOccurrence[P]>
+  }
+
+
+
+
+  export type RecurringContestOccurrenceGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: RecurringContestOccurrenceWhereInput
+    orderBy?: RecurringContestOccurrenceOrderByWithAggregationInput | RecurringContestOccurrenceOrderByWithAggregationInput[]
+    by: RecurringContestOccurrenceScalarFieldEnum[] | RecurringContestOccurrenceScalarFieldEnum
+    having?: RecurringContestOccurrenceScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: RecurringContestOccurrenceCountAggregateInputType | true
+    _min?: RecurringContestOccurrenceMinAggregateInputType
+    _max?: RecurringContestOccurrenceMaxAggregateInputType
+  }
+
+  export type RecurringContestOccurrenceGroupByOutputType = {
+    id: string
+    occurrenceKey: string
+    recurringContestId: string
+    scheduledAt: Date
+    contestId: string | null
+    status: $Enums.ContestOccurrenceStatus
+    startedAt: Date | null
+    error: string | null
+    createdAt: Date
+    updatedAt: Date
+    _count: RecurringContestOccurrenceCountAggregateOutputType | null
+    _min: RecurringContestOccurrenceMinAggregateOutputType | null
+    _max: RecurringContestOccurrenceMaxAggregateOutputType | null
+  }
+
+  type GetRecurringContestOccurrenceGroupByPayload<T extends RecurringContestOccurrenceGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<RecurringContestOccurrenceGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof RecurringContestOccurrenceGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], RecurringContestOccurrenceGroupByOutputType[P]>
+            : GetScalarType<T[P], RecurringContestOccurrenceGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type RecurringContestOccurrenceSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    occurrenceKey?: boolean
+    recurringContestId?: boolean
+    scheduledAt?: boolean
+    contestId?: boolean
+    status?: boolean
+    startedAt?: boolean
+    error?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["recurringContestOccurrence"]>
+
+
+
+  export type RecurringContestOccurrenceSelectScalar = {
+    id?: boolean
+    occurrenceKey?: boolean
+    recurringContestId?: boolean
+    scheduledAt?: boolean
+    contestId?: boolean
+    status?: boolean
+    startedAt?: boolean
+    error?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type RecurringContestOccurrenceOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "occurrenceKey" | "recurringContestId" | "scheduledAt" | "contestId" | "status" | "startedAt" | "error" | "createdAt" | "updatedAt", ExtArgs["result"]["recurringContestOccurrence"]>
+
+  export type $RecurringContestOccurrencePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "RecurringContestOccurrence"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      occurrenceKey: string
+      recurringContestId: string
+      scheduledAt: Date
+      contestId: string | null
+      status: $Enums.ContestOccurrenceStatus
+      startedAt: Date | null
+      error: string | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["recurringContestOccurrence"]>
+    composites: {}
+  }
+
+  type RecurringContestOccurrenceGetPayload<S extends boolean | null | undefined | RecurringContestOccurrenceDefaultArgs> = $Result.GetResult<Prisma.$RecurringContestOccurrencePayload, S>
+
+  type RecurringContestOccurrenceCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<RecurringContestOccurrenceFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: RecurringContestOccurrenceCountAggregateInputType | true
+    }
+
+  export interface RecurringContestOccurrenceDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['RecurringContestOccurrence'], meta: { name: 'RecurringContestOccurrence' } }
+    /**
+     * Find zero or one RecurringContestOccurrence that matches the filter.
+     * @param {RecurringContestOccurrenceFindUniqueArgs} args - Arguments to find a RecurringContestOccurrence
+     * @example
+     * // Get one RecurringContestOccurrence
+     * const recurringContestOccurrence = await prisma.recurringContestOccurrence.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends RecurringContestOccurrenceFindUniqueArgs>(args: SelectSubset<T, RecurringContestOccurrenceFindUniqueArgs<ExtArgs>>): Prisma__RecurringContestOccurrenceClient<$Result.GetResult<Prisma.$RecurringContestOccurrencePayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one RecurringContestOccurrence that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {RecurringContestOccurrenceFindUniqueOrThrowArgs} args - Arguments to find a RecurringContestOccurrence
+     * @example
+     * // Get one RecurringContestOccurrence
+     * const recurringContestOccurrence = await prisma.recurringContestOccurrence.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends RecurringContestOccurrenceFindUniqueOrThrowArgs>(args: SelectSubset<T, RecurringContestOccurrenceFindUniqueOrThrowArgs<ExtArgs>>): Prisma__RecurringContestOccurrenceClient<$Result.GetResult<Prisma.$RecurringContestOccurrencePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first RecurringContestOccurrence that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RecurringContestOccurrenceFindFirstArgs} args - Arguments to find a RecurringContestOccurrence
+     * @example
+     * // Get one RecurringContestOccurrence
+     * const recurringContestOccurrence = await prisma.recurringContestOccurrence.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends RecurringContestOccurrenceFindFirstArgs>(args?: SelectSubset<T, RecurringContestOccurrenceFindFirstArgs<ExtArgs>>): Prisma__RecurringContestOccurrenceClient<$Result.GetResult<Prisma.$RecurringContestOccurrencePayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first RecurringContestOccurrence that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RecurringContestOccurrenceFindFirstOrThrowArgs} args - Arguments to find a RecurringContestOccurrence
+     * @example
+     * // Get one RecurringContestOccurrence
+     * const recurringContestOccurrence = await prisma.recurringContestOccurrence.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends RecurringContestOccurrenceFindFirstOrThrowArgs>(args?: SelectSubset<T, RecurringContestOccurrenceFindFirstOrThrowArgs<ExtArgs>>): Prisma__RecurringContestOccurrenceClient<$Result.GetResult<Prisma.$RecurringContestOccurrencePayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more RecurringContestOccurrences that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RecurringContestOccurrenceFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all RecurringContestOccurrences
+     * const recurringContestOccurrences = await prisma.recurringContestOccurrence.findMany()
+     * 
+     * // Get first 10 RecurringContestOccurrences
+     * const recurringContestOccurrences = await prisma.recurringContestOccurrence.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const recurringContestOccurrenceWithIdOnly = await prisma.recurringContestOccurrence.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends RecurringContestOccurrenceFindManyArgs>(args?: SelectSubset<T, RecurringContestOccurrenceFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RecurringContestOccurrencePayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a RecurringContestOccurrence.
+     * @param {RecurringContestOccurrenceCreateArgs} args - Arguments to create a RecurringContestOccurrence.
+     * @example
+     * // Create one RecurringContestOccurrence
+     * const RecurringContestOccurrence = await prisma.recurringContestOccurrence.create({
+     *   data: {
+     *     // ... data to create a RecurringContestOccurrence
+     *   }
+     * })
+     * 
+     */
+    create<T extends RecurringContestOccurrenceCreateArgs>(args: SelectSubset<T, RecurringContestOccurrenceCreateArgs<ExtArgs>>): Prisma__RecurringContestOccurrenceClient<$Result.GetResult<Prisma.$RecurringContestOccurrencePayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many RecurringContestOccurrences.
+     * @param {RecurringContestOccurrenceCreateManyArgs} args - Arguments to create many RecurringContestOccurrences.
+     * @example
+     * // Create many RecurringContestOccurrences
+     * const recurringContestOccurrence = await prisma.recurringContestOccurrence.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends RecurringContestOccurrenceCreateManyArgs>(args?: SelectSubset<T, RecurringContestOccurrenceCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a RecurringContestOccurrence.
+     * @param {RecurringContestOccurrenceDeleteArgs} args - Arguments to delete one RecurringContestOccurrence.
+     * @example
+     * // Delete one RecurringContestOccurrence
+     * const RecurringContestOccurrence = await prisma.recurringContestOccurrence.delete({
+     *   where: {
+     *     // ... filter to delete one RecurringContestOccurrence
+     *   }
+     * })
+     * 
+     */
+    delete<T extends RecurringContestOccurrenceDeleteArgs>(args: SelectSubset<T, RecurringContestOccurrenceDeleteArgs<ExtArgs>>): Prisma__RecurringContestOccurrenceClient<$Result.GetResult<Prisma.$RecurringContestOccurrencePayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one RecurringContestOccurrence.
+     * @param {RecurringContestOccurrenceUpdateArgs} args - Arguments to update one RecurringContestOccurrence.
+     * @example
+     * // Update one RecurringContestOccurrence
+     * const recurringContestOccurrence = await prisma.recurringContestOccurrence.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends RecurringContestOccurrenceUpdateArgs>(args: SelectSubset<T, RecurringContestOccurrenceUpdateArgs<ExtArgs>>): Prisma__RecurringContestOccurrenceClient<$Result.GetResult<Prisma.$RecurringContestOccurrencePayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more RecurringContestOccurrences.
+     * @param {RecurringContestOccurrenceDeleteManyArgs} args - Arguments to filter RecurringContestOccurrences to delete.
+     * @example
+     * // Delete a few RecurringContestOccurrences
+     * const { count } = await prisma.recurringContestOccurrence.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends RecurringContestOccurrenceDeleteManyArgs>(args?: SelectSubset<T, RecurringContestOccurrenceDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more RecurringContestOccurrences.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RecurringContestOccurrenceUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many RecurringContestOccurrences
+     * const recurringContestOccurrence = await prisma.recurringContestOccurrence.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends RecurringContestOccurrenceUpdateManyArgs>(args: SelectSubset<T, RecurringContestOccurrenceUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one RecurringContestOccurrence.
+     * @param {RecurringContestOccurrenceUpsertArgs} args - Arguments to update or create a RecurringContestOccurrence.
+     * @example
+     * // Update or create a RecurringContestOccurrence
+     * const recurringContestOccurrence = await prisma.recurringContestOccurrence.upsert({
+     *   create: {
+     *     // ... data to create a RecurringContestOccurrence
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the RecurringContestOccurrence we want to update
+     *   }
+     * })
+     */
+    upsert<T extends RecurringContestOccurrenceUpsertArgs>(args: SelectSubset<T, RecurringContestOccurrenceUpsertArgs<ExtArgs>>): Prisma__RecurringContestOccurrenceClient<$Result.GetResult<Prisma.$RecurringContestOccurrencePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more RecurringContestOccurrences that matches the filter.
+     * @param {RecurringContestOccurrenceFindRawArgs} args - Select which filters you would like to apply.
+     * @example
+     * const recurringContestOccurrence = await prisma.recurringContestOccurrence.findRaw({
+     *   filter: { age: { $gt: 25 } }
+     * })
+     */
+    findRaw(args?: RecurringContestOccurrenceFindRawArgs): Prisma.PrismaPromise<JsonObject>
+
+    /**
+     * Perform aggregation operations on a RecurringContestOccurrence.
+     * @param {RecurringContestOccurrenceAggregateRawArgs} args - Select which aggregations you would like to apply.
+     * @example
+     * const recurringContestOccurrence = await prisma.recurringContestOccurrence.aggregateRaw({
+     *   pipeline: [
+     *     { $match: { status: "registered" } },
+     *     { $group: { _id: "$country", total: { $sum: 1 } } }
+     *   ]
+     * })
+     */
+    aggregateRaw(args?: RecurringContestOccurrenceAggregateRawArgs): Prisma.PrismaPromise<JsonObject>
+
+
+    /**
+     * Count the number of RecurringContestOccurrences.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RecurringContestOccurrenceCountArgs} args - Arguments to filter RecurringContestOccurrences to count.
+     * @example
+     * // Count the number of RecurringContestOccurrences
+     * const count = await prisma.recurringContestOccurrence.count({
+     *   where: {
+     *     // ... the filter for the RecurringContestOccurrences we want to count
+     *   }
+     * })
+    **/
+    count<T extends RecurringContestOccurrenceCountArgs>(
+      args?: Subset<T, RecurringContestOccurrenceCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], RecurringContestOccurrenceCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a RecurringContestOccurrence.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RecurringContestOccurrenceAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends RecurringContestOccurrenceAggregateArgs>(args: Subset<T, RecurringContestOccurrenceAggregateArgs>): Prisma.PrismaPromise<GetRecurringContestOccurrenceAggregateType<T>>
+
+    /**
+     * Group by RecurringContestOccurrence.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RecurringContestOccurrenceGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends RecurringContestOccurrenceGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: RecurringContestOccurrenceGroupByArgs['orderBy'] }
+        : { orderBy?: RecurringContestOccurrenceGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, RecurringContestOccurrenceGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetRecurringContestOccurrenceGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the RecurringContestOccurrence model
+   */
+  readonly fields: RecurringContestOccurrenceFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for RecurringContestOccurrence.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__RecurringContestOccurrenceClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the RecurringContestOccurrence model
+   */
+  interface RecurringContestOccurrenceFieldRefs {
+    readonly id: FieldRef<"RecurringContestOccurrence", 'String'>
+    readonly occurrenceKey: FieldRef<"RecurringContestOccurrence", 'String'>
+    readonly recurringContestId: FieldRef<"RecurringContestOccurrence", 'String'>
+    readonly scheduledAt: FieldRef<"RecurringContestOccurrence", 'DateTime'>
+    readonly contestId: FieldRef<"RecurringContestOccurrence", 'String'>
+    readonly status: FieldRef<"RecurringContestOccurrence", 'ContestOccurrenceStatus'>
+    readonly startedAt: FieldRef<"RecurringContestOccurrence", 'DateTime'>
+    readonly error: FieldRef<"RecurringContestOccurrence", 'String'>
+    readonly createdAt: FieldRef<"RecurringContestOccurrence", 'DateTime'>
+    readonly updatedAt: FieldRef<"RecurringContestOccurrence", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * RecurringContestOccurrence findUnique
+   */
+  export type RecurringContestOccurrenceFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RecurringContestOccurrence
+     */
+    select?: RecurringContestOccurrenceSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RecurringContestOccurrence
+     */
+    omit?: RecurringContestOccurrenceOmit<ExtArgs> | null
+    /**
+     * Filter, which RecurringContestOccurrence to fetch.
+     */
+    where: RecurringContestOccurrenceWhereUniqueInput
+  }
+
+  /**
+   * RecurringContestOccurrence findUniqueOrThrow
+   */
+  export type RecurringContestOccurrenceFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RecurringContestOccurrence
+     */
+    select?: RecurringContestOccurrenceSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RecurringContestOccurrence
+     */
+    omit?: RecurringContestOccurrenceOmit<ExtArgs> | null
+    /**
+     * Filter, which RecurringContestOccurrence to fetch.
+     */
+    where: RecurringContestOccurrenceWhereUniqueInput
+  }
+
+  /**
+   * RecurringContestOccurrence findFirst
+   */
+  export type RecurringContestOccurrenceFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RecurringContestOccurrence
+     */
+    select?: RecurringContestOccurrenceSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RecurringContestOccurrence
+     */
+    omit?: RecurringContestOccurrenceOmit<ExtArgs> | null
+    /**
+     * Filter, which RecurringContestOccurrence to fetch.
+     */
+    where?: RecurringContestOccurrenceWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of RecurringContestOccurrences to fetch.
+     */
+    orderBy?: RecurringContestOccurrenceOrderByWithRelationInput | RecurringContestOccurrenceOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for RecurringContestOccurrences.
+     */
+    cursor?: RecurringContestOccurrenceWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` RecurringContestOccurrences from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` RecurringContestOccurrences.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of RecurringContestOccurrences.
+     */
+    distinct?: RecurringContestOccurrenceScalarFieldEnum | RecurringContestOccurrenceScalarFieldEnum[]
+  }
+
+  /**
+   * RecurringContestOccurrence findFirstOrThrow
+   */
+  export type RecurringContestOccurrenceFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RecurringContestOccurrence
+     */
+    select?: RecurringContestOccurrenceSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RecurringContestOccurrence
+     */
+    omit?: RecurringContestOccurrenceOmit<ExtArgs> | null
+    /**
+     * Filter, which RecurringContestOccurrence to fetch.
+     */
+    where?: RecurringContestOccurrenceWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of RecurringContestOccurrences to fetch.
+     */
+    orderBy?: RecurringContestOccurrenceOrderByWithRelationInput | RecurringContestOccurrenceOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for RecurringContestOccurrences.
+     */
+    cursor?: RecurringContestOccurrenceWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` RecurringContestOccurrences from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` RecurringContestOccurrences.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of RecurringContestOccurrences.
+     */
+    distinct?: RecurringContestOccurrenceScalarFieldEnum | RecurringContestOccurrenceScalarFieldEnum[]
+  }
+
+  /**
+   * RecurringContestOccurrence findMany
+   */
+  export type RecurringContestOccurrenceFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RecurringContestOccurrence
+     */
+    select?: RecurringContestOccurrenceSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RecurringContestOccurrence
+     */
+    omit?: RecurringContestOccurrenceOmit<ExtArgs> | null
+    /**
+     * Filter, which RecurringContestOccurrences to fetch.
+     */
+    where?: RecurringContestOccurrenceWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of RecurringContestOccurrences to fetch.
+     */
+    orderBy?: RecurringContestOccurrenceOrderByWithRelationInput | RecurringContestOccurrenceOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing RecurringContestOccurrences.
+     */
+    cursor?: RecurringContestOccurrenceWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` RecurringContestOccurrences from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` RecurringContestOccurrences.
+     */
+    skip?: number
+    distinct?: RecurringContestOccurrenceScalarFieldEnum | RecurringContestOccurrenceScalarFieldEnum[]
+  }
+
+  /**
+   * RecurringContestOccurrence create
+   */
+  export type RecurringContestOccurrenceCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RecurringContestOccurrence
+     */
+    select?: RecurringContestOccurrenceSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RecurringContestOccurrence
+     */
+    omit?: RecurringContestOccurrenceOmit<ExtArgs> | null
+    /**
+     * The data needed to create a RecurringContestOccurrence.
+     */
+    data: XOR<RecurringContestOccurrenceCreateInput, RecurringContestOccurrenceUncheckedCreateInput>
+  }
+
+  /**
+   * RecurringContestOccurrence createMany
+   */
+  export type RecurringContestOccurrenceCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many RecurringContestOccurrences.
+     */
+    data: RecurringContestOccurrenceCreateManyInput | RecurringContestOccurrenceCreateManyInput[]
+  }
+
+  /**
+   * RecurringContestOccurrence update
+   */
+  export type RecurringContestOccurrenceUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RecurringContestOccurrence
+     */
+    select?: RecurringContestOccurrenceSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RecurringContestOccurrence
+     */
+    omit?: RecurringContestOccurrenceOmit<ExtArgs> | null
+    /**
+     * The data needed to update a RecurringContestOccurrence.
+     */
+    data: XOR<RecurringContestOccurrenceUpdateInput, RecurringContestOccurrenceUncheckedUpdateInput>
+    /**
+     * Choose, which RecurringContestOccurrence to update.
+     */
+    where: RecurringContestOccurrenceWhereUniqueInput
+  }
+
+  /**
+   * RecurringContestOccurrence updateMany
+   */
+  export type RecurringContestOccurrenceUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update RecurringContestOccurrences.
+     */
+    data: XOR<RecurringContestOccurrenceUpdateManyMutationInput, RecurringContestOccurrenceUncheckedUpdateManyInput>
+    /**
+     * Filter which RecurringContestOccurrences to update
+     */
+    where?: RecurringContestOccurrenceWhereInput
+    /**
+     * Limit how many RecurringContestOccurrences to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * RecurringContestOccurrence upsert
+   */
+  export type RecurringContestOccurrenceUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RecurringContestOccurrence
+     */
+    select?: RecurringContestOccurrenceSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RecurringContestOccurrence
+     */
+    omit?: RecurringContestOccurrenceOmit<ExtArgs> | null
+    /**
+     * The filter to search for the RecurringContestOccurrence to update in case it exists.
+     */
+    where: RecurringContestOccurrenceWhereUniqueInput
+    /**
+     * In case the RecurringContestOccurrence found by the `where` argument doesn't exist, create a new RecurringContestOccurrence with this data.
+     */
+    create: XOR<RecurringContestOccurrenceCreateInput, RecurringContestOccurrenceUncheckedCreateInput>
+    /**
+     * In case the RecurringContestOccurrence was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<RecurringContestOccurrenceUpdateInput, RecurringContestOccurrenceUncheckedUpdateInput>
+  }
+
+  /**
+   * RecurringContestOccurrence delete
+   */
+  export type RecurringContestOccurrenceDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RecurringContestOccurrence
+     */
+    select?: RecurringContestOccurrenceSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RecurringContestOccurrence
+     */
+    omit?: RecurringContestOccurrenceOmit<ExtArgs> | null
+    /**
+     * Filter which RecurringContestOccurrence to delete.
+     */
+    where: RecurringContestOccurrenceWhereUniqueInput
+  }
+
+  /**
+   * RecurringContestOccurrence deleteMany
+   */
+  export type RecurringContestOccurrenceDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which RecurringContestOccurrences to delete
+     */
+    where?: RecurringContestOccurrenceWhereInput
+    /**
+     * Limit how many RecurringContestOccurrences to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * RecurringContestOccurrence findRaw
+   */
+  export type RecurringContestOccurrenceFindRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The query predicate filter. If unspecified, then all documents in the collection will match the predicate. ${@link https://docs.mongodb.com/manual/reference/operator/query MongoDB Docs}.
+     */
+    filter?: InputJsonValue
+    /**
+     * Additional options to pass to the `find` command ${@link https://docs.mongodb.com/manual/reference/command/find/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * RecurringContestOccurrence aggregateRaw
+   */
+  export type RecurringContestOccurrenceAggregateRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * An array of aggregation stages to process and transform the document stream via the aggregation pipeline. ${@link https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline MongoDB Docs}.
+     */
+    pipeline?: InputJsonValue[]
+    /**
+     * Additional options to pass to the `aggregate` command ${@link https://docs.mongodb.com/manual/reference/command/aggregate/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * RecurringContestOccurrence without action
+   */
+  export type RecurringContestOccurrenceDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RecurringContestOccurrence
+     */
+    select?: RecurringContestOccurrenceSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RecurringContestOccurrence
+     */
+    omit?: RecurringContestOccurrenceOmit<ExtArgs> | null
+  }
+
+
+  /**
    * Model Prize
    */
 
@@ -7777,6 +9477,7 @@ export namespace Prisma {
   }
 
   export type PrizeAvgAggregateOutputType = {
+    rankLimit: number | null
     boost: number | null
     swap: number | null
     key: number | null
@@ -7784,6 +9485,7 @@ export namespace Prisma {
   }
 
   export type PrizeSumAggregateOutputType = {
+    rankLimit: number | null
     boost: number | null
     swap: number | null
     key: number | null
@@ -7793,6 +9495,9 @@ export namespace Prisma {
   export type PrizeMinAggregateOutputType = {
     id: string | null
     category: $Enums.PrizeType | null
+    type: $Enums.AwardType | null
+    target: $Enums.AwardTarget | null
+    rankLimit: number | null
     title: string | null
     description: string | null
     icon: string | null
@@ -7808,6 +9513,9 @@ export namespace Prisma {
   export type PrizeMaxAggregateOutputType = {
     id: string | null
     category: $Enums.PrizeType | null
+    type: $Enums.AwardType | null
+    target: $Enums.AwardTarget | null
+    rankLimit: number | null
     title: string | null
     description: string | null
     icon: string | null
@@ -7823,6 +9531,9 @@ export namespace Prisma {
   export type PrizeCountAggregateOutputType = {
     id: number
     category: number
+    type: number
+    target: number
+    rankLimit: number
     title: number
     description: number
     icon: number
@@ -7838,6 +9549,7 @@ export namespace Prisma {
 
 
   export type PrizeAvgAggregateInputType = {
+    rankLimit?: true
     boost?: true
     swap?: true
     key?: true
@@ -7845,6 +9557,7 @@ export namespace Prisma {
   }
 
   export type PrizeSumAggregateInputType = {
+    rankLimit?: true
     boost?: true
     swap?: true
     key?: true
@@ -7854,6 +9567,9 @@ export namespace Prisma {
   export type PrizeMinAggregateInputType = {
     id?: true
     category?: true
+    type?: true
+    target?: true
+    rankLimit?: true
     title?: true
     description?: true
     icon?: true
@@ -7869,6 +9585,9 @@ export namespace Prisma {
   export type PrizeMaxAggregateInputType = {
     id?: true
     category?: true
+    type?: true
+    target?: true
+    rankLimit?: true
     title?: true
     description?: true
     icon?: true
@@ -7884,6 +9603,9 @@ export namespace Prisma {
   export type PrizeCountAggregateInputType = {
     id?: true
     category?: true
+    type?: true
+    target?: true
+    rankLimit?: true
     title?: true
     description?: true
     icon?: true
@@ -7986,6 +9708,9 @@ export namespace Prisma {
   export type PrizeGroupByOutputType = {
     id: string
     category: $Enums.PrizeType
+    type: $Enums.AwardType | null
+    target: $Enums.AwardTarget | null
+    rankLimit: number | null
     title: string | null
     description: string | null
     icon: string | null
@@ -8020,6 +9745,9 @@ export namespace Prisma {
   export type PrizeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     category?: boolean
+    type?: boolean
+    target?: boolean
+    rankLimit?: boolean
     title?: boolean
     description?: boolean
     icon?: boolean
@@ -8040,6 +9768,9 @@ export namespace Prisma {
   export type PrizeSelectScalar = {
     id?: boolean
     category?: boolean
+    type?: boolean
+    target?: boolean
+    rankLimit?: boolean
     title?: boolean
     description?: boolean
     icon?: boolean
@@ -8052,7 +9783,7 @@ export namespace Prisma {
     updatedAt?: boolean
   }
 
-  export type PrizeOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "category" | "title" | "description" | "icon" | "boost" | "swap" | "key" | "coin" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["prize"]>
+  export type PrizeOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "category" | "type" | "target" | "rankLimit" | "title" | "description" | "icon" | "boost" | "swap" | "key" | "coin" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["prize"]>
   export type PrizeInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     contestAwards?: boolean | Prize$contestAwardsArgs<ExtArgs>
     recurringContestAwards?: boolean | Prize$recurringContestAwardsArgs<ExtArgs>
@@ -8068,6 +9799,9 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       id: string
       category: $Enums.PrizeType
+      type: $Enums.AwardType | null
+      target: $Enums.AwardTarget | null
+      rankLimit: number | null
       title: string | null
       description: string | null
       icon: string | null
@@ -8474,6 +10208,9 @@ export namespace Prisma {
   interface PrizeFieldRefs {
     readonly id: FieldRef<"Prize", 'String'>
     readonly category: FieldRef<"Prize", 'PrizeType'>
+    readonly type: FieldRef<"Prize", 'AwardType'>
+    readonly target: FieldRef<"Prize", 'AwardTarget'>
+    readonly rankLimit: FieldRef<"Prize", 'Int'>
     readonly title: FieldRef<"Prize", 'String'>
     readonly description: FieldRef<"Prize", 'String'>
     readonly icon: FieldRef<"Prize", 'String'>
@@ -9922,6 +11659,1048 @@ export namespace Prisma {
 
 
   /**
+   * Model ContestRuleConfig
+   */
+
+  export type AggregateContestRuleConfig = {
+    _count: ContestRuleConfigCountAggregateOutputType | null
+    _avg: ContestRuleConfigAvgAggregateOutputType | null
+    _sum: ContestRuleConfigSumAggregateOutputType | null
+    _min: ContestRuleConfigMinAggregateOutputType | null
+    _max: ContestRuleConfigMaxAggregateOutputType | null
+  }
+
+  export type ContestRuleConfigAvgAggregateOutputType = {
+    order: number | null
+  }
+
+  export type ContestRuleConfigSumAggregateOutputType = {
+    order: number | null
+  }
+
+  export type ContestRuleConfigMinAggregateOutputType = {
+    id: string | null
+    contestId: string | null
+    key: string | null
+    enabled: boolean | null
+    order: number | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type ContestRuleConfigMaxAggregateOutputType = {
+    id: string | null
+    contestId: string | null
+    key: string | null
+    enabled: boolean | null
+    order: number | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type ContestRuleConfigCountAggregateOutputType = {
+    id: number
+    contestId: number
+    key: number
+    value: number
+    enabled: number
+    order: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type ContestRuleConfigAvgAggregateInputType = {
+    order?: true
+  }
+
+  export type ContestRuleConfigSumAggregateInputType = {
+    order?: true
+  }
+
+  export type ContestRuleConfigMinAggregateInputType = {
+    id?: true
+    contestId?: true
+    key?: true
+    enabled?: true
+    order?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type ContestRuleConfigMaxAggregateInputType = {
+    id?: true
+    contestId?: true
+    key?: true
+    enabled?: true
+    order?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type ContestRuleConfigCountAggregateInputType = {
+    id?: true
+    contestId?: true
+    key?: true
+    value?: true
+    enabled?: true
+    order?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type ContestRuleConfigAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ContestRuleConfig to aggregate.
+     */
+    where?: ContestRuleConfigWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ContestRuleConfigs to fetch.
+     */
+    orderBy?: ContestRuleConfigOrderByWithRelationInput | ContestRuleConfigOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: ContestRuleConfigWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ContestRuleConfigs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ContestRuleConfigs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned ContestRuleConfigs
+    **/
+    _count?: true | ContestRuleConfigCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: ContestRuleConfigAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: ContestRuleConfigSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: ContestRuleConfigMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: ContestRuleConfigMaxAggregateInputType
+  }
+
+  export type GetContestRuleConfigAggregateType<T extends ContestRuleConfigAggregateArgs> = {
+        [P in keyof T & keyof AggregateContestRuleConfig]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateContestRuleConfig[P]>
+      : GetScalarType<T[P], AggregateContestRuleConfig[P]>
+  }
+
+
+
+
+  export type ContestRuleConfigGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ContestRuleConfigWhereInput
+    orderBy?: ContestRuleConfigOrderByWithAggregationInput | ContestRuleConfigOrderByWithAggregationInput[]
+    by: ContestRuleConfigScalarFieldEnum[] | ContestRuleConfigScalarFieldEnum
+    having?: ContestRuleConfigScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: ContestRuleConfigCountAggregateInputType | true
+    _avg?: ContestRuleConfigAvgAggregateInputType
+    _sum?: ContestRuleConfigSumAggregateInputType
+    _min?: ContestRuleConfigMinAggregateInputType
+    _max?: ContestRuleConfigMaxAggregateInputType
+  }
+
+  export type ContestRuleConfigGroupByOutputType = {
+    id: string
+    contestId: string
+    key: string
+    value: JsonValue
+    enabled: boolean
+    order: number
+    createdAt: Date
+    updatedAt: Date
+    _count: ContestRuleConfigCountAggregateOutputType | null
+    _avg: ContestRuleConfigAvgAggregateOutputType | null
+    _sum: ContestRuleConfigSumAggregateOutputType | null
+    _min: ContestRuleConfigMinAggregateOutputType | null
+    _max: ContestRuleConfigMaxAggregateOutputType | null
+  }
+
+  type GetContestRuleConfigGroupByPayload<T extends ContestRuleConfigGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<ContestRuleConfigGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof ContestRuleConfigGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], ContestRuleConfigGroupByOutputType[P]>
+            : GetScalarType<T[P], ContestRuleConfigGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type ContestRuleConfigSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    contestId?: boolean
+    key?: boolean
+    value?: boolean
+    enabled?: boolean
+    order?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    contest?: boolean | ContestDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["contestRuleConfig"]>
+
+
+
+  export type ContestRuleConfigSelectScalar = {
+    id?: boolean
+    contestId?: boolean
+    key?: boolean
+    value?: boolean
+    enabled?: boolean
+    order?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type ContestRuleConfigOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "contestId" | "key" | "value" | "enabled" | "order" | "createdAt" | "updatedAt", ExtArgs["result"]["contestRuleConfig"]>
+  export type ContestRuleConfigInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    contest?: boolean | ContestDefaultArgs<ExtArgs>
+  }
+
+  export type $ContestRuleConfigPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "ContestRuleConfig"
+    objects: {
+      contest: Prisma.$ContestPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      contestId: string
+      key: string
+      value: Prisma.JsonValue
+      enabled: boolean
+      order: number
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["contestRuleConfig"]>
+    composites: {}
+  }
+
+  type ContestRuleConfigGetPayload<S extends boolean | null | undefined | ContestRuleConfigDefaultArgs> = $Result.GetResult<Prisma.$ContestRuleConfigPayload, S>
+
+  type ContestRuleConfigCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<ContestRuleConfigFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: ContestRuleConfigCountAggregateInputType | true
+    }
+
+  export interface ContestRuleConfigDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['ContestRuleConfig'], meta: { name: 'ContestRuleConfig' } }
+    /**
+     * Find zero or one ContestRuleConfig that matches the filter.
+     * @param {ContestRuleConfigFindUniqueArgs} args - Arguments to find a ContestRuleConfig
+     * @example
+     * // Get one ContestRuleConfig
+     * const contestRuleConfig = await prisma.contestRuleConfig.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends ContestRuleConfigFindUniqueArgs>(args: SelectSubset<T, ContestRuleConfigFindUniqueArgs<ExtArgs>>): Prisma__ContestRuleConfigClient<$Result.GetResult<Prisma.$ContestRuleConfigPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one ContestRuleConfig that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {ContestRuleConfigFindUniqueOrThrowArgs} args - Arguments to find a ContestRuleConfig
+     * @example
+     * // Get one ContestRuleConfig
+     * const contestRuleConfig = await prisma.contestRuleConfig.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends ContestRuleConfigFindUniqueOrThrowArgs>(args: SelectSubset<T, ContestRuleConfigFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ContestRuleConfigClient<$Result.GetResult<Prisma.$ContestRuleConfigPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ContestRuleConfig that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContestRuleConfigFindFirstArgs} args - Arguments to find a ContestRuleConfig
+     * @example
+     * // Get one ContestRuleConfig
+     * const contestRuleConfig = await prisma.contestRuleConfig.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends ContestRuleConfigFindFirstArgs>(args?: SelectSubset<T, ContestRuleConfigFindFirstArgs<ExtArgs>>): Prisma__ContestRuleConfigClient<$Result.GetResult<Prisma.$ContestRuleConfigPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ContestRuleConfig that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContestRuleConfigFindFirstOrThrowArgs} args - Arguments to find a ContestRuleConfig
+     * @example
+     * // Get one ContestRuleConfig
+     * const contestRuleConfig = await prisma.contestRuleConfig.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends ContestRuleConfigFindFirstOrThrowArgs>(args?: SelectSubset<T, ContestRuleConfigFindFirstOrThrowArgs<ExtArgs>>): Prisma__ContestRuleConfigClient<$Result.GetResult<Prisma.$ContestRuleConfigPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more ContestRuleConfigs that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContestRuleConfigFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all ContestRuleConfigs
+     * const contestRuleConfigs = await prisma.contestRuleConfig.findMany()
+     * 
+     * // Get first 10 ContestRuleConfigs
+     * const contestRuleConfigs = await prisma.contestRuleConfig.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const contestRuleConfigWithIdOnly = await prisma.contestRuleConfig.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends ContestRuleConfigFindManyArgs>(args?: SelectSubset<T, ContestRuleConfigFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ContestRuleConfigPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a ContestRuleConfig.
+     * @param {ContestRuleConfigCreateArgs} args - Arguments to create a ContestRuleConfig.
+     * @example
+     * // Create one ContestRuleConfig
+     * const ContestRuleConfig = await prisma.contestRuleConfig.create({
+     *   data: {
+     *     // ... data to create a ContestRuleConfig
+     *   }
+     * })
+     * 
+     */
+    create<T extends ContestRuleConfigCreateArgs>(args: SelectSubset<T, ContestRuleConfigCreateArgs<ExtArgs>>): Prisma__ContestRuleConfigClient<$Result.GetResult<Prisma.$ContestRuleConfigPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many ContestRuleConfigs.
+     * @param {ContestRuleConfigCreateManyArgs} args - Arguments to create many ContestRuleConfigs.
+     * @example
+     * // Create many ContestRuleConfigs
+     * const contestRuleConfig = await prisma.contestRuleConfig.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends ContestRuleConfigCreateManyArgs>(args?: SelectSubset<T, ContestRuleConfigCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a ContestRuleConfig.
+     * @param {ContestRuleConfigDeleteArgs} args - Arguments to delete one ContestRuleConfig.
+     * @example
+     * // Delete one ContestRuleConfig
+     * const ContestRuleConfig = await prisma.contestRuleConfig.delete({
+     *   where: {
+     *     // ... filter to delete one ContestRuleConfig
+     *   }
+     * })
+     * 
+     */
+    delete<T extends ContestRuleConfigDeleteArgs>(args: SelectSubset<T, ContestRuleConfigDeleteArgs<ExtArgs>>): Prisma__ContestRuleConfigClient<$Result.GetResult<Prisma.$ContestRuleConfigPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one ContestRuleConfig.
+     * @param {ContestRuleConfigUpdateArgs} args - Arguments to update one ContestRuleConfig.
+     * @example
+     * // Update one ContestRuleConfig
+     * const contestRuleConfig = await prisma.contestRuleConfig.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends ContestRuleConfigUpdateArgs>(args: SelectSubset<T, ContestRuleConfigUpdateArgs<ExtArgs>>): Prisma__ContestRuleConfigClient<$Result.GetResult<Prisma.$ContestRuleConfigPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more ContestRuleConfigs.
+     * @param {ContestRuleConfigDeleteManyArgs} args - Arguments to filter ContestRuleConfigs to delete.
+     * @example
+     * // Delete a few ContestRuleConfigs
+     * const { count } = await prisma.contestRuleConfig.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends ContestRuleConfigDeleteManyArgs>(args?: SelectSubset<T, ContestRuleConfigDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ContestRuleConfigs.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContestRuleConfigUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many ContestRuleConfigs
+     * const contestRuleConfig = await prisma.contestRuleConfig.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends ContestRuleConfigUpdateManyArgs>(args: SelectSubset<T, ContestRuleConfigUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one ContestRuleConfig.
+     * @param {ContestRuleConfigUpsertArgs} args - Arguments to update or create a ContestRuleConfig.
+     * @example
+     * // Update or create a ContestRuleConfig
+     * const contestRuleConfig = await prisma.contestRuleConfig.upsert({
+     *   create: {
+     *     // ... data to create a ContestRuleConfig
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the ContestRuleConfig we want to update
+     *   }
+     * })
+     */
+    upsert<T extends ContestRuleConfigUpsertArgs>(args: SelectSubset<T, ContestRuleConfigUpsertArgs<ExtArgs>>): Prisma__ContestRuleConfigClient<$Result.GetResult<Prisma.$ContestRuleConfigPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more ContestRuleConfigs that matches the filter.
+     * @param {ContestRuleConfigFindRawArgs} args - Select which filters you would like to apply.
+     * @example
+     * const contestRuleConfig = await prisma.contestRuleConfig.findRaw({
+     *   filter: { age: { $gt: 25 } }
+     * })
+     */
+    findRaw(args?: ContestRuleConfigFindRawArgs): Prisma.PrismaPromise<JsonObject>
+
+    /**
+     * Perform aggregation operations on a ContestRuleConfig.
+     * @param {ContestRuleConfigAggregateRawArgs} args - Select which aggregations you would like to apply.
+     * @example
+     * const contestRuleConfig = await prisma.contestRuleConfig.aggregateRaw({
+     *   pipeline: [
+     *     { $match: { status: "registered" } },
+     *     { $group: { _id: "$country", total: { $sum: 1 } } }
+     *   ]
+     * })
+     */
+    aggregateRaw(args?: ContestRuleConfigAggregateRawArgs): Prisma.PrismaPromise<JsonObject>
+
+
+    /**
+     * Count the number of ContestRuleConfigs.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContestRuleConfigCountArgs} args - Arguments to filter ContestRuleConfigs to count.
+     * @example
+     * // Count the number of ContestRuleConfigs
+     * const count = await prisma.contestRuleConfig.count({
+     *   where: {
+     *     // ... the filter for the ContestRuleConfigs we want to count
+     *   }
+     * })
+    **/
+    count<T extends ContestRuleConfigCountArgs>(
+      args?: Subset<T, ContestRuleConfigCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], ContestRuleConfigCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a ContestRuleConfig.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContestRuleConfigAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends ContestRuleConfigAggregateArgs>(args: Subset<T, ContestRuleConfigAggregateArgs>): Prisma.PrismaPromise<GetContestRuleConfigAggregateType<T>>
+
+    /**
+     * Group by ContestRuleConfig.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContestRuleConfigGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends ContestRuleConfigGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: ContestRuleConfigGroupByArgs['orderBy'] }
+        : { orderBy?: ContestRuleConfigGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, ContestRuleConfigGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetContestRuleConfigGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the ContestRuleConfig model
+   */
+  readonly fields: ContestRuleConfigFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for ContestRuleConfig.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__ContestRuleConfigClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    contest<T extends ContestDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ContestDefaultArgs<ExtArgs>>): Prisma__ContestClient<$Result.GetResult<Prisma.$ContestPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the ContestRuleConfig model
+   */
+  interface ContestRuleConfigFieldRefs {
+    readonly id: FieldRef<"ContestRuleConfig", 'String'>
+    readonly contestId: FieldRef<"ContestRuleConfig", 'String'>
+    readonly key: FieldRef<"ContestRuleConfig", 'String'>
+    readonly value: FieldRef<"ContestRuleConfig", 'Json'>
+    readonly enabled: FieldRef<"ContestRuleConfig", 'Boolean'>
+    readonly order: FieldRef<"ContestRuleConfig", 'Int'>
+    readonly createdAt: FieldRef<"ContestRuleConfig", 'DateTime'>
+    readonly updatedAt: FieldRef<"ContestRuleConfig", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * ContestRuleConfig findUnique
+   */
+  export type ContestRuleConfigFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContestRuleConfig
+     */
+    select?: ContestRuleConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContestRuleConfig
+     */
+    omit?: ContestRuleConfigOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContestRuleConfigInclude<ExtArgs> | null
+    /**
+     * Filter, which ContestRuleConfig to fetch.
+     */
+    where: ContestRuleConfigWhereUniqueInput
+  }
+
+  /**
+   * ContestRuleConfig findUniqueOrThrow
+   */
+  export type ContestRuleConfigFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContestRuleConfig
+     */
+    select?: ContestRuleConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContestRuleConfig
+     */
+    omit?: ContestRuleConfigOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContestRuleConfigInclude<ExtArgs> | null
+    /**
+     * Filter, which ContestRuleConfig to fetch.
+     */
+    where: ContestRuleConfigWhereUniqueInput
+  }
+
+  /**
+   * ContestRuleConfig findFirst
+   */
+  export type ContestRuleConfigFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContestRuleConfig
+     */
+    select?: ContestRuleConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContestRuleConfig
+     */
+    omit?: ContestRuleConfigOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContestRuleConfigInclude<ExtArgs> | null
+    /**
+     * Filter, which ContestRuleConfig to fetch.
+     */
+    where?: ContestRuleConfigWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ContestRuleConfigs to fetch.
+     */
+    orderBy?: ContestRuleConfigOrderByWithRelationInput | ContestRuleConfigOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ContestRuleConfigs.
+     */
+    cursor?: ContestRuleConfigWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ContestRuleConfigs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ContestRuleConfigs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ContestRuleConfigs.
+     */
+    distinct?: ContestRuleConfigScalarFieldEnum | ContestRuleConfigScalarFieldEnum[]
+  }
+
+  /**
+   * ContestRuleConfig findFirstOrThrow
+   */
+  export type ContestRuleConfigFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContestRuleConfig
+     */
+    select?: ContestRuleConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContestRuleConfig
+     */
+    omit?: ContestRuleConfigOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContestRuleConfigInclude<ExtArgs> | null
+    /**
+     * Filter, which ContestRuleConfig to fetch.
+     */
+    where?: ContestRuleConfigWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ContestRuleConfigs to fetch.
+     */
+    orderBy?: ContestRuleConfigOrderByWithRelationInput | ContestRuleConfigOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ContestRuleConfigs.
+     */
+    cursor?: ContestRuleConfigWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ContestRuleConfigs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ContestRuleConfigs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ContestRuleConfigs.
+     */
+    distinct?: ContestRuleConfigScalarFieldEnum | ContestRuleConfigScalarFieldEnum[]
+  }
+
+  /**
+   * ContestRuleConfig findMany
+   */
+  export type ContestRuleConfigFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContestRuleConfig
+     */
+    select?: ContestRuleConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContestRuleConfig
+     */
+    omit?: ContestRuleConfigOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContestRuleConfigInclude<ExtArgs> | null
+    /**
+     * Filter, which ContestRuleConfigs to fetch.
+     */
+    where?: ContestRuleConfigWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ContestRuleConfigs to fetch.
+     */
+    orderBy?: ContestRuleConfigOrderByWithRelationInput | ContestRuleConfigOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing ContestRuleConfigs.
+     */
+    cursor?: ContestRuleConfigWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ContestRuleConfigs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ContestRuleConfigs.
+     */
+    skip?: number
+    distinct?: ContestRuleConfigScalarFieldEnum | ContestRuleConfigScalarFieldEnum[]
+  }
+
+  /**
+   * ContestRuleConfig create
+   */
+  export type ContestRuleConfigCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContestRuleConfig
+     */
+    select?: ContestRuleConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContestRuleConfig
+     */
+    omit?: ContestRuleConfigOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContestRuleConfigInclude<ExtArgs> | null
+    /**
+     * The data needed to create a ContestRuleConfig.
+     */
+    data: XOR<ContestRuleConfigCreateInput, ContestRuleConfigUncheckedCreateInput>
+  }
+
+  /**
+   * ContestRuleConfig createMany
+   */
+  export type ContestRuleConfigCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many ContestRuleConfigs.
+     */
+    data: ContestRuleConfigCreateManyInput | ContestRuleConfigCreateManyInput[]
+  }
+
+  /**
+   * ContestRuleConfig update
+   */
+  export type ContestRuleConfigUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContestRuleConfig
+     */
+    select?: ContestRuleConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContestRuleConfig
+     */
+    omit?: ContestRuleConfigOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContestRuleConfigInclude<ExtArgs> | null
+    /**
+     * The data needed to update a ContestRuleConfig.
+     */
+    data: XOR<ContestRuleConfigUpdateInput, ContestRuleConfigUncheckedUpdateInput>
+    /**
+     * Choose, which ContestRuleConfig to update.
+     */
+    where: ContestRuleConfigWhereUniqueInput
+  }
+
+  /**
+   * ContestRuleConfig updateMany
+   */
+  export type ContestRuleConfigUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update ContestRuleConfigs.
+     */
+    data: XOR<ContestRuleConfigUpdateManyMutationInput, ContestRuleConfigUncheckedUpdateManyInput>
+    /**
+     * Filter which ContestRuleConfigs to update
+     */
+    where?: ContestRuleConfigWhereInput
+    /**
+     * Limit how many ContestRuleConfigs to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * ContestRuleConfig upsert
+   */
+  export type ContestRuleConfigUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContestRuleConfig
+     */
+    select?: ContestRuleConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContestRuleConfig
+     */
+    omit?: ContestRuleConfigOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContestRuleConfigInclude<ExtArgs> | null
+    /**
+     * The filter to search for the ContestRuleConfig to update in case it exists.
+     */
+    where: ContestRuleConfigWhereUniqueInput
+    /**
+     * In case the ContestRuleConfig found by the `where` argument doesn't exist, create a new ContestRuleConfig with this data.
+     */
+    create: XOR<ContestRuleConfigCreateInput, ContestRuleConfigUncheckedCreateInput>
+    /**
+     * In case the ContestRuleConfig was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<ContestRuleConfigUpdateInput, ContestRuleConfigUncheckedUpdateInput>
+  }
+
+  /**
+   * ContestRuleConfig delete
+   */
+  export type ContestRuleConfigDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContestRuleConfig
+     */
+    select?: ContestRuleConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContestRuleConfig
+     */
+    omit?: ContestRuleConfigOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContestRuleConfigInclude<ExtArgs> | null
+    /**
+     * Filter which ContestRuleConfig to delete.
+     */
+    where: ContestRuleConfigWhereUniqueInput
+  }
+
+  /**
+   * ContestRuleConfig deleteMany
+   */
+  export type ContestRuleConfigDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ContestRuleConfigs to delete
+     */
+    where?: ContestRuleConfigWhereInput
+    /**
+     * Limit how many ContestRuleConfigs to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * ContestRuleConfig findRaw
+   */
+  export type ContestRuleConfigFindRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The query predicate filter. If unspecified, then all documents in the collection will match the predicate. ${@link https://docs.mongodb.com/manual/reference/operator/query MongoDB Docs}.
+     */
+    filter?: InputJsonValue
+    /**
+     * Additional options to pass to the `find` command ${@link https://docs.mongodb.com/manual/reference/command/find/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * ContestRuleConfig aggregateRaw
+   */
+  export type ContestRuleConfigAggregateRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * An array of aggregation stages to process and transform the document stream via the aggregation pipeline. ${@link https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline MongoDB Docs}.
+     */
+    pipeline?: InputJsonValue[]
+    /**
+     * Additional options to pass to the `aggregate` command ${@link https://docs.mongodb.com/manual/reference/command/aggregate/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * ContestRuleConfig without action
+   */
+  export type ContestRuleConfigDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContestRuleConfig
+     */
+    select?: ContestRuleConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContestRuleConfig
+     */
+    omit?: ContestRuleConfigOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContestRuleConfigInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Model ContestPhoto
    */
 
@@ -10176,7 +12955,6 @@ export namespace Prisma {
     photo?: boolean | UserPhotoDefaultArgs<ExtArgs>
     comments?: boolean | ContestPhoto$commentsArgs<ExtArgs>
     achievements?: boolean | ContestPhoto$achievementsArgs<ExtArgs>
-    ContestWinner?: boolean | ContestPhoto$ContestWinnerArgs<ExtArgs>
     _count?: boolean | ContestPhotoCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["contestPhoto"]>
 
@@ -10203,7 +12981,6 @@ export namespace Prisma {
     photo?: boolean | UserPhotoDefaultArgs<ExtArgs>
     comments?: boolean | ContestPhoto$commentsArgs<ExtArgs>
     achievements?: boolean | ContestPhoto$achievementsArgs<ExtArgs>
-    ContestWinner?: boolean | ContestPhoto$ContestWinnerArgs<ExtArgs>
     _count?: boolean | ContestPhotoCountOutputTypeDefaultArgs<ExtArgs>
   }
 
@@ -10215,7 +12992,6 @@ export namespace Prisma {
       photo: Prisma.$UserPhotoPayload<ExtArgs>
       comments: Prisma.$CommentPayload<ExtArgs>[]
       achievements: Prisma.$ContestAchievementPayload<ExtArgs>[]
-      ContestWinner: Prisma.$ContestWinnerPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -10597,7 +13373,6 @@ export namespace Prisma {
     photo<T extends UserPhotoDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserPhotoDefaultArgs<ExtArgs>>): Prisma__UserPhotoClient<$Result.GetResult<Prisma.$UserPhotoPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     comments<T extends ContestPhoto$commentsArgs<ExtArgs> = {}>(args?: Subset<T, ContestPhoto$commentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CommentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     achievements<T extends ContestPhoto$achievementsArgs<ExtArgs> = {}>(args?: Subset<T, ContestPhoto$achievementsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ContestAchievementPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    ContestWinner<T extends ContestPhoto$ContestWinnerArgs<ExtArgs> = {}>(args?: Subset<T, ContestPhoto$ContestWinnerArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ContestWinnerPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -11080,30 +13855,6 @@ export namespace Prisma {
   }
 
   /**
-   * ContestPhoto.ContestWinner
-   */
-  export type ContestPhoto$ContestWinnerArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ContestWinner
-     */
-    select?: ContestWinnerSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ContestWinner
-     */
-    omit?: ContestWinnerOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ContestWinnerInclude<ExtArgs> | null
-    where?: ContestWinnerWhereInput
-    orderBy?: ContestWinnerOrderByWithRelationInput | ContestWinnerOrderByWithRelationInput[]
-    cursor?: ContestWinnerWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: ContestWinnerScalarFieldEnum | ContestWinnerScalarFieldEnum[]
-  }
-
-  /**
    * ContestPhoto without action
    */
   export type ContestPhotoDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -11119,1000 +13870,6 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: ContestPhotoInclude<ExtArgs> | null
-  }
-
-
-  /**
-   * Model ContestWinner
-   */
-
-  export type AggregateContestWinner = {
-    _count: ContestWinnerCountAggregateOutputType | null
-    _min: ContestWinnerMinAggregateOutputType | null
-    _max: ContestWinnerMaxAggregateOutputType | null
-  }
-
-  export type ContestWinnerMinAggregateOutputType = {
-    id: string | null
-    participantId: string | null
-    contestId: string | null
-    contestPhotoId: string | null
-    createdAt: Date | null
-    updatedAt: Date | null
-  }
-
-  export type ContestWinnerMaxAggregateOutputType = {
-    id: string | null
-    participantId: string | null
-    contestId: string | null
-    contestPhotoId: string | null
-    createdAt: Date | null
-    updatedAt: Date | null
-  }
-
-  export type ContestWinnerCountAggregateOutputType = {
-    id: number
-    participantId: number
-    contestId: number
-    contestPhotoId: number
-    createdAt: number
-    updatedAt: number
-    _all: number
-  }
-
-
-  export type ContestWinnerMinAggregateInputType = {
-    id?: true
-    participantId?: true
-    contestId?: true
-    contestPhotoId?: true
-    createdAt?: true
-    updatedAt?: true
-  }
-
-  export type ContestWinnerMaxAggregateInputType = {
-    id?: true
-    participantId?: true
-    contestId?: true
-    contestPhotoId?: true
-    createdAt?: true
-    updatedAt?: true
-  }
-
-  export type ContestWinnerCountAggregateInputType = {
-    id?: true
-    participantId?: true
-    contestId?: true
-    contestPhotoId?: true
-    createdAt?: true
-    updatedAt?: true
-    _all?: true
-  }
-
-  export type ContestWinnerAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which ContestWinner to aggregate.
-     */
-    where?: ContestWinnerWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of ContestWinners to fetch.
-     */
-    orderBy?: ContestWinnerOrderByWithRelationInput | ContestWinnerOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the start position
-     */
-    cursor?: ContestWinnerWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` ContestWinners from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` ContestWinners.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Count returned ContestWinners
-    **/
-    _count?: true | ContestWinnerCountAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the minimum value
-    **/
-    _min?: ContestWinnerMinAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the maximum value
-    **/
-    _max?: ContestWinnerMaxAggregateInputType
-  }
-
-  export type GetContestWinnerAggregateType<T extends ContestWinnerAggregateArgs> = {
-        [P in keyof T & keyof AggregateContestWinner]: P extends '_count' | 'count'
-      ? T[P] extends true
-        ? number
-        : GetScalarType<T[P], AggregateContestWinner[P]>
-      : GetScalarType<T[P], AggregateContestWinner[P]>
-  }
-
-
-
-
-  export type ContestWinnerGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: ContestWinnerWhereInput
-    orderBy?: ContestWinnerOrderByWithAggregationInput | ContestWinnerOrderByWithAggregationInput[]
-    by: ContestWinnerScalarFieldEnum[] | ContestWinnerScalarFieldEnum
-    having?: ContestWinnerScalarWhereWithAggregatesInput
-    take?: number
-    skip?: number
-    _count?: ContestWinnerCountAggregateInputType | true
-    _min?: ContestWinnerMinAggregateInputType
-    _max?: ContestWinnerMaxAggregateInputType
-  }
-
-  export type ContestWinnerGroupByOutputType = {
-    id: string
-    participantId: string
-    contestId: string
-    contestPhotoId: string
-    createdAt: Date
-    updatedAt: Date
-    _count: ContestWinnerCountAggregateOutputType | null
-    _min: ContestWinnerMinAggregateOutputType | null
-    _max: ContestWinnerMaxAggregateOutputType | null
-  }
-
-  type GetContestWinnerGroupByPayload<T extends ContestWinnerGroupByArgs> = Prisma.PrismaPromise<
-    Array<
-      PickEnumerable<ContestWinnerGroupByOutputType, T['by']> &
-        {
-          [P in ((keyof T) & (keyof ContestWinnerGroupByOutputType))]: P extends '_count'
-            ? T[P] extends boolean
-              ? number
-              : GetScalarType<T[P], ContestWinnerGroupByOutputType[P]>
-            : GetScalarType<T[P], ContestWinnerGroupByOutputType[P]>
-        }
-      >
-    >
-
-
-  export type ContestWinnerSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    participantId?: boolean
-    contestId?: boolean
-    contestPhotoId?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    participant?: boolean | ContestParticipantDefaultArgs<ExtArgs>
-    photo?: boolean | ContestPhotoDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["contestWinner"]>
-
-
-
-  export type ContestWinnerSelectScalar = {
-    id?: boolean
-    participantId?: boolean
-    contestId?: boolean
-    contestPhotoId?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-  }
-
-  export type ContestWinnerOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "participantId" | "contestId" | "contestPhotoId" | "createdAt" | "updatedAt", ExtArgs["result"]["contestWinner"]>
-  export type ContestWinnerInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    participant?: boolean | ContestParticipantDefaultArgs<ExtArgs>
-    photo?: boolean | ContestPhotoDefaultArgs<ExtArgs>
-  }
-
-  export type $ContestWinnerPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    name: "ContestWinner"
-    objects: {
-      participant: Prisma.$ContestParticipantPayload<ExtArgs>
-      photo: Prisma.$ContestPhotoPayload<ExtArgs>
-    }
-    scalars: $Extensions.GetPayloadResult<{
-      id: string
-      participantId: string
-      contestId: string
-      contestPhotoId: string
-      createdAt: Date
-      updatedAt: Date
-    }, ExtArgs["result"]["contestWinner"]>
-    composites: {}
-  }
-
-  type ContestWinnerGetPayload<S extends boolean | null | undefined | ContestWinnerDefaultArgs> = $Result.GetResult<Prisma.$ContestWinnerPayload, S>
-
-  type ContestWinnerCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    Omit<ContestWinnerFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
-      select?: ContestWinnerCountAggregateInputType | true
-    }
-
-  export interface ContestWinnerDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['ContestWinner'], meta: { name: 'ContestWinner' } }
-    /**
-     * Find zero or one ContestWinner that matches the filter.
-     * @param {ContestWinnerFindUniqueArgs} args - Arguments to find a ContestWinner
-     * @example
-     * // Get one ContestWinner
-     * const contestWinner = await prisma.contestWinner.findUnique({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUnique<T extends ContestWinnerFindUniqueArgs>(args: SelectSubset<T, ContestWinnerFindUniqueArgs<ExtArgs>>): Prisma__ContestWinnerClient<$Result.GetResult<Prisma.$ContestWinnerPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find one ContestWinner that matches the filter or throw an error with `error.code='P2025'`
-     * if no matches were found.
-     * @param {ContestWinnerFindUniqueOrThrowArgs} args - Arguments to find a ContestWinner
-     * @example
-     * // Get one ContestWinner
-     * const contestWinner = await prisma.contestWinner.findUniqueOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUniqueOrThrow<T extends ContestWinnerFindUniqueOrThrowArgs>(args: SelectSubset<T, ContestWinnerFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ContestWinnerClient<$Result.GetResult<Prisma.$ContestWinnerPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first ContestWinner that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {ContestWinnerFindFirstArgs} args - Arguments to find a ContestWinner
-     * @example
-     * // Get one ContestWinner
-     * const contestWinner = await prisma.contestWinner.findFirst({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirst<T extends ContestWinnerFindFirstArgs>(args?: SelectSubset<T, ContestWinnerFindFirstArgs<ExtArgs>>): Prisma__ContestWinnerClient<$Result.GetResult<Prisma.$ContestWinnerPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first ContestWinner that matches the filter or
-     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {ContestWinnerFindFirstOrThrowArgs} args - Arguments to find a ContestWinner
-     * @example
-     * // Get one ContestWinner
-     * const contestWinner = await prisma.contestWinner.findFirstOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirstOrThrow<T extends ContestWinnerFindFirstOrThrowArgs>(args?: SelectSubset<T, ContestWinnerFindFirstOrThrowArgs<ExtArgs>>): Prisma__ContestWinnerClient<$Result.GetResult<Prisma.$ContestWinnerPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find zero or more ContestWinners that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {ContestWinnerFindManyArgs} args - Arguments to filter and select certain fields only.
-     * @example
-     * // Get all ContestWinners
-     * const contestWinners = await prisma.contestWinner.findMany()
-     * 
-     * // Get first 10 ContestWinners
-     * const contestWinners = await prisma.contestWinner.findMany({ take: 10 })
-     * 
-     * // Only select the `id`
-     * const contestWinnerWithIdOnly = await prisma.contestWinner.findMany({ select: { id: true } })
-     * 
-     */
-    findMany<T extends ContestWinnerFindManyArgs>(args?: SelectSubset<T, ContestWinnerFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ContestWinnerPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
-
-    /**
-     * Create a ContestWinner.
-     * @param {ContestWinnerCreateArgs} args - Arguments to create a ContestWinner.
-     * @example
-     * // Create one ContestWinner
-     * const ContestWinner = await prisma.contestWinner.create({
-     *   data: {
-     *     // ... data to create a ContestWinner
-     *   }
-     * })
-     * 
-     */
-    create<T extends ContestWinnerCreateArgs>(args: SelectSubset<T, ContestWinnerCreateArgs<ExtArgs>>): Prisma__ContestWinnerClient<$Result.GetResult<Prisma.$ContestWinnerPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Create many ContestWinners.
-     * @param {ContestWinnerCreateManyArgs} args - Arguments to create many ContestWinners.
-     * @example
-     * // Create many ContestWinners
-     * const contestWinner = await prisma.contestWinner.createMany({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     *     
-     */
-    createMany<T extends ContestWinnerCreateManyArgs>(args?: SelectSubset<T, ContestWinnerCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Delete a ContestWinner.
-     * @param {ContestWinnerDeleteArgs} args - Arguments to delete one ContestWinner.
-     * @example
-     * // Delete one ContestWinner
-     * const ContestWinner = await prisma.contestWinner.delete({
-     *   where: {
-     *     // ... filter to delete one ContestWinner
-     *   }
-     * })
-     * 
-     */
-    delete<T extends ContestWinnerDeleteArgs>(args: SelectSubset<T, ContestWinnerDeleteArgs<ExtArgs>>): Prisma__ContestWinnerClient<$Result.GetResult<Prisma.$ContestWinnerPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Update one ContestWinner.
-     * @param {ContestWinnerUpdateArgs} args - Arguments to update one ContestWinner.
-     * @example
-     * // Update one ContestWinner
-     * const contestWinner = await prisma.contestWinner.update({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    update<T extends ContestWinnerUpdateArgs>(args: SelectSubset<T, ContestWinnerUpdateArgs<ExtArgs>>): Prisma__ContestWinnerClient<$Result.GetResult<Prisma.$ContestWinnerPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Delete zero or more ContestWinners.
-     * @param {ContestWinnerDeleteManyArgs} args - Arguments to filter ContestWinners to delete.
-     * @example
-     * // Delete a few ContestWinners
-     * const { count } = await prisma.contestWinner.deleteMany({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     * 
-     */
-    deleteMany<T extends ContestWinnerDeleteManyArgs>(args?: SelectSubset<T, ContestWinnerDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more ContestWinners.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {ContestWinnerUpdateManyArgs} args - Arguments to update one or more rows.
-     * @example
-     * // Update many ContestWinners
-     * const contestWinner = await prisma.contestWinner.updateMany({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    updateMany<T extends ContestWinnerUpdateManyArgs>(args: SelectSubset<T, ContestWinnerUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Create or update one ContestWinner.
-     * @param {ContestWinnerUpsertArgs} args - Arguments to update or create a ContestWinner.
-     * @example
-     * // Update or create a ContestWinner
-     * const contestWinner = await prisma.contestWinner.upsert({
-     *   create: {
-     *     // ... data to create a ContestWinner
-     *   },
-     *   update: {
-     *     // ... in case it already exists, update
-     *   },
-     *   where: {
-     *     // ... the filter for the ContestWinner we want to update
-     *   }
-     * })
-     */
-    upsert<T extends ContestWinnerUpsertArgs>(args: SelectSubset<T, ContestWinnerUpsertArgs<ExtArgs>>): Prisma__ContestWinnerClient<$Result.GetResult<Prisma.$ContestWinnerPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find zero or more ContestWinners that matches the filter.
-     * @param {ContestWinnerFindRawArgs} args - Select which filters you would like to apply.
-     * @example
-     * const contestWinner = await prisma.contestWinner.findRaw({
-     *   filter: { age: { $gt: 25 } }
-     * })
-     */
-    findRaw(args?: ContestWinnerFindRawArgs): Prisma.PrismaPromise<JsonObject>
-
-    /**
-     * Perform aggregation operations on a ContestWinner.
-     * @param {ContestWinnerAggregateRawArgs} args - Select which aggregations you would like to apply.
-     * @example
-     * const contestWinner = await prisma.contestWinner.aggregateRaw({
-     *   pipeline: [
-     *     { $match: { status: "registered" } },
-     *     { $group: { _id: "$country", total: { $sum: 1 } } }
-     *   ]
-     * })
-     */
-    aggregateRaw(args?: ContestWinnerAggregateRawArgs): Prisma.PrismaPromise<JsonObject>
-
-
-    /**
-     * Count the number of ContestWinners.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {ContestWinnerCountArgs} args - Arguments to filter ContestWinners to count.
-     * @example
-     * // Count the number of ContestWinners
-     * const count = await prisma.contestWinner.count({
-     *   where: {
-     *     // ... the filter for the ContestWinners we want to count
-     *   }
-     * })
-    **/
-    count<T extends ContestWinnerCountArgs>(
-      args?: Subset<T, ContestWinnerCountArgs>,
-    ): Prisma.PrismaPromise<
-      T extends $Utils.Record<'select', any>
-        ? T['select'] extends true
-          ? number
-          : GetScalarType<T['select'], ContestWinnerCountAggregateOutputType>
-        : number
-    >
-
-    /**
-     * Allows you to perform aggregations operations on a ContestWinner.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {ContestWinnerAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
-     * @example
-     * // Ordered by age ascending
-     * // Where email contains prisma.io
-     * // Limited to the 10 users
-     * const aggregations = await prisma.user.aggregate({
-     *   _avg: {
-     *     age: true,
-     *   },
-     *   where: {
-     *     email: {
-     *       contains: "prisma.io",
-     *     },
-     *   },
-     *   orderBy: {
-     *     age: "asc",
-     *   },
-     *   take: 10,
-     * })
-    **/
-    aggregate<T extends ContestWinnerAggregateArgs>(args: Subset<T, ContestWinnerAggregateArgs>): Prisma.PrismaPromise<GetContestWinnerAggregateType<T>>
-
-    /**
-     * Group by ContestWinner.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {ContestWinnerGroupByArgs} args - Group by arguments.
-     * @example
-     * // Group by city, order by createdAt, get count
-     * const result = await prisma.user.groupBy({
-     *   by: ['city', 'createdAt'],
-     *   orderBy: {
-     *     createdAt: true
-     *   },
-     *   _count: {
-     *     _all: true
-     *   },
-     * })
-     * 
-    **/
-    groupBy<
-      T extends ContestWinnerGroupByArgs,
-      HasSelectOrTake extends Or<
-        Extends<'skip', Keys<T>>,
-        Extends<'take', Keys<T>>
-      >,
-      OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: ContestWinnerGroupByArgs['orderBy'] }
-        : { orderBy?: ContestWinnerGroupByArgs['orderBy'] },
-      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
-      ByFields extends MaybeTupleToUnion<T['by']>,
-      ByValid extends Has<ByFields, OrderFields>,
-      HavingFields extends GetHavingFields<T['having']>,
-      HavingValid extends Has<ByFields, HavingFields>,
-      ByEmpty extends T['by'] extends never[] ? True : False,
-      InputErrors extends ByEmpty extends True
-      ? `Error: "by" must not be empty.`
-      : HavingValid extends False
-      ? {
-          [P in HavingFields]: P extends ByFields
-            ? never
-            : P extends string
-            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
-            : [
-                Error,
-                'Field ',
-                P,
-                ` in "having" needs to be provided in "by"`,
-              ]
-        }[HavingFields]
-      : 'take' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "take", you also need to provide "orderBy"'
-      : 'skip' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "skip", you also need to provide "orderBy"'
-      : ByValid extends True
-      ? {}
-      : {
-          [P in OrderFields]: P extends ByFields
-            ? never
-            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-        }[OrderFields]
-    >(args: SubsetIntersection<T, ContestWinnerGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetContestWinnerGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
-  /**
-   * Fields of the ContestWinner model
-   */
-  readonly fields: ContestWinnerFieldRefs;
-  }
-
-  /**
-   * The delegate class that acts as a "Promise-like" for ContestWinner.
-   * Why is this prefixed with `Prisma__`?
-   * Because we want to prevent naming conflicts as mentioned in
-   * https://github.com/prisma/prisma-client-js/issues/707
-   */
-  export interface Prisma__ContestWinnerClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
-    readonly [Symbol.toStringTag]: "PrismaPromise"
-    participant<T extends ContestParticipantDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ContestParticipantDefaultArgs<ExtArgs>>): Prisma__ContestParticipantClient<$Result.GetResult<Prisma.$ContestParticipantPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    photo<T extends ContestPhotoDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ContestPhotoDefaultArgs<ExtArgs>>): Prisma__ContestPhotoClient<$Result.GetResult<Prisma.$ContestPhotoPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    /**
-     * Attaches callbacks for the resolution and/or rejection of the Promise.
-     * @param onfulfilled The callback to execute when the Promise is resolved.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of which ever callback is executed.
-     */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
-    /**
-     * Attaches a callback for only the rejection of the Promise.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of the callback.
-     */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
-    /**
-     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
-     * resolved value cannot be modified from the callback.
-     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
-     * @returns A Promise for the completion of the callback.
-     */
-    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
-  }
-
-
-
-
-  /**
-   * Fields of the ContestWinner model
-   */
-  interface ContestWinnerFieldRefs {
-    readonly id: FieldRef<"ContestWinner", 'String'>
-    readonly participantId: FieldRef<"ContestWinner", 'String'>
-    readonly contestId: FieldRef<"ContestWinner", 'String'>
-    readonly contestPhotoId: FieldRef<"ContestWinner", 'String'>
-    readonly createdAt: FieldRef<"ContestWinner", 'DateTime'>
-    readonly updatedAt: FieldRef<"ContestWinner", 'DateTime'>
-  }
-    
-
-  // Custom InputTypes
-  /**
-   * ContestWinner findUnique
-   */
-  export type ContestWinnerFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ContestWinner
-     */
-    select?: ContestWinnerSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ContestWinner
-     */
-    omit?: ContestWinnerOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ContestWinnerInclude<ExtArgs> | null
-    /**
-     * Filter, which ContestWinner to fetch.
-     */
-    where: ContestWinnerWhereUniqueInput
-  }
-
-  /**
-   * ContestWinner findUniqueOrThrow
-   */
-  export type ContestWinnerFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ContestWinner
-     */
-    select?: ContestWinnerSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ContestWinner
-     */
-    omit?: ContestWinnerOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ContestWinnerInclude<ExtArgs> | null
-    /**
-     * Filter, which ContestWinner to fetch.
-     */
-    where: ContestWinnerWhereUniqueInput
-  }
-
-  /**
-   * ContestWinner findFirst
-   */
-  export type ContestWinnerFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ContestWinner
-     */
-    select?: ContestWinnerSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ContestWinner
-     */
-    omit?: ContestWinnerOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ContestWinnerInclude<ExtArgs> | null
-    /**
-     * Filter, which ContestWinner to fetch.
-     */
-    where?: ContestWinnerWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of ContestWinners to fetch.
-     */
-    orderBy?: ContestWinnerOrderByWithRelationInput | ContestWinnerOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for ContestWinners.
-     */
-    cursor?: ContestWinnerWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` ContestWinners from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` ContestWinners.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of ContestWinners.
-     */
-    distinct?: ContestWinnerScalarFieldEnum | ContestWinnerScalarFieldEnum[]
-  }
-
-  /**
-   * ContestWinner findFirstOrThrow
-   */
-  export type ContestWinnerFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ContestWinner
-     */
-    select?: ContestWinnerSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ContestWinner
-     */
-    omit?: ContestWinnerOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ContestWinnerInclude<ExtArgs> | null
-    /**
-     * Filter, which ContestWinner to fetch.
-     */
-    where?: ContestWinnerWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of ContestWinners to fetch.
-     */
-    orderBy?: ContestWinnerOrderByWithRelationInput | ContestWinnerOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for ContestWinners.
-     */
-    cursor?: ContestWinnerWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` ContestWinners from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` ContestWinners.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of ContestWinners.
-     */
-    distinct?: ContestWinnerScalarFieldEnum | ContestWinnerScalarFieldEnum[]
-  }
-
-  /**
-   * ContestWinner findMany
-   */
-  export type ContestWinnerFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ContestWinner
-     */
-    select?: ContestWinnerSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ContestWinner
-     */
-    omit?: ContestWinnerOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ContestWinnerInclude<ExtArgs> | null
-    /**
-     * Filter, which ContestWinners to fetch.
-     */
-    where?: ContestWinnerWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of ContestWinners to fetch.
-     */
-    orderBy?: ContestWinnerOrderByWithRelationInput | ContestWinnerOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for listing ContestWinners.
-     */
-    cursor?: ContestWinnerWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` ContestWinners from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` ContestWinners.
-     */
-    skip?: number
-    distinct?: ContestWinnerScalarFieldEnum | ContestWinnerScalarFieldEnum[]
-  }
-
-  /**
-   * ContestWinner create
-   */
-  export type ContestWinnerCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ContestWinner
-     */
-    select?: ContestWinnerSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ContestWinner
-     */
-    omit?: ContestWinnerOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ContestWinnerInclude<ExtArgs> | null
-    /**
-     * The data needed to create a ContestWinner.
-     */
-    data: XOR<ContestWinnerCreateInput, ContestWinnerUncheckedCreateInput>
-  }
-
-  /**
-   * ContestWinner createMany
-   */
-  export type ContestWinnerCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to create many ContestWinners.
-     */
-    data: ContestWinnerCreateManyInput | ContestWinnerCreateManyInput[]
-  }
-
-  /**
-   * ContestWinner update
-   */
-  export type ContestWinnerUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ContestWinner
-     */
-    select?: ContestWinnerSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ContestWinner
-     */
-    omit?: ContestWinnerOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ContestWinnerInclude<ExtArgs> | null
-    /**
-     * The data needed to update a ContestWinner.
-     */
-    data: XOR<ContestWinnerUpdateInput, ContestWinnerUncheckedUpdateInput>
-    /**
-     * Choose, which ContestWinner to update.
-     */
-    where: ContestWinnerWhereUniqueInput
-  }
-
-  /**
-   * ContestWinner updateMany
-   */
-  export type ContestWinnerUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to update ContestWinners.
-     */
-    data: XOR<ContestWinnerUpdateManyMutationInput, ContestWinnerUncheckedUpdateManyInput>
-    /**
-     * Filter which ContestWinners to update
-     */
-    where?: ContestWinnerWhereInput
-    /**
-     * Limit how many ContestWinners to update.
-     */
-    limit?: number
-  }
-
-  /**
-   * ContestWinner upsert
-   */
-  export type ContestWinnerUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ContestWinner
-     */
-    select?: ContestWinnerSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ContestWinner
-     */
-    omit?: ContestWinnerOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ContestWinnerInclude<ExtArgs> | null
-    /**
-     * The filter to search for the ContestWinner to update in case it exists.
-     */
-    where: ContestWinnerWhereUniqueInput
-    /**
-     * In case the ContestWinner found by the `where` argument doesn't exist, create a new ContestWinner with this data.
-     */
-    create: XOR<ContestWinnerCreateInput, ContestWinnerUncheckedCreateInput>
-    /**
-     * In case the ContestWinner was found with the provided `where` argument, update it with this data.
-     */
-    update: XOR<ContestWinnerUpdateInput, ContestWinnerUncheckedUpdateInput>
-  }
-
-  /**
-   * ContestWinner delete
-   */
-  export type ContestWinnerDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ContestWinner
-     */
-    select?: ContestWinnerSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ContestWinner
-     */
-    omit?: ContestWinnerOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ContestWinnerInclude<ExtArgs> | null
-    /**
-     * Filter which ContestWinner to delete.
-     */
-    where: ContestWinnerWhereUniqueInput
-  }
-
-  /**
-   * ContestWinner deleteMany
-   */
-  export type ContestWinnerDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which ContestWinners to delete
-     */
-    where?: ContestWinnerWhereInput
-    /**
-     * Limit how many ContestWinners to delete.
-     */
-    limit?: number
-  }
-
-  /**
-   * ContestWinner findRaw
-   */
-  export type ContestWinnerFindRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The query predicate filter. If unspecified, then all documents in the collection will match the predicate. ${@link https://docs.mongodb.com/manual/reference/operator/query MongoDB Docs}.
-     */
-    filter?: InputJsonValue
-    /**
-     * Additional options to pass to the `find` command ${@link https://docs.mongodb.com/manual/reference/command/find/#command-fields MongoDB Docs}.
-     */
-    options?: InputJsonValue
-  }
-
-  /**
-   * ContestWinner aggregateRaw
-   */
-  export type ContestWinnerAggregateRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * An array of aggregation stages to process and transform the document stream via the aggregation pipeline. ${@link https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline MongoDB Docs}.
-     */
-    pipeline?: InputJsonValue[]
-    /**
-     * Additional options to pass to the `aggregate` command ${@link https://docs.mongodb.com/manual/reference/command/aggregate/#command-fields MongoDB Docs}.
-     */
-    options?: InputJsonValue
-  }
-
-  /**
-   * ContestWinner without action
-   */
-  export type ContestWinnerDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ContestWinner
-     */
-    select?: ContestWinnerSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ContestWinner
-     */
-    omit?: ContestWinnerOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ContestWinnerInclude<ExtArgs> | null
   }
 
 
@@ -12362,7 +14119,6 @@ export namespace Prisma {
     user?: boolean | UserDefaultArgs<ExtArgs>
     member?: boolean | ContestParticipant$memberArgs<ExtArgs>
     photos?: boolean | ContestParticipant$photosArgs<ExtArgs>
-    ContestWinner?: boolean | ContestParticipant$ContestWinnerArgs<ExtArgs>
     contestAchievement?: boolean | ContestParticipant$contestAchievementArgs<ExtArgs>
     _count?: boolean | ContestParticipantCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["contestParticipant"]>
@@ -12388,7 +14144,6 @@ export namespace Prisma {
     user?: boolean | UserDefaultArgs<ExtArgs>
     member?: boolean | ContestParticipant$memberArgs<ExtArgs>
     photos?: boolean | ContestParticipant$photosArgs<ExtArgs>
-    ContestWinner?: boolean | ContestParticipant$ContestWinnerArgs<ExtArgs>
     contestAchievement?: boolean | ContestParticipant$contestAchievementArgs<ExtArgs>
     _count?: boolean | ContestParticipantCountOutputTypeDefaultArgs<ExtArgs>
   }
@@ -12400,7 +14155,6 @@ export namespace Prisma {
       user: Prisma.$UserPayload<ExtArgs>
       member: Prisma.$TeamMemberPayload<ExtArgs> | null
       photos: Prisma.$ContestPhotoPayload<ExtArgs>[]
-      ContestWinner: Prisma.$ContestWinnerPayload<ExtArgs>[]
       contestAchievement: Prisma.$ContestAchievementPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
@@ -12781,7 +14535,6 @@ export namespace Prisma {
     user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     member<T extends ContestParticipant$memberArgs<ExtArgs> = {}>(args?: Subset<T, ContestParticipant$memberArgs<ExtArgs>>): Prisma__TeamMemberClient<$Result.GetResult<Prisma.$TeamMemberPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     photos<T extends ContestParticipant$photosArgs<ExtArgs> = {}>(args?: Subset<T, ContestParticipant$photosArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ContestPhotoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    ContestWinner<T extends ContestParticipant$ContestWinnerArgs<ExtArgs> = {}>(args?: Subset<T, ContestParticipant$ContestWinnerArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ContestWinnerPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     contestAchievement<T extends ContestParticipant$contestAchievementArgs<ExtArgs> = {}>(args?: Subset<T, ContestParticipant$contestAchievementArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ContestAchievementPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -13235,30 +14988,6 @@ export namespace Prisma {
   }
 
   /**
-   * ContestParticipant.ContestWinner
-   */
-  export type ContestParticipant$ContestWinnerArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ContestWinner
-     */
-    select?: ContestWinnerSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ContestWinner
-     */
-    omit?: ContestWinnerOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ContestWinnerInclude<ExtArgs> | null
-    where?: ContestWinnerWhereInput
-    orderBy?: ContestWinnerOrderByWithRelationInput | ContestWinnerOrderByWithRelationInput[]
-    cursor?: ContestWinnerWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: ContestWinnerScalarFieldEnum | ContestWinnerScalarFieldEnum[]
-  }
-
-  /**
    * ContestParticipant.contestAchievement
    */
   export type ContestParticipant$contestAchievementArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -13314,6 +15043,7 @@ export namespace Prisma {
   }
 
   export type ContestPrizeAvgAggregateOutputType = {
+    rankLimit: number | null
     boost: number | null
     swap: number | null
     key: number | null
@@ -13321,6 +15051,7 @@ export namespace Prisma {
   }
 
   export type ContestPrizeSumAggregateOutputType = {
+    rankLimit: number | null
     boost: number | null
     swap: number | null
     key: number | null
@@ -13330,6 +15061,9 @@ export namespace Prisma {
   export type ContestPrizeMinAggregateOutputType = {
     id: string | null
     category: $Enums.PrizeType | null
+    type: $Enums.AwardType | null
+    target: $Enums.AwardTarget | null
+    rankLimit: number | null
     icon: string | null
     boost: number | null
     swap: number | null
@@ -13343,6 +15077,9 @@ export namespace Prisma {
   export type ContestPrizeMaxAggregateOutputType = {
     id: string | null
     category: $Enums.PrizeType | null
+    type: $Enums.AwardType | null
+    target: $Enums.AwardTarget | null
+    rankLimit: number | null
     icon: string | null
     boost: number | null
     swap: number | null
@@ -13356,6 +15093,9 @@ export namespace Prisma {
   export type ContestPrizeCountAggregateOutputType = {
     id: number
     category: number
+    type: number
+    target: number
+    rankLimit: number
     icon: number
     boost: number
     swap: number
@@ -13369,6 +15109,7 @@ export namespace Prisma {
 
 
   export type ContestPrizeAvgAggregateInputType = {
+    rankLimit?: true
     boost?: true
     swap?: true
     key?: true
@@ -13376,6 +15117,7 @@ export namespace Prisma {
   }
 
   export type ContestPrizeSumAggregateInputType = {
+    rankLimit?: true
     boost?: true
     swap?: true
     key?: true
@@ -13385,6 +15127,9 @@ export namespace Prisma {
   export type ContestPrizeMinAggregateInputType = {
     id?: true
     category?: true
+    type?: true
+    target?: true
+    rankLimit?: true
     icon?: true
     boost?: true
     swap?: true
@@ -13398,6 +15143,9 @@ export namespace Prisma {
   export type ContestPrizeMaxAggregateInputType = {
     id?: true
     category?: true
+    type?: true
+    target?: true
+    rankLimit?: true
     icon?: true
     boost?: true
     swap?: true
@@ -13411,6 +15159,9 @@ export namespace Prisma {
   export type ContestPrizeCountAggregateInputType = {
     id?: true
     category?: true
+    type?: true
+    target?: true
+    rankLimit?: true
     icon?: true
     boost?: true
     swap?: true
@@ -13511,6 +15262,9 @@ export namespace Prisma {
   export type ContestPrizeGroupByOutputType = {
     id: string
     category: $Enums.PrizeType
+    type: $Enums.AwardType | null
+    target: $Enums.AwardTarget | null
+    rankLimit: number | null
     icon: string | null
     boost: number
     swap: number
@@ -13543,6 +15297,9 @@ export namespace Prisma {
   export type ContestPrizeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     category?: boolean
+    type?: boolean
+    target?: boolean
+    rankLimit?: boolean
     icon?: boolean
     boost?: boolean
     swap?: boolean
@@ -13559,6 +15316,9 @@ export namespace Prisma {
   export type ContestPrizeSelectScalar = {
     id?: boolean
     category?: boolean
+    type?: boolean
+    target?: boolean
+    rankLimit?: boolean
     icon?: boolean
     boost?: boolean
     swap?: boolean
@@ -13569,7 +15329,7 @@ export namespace Prisma {
     updatedAt?: boolean
   }
 
-  export type ContestPrizeOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "category" | "icon" | "boost" | "swap" | "key" | "coin" | "contestId" | "createdAt" | "updatedAt", ExtArgs["result"]["contestPrize"]>
+  export type ContestPrizeOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "category" | "type" | "target" | "rankLimit" | "icon" | "boost" | "swap" | "key" | "coin" | "contestId" | "createdAt" | "updatedAt", ExtArgs["result"]["contestPrize"]>
   export type ContestPrizeInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     contest?: boolean | ContestDefaultArgs<ExtArgs>
   }
@@ -13582,6 +15342,9 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       id: string
       category: $Enums.PrizeType
+      type: $Enums.AwardType | null
+      target: $Enums.AwardTarget | null
+      rankLimit: number | null
       icon: string | null
       boost: number
       swap: number
@@ -13985,6 +15748,9 @@ export namespace Prisma {
   interface ContestPrizeFieldRefs {
     readonly id: FieldRef<"ContestPrize", 'String'>
     readonly category: FieldRef<"ContestPrize", 'PrizeType'>
+    readonly type: FieldRef<"ContestPrize", 'AwardType'>
+    readonly target: FieldRef<"ContestPrize", 'AwardTarget'>
+    readonly rankLimit: FieldRef<"ContestPrize", 'Int'>
     readonly icon: FieldRef<"ContestPrize", 'String'>
     readonly boost: FieldRef<"ContestPrize", 'Int'>
     readonly swap: FieldRef<"ContestPrize", 'Int'>
@@ -14382,6 +16148,983 @@ export namespace Prisma {
 
 
   /**
+   * Model ContestRuleAcceptance
+   */
+
+  export type AggregateContestRuleAcceptance = {
+    _count: ContestRuleAcceptanceCountAggregateOutputType | null
+    _avg: ContestRuleAcceptanceAvgAggregateOutputType | null
+    _sum: ContestRuleAcceptanceSumAggregateOutputType | null
+    _min: ContestRuleAcceptanceMinAggregateOutputType | null
+    _max: ContestRuleAcceptanceMaxAggregateOutputType | null
+  }
+
+  export type ContestRuleAcceptanceAvgAggregateOutputType = {
+    ruleVersion: number | null
+  }
+
+  export type ContestRuleAcceptanceSumAggregateOutputType = {
+    ruleVersion: number | null
+  }
+
+  export type ContestRuleAcceptanceMinAggregateOutputType = {
+    id: string | null
+    contestId: string | null
+    userId: string | null
+    key: string | null
+    acceptedAt: Date | null
+    ruleVersion: number | null
+  }
+
+  export type ContestRuleAcceptanceMaxAggregateOutputType = {
+    id: string | null
+    contestId: string | null
+    userId: string | null
+    key: string | null
+    acceptedAt: Date | null
+    ruleVersion: number | null
+  }
+
+  export type ContestRuleAcceptanceCountAggregateOutputType = {
+    id: number
+    contestId: number
+    userId: number
+    key: number
+    acceptedAt: number
+    ruleVersion: number
+    _all: number
+  }
+
+
+  export type ContestRuleAcceptanceAvgAggregateInputType = {
+    ruleVersion?: true
+  }
+
+  export type ContestRuleAcceptanceSumAggregateInputType = {
+    ruleVersion?: true
+  }
+
+  export type ContestRuleAcceptanceMinAggregateInputType = {
+    id?: true
+    contestId?: true
+    userId?: true
+    key?: true
+    acceptedAt?: true
+    ruleVersion?: true
+  }
+
+  export type ContestRuleAcceptanceMaxAggregateInputType = {
+    id?: true
+    contestId?: true
+    userId?: true
+    key?: true
+    acceptedAt?: true
+    ruleVersion?: true
+  }
+
+  export type ContestRuleAcceptanceCountAggregateInputType = {
+    id?: true
+    contestId?: true
+    userId?: true
+    key?: true
+    acceptedAt?: true
+    ruleVersion?: true
+    _all?: true
+  }
+
+  export type ContestRuleAcceptanceAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ContestRuleAcceptance to aggregate.
+     */
+    where?: ContestRuleAcceptanceWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ContestRuleAcceptances to fetch.
+     */
+    orderBy?: ContestRuleAcceptanceOrderByWithRelationInput | ContestRuleAcceptanceOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: ContestRuleAcceptanceWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ContestRuleAcceptances from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ContestRuleAcceptances.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned ContestRuleAcceptances
+    **/
+    _count?: true | ContestRuleAcceptanceCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: ContestRuleAcceptanceAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: ContestRuleAcceptanceSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: ContestRuleAcceptanceMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: ContestRuleAcceptanceMaxAggregateInputType
+  }
+
+  export type GetContestRuleAcceptanceAggregateType<T extends ContestRuleAcceptanceAggregateArgs> = {
+        [P in keyof T & keyof AggregateContestRuleAcceptance]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateContestRuleAcceptance[P]>
+      : GetScalarType<T[P], AggregateContestRuleAcceptance[P]>
+  }
+
+
+
+
+  export type ContestRuleAcceptanceGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ContestRuleAcceptanceWhereInput
+    orderBy?: ContestRuleAcceptanceOrderByWithAggregationInput | ContestRuleAcceptanceOrderByWithAggregationInput[]
+    by: ContestRuleAcceptanceScalarFieldEnum[] | ContestRuleAcceptanceScalarFieldEnum
+    having?: ContestRuleAcceptanceScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: ContestRuleAcceptanceCountAggregateInputType | true
+    _avg?: ContestRuleAcceptanceAvgAggregateInputType
+    _sum?: ContestRuleAcceptanceSumAggregateInputType
+    _min?: ContestRuleAcceptanceMinAggregateInputType
+    _max?: ContestRuleAcceptanceMaxAggregateInputType
+  }
+
+  export type ContestRuleAcceptanceGroupByOutputType = {
+    id: string
+    contestId: string
+    userId: string
+    key: string
+    acceptedAt: Date
+    ruleVersion: number
+    _count: ContestRuleAcceptanceCountAggregateOutputType | null
+    _avg: ContestRuleAcceptanceAvgAggregateOutputType | null
+    _sum: ContestRuleAcceptanceSumAggregateOutputType | null
+    _min: ContestRuleAcceptanceMinAggregateOutputType | null
+    _max: ContestRuleAcceptanceMaxAggregateOutputType | null
+  }
+
+  type GetContestRuleAcceptanceGroupByPayload<T extends ContestRuleAcceptanceGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<ContestRuleAcceptanceGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof ContestRuleAcceptanceGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], ContestRuleAcceptanceGroupByOutputType[P]>
+            : GetScalarType<T[P], ContestRuleAcceptanceGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type ContestRuleAcceptanceSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    contestId?: boolean
+    userId?: boolean
+    key?: boolean
+    acceptedAt?: boolean
+    ruleVersion?: boolean
+  }, ExtArgs["result"]["contestRuleAcceptance"]>
+
+
+
+  export type ContestRuleAcceptanceSelectScalar = {
+    id?: boolean
+    contestId?: boolean
+    userId?: boolean
+    key?: boolean
+    acceptedAt?: boolean
+    ruleVersion?: boolean
+  }
+
+  export type ContestRuleAcceptanceOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "contestId" | "userId" | "key" | "acceptedAt" | "ruleVersion", ExtArgs["result"]["contestRuleAcceptance"]>
+
+  export type $ContestRuleAcceptancePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "ContestRuleAcceptance"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      contestId: string
+      userId: string
+      key: string
+      acceptedAt: Date
+      ruleVersion: number
+    }, ExtArgs["result"]["contestRuleAcceptance"]>
+    composites: {}
+  }
+
+  type ContestRuleAcceptanceGetPayload<S extends boolean | null | undefined | ContestRuleAcceptanceDefaultArgs> = $Result.GetResult<Prisma.$ContestRuleAcceptancePayload, S>
+
+  type ContestRuleAcceptanceCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<ContestRuleAcceptanceFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: ContestRuleAcceptanceCountAggregateInputType | true
+    }
+
+  export interface ContestRuleAcceptanceDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['ContestRuleAcceptance'], meta: { name: 'ContestRuleAcceptance' } }
+    /**
+     * Find zero or one ContestRuleAcceptance that matches the filter.
+     * @param {ContestRuleAcceptanceFindUniqueArgs} args - Arguments to find a ContestRuleAcceptance
+     * @example
+     * // Get one ContestRuleAcceptance
+     * const contestRuleAcceptance = await prisma.contestRuleAcceptance.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends ContestRuleAcceptanceFindUniqueArgs>(args: SelectSubset<T, ContestRuleAcceptanceFindUniqueArgs<ExtArgs>>): Prisma__ContestRuleAcceptanceClient<$Result.GetResult<Prisma.$ContestRuleAcceptancePayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one ContestRuleAcceptance that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {ContestRuleAcceptanceFindUniqueOrThrowArgs} args - Arguments to find a ContestRuleAcceptance
+     * @example
+     * // Get one ContestRuleAcceptance
+     * const contestRuleAcceptance = await prisma.contestRuleAcceptance.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends ContestRuleAcceptanceFindUniqueOrThrowArgs>(args: SelectSubset<T, ContestRuleAcceptanceFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ContestRuleAcceptanceClient<$Result.GetResult<Prisma.$ContestRuleAcceptancePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ContestRuleAcceptance that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContestRuleAcceptanceFindFirstArgs} args - Arguments to find a ContestRuleAcceptance
+     * @example
+     * // Get one ContestRuleAcceptance
+     * const contestRuleAcceptance = await prisma.contestRuleAcceptance.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends ContestRuleAcceptanceFindFirstArgs>(args?: SelectSubset<T, ContestRuleAcceptanceFindFirstArgs<ExtArgs>>): Prisma__ContestRuleAcceptanceClient<$Result.GetResult<Prisma.$ContestRuleAcceptancePayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ContestRuleAcceptance that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContestRuleAcceptanceFindFirstOrThrowArgs} args - Arguments to find a ContestRuleAcceptance
+     * @example
+     * // Get one ContestRuleAcceptance
+     * const contestRuleAcceptance = await prisma.contestRuleAcceptance.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends ContestRuleAcceptanceFindFirstOrThrowArgs>(args?: SelectSubset<T, ContestRuleAcceptanceFindFirstOrThrowArgs<ExtArgs>>): Prisma__ContestRuleAcceptanceClient<$Result.GetResult<Prisma.$ContestRuleAcceptancePayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more ContestRuleAcceptances that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContestRuleAcceptanceFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all ContestRuleAcceptances
+     * const contestRuleAcceptances = await prisma.contestRuleAcceptance.findMany()
+     * 
+     * // Get first 10 ContestRuleAcceptances
+     * const contestRuleAcceptances = await prisma.contestRuleAcceptance.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const contestRuleAcceptanceWithIdOnly = await prisma.contestRuleAcceptance.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends ContestRuleAcceptanceFindManyArgs>(args?: SelectSubset<T, ContestRuleAcceptanceFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ContestRuleAcceptancePayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a ContestRuleAcceptance.
+     * @param {ContestRuleAcceptanceCreateArgs} args - Arguments to create a ContestRuleAcceptance.
+     * @example
+     * // Create one ContestRuleAcceptance
+     * const ContestRuleAcceptance = await prisma.contestRuleAcceptance.create({
+     *   data: {
+     *     // ... data to create a ContestRuleAcceptance
+     *   }
+     * })
+     * 
+     */
+    create<T extends ContestRuleAcceptanceCreateArgs>(args: SelectSubset<T, ContestRuleAcceptanceCreateArgs<ExtArgs>>): Prisma__ContestRuleAcceptanceClient<$Result.GetResult<Prisma.$ContestRuleAcceptancePayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many ContestRuleAcceptances.
+     * @param {ContestRuleAcceptanceCreateManyArgs} args - Arguments to create many ContestRuleAcceptances.
+     * @example
+     * // Create many ContestRuleAcceptances
+     * const contestRuleAcceptance = await prisma.contestRuleAcceptance.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends ContestRuleAcceptanceCreateManyArgs>(args?: SelectSubset<T, ContestRuleAcceptanceCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a ContestRuleAcceptance.
+     * @param {ContestRuleAcceptanceDeleteArgs} args - Arguments to delete one ContestRuleAcceptance.
+     * @example
+     * // Delete one ContestRuleAcceptance
+     * const ContestRuleAcceptance = await prisma.contestRuleAcceptance.delete({
+     *   where: {
+     *     // ... filter to delete one ContestRuleAcceptance
+     *   }
+     * })
+     * 
+     */
+    delete<T extends ContestRuleAcceptanceDeleteArgs>(args: SelectSubset<T, ContestRuleAcceptanceDeleteArgs<ExtArgs>>): Prisma__ContestRuleAcceptanceClient<$Result.GetResult<Prisma.$ContestRuleAcceptancePayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one ContestRuleAcceptance.
+     * @param {ContestRuleAcceptanceUpdateArgs} args - Arguments to update one ContestRuleAcceptance.
+     * @example
+     * // Update one ContestRuleAcceptance
+     * const contestRuleAcceptance = await prisma.contestRuleAcceptance.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends ContestRuleAcceptanceUpdateArgs>(args: SelectSubset<T, ContestRuleAcceptanceUpdateArgs<ExtArgs>>): Prisma__ContestRuleAcceptanceClient<$Result.GetResult<Prisma.$ContestRuleAcceptancePayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more ContestRuleAcceptances.
+     * @param {ContestRuleAcceptanceDeleteManyArgs} args - Arguments to filter ContestRuleAcceptances to delete.
+     * @example
+     * // Delete a few ContestRuleAcceptances
+     * const { count } = await prisma.contestRuleAcceptance.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends ContestRuleAcceptanceDeleteManyArgs>(args?: SelectSubset<T, ContestRuleAcceptanceDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ContestRuleAcceptances.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContestRuleAcceptanceUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many ContestRuleAcceptances
+     * const contestRuleAcceptance = await prisma.contestRuleAcceptance.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends ContestRuleAcceptanceUpdateManyArgs>(args: SelectSubset<T, ContestRuleAcceptanceUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one ContestRuleAcceptance.
+     * @param {ContestRuleAcceptanceUpsertArgs} args - Arguments to update or create a ContestRuleAcceptance.
+     * @example
+     * // Update or create a ContestRuleAcceptance
+     * const contestRuleAcceptance = await prisma.contestRuleAcceptance.upsert({
+     *   create: {
+     *     // ... data to create a ContestRuleAcceptance
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the ContestRuleAcceptance we want to update
+     *   }
+     * })
+     */
+    upsert<T extends ContestRuleAcceptanceUpsertArgs>(args: SelectSubset<T, ContestRuleAcceptanceUpsertArgs<ExtArgs>>): Prisma__ContestRuleAcceptanceClient<$Result.GetResult<Prisma.$ContestRuleAcceptancePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more ContestRuleAcceptances that matches the filter.
+     * @param {ContestRuleAcceptanceFindRawArgs} args - Select which filters you would like to apply.
+     * @example
+     * const contestRuleAcceptance = await prisma.contestRuleAcceptance.findRaw({
+     *   filter: { age: { $gt: 25 } }
+     * })
+     */
+    findRaw(args?: ContestRuleAcceptanceFindRawArgs): Prisma.PrismaPromise<JsonObject>
+
+    /**
+     * Perform aggregation operations on a ContestRuleAcceptance.
+     * @param {ContestRuleAcceptanceAggregateRawArgs} args - Select which aggregations you would like to apply.
+     * @example
+     * const contestRuleAcceptance = await prisma.contestRuleAcceptance.aggregateRaw({
+     *   pipeline: [
+     *     { $match: { status: "registered" } },
+     *     { $group: { _id: "$country", total: { $sum: 1 } } }
+     *   ]
+     * })
+     */
+    aggregateRaw(args?: ContestRuleAcceptanceAggregateRawArgs): Prisma.PrismaPromise<JsonObject>
+
+
+    /**
+     * Count the number of ContestRuleAcceptances.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContestRuleAcceptanceCountArgs} args - Arguments to filter ContestRuleAcceptances to count.
+     * @example
+     * // Count the number of ContestRuleAcceptances
+     * const count = await prisma.contestRuleAcceptance.count({
+     *   where: {
+     *     // ... the filter for the ContestRuleAcceptances we want to count
+     *   }
+     * })
+    **/
+    count<T extends ContestRuleAcceptanceCountArgs>(
+      args?: Subset<T, ContestRuleAcceptanceCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], ContestRuleAcceptanceCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a ContestRuleAcceptance.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContestRuleAcceptanceAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends ContestRuleAcceptanceAggregateArgs>(args: Subset<T, ContestRuleAcceptanceAggregateArgs>): Prisma.PrismaPromise<GetContestRuleAcceptanceAggregateType<T>>
+
+    /**
+     * Group by ContestRuleAcceptance.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContestRuleAcceptanceGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends ContestRuleAcceptanceGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: ContestRuleAcceptanceGroupByArgs['orderBy'] }
+        : { orderBy?: ContestRuleAcceptanceGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, ContestRuleAcceptanceGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetContestRuleAcceptanceGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the ContestRuleAcceptance model
+   */
+  readonly fields: ContestRuleAcceptanceFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for ContestRuleAcceptance.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__ContestRuleAcceptanceClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the ContestRuleAcceptance model
+   */
+  interface ContestRuleAcceptanceFieldRefs {
+    readonly id: FieldRef<"ContestRuleAcceptance", 'String'>
+    readonly contestId: FieldRef<"ContestRuleAcceptance", 'String'>
+    readonly userId: FieldRef<"ContestRuleAcceptance", 'String'>
+    readonly key: FieldRef<"ContestRuleAcceptance", 'String'>
+    readonly acceptedAt: FieldRef<"ContestRuleAcceptance", 'DateTime'>
+    readonly ruleVersion: FieldRef<"ContestRuleAcceptance", 'Int'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * ContestRuleAcceptance findUnique
+   */
+  export type ContestRuleAcceptanceFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContestRuleAcceptance
+     */
+    select?: ContestRuleAcceptanceSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContestRuleAcceptance
+     */
+    omit?: ContestRuleAcceptanceOmit<ExtArgs> | null
+    /**
+     * Filter, which ContestRuleAcceptance to fetch.
+     */
+    where: ContestRuleAcceptanceWhereUniqueInput
+  }
+
+  /**
+   * ContestRuleAcceptance findUniqueOrThrow
+   */
+  export type ContestRuleAcceptanceFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContestRuleAcceptance
+     */
+    select?: ContestRuleAcceptanceSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContestRuleAcceptance
+     */
+    omit?: ContestRuleAcceptanceOmit<ExtArgs> | null
+    /**
+     * Filter, which ContestRuleAcceptance to fetch.
+     */
+    where: ContestRuleAcceptanceWhereUniqueInput
+  }
+
+  /**
+   * ContestRuleAcceptance findFirst
+   */
+  export type ContestRuleAcceptanceFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContestRuleAcceptance
+     */
+    select?: ContestRuleAcceptanceSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContestRuleAcceptance
+     */
+    omit?: ContestRuleAcceptanceOmit<ExtArgs> | null
+    /**
+     * Filter, which ContestRuleAcceptance to fetch.
+     */
+    where?: ContestRuleAcceptanceWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ContestRuleAcceptances to fetch.
+     */
+    orderBy?: ContestRuleAcceptanceOrderByWithRelationInput | ContestRuleAcceptanceOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ContestRuleAcceptances.
+     */
+    cursor?: ContestRuleAcceptanceWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ContestRuleAcceptances from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ContestRuleAcceptances.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ContestRuleAcceptances.
+     */
+    distinct?: ContestRuleAcceptanceScalarFieldEnum | ContestRuleAcceptanceScalarFieldEnum[]
+  }
+
+  /**
+   * ContestRuleAcceptance findFirstOrThrow
+   */
+  export type ContestRuleAcceptanceFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContestRuleAcceptance
+     */
+    select?: ContestRuleAcceptanceSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContestRuleAcceptance
+     */
+    omit?: ContestRuleAcceptanceOmit<ExtArgs> | null
+    /**
+     * Filter, which ContestRuleAcceptance to fetch.
+     */
+    where?: ContestRuleAcceptanceWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ContestRuleAcceptances to fetch.
+     */
+    orderBy?: ContestRuleAcceptanceOrderByWithRelationInput | ContestRuleAcceptanceOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ContestRuleAcceptances.
+     */
+    cursor?: ContestRuleAcceptanceWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ContestRuleAcceptances from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ContestRuleAcceptances.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ContestRuleAcceptances.
+     */
+    distinct?: ContestRuleAcceptanceScalarFieldEnum | ContestRuleAcceptanceScalarFieldEnum[]
+  }
+
+  /**
+   * ContestRuleAcceptance findMany
+   */
+  export type ContestRuleAcceptanceFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContestRuleAcceptance
+     */
+    select?: ContestRuleAcceptanceSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContestRuleAcceptance
+     */
+    omit?: ContestRuleAcceptanceOmit<ExtArgs> | null
+    /**
+     * Filter, which ContestRuleAcceptances to fetch.
+     */
+    where?: ContestRuleAcceptanceWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ContestRuleAcceptances to fetch.
+     */
+    orderBy?: ContestRuleAcceptanceOrderByWithRelationInput | ContestRuleAcceptanceOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing ContestRuleAcceptances.
+     */
+    cursor?: ContestRuleAcceptanceWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ContestRuleAcceptances from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ContestRuleAcceptances.
+     */
+    skip?: number
+    distinct?: ContestRuleAcceptanceScalarFieldEnum | ContestRuleAcceptanceScalarFieldEnum[]
+  }
+
+  /**
+   * ContestRuleAcceptance create
+   */
+  export type ContestRuleAcceptanceCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContestRuleAcceptance
+     */
+    select?: ContestRuleAcceptanceSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContestRuleAcceptance
+     */
+    omit?: ContestRuleAcceptanceOmit<ExtArgs> | null
+    /**
+     * The data needed to create a ContestRuleAcceptance.
+     */
+    data: XOR<ContestRuleAcceptanceCreateInput, ContestRuleAcceptanceUncheckedCreateInput>
+  }
+
+  /**
+   * ContestRuleAcceptance createMany
+   */
+  export type ContestRuleAcceptanceCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many ContestRuleAcceptances.
+     */
+    data: ContestRuleAcceptanceCreateManyInput | ContestRuleAcceptanceCreateManyInput[]
+  }
+
+  /**
+   * ContestRuleAcceptance update
+   */
+  export type ContestRuleAcceptanceUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContestRuleAcceptance
+     */
+    select?: ContestRuleAcceptanceSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContestRuleAcceptance
+     */
+    omit?: ContestRuleAcceptanceOmit<ExtArgs> | null
+    /**
+     * The data needed to update a ContestRuleAcceptance.
+     */
+    data: XOR<ContestRuleAcceptanceUpdateInput, ContestRuleAcceptanceUncheckedUpdateInput>
+    /**
+     * Choose, which ContestRuleAcceptance to update.
+     */
+    where: ContestRuleAcceptanceWhereUniqueInput
+  }
+
+  /**
+   * ContestRuleAcceptance updateMany
+   */
+  export type ContestRuleAcceptanceUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update ContestRuleAcceptances.
+     */
+    data: XOR<ContestRuleAcceptanceUpdateManyMutationInput, ContestRuleAcceptanceUncheckedUpdateManyInput>
+    /**
+     * Filter which ContestRuleAcceptances to update
+     */
+    where?: ContestRuleAcceptanceWhereInput
+    /**
+     * Limit how many ContestRuleAcceptances to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * ContestRuleAcceptance upsert
+   */
+  export type ContestRuleAcceptanceUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContestRuleAcceptance
+     */
+    select?: ContestRuleAcceptanceSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContestRuleAcceptance
+     */
+    omit?: ContestRuleAcceptanceOmit<ExtArgs> | null
+    /**
+     * The filter to search for the ContestRuleAcceptance to update in case it exists.
+     */
+    where: ContestRuleAcceptanceWhereUniqueInput
+    /**
+     * In case the ContestRuleAcceptance found by the `where` argument doesn't exist, create a new ContestRuleAcceptance with this data.
+     */
+    create: XOR<ContestRuleAcceptanceCreateInput, ContestRuleAcceptanceUncheckedCreateInput>
+    /**
+     * In case the ContestRuleAcceptance was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<ContestRuleAcceptanceUpdateInput, ContestRuleAcceptanceUncheckedUpdateInput>
+  }
+
+  /**
+   * ContestRuleAcceptance delete
+   */
+  export type ContestRuleAcceptanceDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContestRuleAcceptance
+     */
+    select?: ContestRuleAcceptanceSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContestRuleAcceptance
+     */
+    omit?: ContestRuleAcceptanceOmit<ExtArgs> | null
+    /**
+     * Filter which ContestRuleAcceptance to delete.
+     */
+    where: ContestRuleAcceptanceWhereUniqueInput
+  }
+
+  /**
+   * ContestRuleAcceptance deleteMany
+   */
+  export type ContestRuleAcceptanceDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ContestRuleAcceptances to delete
+     */
+    where?: ContestRuleAcceptanceWhereInput
+    /**
+     * Limit how many ContestRuleAcceptances to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * ContestRuleAcceptance findRaw
+   */
+  export type ContestRuleAcceptanceFindRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The query predicate filter. If unspecified, then all documents in the collection will match the predicate. ${@link https://docs.mongodb.com/manual/reference/operator/query MongoDB Docs}.
+     */
+    filter?: InputJsonValue
+    /**
+     * Additional options to pass to the `find` command ${@link https://docs.mongodb.com/manual/reference/command/find/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * ContestRuleAcceptance aggregateRaw
+   */
+  export type ContestRuleAcceptanceAggregateRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * An array of aggregation stages to process and transform the document stream via the aggregation pipeline. ${@link https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline MongoDB Docs}.
+     */
+    pipeline?: InputJsonValue[]
+    /**
+     * Additional options to pass to the `aggregate` command ${@link https://docs.mongodb.com/manual/reference/command/aggregate/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * ContestRuleAcceptance without action
+   */
+  export type ContestRuleAcceptanceDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContestRuleAcceptance
+     */
+    select?: ContestRuleAcceptanceSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContestRuleAcceptance
+     */
+    omit?: ContestRuleAcceptanceOmit<ExtArgs> | null
+  }
+
+
+  /**
    * Model ContestAward
    */
 
@@ -14394,6 +17137,7 @@ export namespace Prisma {
   }
 
   export type ContestAwardAvgAggregateOutputType = {
+    rankLimit: number | null
     boost: number | null
     swap: number | null
     key: number | null
@@ -14401,6 +17145,7 @@ export namespace Prisma {
   }
 
   export type ContestAwardSumAggregateOutputType = {
+    rankLimit: number | null
     boost: number | null
     swap: number | null
     key: number | null
@@ -14410,6 +17155,12 @@ export namespace Prisma {
   export type ContestAwardMinAggregateOutputType = {
     id: string | null
     category: $Enums.PrizeType | null
+    type: $Enums.AwardType | null
+    target: $Enums.AwardTarget | null
+    rankLimit: number | null
+    slotKey: string | null
+    title: string | null
+    description: string | null
     icon: string | null
     boost: number | null
     swap: number | null
@@ -14424,6 +17175,12 @@ export namespace Prisma {
   export type ContestAwardMaxAggregateOutputType = {
     id: string | null
     category: $Enums.PrizeType | null
+    type: $Enums.AwardType | null
+    target: $Enums.AwardTarget | null
+    rankLimit: number | null
+    slotKey: string | null
+    title: string | null
+    description: string | null
     icon: string | null
     boost: number | null
     swap: number | null
@@ -14438,6 +17195,12 @@ export namespace Prisma {
   export type ContestAwardCountAggregateOutputType = {
     id: number
     category: number
+    type: number
+    target: number
+    rankLimit: number
+    slotKey: number
+    title: number
+    description: number
     icon: number
     boost: number
     swap: number
@@ -14452,6 +17215,7 @@ export namespace Prisma {
 
 
   export type ContestAwardAvgAggregateInputType = {
+    rankLimit?: true
     boost?: true
     swap?: true
     key?: true
@@ -14459,6 +17223,7 @@ export namespace Prisma {
   }
 
   export type ContestAwardSumAggregateInputType = {
+    rankLimit?: true
     boost?: true
     swap?: true
     key?: true
@@ -14468,6 +17233,12 @@ export namespace Prisma {
   export type ContestAwardMinAggregateInputType = {
     id?: true
     category?: true
+    type?: true
+    target?: true
+    rankLimit?: true
+    slotKey?: true
+    title?: true
+    description?: true
     icon?: true
     boost?: true
     swap?: true
@@ -14482,6 +17253,12 @@ export namespace Prisma {
   export type ContestAwardMaxAggregateInputType = {
     id?: true
     category?: true
+    type?: true
+    target?: true
+    rankLimit?: true
+    slotKey?: true
+    title?: true
+    description?: true
     icon?: true
     boost?: true
     swap?: true
@@ -14496,6 +17273,12 @@ export namespace Prisma {
   export type ContestAwardCountAggregateInputType = {
     id?: true
     category?: true
+    type?: true
+    target?: true
+    rankLimit?: true
+    slotKey?: true
+    title?: true
+    description?: true
     icon?: true
     boost?: true
     swap?: true
@@ -14597,6 +17380,12 @@ export namespace Prisma {
   export type ContestAwardGroupByOutputType = {
     id: string
     category: $Enums.PrizeType
+    type: $Enums.AwardType | null
+    target: $Enums.AwardTarget | null
+    rankLimit: number | null
+    slotKey: string | null
+    title: string | null
+    description: string | null
     icon: string | null
     boost: number
     swap: number
@@ -14630,6 +17419,12 @@ export namespace Prisma {
   export type ContestAwardSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     category?: boolean
+    type?: boolean
+    target?: boolean
+    rankLimit?: boolean
+    slotKey?: boolean
+    title?: boolean
+    description?: boolean
     icon?: boolean
     boost?: boolean
     swap?: boolean
@@ -14648,6 +17443,12 @@ export namespace Prisma {
   export type ContestAwardSelectScalar = {
     id?: boolean
     category?: boolean
+    type?: boolean
+    target?: boolean
+    rankLimit?: boolean
+    slotKey?: boolean
+    title?: boolean
+    description?: boolean
     icon?: boolean
     boost?: boolean
     swap?: boolean
@@ -14659,7 +17460,7 @@ export namespace Prisma {
     updatedAt?: boolean
   }
 
-  export type ContestAwardOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "category" | "icon" | "boost" | "swap" | "key" | "coin" | "contestId" | "prizeId" | "createdAt" | "updatedAt", ExtArgs["result"]["contestAward"]>
+  export type ContestAwardOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "category" | "type" | "target" | "rankLimit" | "slotKey" | "title" | "description" | "icon" | "boost" | "swap" | "key" | "coin" | "contestId" | "prizeId" | "createdAt" | "updatedAt", ExtArgs["result"]["contestAward"]>
   export type ContestAwardInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     contest?: boolean | ContestDefaultArgs<ExtArgs>
     prize?: boolean | PrizeDefaultArgs<ExtArgs>
@@ -14674,6 +17475,12 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       id: string
       category: $Enums.PrizeType
+      type: $Enums.AwardType | null
+      target: $Enums.AwardTarget | null
+      rankLimit: number | null
+      slotKey: string | null
+      title: string | null
+      description: string | null
       icon: string | null
       boost: number
       swap: number
@@ -15079,6 +17886,12 @@ export namespace Prisma {
   interface ContestAwardFieldRefs {
     readonly id: FieldRef<"ContestAward", 'String'>
     readonly category: FieldRef<"ContestAward", 'PrizeType'>
+    readonly type: FieldRef<"ContestAward", 'AwardType'>
+    readonly target: FieldRef<"ContestAward", 'AwardTarget'>
+    readonly rankLimit: FieldRef<"ContestAward", 'Int'>
+    readonly slotKey: FieldRef<"ContestAward", 'String'>
+    readonly title: FieldRef<"ContestAward", 'String'>
+    readonly description: FieldRef<"ContestAward", 'String'>
     readonly icon: FieldRef<"ContestAward", 'String'>
     readonly boost: FieldRef<"ContestAward", 'Int'>
     readonly swap: FieldRef<"ContestAward", 'Int'>
@@ -15489,6 +18302,7 @@ export namespace Prisma {
   }
 
   export type RecurringContestAwardAvgAggregateOutputType = {
+    rankLimit: number | null
     boost: number | null
     swap: number | null
     key: number | null
@@ -15496,6 +18310,7 @@ export namespace Prisma {
   }
 
   export type RecurringContestAwardSumAggregateOutputType = {
+    rankLimit: number | null
     boost: number | null
     swap: number | null
     key: number | null
@@ -15505,6 +18320,12 @@ export namespace Prisma {
   export type RecurringContestAwardMinAggregateOutputType = {
     id: string | null
     category: $Enums.PrizeType | null
+    type: $Enums.AwardType | null
+    target: $Enums.AwardTarget | null
+    rankLimit: number | null
+    slotKey: string | null
+    title: string | null
+    description: string | null
     icon: string | null
     boost: number | null
     swap: number | null
@@ -15519,6 +18340,12 @@ export namespace Prisma {
   export type RecurringContestAwardMaxAggregateOutputType = {
     id: string | null
     category: $Enums.PrizeType | null
+    type: $Enums.AwardType | null
+    target: $Enums.AwardTarget | null
+    rankLimit: number | null
+    slotKey: string | null
+    title: string | null
+    description: string | null
     icon: string | null
     boost: number | null
     swap: number | null
@@ -15533,6 +18360,12 @@ export namespace Prisma {
   export type RecurringContestAwardCountAggregateOutputType = {
     id: number
     category: number
+    type: number
+    target: number
+    rankLimit: number
+    slotKey: number
+    title: number
+    description: number
     icon: number
     boost: number
     swap: number
@@ -15547,6 +18380,7 @@ export namespace Prisma {
 
 
   export type RecurringContestAwardAvgAggregateInputType = {
+    rankLimit?: true
     boost?: true
     swap?: true
     key?: true
@@ -15554,6 +18388,7 @@ export namespace Prisma {
   }
 
   export type RecurringContestAwardSumAggregateInputType = {
+    rankLimit?: true
     boost?: true
     swap?: true
     key?: true
@@ -15563,6 +18398,12 @@ export namespace Prisma {
   export type RecurringContestAwardMinAggregateInputType = {
     id?: true
     category?: true
+    type?: true
+    target?: true
+    rankLimit?: true
+    slotKey?: true
+    title?: true
+    description?: true
     icon?: true
     boost?: true
     swap?: true
@@ -15577,6 +18418,12 @@ export namespace Prisma {
   export type RecurringContestAwardMaxAggregateInputType = {
     id?: true
     category?: true
+    type?: true
+    target?: true
+    rankLimit?: true
+    slotKey?: true
+    title?: true
+    description?: true
     icon?: true
     boost?: true
     swap?: true
@@ -15591,6 +18438,12 @@ export namespace Prisma {
   export type RecurringContestAwardCountAggregateInputType = {
     id?: true
     category?: true
+    type?: true
+    target?: true
+    rankLimit?: true
+    slotKey?: true
+    title?: true
+    description?: true
     icon?: true
     boost?: true
     swap?: true
@@ -15692,6 +18545,12 @@ export namespace Prisma {
   export type RecurringContestAwardGroupByOutputType = {
     id: string
     category: $Enums.PrizeType
+    type: $Enums.AwardType | null
+    target: $Enums.AwardTarget | null
+    rankLimit: number | null
+    slotKey: string | null
+    title: string | null
+    description: string | null
     icon: string | null
     boost: number
     swap: number
@@ -15725,6 +18584,12 @@ export namespace Prisma {
   export type RecurringContestAwardSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     category?: boolean
+    type?: boolean
+    target?: boolean
+    rankLimit?: boolean
+    slotKey?: boolean
+    title?: boolean
+    description?: boolean
     icon?: boolean
     boost?: boolean
     swap?: boolean
@@ -15743,6 +18608,12 @@ export namespace Prisma {
   export type RecurringContestAwardSelectScalar = {
     id?: boolean
     category?: boolean
+    type?: boolean
+    target?: boolean
+    rankLimit?: boolean
+    slotKey?: boolean
+    title?: boolean
+    description?: boolean
     icon?: boolean
     boost?: boolean
     swap?: boolean
@@ -15754,7 +18625,7 @@ export namespace Prisma {
     updatedAt?: boolean
   }
 
-  export type RecurringContestAwardOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "category" | "icon" | "boost" | "swap" | "key" | "coin" | "recurringContestId" | "prizeId" | "createdAt" | "updatedAt", ExtArgs["result"]["recurringContestAward"]>
+  export type RecurringContestAwardOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "category" | "type" | "target" | "rankLimit" | "slotKey" | "title" | "description" | "icon" | "boost" | "swap" | "key" | "coin" | "recurringContestId" | "prizeId" | "createdAt" | "updatedAt", ExtArgs["result"]["recurringContestAward"]>
   export type RecurringContestAwardInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     recurringContest?: boolean | RecurringContestDefaultArgs<ExtArgs>
     prize?: boolean | PrizeDefaultArgs<ExtArgs>
@@ -15769,6 +18640,12 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       id: string
       category: $Enums.PrizeType
+      type: $Enums.AwardType | null
+      target: $Enums.AwardTarget | null
+      rankLimit: number | null
+      slotKey: string | null
+      title: string | null
+      description: string | null
       icon: string | null
       boost: number
       swap: number
@@ -16174,6 +19051,12 @@ export namespace Prisma {
   interface RecurringContestAwardFieldRefs {
     readonly id: FieldRef<"RecurringContestAward", 'String'>
     readonly category: FieldRef<"RecurringContestAward", 'PrizeType'>
+    readonly type: FieldRef<"RecurringContestAward", 'AwardType'>
+    readonly target: FieldRef<"RecurringContestAward", 'AwardTarget'>
+    readonly rankLimit: FieldRef<"RecurringContestAward", 'Int'>
+    readonly slotKey: FieldRef<"RecurringContestAward", 'String'>
+    readonly title: FieldRef<"RecurringContestAward", 'String'>
+    readonly description: FieldRef<"RecurringContestAward", 'String'>
     readonly icon: FieldRef<"RecurringContestAward", 'String'>
     readonly boost: FieldRef<"RecurringContestAward", 'Int'>
     readonly swap: FieldRef<"RecurringContestAward", 'Int'>
@@ -16577,16 +19460,35 @@ export namespace Prisma {
 
   export type AggregateContestAchievement = {
     _count: ContestAchievementCountAggregateOutputType | null
+    _avg: ContestAchievementAvgAggregateOutputType | null
+    _sum: ContestAchievementSumAggregateOutputType | null
     _min: ContestAchievementMinAggregateOutputType | null
     _max: ContestAchievementMaxAggregateOutputType | null
+  }
+
+  export type ContestAchievementAvgAggregateOutputType = {
+    rankLimit: number | null
+    levelOrder: number | null
+  }
+
+  export type ContestAchievementSumAggregateOutputType = {
+    rankLimit: number | null
+    levelOrder: number | null
   }
 
   export type ContestAchievementMinAggregateOutputType = {
     id: string | null
     category: $Enums.PrizeType | null
+    kind: $Enums.AchievementKind | null
+    type: $Enums.AwardType | null
+    target: $Enums.AwardTarget | null
+    rankLimit: number | null
+    levelBadge: $Enums.ContestLevelBadge | null
+    levelOrder: number | null
     photoId: string | null
     participantId: string | null
     contestId: string | null
+    grantKey: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -16594,9 +19496,16 @@ export namespace Prisma {
   export type ContestAchievementMaxAggregateOutputType = {
     id: string | null
     category: $Enums.PrizeType | null
+    kind: $Enums.AchievementKind | null
+    type: $Enums.AwardType | null
+    target: $Enums.AwardTarget | null
+    rankLimit: number | null
+    levelBadge: $Enums.ContestLevelBadge | null
+    levelOrder: number | null
     photoId: string | null
     participantId: string | null
     contestId: string | null
+    grantKey: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -16604,21 +19513,45 @@ export namespace Prisma {
   export type ContestAchievementCountAggregateOutputType = {
     id: number
     category: number
+    kind: number
+    type: number
+    target: number
+    rankLimit: number
+    levelBadge: number
+    levelOrder: number
     photoId: number
     participantId: number
     contestId: number
+    grantKey: number
     createdAt: number
     updatedAt: number
     _all: number
   }
 
 
+  export type ContestAchievementAvgAggregateInputType = {
+    rankLimit?: true
+    levelOrder?: true
+  }
+
+  export type ContestAchievementSumAggregateInputType = {
+    rankLimit?: true
+    levelOrder?: true
+  }
+
   export type ContestAchievementMinAggregateInputType = {
     id?: true
     category?: true
+    kind?: true
+    type?: true
+    target?: true
+    rankLimit?: true
+    levelBadge?: true
+    levelOrder?: true
     photoId?: true
     participantId?: true
     contestId?: true
+    grantKey?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -16626,9 +19559,16 @@ export namespace Prisma {
   export type ContestAchievementMaxAggregateInputType = {
     id?: true
     category?: true
+    kind?: true
+    type?: true
+    target?: true
+    rankLimit?: true
+    levelBadge?: true
+    levelOrder?: true
     photoId?: true
     participantId?: true
     contestId?: true
+    grantKey?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -16636,9 +19576,16 @@ export namespace Prisma {
   export type ContestAchievementCountAggregateInputType = {
     id?: true
     category?: true
+    kind?: true
+    type?: true
+    target?: true
+    rankLimit?: true
+    levelBadge?: true
+    levelOrder?: true
     photoId?: true
     participantId?: true
     contestId?: true
+    grantKey?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -16682,6 +19629,18 @@ export namespace Prisma {
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
+     * Select which fields to average
+    **/
+    _avg?: ContestAchievementAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: ContestAchievementSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
      * Select which fields to find the minimum value
     **/
     _min?: ContestAchievementMinAggregateInputType
@@ -16712,6 +19671,8 @@ export namespace Prisma {
     take?: number
     skip?: number
     _count?: ContestAchievementCountAggregateInputType | true
+    _avg?: ContestAchievementAvgAggregateInputType
+    _sum?: ContestAchievementSumAggregateInputType
     _min?: ContestAchievementMinAggregateInputType
     _max?: ContestAchievementMaxAggregateInputType
   }
@@ -16719,12 +19680,21 @@ export namespace Prisma {
   export type ContestAchievementGroupByOutputType = {
     id: string
     category: $Enums.PrizeType
+    kind: $Enums.AchievementKind
+    type: $Enums.AwardType | null
+    target: $Enums.AwardTarget | null
+    rankLimit: number | null
+    levelBadge: $Enums.ContestLevelBadge | null
+    levelOrder: number | null
     photoId: string | null
     participantId: string | null
     contestId: string
+    grantKey: string | null
     createdAt: Date
     updatedAt: Date
     _count: ContestAchievementCountAggregateOutputType | null
+    _avg: ContestAchievementAvgAggregateOutputType | null
+    _sum: ContestAchievementSumAggregateOutputType | null
     _min: ContestAchievementMinAggregateOutputType | null
     _max: ContestAchievementMaxAggregateOutputType | null
   }
@@ -16746,9 +19716,16 @@ export namespace Prisma {
   export type ContestAchievementSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     category?: boolean
+    kind?: boolean
+    type?: boolean
+    target?: boolean
+    rankLimit?: boolean
+    levelBadge?: boolean
+    levelOrder?: boolean
     photoId?: boolean
     participantId?: boolean
     contestId?: boolean
+    grantKey?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     photo?: boolean | ContestAchievement$photoArgs<ExtArgs>
@@ -16761,14 +19738,21 @@ export namespace Prisma {
   export type ContestAchievementSelectScalar = {
     id?: boolean
     category?: boolean
+    kind?: boolean
+    type?: boolean
+    target?: boolean
+    rankLimit?: boolean
+    levelBadge?: boolean
+    levelOrder?: boolean
     photoId?: boolean
     participantId?: boolean
     contestId?: boolean
+    grantKey?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type ContestAchievementOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "category" | "photoId" | "participantId" | "contestId" | "createdAt" | "updatedAt", ExtArgs["result"]["contestAchievement"]>
+  export type ContestAchievementOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "category" | "kind" | "type" | "target" | "rankLimit" | "levelBadge" | "levelOrder" | "photoId" | "participantId" | "contestId" | "grantKey" | "createdAt" | "updatedAt", ExtArgs["result"]["contestAchievement"]>
   export type ContestAchievementInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     photo?: boolean | ContestAchievement$photoArgs<ExtArgs>
     contest?: boolean | ContestDefaultArgs<ExtArgs>
@@ -16785,9 +19769,16 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       id: string
       category: $Enums.PrizeType
+      kind: $Enums.AchievementKind
+      type: $Enums.AwardType | null
+      target: $Enums.AwardTarget | null
+      rankLimit: number | null
+      levelBadge: $Enums.ContestLevelBadge | null
+      levelOrder: number | null
       photoId: string | null
       participantId: string | null
       contestId: string
+      grantKey: string | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["contestAchievement"]>
@@ -17187,9 +20178,16 @@ export namespace Prisma {
   interface ContestAchievementFieldRefs {
     readonly id: FieldRef<"ContestAchievement", 'String'>
     readonly category: FieldRef<"ContestAchievement", 'PrizeType'>
+    readonly kind: FieldRef<"ContestAchievement", 'AchievementKind'>
+    readonly type: FieldRef<"ContestAchievement", 'AwardType'>
+    readonly target: FieldRef<"ContestAchievement", 'AwardTarget'>
+    readonly rankLimit: FieldRef<"ContestAchievement", 'Int'>
+    readonly levelBadge: FieldRef<"ContestAchievement", 'ContestLevelBadge'>
+    readonly levelOrder: FieldRef<"ContestAchievement", 'Int'>
     readonly photoId: FieldRef<"ContestAchievement", 'String'>
     readonly participantId: FieldRef<"ContestAchievement", 'String'>
     readonly contestId: FieldRef<"ContestAchievement", 'String'>
+    readonly grantKey: FieldRef<"ContestAchievement", 'String'>
     readonly createdAt: FieldRef<"ContestAchievement", 'DateTime'>
     readonly updatedAt: FieldRef<"ContestAchievement", 'DateTime'>
   }
@@ -17615,6 +20613,5290 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: ContestAchievementInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model ContestFinalization
+   */
+
+  export type AggregateContestFinalization = {
+    _count: ContestFinalizationCountAggregateOutputType | null
+    _avg: ContestFinalizationAvgAggregateOutputType | null
+    _sum: ContestFinalizationSumAggregateOutputType | null
+    _min: ContestFinalizationMinAggregateOutputType | null
+    _max: ContestFinalizationMaxAggregateOutputType | null
+  }
+
+  export type ContestFinalizationAvgAggregateOutputType = {
+    attemptCount: number | null
+    scoringVersion: number | null
+  }
+
+  export type ContestFinalizationSumAggregateOutputType = {
+    attemptCount: number | null
+    scoringVersion: number | null
+  }
+
+  export type ContestFinalizationMinAggregateOutputType = {
+    id: string | null
+    contestId: string | null
+    status: $Enums.ContestFinalizationStatus | null
+    attemptCount: number | null
+    scoringVersion: number | null
+    startedAt: Date | null
+    completedAt: Date | null
+    error: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type ContestFinalizationMaxAggregateOutputType = {
+    id: string | null
+    contestId: string | null
+    status: $Enums.ContestFinalizationStatus | null
+    attemptCount: number | null
+    scoringVersion: number | null
+    startedAt: Date | null
+    completedAt: Date | null
+    error: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type ContestFinalizationCountAggregateOutputType = {
+    id: number
+    contestId: number
+    status: number
+    attemptCount: number
+    scoringVersion: number
+    startedAt: number
+    completedAt: number
+    error: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type ContestFinalizationAvgAggregateInputType = {
+    attemptCount?: true
+    scoringVersion?: true
+  }
+
+  export type ContestFinalizationSumAggregateInputType = {
+    attemptCount?: true
+    scoringVersion?: true
+  }
+
+  export type ContestFinalizationMinAggregateInputType = {
+    id?: true
+    contestId?: true
+    status?: true
+    attemptCount?: true
+    scoringVersion?: true
+    startedAt?: true
+    completedAt?: true
+    error?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type ContestFinalizationMaxAggregateInputType = {
+    id?: true
+    contestId?: true
+    status?: true
+    attemptCount?: true
+    scoringVersion?: true
+    startedAt?: true
+    completedAt?: true
+    error?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type ContestFinalizationCountAggregateInputType = {
+    id?: true
+    contestId?: true
+    status?: true
+    attemptCount?: true
+    scoringVersion?: true
+    startedAt?: true
+    completedAt?: true
+    error?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type ContestFinalizationAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ContestFinalization to aggregate.
+     */
+    where?: ContestFinalizationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ContestFinalizations to fetch.
+     */
+    orderBy?: ContestFinalizationOrderByWithRelationInput | ContestFinalizationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: ContestFinalizationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ContestFinalizations from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ContestFinalizations.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned ContestFinalizations
+    **/
+    _count?: true | ContestFinalizationCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: ContestFinalizationAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: ContestFinalizationSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: ContestFinalizationMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: ContestFinalizationMaxAggregateInputType
+  }
+
+  export type GetContestFinalizationAggregateType<T extends ContestFinalizationAggregateArgs> = {
+        [P in keyof T & keyof AggregateContestFinalization]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateContestFinalization[P]>
+      : GetScalarType<T[P], AggregateContestFinalization[P]>
+  }
+
+
+
+
+  export type ContestFinalizationGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ContestFinalizationWhereInput
+    orderBy?: ContestFinalizationOrderByWithAggregationInput | ContestFinalizationOrderByWithAggregationInput[]
+    by: ContestFinalizationScalarFieldEnum[] | ContestFinalizationScalarFieldEnum
+    having?: ContestFinalizationScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: ContestFinalizationCountAggregateInputType | true
+    _avg?: ContestFinalizationAvgAggregateInputType
+    _sum?: ContestFinalizationSumAggregateInputType
+    _min?: ContestFinalizationMinAggregateInputType
+    _max?: ContestFinalizationMaxAggregateInputType
+  }
+
+  export type ContestFinalizationGroupByOutputType = {
+    id: string
+    contestId: string
+    status: $Enums.ContestFinalizationStatus
+    attemptCount: number
+    scoringVersion: number
+    startedAt: Date | null
+    completedAt: Date | null
+    error: string | null
+    createdAt: Date
+    updatedAt: Date
+    _count: ContestFinalizationCountAggregateOutputType | null
+    _avg: ContestFinalizationAvgAggregateOutputType | null
+    _sum: ContestFinalizationSumAggregateOutputType | null
+    _min: ContestFinalizationMinAggregateOutputType | null
+    _max: ContestFinalizationMaxAggregateOutputType | null
+  }
+
+  type GetContestFinalizationGroupByPayload<T extends ContestFinalizationGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<ContestFinalizationGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof ContestFinalizationGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], ContestFinalizationGroupByOutputType[P]>
+            : GetScalarType<T[P], ContestFinalizationGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type ContestFinalizationSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    contestId?: boolean
+    status?: boolean
+    attemptCount?: boolean
+    scoringVersion?: boolean
+    startedAt?: boolean
+    completedAt?: boolean
+    error?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["contestFinalization"]>
+
+
+
+  export type ContestFinalizationSelectScalar = {
+    id?: boolean
+    contestId?: boolean
+    status?: boolean
+    attemptCount?: boolean
+    scoringVersion?: boolean
+    startedAt?: boolean
+    completedAt?: boolean
+    error?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type ContestFinalizationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "contestId" | "status" | "attemptCount" | "scoringVersion" | "startedAt" | "completedAt" | "error" | "createdAt" | "updatedAt", ExtArgs["result"]["contestFinalization"]>
+
+  export type $ContestFinalizationPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "ContestFinalization"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      contestId: string
+      status: $Enums.ContestFinalizationStatus
+      attemptCount: number
+      scoringVersion: number
+      startedAt: Date | null
+      completedAt: Date | null
+      error: string | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["contestFinalization"]>
+    composites: {}
+  }
+
+  type ContestFinalizationGetPayload<S extends boolean | null | undefined | ContestFinalizationDefaultArgs> = $Result.GetResult<Prisma.$ContestFinalizationPayload, S>
+
+  type ContestFinalizationCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<ContestFinalizationFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: ContestFinalizationCountAggregateInputType | true
+    }
+
+  export interface ContestFinalizationDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['ContestFinalization'], meta: { name: 'ContestFinalization' } }
+    /**
+     * Find zero or one ContestFinalization that matches the filter.
+     * @param {ContestFinalizationFindUniqueArgs} args - Arguments to find a ContestFinalization
+     * @example
+     * // Get one ContestFinalization
+     * const contestFinalization = await prisma.contestFinalization.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends ContestFinalizationFindUniqueArgs>(args: SelectSubset<T, ContestFinalizationFindUniqueArgs<ExtArgs>>): Prisma__ContestFinalizationClient<$Result.GetResult<Prisma.$ContestFinalizationPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one ContestFinalization that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {ContestFinalizationFindUniqueOrThrowArgs} args - Arguments to find a ContestFinalization
+     * @example
+     * // Get one ContestFinalization
+     * const contestFinalization = await prisma.contestFinalization.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends ContestFinalizationFindUniqueOrThrowArgs>(args: SelectSubset<T, ContestFinalizationFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ContestFinalizationClient<$Result.GetResult<Prisma.$ContestFinalizationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ContestFinalization that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContestFinalizationFindFirstArgs} args - Arguments to find a ContestFinalization
+     * @example
+     * // Get one ContestFinalization
+     * const contestFinalization = await prisma.contestFinalization.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends ContestFinalizationFindFirstArgs>(args?: SelectSubset<T, ContestFinalizationFindFirstArgs<ExtArgs>>): Prisma__ContestFinalizationClient<$Result.GetResult<Prisma.$ContestFinalizationPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ContestFinalization that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContestFinalizationFindFirstOrThrowArgs} args - Arguments to find a ContestFinalization
+     * @example
+     * // Get one ContestFinalization
+     * const contestFinalization = await prisma.contestFinalization.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends ContestFinalizationFindFirstOrThrowArgs>(args?: SelectSubset<T, ContestFinalizationFindFirstOrThrowArgs<ExtArgs>>): Prisma__ContestFinalizationClient<$Result.GetResult<Prisma.$ContestFinalizationPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more ContestFinalizations that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContestFinalizationFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all ContestFinalizations
+     * const contestFinalizations = await prisma.contestFinalization.findMany()
+     * 
+     * // Get first 10 ContestFinalizations
+     * const contestFinalizations = await prisma.contestFinalization.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const contestFinalizationWithIdOnly = await prisma.contestFinalization.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends ContestFinalizationFindManyArgs>(args?: SelectSubset<T, ContestFinalizationFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ContestFinalizationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a ContestFinalization.
+     * @param {ContestFinalizationCreateArgs} args - Arguments to create a ContestFinalization.
+     * @example
+     * // Create one ContestFinalization
+     * const ContestFinalization = await prisma.contestFinalization.create({
+     *   data: {
+     *     // ... data to create a ContestFinalization
+     *   }
+     * })
+     * 
+     */
+    create<T extends ContestFinalizationCreateArgs>(args: SelectSubset<T, ContestFinalizationCreateArgs<ExtArgs>>): Prisma__ContestFinalizationClient<$Result.GetResult<Prisma.$ContestFinalizationPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many ContestFinalizations.
+     * @param {ContestFinalizationCreateManyArgs} args - Arguments to create many ContestFinalizations.
+     * @example
+     * // Create many ContestFinalizations
+     * const contestFinalization = await prisma.contestFinalization.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends ContestFinalizationCreateManyArgs>(args?: SelectSubset<T, ContestFinalizationCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a ContestFinalization.
+     * @param {ContestFinalizationDeleteArgs} args - Arguments to delete one ContestFinalization.
+     * @example
+     * // Delete one ContestFinalization
+     * const ContestFinalization = await prisma.contestFinalization.delete({
+     *   where: {
+     *     // ... filter to delete one ContestFinalization
+     *   }
+     * })
+     * 
+     */
+    delete<T extends ContestFinalizationDeleteArgs>(args: SelectSubset<T, ContestFinalizationDeleteArgs<ExtArgs>>): Prisma__ContestFinalizationClient<$Result.GetResult<Prisma.$ContestFinalizationPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one ContestFinalization.
+     * @param {ContestFinalizationUpdateArgs} args - Arguments to update one ContestFinalization.
+     * @example
+     * // Update one ContestFinalization
+     * const contestFinalization = await prisma.contestFinalization.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends ContestFinalizationUpdateArgs>(args: SelectSubset<T, ContestFinalizationUpdateArgs<ExtArgs>>): Prisma__ContestFinalizationClient<$Result.GetResult<Prisma.$ContestFinalizationPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more ContestFinalizations.
+     * @param {ContestFinalizationDeleteManyArgs} args - Arguments to filter ContestFinalizations to delete.
+     * @example
+     * // Delete a few ContestFinalizations
+     * const { count } = await prisma.contestFinalization.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends ContestFinalizationDeleteManyArgs>(args?: SelectSubset<T, ContestFinalizationDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ContestFinalizations.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContestFinalizationUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many ContestFinalizations
+     * const contestFinalization = await prisma.contestFinalization.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends ContestFinalizationUpdateManyArgs>(args: SelectSubset<T, ContestFinalizationUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one ContestFinalization.
+     * @param {ContestFinalizationUpsertArgs} args - Arguments to update or create a ContestFinalization.
+     * @example
+     * // Update or create a ContestFinalization
+     * const contestFinalization = await prisma.contestFinalization.upsert({
+     *   create: {
+     *     // ... data to create a ContestFinalization
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the ContestFinalization we want to update
+     *   }
+     * })
+     */
+    upsert<T extends ContestFinalizationUpsertArgs>(args: SelectSubset<T, ContestFinalizationUpsertArgs<ExtArgs>>): Prisma__ContestFinalizationClient<$Result.GetResult<Prisma.$ContestFinalizationPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more ContestFinalizations that matches the filter.
+     * @param {ContestFinalizationFindRawArgs} args - Select which filters you would like to apply.
+     * @example
+     * const contestFinalization = await prisma.contestFinalization.findRaw({
+     *   filter: { age: { $gt: 25 } }
+     * })
+     */
+    findRaw(args?: ContestFinalizationFindRawArgs): Prisma.PrismaPromise<JsonObject>
+
+    /**
+     * Perform aggregation operations on a ContestFinalization.
+     * @param {ContestFinalizationAggregateRawArgs} args - Select which aggregations you would like to apply.
+     * @example
+     * const contestFinalization = await prisma.contestFinalization.aggregateRaw({
+     *   pipeline: [
+     *     { $match: { status: "registered" } },
+     *     { $group: { _id: "$country", total: { $sum: 1 } } }
+     *   ]
+     * })
+     */
+    aggregateRaw(args?: ContestFinalizationAggregateRawArgs): Prisma.PrismaPromise<JsonObject>
+
+
+    /**
+     * Count the number of ContestFinalizations.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContestFinalizationCountArgs} args - Arguments to filter ContestFinalizations to count.
+     * @example
+     * // Count the number of ContestFinalizations
+     * const count = await prisma.contestFinalization.count({
+     *   where: {
+     *     // ... the filter for the ContestFinalizations we want to count
+     *   }
+     * })
+    **/
+    count<T extends ContestFinalizationCountArgs>(
+      args?: Subset<T, ContestFinalizationCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], ContestFinalizationCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a ContestFinalization.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContestFinalizationAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends ContestFinalizationAggregateArgs>(args: Subset<T, ContestFinalizationAggregateArgs>): Prisma.PrismaPromise<GetContestFinalizationAggregateType<T>>
+
+    /**
+     * Group by ContestFinalization.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContestFinalizationGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends ContestFinalizationGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: ContestFinalizationGroupByArgs['orderBy'] }
+        : { orderBy?: ContestFinalizationGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, ContestFinalizationGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetContestFinalizationGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the ContestFinalization model
+   */
+  readonly fields: ContestFinalizationFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for ContestFinalization.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__ContestFinalizationClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the ContestFinalization model
+   */
+  interface ContestFinalizationFieldRefs {
+    readonly id: FieldRef<"ContestFinalization", 'String'>
+    readonly contestId: FieldRef<"ContestFinalization", 'String'>
+    readonly status: FieldRef<"ContestFinalization", 'ContestFinalizationStatus'>
+    readonly attemptCount: FieldRef<"ContestFinalization", 'Int'>
+    readonly scoringVersion: FieldRef<"ContestFinalization", 'Int'>
+    readonly startedAt: FieldRef<"ContestFinalization", 'DateTime'>
+    readonly completedAt: FieldRef<"ContestFinalization", 'DateTime'>
+    readonly error: FieldRef<"ContestFinalization", 'String'>
+    readonly createdAt: FieldRef<"ContestFinalization", 'DateTime'>
+    readonly updatedAt: FieldRef<"ContestFinalization", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * ContestFinalization findUnique
+   */
+  export type ContestFinalizationFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContestFinalization
+     */
+    select?: ContestFinalizationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContestFinalization
+     */
+    omit?: ContestFinalizationOmit<ExtArgs> | null
+    /**
+     * Filter, which ContestFinalization to fetch.
+     */
+    where: ContestFinalizationWhereUniqueInput
+  }
+
+  /**
+   * ContestFinalization findUniqueOrThrow
+   */
+  export type ContestFinalizationFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContestFinalization
+     */
+    select?: ContestFinalizationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContestFinalization
+     */
+    omit?: ContestFinalizationOmit<ExtArgs> | null
+    /**
+     * Filter, which ContestFinalization to fetch.
+     */
+    where: ContestFinalizationWhereUniqueInput
+  }
+
+  /**
+   * ContestFinalization findFirst
+   */
+  export type ContestFinalizationFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContestFinalization
+     */
+    select?: ContestFinalizationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContestFinalization
+     */
+    omit?: ContestFinalizationOmit<ExtArgs> | null
+    /**
+     * Filter, which ContestFinalization to fetch.
+     */
+    where?: ContestFinalizationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ContestFinalizations to fetch.
+     */
+    orderBy?: ContestFinalizationOrderByWithRelationInput | ContestFinalizationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ContestFinalizations.
+     */
+    cursor?: ContestFinalizationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ContestFinalizations from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ContestFinalizations.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ContestFinalizations.
+     */
+    distinct?: ContestFinalizationScalarFieldEnum | ContestFinalizationScalarFieldEnum[]
+  }
+
+  /**
+   * ContestFinalization findFirstOrThrow
+   */
+  export type ContestFinalizationFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContestFinalization
+     */
+    select?: ContestFinalizationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContestFinalization
+     */
+    omit?: ContestFinalizationOmit<ExtArgs> | null
+    /**
+     * Filter, which ContestFinalization to fetch.
+     */
+    where?: ContestFinalizationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ContestFinalizations to fetch.
+     */
+    orderBy?: ContestFinalizationOrderByWithRelationInput | ContestFinalizationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ContestFinalizations.
+     */
+    cursor?: ContestFinalizationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ContestFinalizations from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ContestFinalizations.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ContestFinalizations.
+     */
+    distinct?: ContestFinalizationScalarFieldEnum | ContestFinalizationScalarFieldEnum[]
+  }
+
+  /**
+   * ContestFinalization findMany
+   */
+  export type ContestFinalizationFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContestFinalization
+     */
+    select?: ContestFinalizationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContestFinalization
+     */
+    omit?: ContestFinalizationOmit<ExtArgs> | null
+    /**
+     * Filter, which ContestFinalizations to fetch.
+     */
+    where?: ContestFinalizationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ContestFinalizations to fetch.
+     */
+    orderBy?: ContestFinalizationOrderByWithRelationInput | ContestFinalizationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing ContestFinalizations.
+     */
+    cursor?: ContestFinalizationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ContestFinalizations from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ContestFinalizations.
+     */
+    skip?: number
+    distinct?: ContestFinalizationScalarFieldEnum | ContestFinalizationScalarFieldEnum[]
+  }
+
+  /**
+   * ContestFinalization create
+   */
+  export type ContestFinalizationCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContestFinalization
+     */
+    select?: ContestFinalizationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContestFinalization
+     */
+    omit?: ContestFinalizationOmit<ExtArgs> | null
+    /**
+     * The data needed to create a ContestFinalization.
+     */
+    data: XOR<ContestFinalizationCreateInput, ContestFinalizationUncheckedCreateInput>
+  }
+
+  /**
+   * ContestFinalization createMany
+   */
+  export type ContestFinalizationCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many ContestFinalizations.
+     */
+    data: ContestFinalizationCreateManyInput | ContestFinalizationCreateManyInput[]
+  }
+
+  /**
+   * ContestFinalization update
+   */
+  export type ContestFinalizationUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContestFinalization
+     */
+    select?: ContestFinalizationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContestFinalization
+     */
+    omit?: ContestFinalizationOmit<ExtArgs> | null
+    /**
+     * The data needed to update a ContestFinalization.
+     */
+    data: XOR<ContestFinalizationUpdateInput, ContestFinalizationUncheckedUpdateInput>
+    /**
+     * Choose, which ContestFinalization to update.
+     */
+    where: ContestFinalizationWhereUniqueInput
+  }
+
+  /**
+   * ContestFinalization updateMany
+   */
+  export type ContestFinalizationUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update ContestFinalizations.
+     */
+    data: XOR<ContestFinalizationUpdateManyMutationInput, ContestFinalizationUncheckedUpdateManyInput>
+    /**
+     * Filter which ContestFinalizations to update
+     */
+    where?: ContestFinalizationWhereInput
+    /**
+     * Limit how many ContestFinalizations to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * ContestFinalization upsert
+   */
+  export type ContestFinalizationUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContestFinalization
+     */
+    select?: ContestFinalizationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContestFinalization
+     */
+    omit?: ContestFinalizationOmit<ExtArgs> | null
+    /**
+     * The filter to search for the ContestFinalization to update in case it exists.
+     */
+    where: ContestFinalizationWhereUniqueInput
+    /**
+     * In case the ContestFinalization found by the `where` argument doesn't exist, create a new ContestFinalization with this data.
+     */
+    create: XOR<ContestFinalizationCreateInput, ContestFinalizationUncheckedCreateInput>
+    /**
+     * In case the ContestFinalization was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<ContestFinalizationUpdateInput, ContestFinalizationUncheckedUpdateInput>
+  }
+
+  /**
+   * ContestFinalization delete
+   */
+  export type ContestFinalizationDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContestFinalization
+     */
+    select?: ContestFinalizationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContestFinalization
+     */
+    omit?: ContestFinalizationOmit<ExtArgs> | null
+    /**
+     * Filter which ContestFinalization to delete.
+     */
+    where: ContestFinalizationWhereUniqueInput
+  }
+
+  /**
+   * ContestFinalization deleteMany
+   */
+  export type ContestFinalizationDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ContestFinalizations to delete
+     */
+    where?: ContestFinalizationWhereInput
+    /**
+     * Limit how many ContestFinalizations to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * ContestFinalization findRaw
+   */
+  export type ContestFinalizationFindRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The query predicate filter. If unspecified, then all documents in the collection will match the predicate. ${@link https://docs.mongodb.com/manual/reference/operator/query MongoDB Docs}.
+     */
+    filter?: InputJsonValue
+    /**
+     * Additional options to pass to the `find` command ${@link https://docs.mongodb.com/manual/reference/command/find/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * ContestFinalization aggregateRaw
+   */
+  export type ContestFinalizationAggregateRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * An array of aggregation stages to process and transform the document stream via the aggregation pipeline. ${@link https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline MongoDB Docs}.
+     */
+    pipeline?: InputJsonValue[]
+    /**
+     * Additional options to pass to the `aggregate` command ${@link https://docs.mongodb.com/manual/reference/command/aggregate/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * ContestFinalization without action
+   */
+  export type ContestFinalizationDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContestFinalization
+     */
+    select?: ContestFinalizationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContestFinalization
+     */
+    omit?: ContestFinalizationOmit<ExtArgs> | null
+  }
+
+
+  /**
+   * Model ContestRankingResult
+   */
+
+  export type AggregateContestRankingResult = {
+    _count: ContestRankingResultCountAggregateOutputType | null
+    _avg: ContestRankingResultAvgAggregateOutputType | null
+    _sum: ContestRankingResultSumAggregateOutputType | null
+    _min: ContestRankingResultMinAggregateOutputType | null
+    _max: ContestRankingResultMaxAggregateOutputType | null
+  }
+
+  export type ContestRankingResultAvgAggregateOutputType = {
+    score: number | null
+    rank: number | null
+    scoringVersion: number | null
+  }
+
+  export type ContestRankingResultSumAggregateOutputType = {
+    score: number | null
+    rank: number | null
+    scoringVersion: number | null
+  }
+
+  export type ContestRankingResultMinAggregateOutputType = {
+    id: string | null
+    resultKey: string | null
+    contestId: string | null
+    scope: $Enums.ContestRankingScope | null
+    participantId: string | null
+    photoId: string | null
+    score: number | null
+    rank: number | null
+    level: $Enums.YCLevel | null
+    tieBreakKey: string | null
+    scoringVersion: number | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type ContestRankingResultMaxAggregateOutputType = {
+    id: string | null
+    resultKey: string | null
+    contestId: string | null
+    scope: $Enums.ContestRankingScope | null
+    participantId: string | null
+    photoId: string | null
+    score: number | null
+    rank: number | null
+    level: $Enums.YCLevel | null
+    tieBreakKey: string | null
+    scoringVersion: number | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type ContestRankingResultCountAggregateOutputType = {
+    id: number
+    resultKey: number
+    contestId: number
+    scope: number
+    participantId: number
+    photoId: number
+    score: number
+    rank: number
+    level: number
+    tieBreakKey: number
+    scoringVersion: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type ContestRankingResultAvgAggregateInputType = {
+    score?: true
+    rank?: true
+    scoringVersion?: true
+  }
+
+  export type ContestRankingResultSumAggregateInputType = {
+    score?: true
+    rank?: true
+    scoringVersion?: true
+  }
+
+  export type ContestRankingResultMinAggregateInputType = {
+    id?: true
+    resultKey?: true
+    contestId?: true
+    scope?: true
+    participantId?: true
+    photoId?: true
+    score?: true
+    rank?: true
+    level?: true
+    tieBreakKey?: true
+    scoringVersion?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type ContestRankingResultMaxAggregateInputType = {
+    id?: true
+    resultKey?: true
+    contestId?: true
+    scope?: true
+    participantId?: true
+    photoId?: true
+    score?: true
+    rank?: true
+    level?: true
+    tieBreakKey?: true
+    scoringVersion?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type ContestRankingResultCountAggregateInputType = {
+    id?: true
+    resultKey?: true
+    contestId?: true
+    scope?: true
+    participantId?: true
+    photoId?: true
+    score?: true
+    rank?: true
+    level?: true
+    tieBreakKey?: true
+    scoringVersion?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type ContestRankingResultAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ContestRankingResult to aggregate.
+     */
+    where?: ContestRankingResultWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ContestRankingResults to fetch.
+     */
+    orderBy?: ContestRankingResultOrderByWithRelationInput | ContestRankingResultOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: ContestRankingResultWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ContestRankingResults from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ContestRankingResults.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned ContestRankingResults
+    **/
+    _count?: true | ContestRankingResultCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: ContestRankingResultAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: ContestRankingResultSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: ContestRankingResultMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: ContestRankingResultMaxAggregateInputType
+  }
+
+  export type GetContestRankingResultAggregateType<T extends ContestRankingResultAggregateArgs> = {
+        [P in keyof T & keyof AggregateContestRankingResult]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateContestRankingResult[P]>
+      : GetScalarType<T[P], AggregateContestRankingResult[P]>
+  }
+
+
+
+
+  export type ContestRankingResultGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ContestRankingResultWhereInput
+    orderBy?: ContestRankingResultOrderByWithAggregationInput | ContestRankingResultOrderByWithAggregationInput[]
+    by: ContestRankingResultScalarFieldEnum[] | ContestRankingResultScalarFieldEnum
+    having?: ContestRankingResultScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: ContestRankingResultCountAggregateInputType | true
+    _avg?: ContestRankingResultAvgAggregateInputType
+    _sum?: ContestRankingResultSumAggregateInputType
+    _min?: ContestRankingResultMinAggregateInputType
+    _max?: ContestRankingResultMaxAggregateInputType
+  }
+
+  export type ContestRankingResultGroupByOutputType = {
+    id: string
+    resultKey: string
+    contestId: string
+    scope: $Enums.ContestRankingScope
+    participantId: string
+    photoId: string | null
+    score: number
+    rank: number
+    level: $Enums.YCLevel | null
+    tieBreakKey: string
+    scoringVersion: number
+    createdAt: Date
+    updatedAt: Date
+    _count: ContestRankingResultCountAggregateOutputType | null
+    _avg: ContestRankingResultAvgAggregateOutputType | null
+    _sum: ContestRankingResultSumAggregateOutputType | null
+    _min: ContestRankingResultMinAggregateOutputType | null
+    _max: ContestRankingResultMaxAggregateOutputType | null
+  }
+
+  type GetContestRankingResultGroupByPayload<T extends ContestRankingResultGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<ContestRankingResultGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof ContestRankingResultGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], ContestRankingResultGroupByOutputType[P]>
+            : GetScalarType<T[P], ContestRankingResultGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type ContestRankingResultSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    resultKey?: boolean
+    contestId?: boolean
+    scope?: boolean
+    participantId?: boolean
+    photoId?: boolean
+    score?: boolean
+    rank?: boolean
+    level?: boolean
+    tieBreakKey?: boolean
+    scoringVersion?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["contestRankingResult"]>
+
+
+
+  export type ContestRankingResultSelectScalar = {
+    id?: boolean
+    resultKey?: boolean
+    contestId?: boolean
+    scope?: boolean
+    participantId?: boolean
+    photoId?: boolean
+    score?: boolean
+    rank?: boolean
+    level?: boolean
+    tieBreakKey?: boolean
+    scoringVersion?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type ContestRankingResultOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "resultKey" | "contestId" | "scope" | "participantId" | "photoId" | "score" | "rank" | "level" | "tieBreakKey" | "scoringVersion" | "createdAt" | "updatedAt", ExtArgs["result"]["contestRankingResult"]>
+
+  export type $ContestRankingResultPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "ContestRankingResult"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      resultKey: string
+      contestId: string
+      scope: $Enums.ContestRankingScope
+      participantId: string
+      photoId: string | null
+      score: number
+      rank: number
+      level: $Enums.YCLevel | null
+      tieBreakKey: string
+      scoringVersion: number
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["contestRankingResult"]>
+    composites: {}
+  }
+
+  type ContestRankingResultGetPayload<S extends boolean | null | undefined | ContestRankingResultDefaultArgs> = $Result.GetResult<Prisma.$ContestRankingResultPayload, S>
+
+  type ContestRankingResultCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<ContestRankingResultFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: ContestRankingResultCountAggregateInputType | true
+    }
+
+  export interface ContestRankingResultDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['ContestRankingResult'], meta: { name: 'ContestRankingResult' } }
+    /**
+     * Find zero or one ContestRankingResult that matches the filter.
+     * @param {ContestRankingResultFindUniqueArgs} args - Arguments to find a ContestRankingResult
+     * @example
+     * // Get one ContestRankingResult
+     * const contestRankingResult = await prisma.contestRankingResult.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends ContestRankingResultFindUniqueArgs>(args: SelectSubset<T, ContestRankingResultFindUniqueArgs<ExtArgs>>): Prisma__ContestRankingResultClient<$Result.GetResult<Prisma.$ContestRankingResultPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one ContestRankingResult that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {ContestRankingResultFindUniqueOrThrowArgs} args - Arguments to find a ContestRankingResult
+     * @example
+     * // Get one ContestRankingResult
+     * const contestRankingResult = await prisma.contestRankingResult.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends ContestRankingResultFindUniqueOrThrowArgs>(args: SelectSubset<T, ContestRankingResultFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ContestRankingResultClient<$Result.GetResult<Prisma.$ContestRankingResultPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ContestRankingResult that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContestRankingResultFindFirstArgs} args - Arguments to find a ContestRankingResult
+     * @example
+     * // Get one ContestRankingResult
+     * const contestRankingResult = await prisma.contestRankingResult.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends ContestRankingResultFindFirstArgs>(args?: SelectSubset<T, ContestRankingResultFindFirstArgs<ExtArgs>>): Prisma__ContestRankingResultClient<$Result.GetResult<Prisma.$ContestRankingResultPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ContestRankingResult that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContestRankingResultFindFirstOrThrowArgs} args - Arguments to find a ContestRankingResult
+     * @example
+     * // Get one ContestRankingResult
+     * const contestRankingResult = await prisma.contestRankingResult.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends ContestRankingResultFindFirstOrThrowArgs>(args?: SelectSubset<T, ContestRankingResultFindFirstOrThrowArgs<ExtArgs>>): Prisma__ContestRankingResultClient<$Result.GetResult<Prisma.$ContestRankingResultPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more ContestRankingResults that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContestRankingResultFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all ContestRankingResults
+     * const contestRankingResults = await prisma.contestRankingResult.findMany()
+     * 
+     * // Get first 10 ContestRankingResults
+     * const contestRankingResults = await prisma.contestRankingResult.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const contestRankingResultWithIdOnly = await prisma.contestRankingResult.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends ContestRankingResultFindManyArgs>(args?: SelectSubset<T, ContestRankingResultFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ContestRankingResultPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a ContestRankingResult.
+     * @param {ContestRankingResultCreateArgs} args - Arguments to create a ContestRankingResult.
+     * @example
+     * // Create one ContestRankingResult
+     * const ContestRankingResult = await prisma.contestRankingResult.create({
+     *   data: {
+     *     // ... data to create a ContestRankingResult
+     *   }
+     * })
+     * 
+     */
+    create<T extends ContestRankingResultCreateArgs>(args: SelectSubset<T, ContestRankingResultCreateArgs<ExtArgs>>): Prisma__ContestRankingResultClient<$Result.GetResult<Prisma.$ContestRankingResultPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many ContestRankingResults.
+     * @param {ContestRankingResultCreateManyArgs} args - Arguments to create many ContestRankingResults.
+     * @example
+     * // Create many ContestRankingResults
+     * const contestRankingResult = await prisma.contestRankingResult.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends ContestRankingResultCreateManyArgs>(args?: SelectSubset<T, ContestRankingResultCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a ContestRankingResult.
+     * @param {ContestRankingResultDeleteArgs} args - Arguments to delete one ContestRankingResult.
+     * @example
+     * // Delete one ContestRankingResult
+     * const ContestRankingResult = await prisma.contestRankingResult.delete({
+     *   where: {
+     *     // ... filter to delete one ContestRankingResult
+     *   }
+     * })
+     * 
+     */
+    delete<T extends ContestRankingResultDeleteArgs>(args: SelectSubset<T, ContestRankingResultDeleteArgs<ExtArgs>>): Prisma__ContestRankingResultClient<$Result.GetResult<Prisma.$ContestRankingResultPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one ContestRankingResult.
+     * @param {ContestRankingResultUpdateArgs} args - Arguments to update one ContestRankingResult.
+     * @example
+     * // Update one ContestRankingResult
+     * const contestRankingResult = await prisma.contestRankingResult.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends ContestRankingResultUpdateArgs>(args: SelectSubset<T, ContestRankingResultUpdateArgs<ExtArgs>>): Prisma__ContestRankingResultClient<$Result.GetResult<Prisma.$ContestRankingResultPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more ContestRankingResults.
+     * @param {ContestRankingResultDeleteManyArgs} args - Arguments to filter ContestRankingResults to delete.
+     * @example
+     * // Delete a few ContestRankingResults
+     * const { count } = await prisma.contestRankingResult.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends ContestRankingResultDeleteManyArgs>(args?: SelectSubset<T, ContestRankingResultDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ContestRankingResults.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContestRankingResultUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many ContestRankingResults
+     * const contestRankingResult = await prisma.contestRankingResult.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends ContestRankingResultUpdateManyArgs>(args: SelectSubset<T, ContestRankingResultUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one ContestRankingResult.
+     * @param {ContestRankingResultUpsertArgs} args - Arguments to update or create a ContestRankingResult.
+     * @example
+     * // Update or create a ContestRankingResult
+     * const contestRankingResult = await prisma.contestRankingResult.upsert({
+     *   create: {
+     *     // ... data to create a ContestRankingResult
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the ContestRankingResult we want to update
+     *   }
+     * })
+     */
+    upsert<T extends ContestRankingResultUpsertArgs>(args: SelectSubset<T, ContestRankingResultUpsertArgs<ExtArgs>>): Prisma__ContestRankingResultClient<$Result.GetResult<Prisma.$ContestRankingResultPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more ContestRankingResults that matches the filter.
+     * @param {ContestRankingResultFindRawArgs} args - Select which filters you would like to apply.
+     * @example
+     * const contestRankingResult = await prisma.contestRankingResult.findRaw({
+     *   filter: { age: { $gt: 25 } }
+     * })
+     */
+    findRaw(args?: ContestRankingResultFindRawArgs): Prisma.PrismaPromise<JsonObject>
+
+    /**
+     * Perform aggregation operations on a ContestRankingResult.
+     * @param {ContestRankingResultAggregateRawArgs} args - Select which aggregations you would like to apply.
+     * @example
+     * const contestRankingResult = await prisma.contestRankingResult.aggregateRaw({
+     *   pipeline: [
+     *     { $match: { status: "registered" } },
+     *     { $group: { _id: "$country", total: { $sum: 1 } } }
+     *   ]
+     * })
+     */
+    aggregateRaw(args?: ContestRankingResultAggregateRawArgs): Prisma.PrismaPromise<JsonObject>
+
+
+    /**
+     * Count the number of ContestRankingResults.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContestRankingResultCountArgs} args - Arguments to filter ContestRankingResults to count.
+     * @example
+     * // Count the number of ContestRankingResults
+     * const count = await prisma.contestRankingResult.count({
+     *   where: {
+     *     // ... the filter for the ContestRankingResults we want to count
+     *   }
+     * })
+    **/
+    count<T extends ContestRankingResultCountArgs>(
+      args?: Subset<T, ContestRankingResultCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], ContestRankingResultCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a ContestRankingResult.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContestRankingResultAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends ContestRankingResultAggregateArgs>(args: Subset<T, ContestRankingResultAggregateArgs>): Prisma.PrismaPromise<GetContestRankingResultAggregateType<T>>
+
+    /**
+     * Group by ContestRankingResult.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContestRankingResultGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends ContestRankingResultGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: ContestRankingResultGroupByArgs['orderBy'] }
+        : { orderBy?: ContestRankingResultGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, ContestRankingResultGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetContestRankingResultGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the ContestRankingResult model
+   */
+  readonly fields: ContestRankingResultFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for ContestRankingResult.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__ContestRankingResultClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the ContestRankingResult model
+   */
+  interface ContestRankingResultFieldRefs {
+    readonly id: FieldRef<"ContestRankingResult", 'String'>
+    readonly resultKey: FieldRef<"ContestRankingResult", 'String'>
+    readonly contestId: FieldRef<"ContestRankingResult", 'String'>
+    readonly scope: FieldRef<"ContestRankingResult", 'ContestRankingScope'>
+    readonly participantId: FieldRef<"ContestRankingResult", 'String'>
+    readonly photoId: FieldRef<"ContestRankingResult", 'String'>
+    readonly score: FieldRef<"ContestRankingResult", 'Int'>
+    readonly rank: FieldRef<"ContestRankingResult", 'Int'>
+    readonly level: FieldRef<"ContestRankingResult", 'YCLevel'>
+    readonly tieBreakKey: FieldRef<"ContestRankingResult", 'String'>
+    readonly scoringVersion: FieldRef<"ContestRankingResult", 'Int'>
+    readonly createdAt: FieldRef<"ContestRankingResult", 'DateTime'>
+    readonly updatedAt: FieldRef<"ContestRankingResult", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * ContestRankingResult findUnique
+   */
+  export type ContestRankingResultFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContestRankingResult
+     */
+    select?: ContestRankingResultSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContestRankingResult
+     */
+    omit?: ContestRankingResultOmit<ExtArgs> | null
+    /**
+     * Filter, which ContestRankingResult to fetch.
+     */
+    where: ContestRankingResultWhereUniqueInput
+  }
+
+  /**
+   * ContestRankingResult findUniqueOrThrow
+   */
+  export type ContestRankingResultFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContestRankingResult
+     */
+    select?: ContestRankingResultSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContestRankingResult
+     */
+    omit?: ContestRankingResultOmit<ExtArgs> | null
+    /**
+     * Filter, which ContestRankingResult to fetch.
+     */
+    where: ContestRankingResultWhereUniqueInput
+  }
+
+  /**
+   * ContestRankingResult findFirst
+   */
+  export type ContestRankingResultFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContestRankingResult
+     */
+    select?: ContestRankingResultSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContestRankingResult
+     */
+    omit?: ContestRankingResultOmit<ExtArgs> | null
+    /**
+     * Filter, which ContestRankingResult to fetch.
+     */
+    where?: ContestRankingResultWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ContestRankingResults to fetch.
+     */
+    orderBy?: ContestRankingResultOrderByWithRelationInput | ContestRankingResultOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ContestRankingResults.
+     */
+    cursor?: ContestRankingResultWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ContestRankingResults from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ContestRankingResults.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ContestRankingResults.
+     */
+    distinct?: ContestRankingResultScalarFieldEnum | ContestRankingResultScalarFieldEnum[]
+  }
+
+  /**
+   * ContestRankingResult findFirstOrThrow
+   */
+  export type ContestRankingResultFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContestRankingResult
+     */
+    select?: ContestRankingResultSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContestRankingResult
+     */
+    omit?: ContestRankingResultOmit<ExtArgs> | null
+    /**
+     * Filter, which ContestRankingResult to fetch.
+     */
+    where?: ContestRankingResultWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ContestRankingResults to fetch.
+     */
+    orderBy?: ContestRankingResultOrderByWithRelationInput | ContestRankingResultOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ContestRankingResults.
+     */
+    cursor?: ContestRankingResultWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ContestRankingResults from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ContestRankingResults.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ContestRankingResults.
+     */
+    distinct?: ContestRankingResultScalarFieldEnum | ContestRankingResultScalarFieldEnum[]
+  }
+
+  /**
+   * ContestRankingResult findMany
+   */
+  export type ContestRankingResultFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContestRankingResult
+     */
+    select?: ContestRankingResultSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContestRankingResult
+     */
+    omit?: ContestRankingResultOmit<ExtArgs> | null
+    /**
+     * Filter, which ContestRankingResults to fetch.
+     */
+    where?: ContestRankingResultWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ContestRankingResults to fetch.
+     */
+    orderBy?: ContestRankingResultOrderByWithRelationInput | ContestRankingResultOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing ContestRankingResults.
+     */
+    cursor?: ContestRankingResultWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ContestRankingResults from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ContestRankingResults.
+     */
+    skip?: number
+    distinct?: ContestRankingResultScalarFieldEnum | ContestRankingResultScalarFieldEnum[]
+  }
+
+  /**
+   * ContestRankingResult create
+   */
+  export type ContestRankingResultCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContestRankingResult
+     */
+    select?: ContestRankingResultSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContestRankingResult
+     */
+    omit?: ContestRankingResultOmit<ExtArgs> | null
+    /**
+     * The data needed to create a ContestRankingResult.
+     */
+    data: XOR<ContestRankingResultCreateInput, ContestRankingResultUncheckedCreateInput>
+  }
+
+  /**
+   * ContestRankingResult createMany
+   */
+  export type ContestRankingResultCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many ContestRankingResults.
+     */
+    data: ContestRankingResultCreateManyInput | ContestRankingResultCreateManyInput[]
+  }
+
+  /**
+   * ContestRankingResult update
+   */
+  export type ContestRankingResultUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContestRankingResult
+     */
+    select?: ContestRankingResultSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContestRankingResult
+     */
+    omit?: ContestRankingResultOmit<ExtArgs> | null
+    /**
+     * The data needed to update a ContestRankingResult.
+     */
+    data: XOR<ContestRankingResultUpdateInput, ContestRankingResultUncheckedUpdateInput>
+    /**
+     * Choose, which ContestRankingResult to update.
+     */
+    where: ContestRankingResultWhereUniqueInput
+  }
+
+  /**
+   * ContestRankingResult updateMany
+   */
+  export type ContestRankingResultUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update ContestRankingResults.
+     */
+    data: XOR<ContestRankingResultUpdateManyMutationInput, ContestRankingResultUncheckedUpdateManyInput>
+    /**
+     * Filter which ContestRankingResults to update
+     */
+    where?: ContestRankingResultWhereInput
+    /**
+     * Limit how many ContestRankingResults to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * ContestRankingResult upsert
+   */
+  export type ContestRankingResultUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContestRankingResult
+     */
+    select?: ContestRankingResultSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContestRankingResult
+     */
+    omit?: ContestRankingResultOmit<ExtArgs> | null
+    /**
+     * The filter to search for the ContestRankingResult to update in case it exists.
+     */
+    where: ContestRankingResultWhereUniqueInput
+    /**
+     * In case the ContestRankingResult found by the `where` argument doesn't exist, create a new ContestRankingResult with this data.
+     */
+    create: XOR<ContestRankingResultCreateInput, ContestRankingResultUncheckedCreateInput>
+    /**
+     * In case the ContestRankingResult was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<ContestRankingResultUpdateInput, ContestRankingResultUncheckedUpdateInput>
+  }
+
+  /**
+   * ContestRankingResult delete
+   */
+  export type ContestRankingResultDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContestRankingResult
+     */
+    select?: ContestRankingResultSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContestRankingResult
+     */
+    omit?: ContestRankingResultOmit<ExtArgs> | null
+    /**
+     * Filter which ContestRankingResult to delete.
+     */
+    where: ContestRankingResultWhereUniqueInput
+  }
+
+  /**
+   * ContestRankingResult deleteMany
+   */
+  export type ContestRankingResultDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ContestRankingResults to delete
+     */
+    where?: ContestRankingResultWhereInput
+    /**
+     * Limit how many ContestRankingResults to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * ContestRankingResult findRaw
+   */
+  export type ContestRankingResultFindRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The query predicate filter. If unspecified, then all documents in the collection will match the predicate. ${@link https://docs.mongodb.com/manual/reference/operator/query MongoDB Docs}.
+     */
+    filter?: InputJsonValue
+    /**
+     * Additional options to pass to the `find` command ${@link https://docs.mongodb.com/manual/reference/command/find/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * ContestRankingResult aggregateRaw
+   */
+  export type ContestRankingResultAggregateRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * An array of aggregation stages to process and transform the document stream via the aggregation pipeline. ${@link https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline MongoDB Docs}.
+     */
+    pipeline?: InputJsonValue[]
+    /**
+     * Additional options to pass to the `aggregate` command ${@link https://docs.mongodb.com/manual/reference/command/aggregate/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * ContestRankingResult without action
+   */
+  export type ContestRankingResultDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContestRankingResult
+     */
+    select?: ContestRankingResultSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContestRankingResult
+     */
+    omit?: ContestRankingResultOmit<ExtArgs> | null
+  }
+
+
+  /**
+   * Model ContestAwardGrant
+   */
+
+  export type AggregateContestAwardGrant = {
+    _count: ContestAwardGrantCountAggregateOutputType | null
+    _avg: ContestAwardGrantAvgAggregateOutputType | null
+    _sum: ContestAwardGrantSumAggregateOutputType | null
+    _min: ContestAwardGrantMinAggregateOutputType | null
+    _max: ContestAwardGrantMaxAggregateOutputType | null
+  }
+
+  export type ContestAwardGrantAvgAggregateOutputType = {
+    rankLimit: number | null
+    levelOrder: number | null
+    rank: number | null
+    keyReward: number | null
+    boostReward: number | null
+    swapReward: number | null
+    coinReward: number | null
+  }
+
+  export type ContestAwardGrantSumAggregateOutputType = {
+    rankLimit: number | null
+    levelOrder: number | null
+    rank: number | null
+    keyReward: number | null
+    boostReward: number | null
+    swapReward: number | null
+    coinReward: number | null
+  }
+
+  export type ContestAwardGrantMinAggregateOutputType = {
+    id: string | null
+    grantKey: string | null
+    contestId: string | null
+    contestAwardId: string | null
+    participantId: string | null
+    userId: string | null
+    photoId: string | null
+    category: $Enums.PrizeType | null
+    kind: $Enums.AchievementKind | null
+    type: $Enums.AwardType | null
+    target: $Enums.AwardTarget | null
+    rankLimit: number | null
+    levelBadge: $Enums.ContestLevelBadge | null
+    levelOrder: number | null
+    rank: number | null
+    keyReward: number | null
+    boostReward: number | null
+    swapReward: number | null
+    coinReward: number | null
+    status: $Enums.ContestGrantStatus | null
+    error: string | null
+    processedAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type ContestAwardGrantMaxAggregateOutputType = {
+    id: string | null
+    grantKey: string | null
+    contestId: string | null
+    contestAwardId: string | null
+    participantId: string | null
+    userId: string | null
+    photoId: string | null
+    category: $Enums.PrizeType | null
+    kind: $Enums.AchievementKind | null
+    type: $Enums.AwardType | null
+    target: $Enums.AwardTarget | null
+    rankLimit: number | null
+    levelBadge: $Enums.ContestLevelBadge | null
+    levelOrder: number | null
+    rank: number | null
+    keyReward: number | null
+    boostReward: number | null
+    swapReward: number | null
+    coinReward: number | null
+    status: $Enums.ContestGrantStatus | null
+    error: string | null
+    processedAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type ContestAwardGrantCountAggregateOutputType = {
+    id: number
+    grantKey: number
+    contestId: number
+    contestAwardId: number
+    participantId: number
+    userId: number
+    photoId: number
+    category: number
+    kind: number
+    type: number
+    target: number
+    rankLimit: number
+    levelBadge: number
+    levelOrder: number
+    rank: number
+    keyReward: number
+    boostReward: number
+    swapReward: number
+    coinReward: number
+    status: number
+    error: number
+    processedAt: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type ContestAwardGrantAvgAggregateInputType = {
+    rankLimit?: true
+    levelOrder?: true
+    rank?: true
+    keyReward?: true
+    boostReward?: true
+    swapReward?: true
+    coinReward?: true
+  }
+
+  export type ContestAwardGrantSumAggregateInputType = {
+    rankLimit?: true
+    levelOrder?: true
+    rank?: true
+    keyReward?: true
+    boostReward?: true
+    swapReward?: true
+    coinReward?: true
+  }
+
+  export type ContestAwardGrantMinAggregateInputType = {
+    id?: true
+    grantKey?: true
+    contestId?: true
+    contestAwardId?: true
+    participantId?: true
+    userId?: true
+    photoId?: true
+    category?: true
+    kind?: true
+    type?: true
+    target?: true
+    rankLimit?: true
+    levelBadge?: true
+    levelOrder?: true
+    rank?: true
+    keyReward?: true
+    boostReward?: true
+    swapReward?: true
+    coinReward?: true
+    status?: true
+    error?: true
+    processedAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type ContestAwardGrantMaxAggregateInputType = {
+    id?: true
+    grantKey?: true
+    contestId?: true
+    contestAwardId?: true
+    participantId?: true
+    userId?: true
+    photoId?: true
+    category?: true
+    kind?: true
+    type?: true
+    target?: true
+    rankLimit?: true
+    levelBadge?: true
+    levelOrder?: true
+    rank?: true
+    keyReward?: true
+    boostReward?: true
+    swapReward?: true
+    coinReward?: true
+    status?: true
+    error?: true
+    processedAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type ContestAwardGrantCountAggregateInputType = {
+    id?: true
+    grantKey?: true
+    contestId?: true
+    contestAwardId?: true
+    participantId?: true
+    userId?: true
+    photoId?: true
+    category?: true
+    kind?: true
+    type?: true
+    target?: true
+    rankLimit?: true
+    levelBadge?: true
+    levelOrder?: true
+    rank?: true
+    keyReward?: true
+    boostReward?: true
+    swapReward?: true
+    coinReward?: true
+    status?: true
+    error?: true
+    processedAt?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type ContestAwardGrantAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ContestAwardGrant to aggregate.
+     */
+    where?: ContestAwardGrantWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ContestAwardGrants to fetch.
+     */
+    orderBy?: ContestAwardGrantOrderByWithRelationInput | ContestAwardGrantOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: ContestAwardGrantWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ContestAwardGrants from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ContestAwardGrants.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned ContestAwardGrants
+    **/
+    _count?: true | ContestAwardGrantCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: ContestAwardGrantAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: ContestAwardGrantSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: ContestAwardGrantMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: ContestAwardGrantMaxAggregateInputType
+  }
+
+  export type GetContestAwardGrantAggregateType<T extends ContestAwardGrantAggregateArgs> = {
+        [P in keyof T & keyof AggregateContestAwardGrant]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateContestAwardGrant[P]>
+      : GetScalarType<T[P], AggregateContestAwardGrant[P]>
+  }
+
+
+
+
+  export type ContestAwardGrantGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ContestAwardGrantWhereInput
+    orderBy?: ContestAwardGrantOrderByWithAggregationInput | ContestAwardGrantOrderByWithAggregationInput[]
+    by: ContestAwardGrantScalarFieldEnum[] | ContestAwardGrantScalarFieldEnum
+    having?: ContestAwardGrantScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: ContestAwardGrantCountAggregateInputType | true
+    _avg?: ContestAwardGrantAvgAggregateInputType
+    _sum?: ContestAwardGrantSumAggregateInputType
+    _min?: ContestAwardGrantMinAggregateInputType
+    _max?: ContestAwardGrantMaxAggregateInputType
+  }
+
+  export type ContestAwardGrantGroupByOutputType = {
+    id: string
+    grantKey: string
+    contestId: string
+    contestAwardId: string | null
+    participantId: string
+    userId: string
+    photoId: string | null
+    category: $Enums.PrizeType
+    kind: $Enums.AchievementKind
+    type: $Enums.AwardType | null
+    target: $Enums.AwardTarget | null
+    rankLimit: number | null
+    levelBadge: $Enums.ContestLevelBadge | null
+    levelOrder: number | null
+    rank: number | null
+    keyReward: number
+    boostReward: number
+    swapReward: number
+    coinReward: number
+    status: $Enums.ContestGrantStatus
+    error: string | null
+    processedAt: Date | null
+    createdAt: Date
+    updatedAt: Date
+    _count: ContestAwardGrantCountAggregateOutputType | null
+    _avg: ContestAwardGrantAvgAggregateOutputType | null
+    _sum: ContestAwardGrantSumAggregateOutputType | null
+    _min: ContestAwardGrantMinAggregateOutputType | null
+    _max: ContestAwardGrantMaxAggregateOutputType | null
+  }
+
+  type GetContestAwardGrantGroupByPayload<T extends ContestAwardGrantGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<ContestAwardGrantGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof ContestAwardGrantGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], ContestAwardGrantGroupByOutputType[P]>
+            : GetScalarType<T[P], ContestAwardGrantGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type ContestAwardGrantSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    grantKey?: boolean
+    contestId?: boolean
+    contestAwardId?: boolean
+    participantId?: boolean
+    userId?: boolean
+    photoId?: boolean
+    category?: boolean
+    kind?: boolean
+    type?: boolean
+    target?: boolean
+    rankLimit?: boolean
+    levelBadge?: boolean
+    levelOrder?: boolean
+    rank?: boolean
+    keyReward?: boolean
+    boostReward?: boolean
+    swapReward?: boolean
+    coinReward?: boolean
+    status?: boolean
+    error?: boolean
+    processedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["contestAwardGrant"]>
+
+
+
+  export type ContestAwardGrantSelectScalar = {
+    id?: boolean
+    grantKey?: boolean
+    contestId?: boolean
+    contestAwardId?: boolean
+    participantId?: boolean
+    userId?: boolean
+    photoId?: boolean
+    category?: boolean
+    kind?: boolean
+    type?: boolean
+    target?: boolean
+    rankLimit?: boolean
+    levelBadge?: boolean
+    levelOrder?: boolean
+    rank?: boolean
+    keyReward?: boolean
+    boostReward?: boolean
+    swapReward?: boolean
+    coinReward?: boolean
+    status?: boolean
+    error?: boolean
+    processedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type ContestAwardGrantOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "grantKey" | "contestId" | "contestAwardId" | "participantId" | "userId" | "photoId" | "category" | "kind" | "type" | "target" | "rankLimit" | "levelBadge" | "levelOrder" | "rank" | "keyReward" | "boostReward" | "swapReward" | "coinReward" | "status" | "error" | "processedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["contestAwardGrant"]>
+
+  export type $ContestAwardGrantPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "ContestAwardGrant"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      grantKey: string
+      contestId: string
+      contestAwardId: string | null
+      participantId: string
+      userId: string
+      photoId: string | null
+      category: $Enums.PrizeType
+      kind: $Enums.AchievementKind
+      type: $Enums.AwardType | null
+      target: $Enums.AwardTarget | null
+      rankLimit: number | null
+      levelBadge: $Enums.ContestLevelBadge | null
+      levelOrder: number | null
+      rank: number | null
+      keyReward: number
+      boostReward: number
+      swapReward: number
+      coinReward: number
+      status: $Enums.ContestGrantStatus
+      error: string | null
+      processedAt: Date | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["contestAwardGrant"]>
+    composites: {}
+  }
+
+  type ContestAwardGrantGetPayload<S extends boolean | null | undefined | ContestAwardGrantDefaultArgs> = $Result.GetResult<Prisma.$ContestAwardGrantPayload, S>
+
+  type ContestAwardGrantCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<ContestAwardGrantFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: ContestAwardGrantCountAggregateInputType | true
+    }
+
+  export interface ContestAwardGrantDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['ContestAwardGrant'], meta: { name: 'ContestAwardGrant' } }
+    /**
+     * Find zero or one ContestAwardGrant that matches the filter.
+     * @param {ContestAwardGrantFindUniqueArgs} args - Arguments to find a ContestAwardGrant
+     * @example
+     * // Get one ContestAwardGrant
+     * const contestAwardGrant = await prisma.contestAwardGrant.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends ContestAwardGrantFindUniqueArgs>(args: SelectSubset<T, ContestAwardGrantFindUniqueArgs<ExtArgs>>): Prisma__ContestAwardGrantClient<$Result.GetResult<Prisma.$ContestAwardGrantPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one ContestAwardGrant that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {ContestAwardGrantFindUniqueOrThrowArgs} args - Arguments to find a ContestAwardGrant
+     * @example
+     * // Get one ContestAwardGrant
+     * const contestAwardGrant = await prisma.contestAwardGrant.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends ContestAwardGrantFindUniqueOrThrowArgs>(args: SelectSubset<T, ContestAwardGrantFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ContestAwardGrantClient<$Result.GetResult<Prisma.$ContestAwardGrantPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ContestAwardGrant that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContestAwardGrantFindFirstArgs} args - Arguments to find a ContestAwardGrant
+     * @example
+     * // Get one ContestAwardGrant
+     * const contestAwardGrant = await prisma.contestAwardGrant.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends ContestAwardGrantFindFirstArgs>(args?: SelectSubset<T, ContestAwardGrantFindFirstArgs<ExtArgs>>): Prisma__ContestAwardGrantClient<$Result.GetResult<Prisma.$ContestAwardGrantPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ContestAwardGrant that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContestAwardGrantFindFirstOrThrowArgs} args - Arguments to find a ContestAwardGrant
+     * @example
+     * // Get one ContestAwardGrant
+     * const contestAwardGrant = await prisma.contestAwardGrant.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends ContestAwardGrantFindFirstOrThrowArgs>(args?: SelectSubset<T, ContestAwardGrantFindFirstOrThrowArgs<ExtArgs>>): Prisma__ContestAwardGrantClient<$Result.GetResult<Prisma.$ContestAwardGrantPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more ContestAwardGrants that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContestAwardGrantFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all ContestAwardGrants
+     * const contestAwardGrants = await prisma.contestAwardGrant.findMany()
+     * 
+     * // Get first 10 ContestAwardGrants
+     * const contestAwardGrants = await prisma.contestAwardGrant.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const contestAwardGrantWithIdOnly = await prisma.contestAwardGrant.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends ContestAwardGrantFindManyArgs>(args?: SelectSubset<T, ContestAwardGrantFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ContestAwardGrantPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a ContestAwardGrant.
+     * @param {ContestAwardGrantCreateArgs} args - Arguments to create a ContestAwardGrant.
+     * @example
+     * // Create one ContestAwardGrant
+     * const ContestAwardGrant = await prisma.contestAwardGrant.create({
+     *   data: {
+     *     // ... data to create a ContestAwardGrant
+     *   }
+     * })
+     * 
+     */
+    create<T extends ContestAwardGrantCreateArgs>(args: SelectSubset<T, ContestAwardGrantCreateArgs<ExtArgs>>): Prisma__ContestAwardGrantClient<$Result.GetResult<Prisma.$ContestAwardGrantPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many ContestAwardGrants.
+     * @param {ContestAwardGrantCreateManyArgs} args - Arguments to create many ContestAwardGrants.
+     * @example
+     * // Create many ContestAwardGrants
+     * const contestAwardGrant = await prisma.contestAwardGrant.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends ContestAwardGrantCreateManyArgs>(args?: SelectSubset<T, ContestAwardGrantCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a ContestAwardGrant.
+     * @param {ContestAwardGrantDeleteArgs} args - Arguments to delete one ContestAwardGrant.
+     * @example
+     * // Delete one ContestAwardGrant
+     * const ContestAwardGrant = await prisma.contestAwardGrant.delete({
+     *   where: {
+     *     // ... filter to delete one ContestAwardGrant
+     *   }
+     * })
+     * 
+     */
+    delete<T extends ContestAwardGrantDeleteArgs>(args: SelectSubset<T, ContestAwardGrantDeleteArgs<ExtArgs>>): Prisma__ContestAwardGrantClient<$Result.GetResult<Prisma.$ContestAwardGrantPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one ContestAwardGrant.
+     * @param {ContestAwardGrantUpdateArgs} args - Arguments to update one ContestAwardGrant.
+     * @example
+     * // Update one ContestAwardGrant
+     * const contestAwardGrant = await prisma.contestAwardGrant.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends ContestAwardGrantUpdateArgs>(args: SelectSubset<T, ContestAwardGrantUpdateArgs<ExtArgs>>): Prisma__ContestAwardGrantClient<$Result.GetResult<Prisma.$ContestAwardGrantPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more ContestAwardGrants.
+     * @param {ContestAwardGrantDeleteManyArgs} args - Arguments to filter ContestAwardGrants to delete.
+     * @example
+     * // Delete a few ContestAwardGrants
+     * const { count } = await prisma.contestAwardGrant.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends ContestAwardGrantDeleteManyArgs>(args?: SelectSubset<T, ContestAwardGrantDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ContestAwardGrants.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContestAwardGrantUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many ContestAwardGrants
+     * const contestAwardGrant = await prisma.contestAwardGrant.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends ContestAwardGrantUpdateManyArgs>(args: SelectSubset<T, ContestAwardGrantUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one ContestAwardGrant.
+     * @param {ContestAwardGrantUpsertArgs} args - Arguments to update or create a ContestAwardGrant.
+     * @example
+     * // Update or create a ContestAwardGrant
+     * const contestAwardGrant = await prisma.contestAwardGrant.upsert({
+     *   create: {
+     *     // ... data to create a ContestAwardGrant
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the ContestAwardGrant we want to update
+     *   }
+     * })
+     */
+    upsert<T extends ContestAwardGrantUpsertArgs>(args: SelectSubset<T, ContestAwardGrantUpsertArgs<ExtArgs>>): Prisma__ContestAwardGrantClient<$Result.GetResult<Prisma.$ContestAwardGrantPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more ContestAwardGrants that matches the filter.
+     * @param {ContestAwardGrantFindRawArgs} args - Select which filters you would like to apply.
+     * @example
+     * const contestAwardGrant = await prisma.contestAwardGrant.findRaw({
+     *   filter: { age: { $gt: 25 } }
+     * })
+     */
+    findRaw(args?: ContestAwardGrantFindRawArgs): Prisma.PrismaPromise<JsonObject>
+
+    /**
+     * Perform aggregation operations on a ContestAwardGrant.
+     * @param {ContestAwardGrantAggregateRawArgs} args - Select which aggregations you would like to apply.
+     * @example
+     * const contestAwardGrant = await prisma.contestAwardGrant.aggregateRaw({
+     *   pipeline: [
+     *     { $match: { status: "registered" } },
+     *     { $group: { _id: "$country", total: { $sum: 1 } } }
+     *   ]
+     * })
+     */
+    aggregateRaw(args?: ContestAwardGrantAggregateRawArgs): Prisma.PrismaPromise<JsonObject>
+
+
+    /**
+     * Count the number of ContestAwardGrants.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContestAwardGrantCountArgs} args - Arguments to filter ContestAwardGrants to count.
+     * @example
+     * // Count the number of ContestAwardGrants
+     * const count = await prisma.contestAwardGrant.count({
+     *   where: {
+     *     // ... the filter for the ContestAwardGrants we want to count
+     *   }
+     * })
+    **/
+    count<T extends ContestAwardGrantCountArgs>(
+      args?: Subset<T, ContestAwardGrantCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], ContestAwardGrantCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a ContestAwardGrant.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContestAwardGrantAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends ContestAwardGrantAggregateArgs>(args: Subset<T, ContestAwardGrantAggregateArgs>): Prisma.PrismaPromise<GetContestAwardGrantAggregateType<T>>
+
+    /**
+     * Group by ContestAwardGrant.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContestAwardGrantGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends ContestAwardGrantGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: ContestAwardGrantGroupByArgs['orderBy'] }
+        : { orderBy?: ContestAwardGrantGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, ContestAwardGrantGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetContestAwardGrantGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the ContestAwardGrant model
+   */
+  readonly fields: ContestAwardGrantFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for ContestAwardGrant.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__ContestAwardGrantClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the ContestAwardGrant model
+   */
+  interface ContestAwardGrantFieldRefs {
+    readonly id: FieldRef<"ContestAwardGrant", 'String'>
+    readonly grantKey: FieldRef<"ContestAwardGrant", 'String'>
+    readonly contestId: FieldRef<"ContestAwardGrant", 'String'>
+    readonly contestAwardId: FieldRef<"ContestAwardGrant", 'String'>
+    readonly participantId: FieldRef<"ContestAwardGrant", 'String'>
+    readonly userId: FieldRef<"ContestAwardGrant", 'String'>
+    readonly photoId: FieldRef<"ContestAwardGrant", 'String'>
+    readonly category: FieldRef<"ContestAwardGrant", 'PrizeType'>
+    readonly kind: FieldRef<"ContestAwardGrant", 'AchievementKind'>
+    readonly type: FieldRef<"ContestAwardGrant", 'AwardType'>
+    readonly target: FieldRef<"ContestAwardGrant", 'AwardTarget'>
+    readonly rankLimit: FieldRef<"ContestAwardGrant", 'Int'>
+    readonly levelBadge: FieldRef<"ContestAwardGrant", 'ContestLevelBadge'>
+    readonly levelOrder: FieldRef<"ContestAwardGrant", 'Int'>
+    readonly rank: FieldRef<"ContestAwardGrant", 'Int'>
+    readonly keyReward: FieldRef<"ContestAwardGrant", 'Int'>
+    readonly boostReward: FieldRef<"ContestAwardGrant", 'Int'>
+    readonly swapReward: FieldRef<"ContestAwardGrant", 'Int'>
+    readonly coinReward: FieldRef<"ContestAwardGrant", 'Int'>
+    readonly status: FieldRef<"ContestAwardGrant", 'ContestGrantStatus'>
+    readonly error: FieldRef<"ContestAwardGrant", 'String'>
+    readonly processedAt: FieldRef<"ContestAwardGrant", 'DateTime'>
+    readonly createdAt: FieldRef<"ContestAwardGrant", 'DateTime'>
+    readonly updatedAt: FieldRef<"ContestAwardGrant", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * ContestAwardGrant findUnique
+   */
+  export type ContestAwardGrantFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContestAwardGrant
+     */
+    select?: ContestAwardGrantSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContestAwardGrant
+     */
+    omit?: ContestAwardGrantOmit<ExtArgs> | null
+    /**
+     * Filter, which ContestAwardGrant to fetch.
+     */
+    where: ContestAwardGrantWhereUniqueInput
+  }
+
+  /**
+   * ContestAwardGrant findUniqueOrThrow
+   */
+  export type ContestAwardGrantFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContestAwardGrant
+     */
+    select?: ContestAwardGrantSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContestAwardGrant
+     */
+    omit?: ContestAwardGrantOmit<ExtArgs> | null
+    /**
+     * Filter, which ContestAwardGrant to fetch.
+     */
+    where: ContestAwardGrantWhereUniqueInput
+  }
+
+  /**
+   * ContestAwardGrant findFirst
+   */
+  export type ContestAwardGrantFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContestAwardGrant
+     */
+    select?: ContestAwardGrantSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContestAwardGrant
+     */
+    omit?: ContestAwardGrantOmit<ExtArgs> | null
+    /**
+     * Filter, which ContestAwardGrant to fetch.
+     */
+    where?: ContestAwardGrantWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ContestAwardGrants to fetch.
+     */
+    orderBy?: ContestAwardGrantOrderByWithRelationInput | ContestAwardGrantOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ContestAwardGrants.
+     */
+    cursor?: ContestAwardGrantWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ContestAwardGrants from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ContestAwardGrants.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ContestAwardGrants.
+     */
+    distinct?: ContestAwardGrantScalarFieldEnum | ContestAwardGrantScalarFieldEnum[]
+  }
+
+  /**
+   * ContestAwardGrant findFirstOrThrow
+   */
+  export type ContestAwardGrantFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContestAwardGrant
+     */
+    select?: ContestAwardGrantSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContestAwardGrant
+     */
+    omit?: ContestAwardGrantOmit<ExtArgs> | null
+    /**
+     * Filter, which ContestAwardGrant to fetch.
+     */
+    where?: ContestAwardGrantWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ContestAwardGrants to fetch.
+     */
+    orderBy?: ContestAwardGrantOrderByWithRelationInput | ContestAwardGrantOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ContestAwardGrants.
+     */
+    cursor?: ContestAwardGrantWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ContestAwardGrants from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ContestAwardGrants.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ContestAwardGrants.
+     */
+    distinct?: ContestAwardGrantScalarFieldEnum | ContestAwardGrantScalarFieldEnum[]
+  }
+
+  /**
+   * ContestAwardGrant findMany
+   */
+  export type ContestAwardGrantFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContestAwardGrant
+     */
+    select?: ContestAwardGrantSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContestAwardGrant
+     */
+    omit?: ContestAwardGrantOmit<ExtArgs> | null
+    /**
+     * Filter, which ContestAwardGrants to fetch.
+     */
+    where?: ContestAwardGrantWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ContestAwardGrants to fetch.
+     */
+    orderBy?: ContestAwardGrantOrderByWithRelationInput | ContestAwardGrantOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing ContestAwardGrants.
+     */
+    cursor?: ContestAwardGrantWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ContestAwardGrants from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ContestAwardGrants.
+     */
+    skip?: number
+    distinct?: ContestAwardGrantScalarFieldEnum | ContestAwardGrantScalarFieldEnum[]
+  }
+
+  /**
+   * ContestAwardGrant create
+   */
+  export type ContestAwardGrantCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContestAwardGrant
+     */
+    select?: ContestAwardGrantSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContestAwardGrant
+     */
+    omit?: ContestAwardGrantOmit<ExtArgs> | null
+    /**
+     * The data needed to create a ContestAwardGrant.
+     */
+    data: XOR<ContestAwardGrantCreateInput, ContestAwardGrantUncheckedCreateInput>
+  }
+
+  /**
+   * ContestAwardGrant createMany
+   */
+  export type ContestAwardGrantCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many ContestAwardGrants.
+     */
+    data: ContestAwardGrantCreateManyInput | ContestAwardGrantCreateManyInput[]
+  }
+
+  /**
+   * ContestAwardGrant update
+   */
+  export type ContestAwardGrantUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContestAwardGrant
+     */
+    select?: ContestAwardGrantSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContestAwardGrant
+     */
+    omit?: ContestAwardGrantOmit<ExtArgs> | null
+    /**
+     * The data needed to update a ContestAwardGrant.
+     */
+    data: XOR<ContestAwardGrantUpdateInput, ContestAwardGrantUncheckedUpdateInput>
+    /**
+     * Choose, which ContestAwardGrant to update.
+     */
+    where: ContestAwardGrantWhereUniqueInput
+  }
+
+  /**
+   * ContestAwardGrant updateMany
+   */
+  export type ContestAwardGrantUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update ContestAwardGrants.
+     */
+    data: XOR<ContestAwardGrantUpdateManyMutationInput, ContestAwardGrantUncheckedUpdateManyInput>
+    /**
+     * Filter which ContestAwardGrants to update
+     */
+    where?: ContestAwardGrantWhereInput
+    /**
+     * Limit how many ContestAwardGrants to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * ContestAwardGrant upsert
+   */
+  export type ContestAwardGrantUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContestAwardGrant
+     */
+    select?: ContestAwardGrantSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContestAwardGrant
+     */
+    omit?: ContestAwardGrantOmit<ExtArgs> | null
+    /**
+     * The filter to search for the ContestAwardGrant to update in case it exists.
+     */
+    where: ContestAwardGrantWhereUniqueInput
+    /**
+     * In case the ContestAwardGrant found by the `where` argument doesn't exist, create a new ContestAwardGrant with this data.
+     */
+    create: XOR<ContestAwardGrantCreateInput, ContestAwardGrantUncheckedCreateInput>
+    /**
+     * In case the ContestAwardGrant was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<ContestAwardGrantUpdateInput, ContestAwardGrantUncheckedUpdateInput>
+  }
+
+  /**
+   * ContestAwardGrant delete
+   */
+  export type ContestAwardGrantDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContestAwardGrant
+     */
+    select?: ContestAwardGrantSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContestAwardGrant
+     */
+    omit?: ContestAwardGrantOmit<ExtArgs> | null
+    /**
+     * Filter which ContestAwardGrant to delete.
+     */
+    where: ContestAwardGrantWhereUniqueInput
+  }
+
+  /**
+   * ContestAwardGrant deleteMany
+   */
+  export type ContestAwardGrantDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ContestAwardGrants to delete
+     */
+    where?: ContestAwardGrantWhereInput
+    /**
+     * Limit how many ContestAwardGrants to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * ContestAwardGrant findRaw
+   */
+  export type ContestAwardGrantFindRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The query predicate filter. If unspecified, then all documents in the collection will match the predicate. ${@link https://docs.mongodb.com/manual/reference/operator/query MongoDB Docs}.
+     */
+    filter?: InputJsonValue
+    /**
+     * Additional options to pass to the `find` command ${@link https://docs.mongodb.com/manual/reference/command/find/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * ContestAwardGrant aggregateRaw
+   */
+  export type ContestAwardGrantAggregateRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * An array of aggregation stages to process and transform the document stream via the aggregation pipeline. ${@link https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline MongoDB Docs}.
+     */
+    pipeline?: InputJsonValue[]
+    /**
+     * Additional options to pass to the `aggregate` command ${@link https://docs.mongodb.com/manual/reference/command/aggregate/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * ContestAwardGrant without action
+   */
+  export type ContestAwardGrantDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContestAwardGrant
+     */
+    select?: ContestAwardGrantSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContestAwardGrant
+     */
+    omit?: ContestAwardGrantOmit<ExtArgs> | null
+  }
+
+
+  /**
+   * Model ContestAwardSelection
+   */
+
+  export type AggregateContestAwardSelection = {
+    _count: ContestAwardSelectionCountAggregateOutputType | null
+    _min: ContestAwardSelectionMinAggregateOutputType | null
+    _max: ContestAwardSelectionMaxAggregateOutputType | null
+  }
+
+  export type ContestAwardSelectionMinAggregateOutputType = {
+    id: string | null
+    selectionKey: string | null
+    contestId: string | null
+    contestAwardId: string | null
+    slotKey: string | null
+    photoId: string | null
+    participantId: string | null
+    selectedById: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type ContestAwardSelectionMaxAggregateOutputType = {
+    id: string | null
+    selectionKey: string | null
+    contestId: string | null
+    contestAwardId: string | null
+    slotKey: string | null
+    photoId: string | null
+    participantId: string | null
+    selectedById: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type ContestAwardSelectionCountAggregateOutputType = {
+    id: number
+    selectionKey: number
+    contestId: number
+    contestAwardId: number
+    slotKey: number
+    photoId: number
+    participantId: number
+    selectedById: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type ContestAwardSelectionMinAggregateInputType = {
+    id?: true
+    selectionKey?: true
+    contestId?: true
+    contestAwardId?: true
+    slotKey?: true
+    photoId?: true
+    participantId?: true
+    selectedById?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type ContestAwardSelectionMaxAggregateInputType = {
+    id?: true
+    selectionKey?: true
+    contestId?: true
+    contestAwardId?: true
+    slotKey?: true
+    photoId?: true
+    participantId?: true
+    selectedById?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type ContestAwardSelectionCountAggregateInputType = {
+    id?: true
+    selectionKey?: true
+    contestId?: true
+    contestAwardId?: true
+    slotKey?: true
+    photoId?: true
+    participantId?: true
+    selectedById?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type ContestAwardSelectionAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ContestAwardSelection to aggregate.
+     */
+    where?: ContestAwardSelectionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ContestAwardSelections to fetch.
+     */
+    orderBy?: ContestAwardSelectionOrderByWithRelationInput | ContestAwardSelectionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: ContestAwardSelectionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ContestAwardSelections from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ContestAwardSelections.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned ContestAwardSelections
+    **/
+    _count?: true | ContestAwardSelectionCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: ContestAwardSelectionMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: ContestAwardSelectionMaxAggregateInputType
+  }
+
+  export type GetContestAwardSelectionAggregateType<T extends ContestAwardSelectionAggregateArgs> = {
+        [P in keyof T & keyof AggregateContestAwardSelection]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateContestAwardSelection[P]>
+      : GetScalarType<T[P], AggregateContestAwardSelection[P]>
+  }
+
+
+
+
+  export type ContestAwardSelectionGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ContestAwardSelectionWhereInput
+    orderBy?: ContestAwardSelectionOrderByWithAggregationInput | ContestAwardSelectionOrderByWithAggregationInput[]
+    by: ContestAwardSelectionScalarFieldEnum[] | ContestAwardSelectionScalarFieldEnum
+    having?: ContestAwardSelectionScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: ContestAwardSelectionCountAggregateInputType | true
+    _min?: ContestAwardSelectionMinAggregateInputType
+    _max?: ContestAwardSelectionMaxAggregateInputType
+  }
+
+  export type ContestAwardSelectionGroupByOutputType = {
+    id: string
+    selectionKey: string
+    contestId: string
+    contestAwardId: string
+    slotKey: string
+    photoId: string
+    participantId: string
+    selectedById: string
+    createdAt: Date
+    updatedAt: Date
+    _count: ContestAwardSelectionCountAggregateOutputType | null
+    _min: ContestAwardSelectionMinAggregateOutputType | null
+    _max: ContestAwardSelectionMaxAggregateOutputType | null
+  }
+
+  type GetContestAwardSelectionGroupByPayload<T extends ContestAwardSelectionGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<ContestAwardSelectionGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof ContestAwardSelectionGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], ContestAwardSelectionGroupByOutputType[P]>
+            : GetScalarType<T[P], ContestAwardSelectionGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type ContestAwardSelectionSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    selectionKey?: boolean
+    contestId?: boolean
+    contestAwardId?: boolean
+    slotKey?: boolean
+    photoId?: boolean
+    participantId?: boolean
+    selectedById?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["contestAwardSelection"]>
+
+
+
+  export type ContestAwardSelectionSelectScalar = {
+    id?: boolean
+    selectionKey?: boolean
+    contestId?: boolean
+    contestAwardId?: boolean
+    slotKey?: boolean
+    photoId?: boolean
+    participantId?: boolean
+    selectedById?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type ContestAwardSelectionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "selectionKey" | "contestId" | "contestAwardId" | "slotKey" | "photoId" | "participantId" | "selectedById" | "createdAt" | "updatedAt", ExtArgs["result"]["contestAwardSelection"]>
+
+  export type $ContestAwardSelectionPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "ContestAwardSelection"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      selectionKey: string
+      contestId: string
+      contestAwardId: string
+      slotKey: string
+      photoId: string
+      participantId: string
+      selectedById: string
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["contestAwardSelection"]>
+    composites: {}
+  }
+
+  type ContestAwardSelectionGetPayload<S extends boolean | null | undefined | ContestAwardSelectionDefaultArgs> = $Result.GetResult<Prisma.$ContestAwardSelectionPayload, S>
+
+  type ContestAwardSelectionCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<ContestAwardSelectionFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: ContestAwardSelectionCountAggregateInputType | true
+    }
+
+  export interface ContestAwardSelectionDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['ContestAwardSelection'], meta: { name: 'ContestAwardSelection' } }
+    /**
+     * Find zero or one ContestAwardSelection that matches the filter.
+     * @param {ContestAwardSelectionFindUniqueArgs} args - Arguments to find a ContestAwardSelection
+     * @example
+     * // Get one ContestAwardSelection
+     * const contestAwardSelection = await prisma.contestAwardSelection.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends ContestAwardSelectionFindUniqueArgs>(args: SelectSubset<T, ContestAwardSelectionFindUniqueArgs<ExtArgs>>): Prisma__ContestAwardSelectionClient<$Result.GetResult<Prisma.$ContestAwardSelectionPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one ContestAwardSelection that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {ContestAwardSelectionFindUniqueOrThrowArgs} args - Arguments to find a ContestAwardSelection
+     * @example
+     * // Get one ContestAwardSelection
+     * const contestAwardSelection = await prisma.contestAwardSelection.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends ContestAwardSelectionFindUniqueOrThrowArgs>(args: SelectSubset<T, ContestAwardSelectionFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ContestAwardSelectionClient<$Result.GetResult<Prisma.$ContestAwardSelectionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ContestAwardSelection that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContestAwardSelectionFindFirstArgs} args - Arguments to find a ContestAwardSelection
+     * @example
+     * // Get one ContestAwardSelection
+     * const contestAwardSelection = await prisma.contestAwardSelection.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends ContestAwardSelectionFindFirstArgs>(args?: SelectSubset<T, ContestAwardSelectionFindFirstArgs<ExtArgs>>): Prisma__ContestAwardSelectionClient<$Result.GetResult<Prisma.$ContestAwardSelectionPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ContestAwardSelection that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContestAwardSelectionFindFirstOrThrowArgs} args - Arguments to find a ContestAwardSelection
+     * @example
+     * // Get one ContestAwardSelection
+     * const contestAwardSelection = await prisma.contestAwardSelection.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends ContestAwardSelectionFindFirstOrThrowArgs>(args?: SelectSubset<T, ContestAwardSelectionFindFirstOrThrowArgs<ExtArgs>>): Prisma__ContestAwardSelectionClient<$Result.GetResult<Prisma.$ContestAwardSelectionPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more ContestAwardSelections that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContestAwardSelectionFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all ContestAwardSelections
+     * const contestAwardSelections = await prisma.contestAwardSelection.findMany()
+     * 
+     * // Get first 10 ContestAwardSelections
+     * const contestAwardSelections = await prisma.contestAwardSelection.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const contestAwardSelectionWithIdOnly = await prisma.contestAwardSelection.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends ContestAwardSelectionFindManyArgs>(args?: SelectSubset<T, ContestAwardSelectionFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ContestAwardSelectionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a ContestAwardSelection.
+     * @param {ContestAwardSelectionCreateArgs} args - Arguments to create a ContestAwardSelection.
+     * @example
+     * // Create one ContestAwardSelection
+     * const ContestAwardSelection = await prisma.contestAwardSelection.create({
+     *   data: {
+     *     // ... data to create a ContestAwardSelection
+     *   }
+     * })
+     * 
+     */
+    create<T extends ContestAwardSelectionCreateArgs>(args: SelectSubset<T, ContestAwardSelectionCreateArgs<ExtArgs>>): Prisma__ContestAwardSelectionClient<$Result.GetResult<Prisma.$ContestAwardSelectionPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many ContestAwardSelections.
+     * @param {ContestAwardSelectionCreateManyArgs} args - Arguments to create many ContestAwardSelections.
+     * @example
+     * // Create many ContestAwardSelections
+     * const contestAwardSelection = await prisma.contestAwardSelection.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends ContestAwardSelectionCreateManyArgs>(args?: SelectSubset<T, ContestAwardSelectionCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a ContestAwardSelection.
+     * @param {ContestAwardSelectionDeleteArgs} args - Arguments to delete one ContestAwardSelection.
+     * @example
+     * // Delete one ContestAwardSelection
+     * const ContestAwardSelection = await prisma.contestAwardSelection.delete({
+     *   where: {
+     *     // ... filter to delete one ContestAwardSelection
+     *   }
+     * })
+     * 
+     */
+    delete<T extends ContestAwardSelectionDeleteArgs>(args: SelectSubset<T, ContestAwardSelectionDeleteArgs<ExtArgs>>): Prisma__ContestAwardSelectionClient<$Result.GetResult<Prisma.$ContestAwardSelectionPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one ContestAwardSelection.
+     * @param {ContestAwardSelectionUpdateArgs} args - Arguments to update one ContestAwardSelection.
+     * @example
+     * // Update one ContestAwardSelection
+     * const contestAwardSelection = await prisma.contestAwardSelection.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends ContestAwardSelectionUpdateArgs>(args: SelectSubset<T, ContestAwardSelectionUpdateArgs<ExtArgs>>): Prisma__ContestAwardSelectionClient<$Result.GetResult<Prisma.$ContestAwardSelectionPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more ContestAwardSelections.
+     * @param {ContestAwardSelectionDeleteManyArgs} args - Arguments to filter ContestAwardSelections to delete.
+     * @example
+     * // Delete a few ContestAwardSelections
+     * const { count } = await prisma.contestAwardSelection.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends ContestAwardSelectionDeleteManyArgs>(args?: SelectSubset<T, ContestAwardSelectionDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ContestAwardSelections.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContestAwardSelectionUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many ContestAwardSelections
+     * const contestAwardSelection = await prisma.contestAwardSelection.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends ContestAwardSelectionUpdateManyArgs>(args: SelectSubset<T, ContestAwardSelectionUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one ContestAwardSelection.
+     * @param {ContestAwardSelectionUpsertArgs} args - Arguments to update or create a ContestAwardSelection.
+     * @example
+     * // Update or create a ContestAwardSelection
+     * const contestAwardSelection = await prisma.contestAwardSelection.upsert({
+     *   create: {
+     *     // ... data to create a ContestAwardSelection
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the ContestAwardSelection we want to update
+     *   }
+     * })
+     */
+    upsert<T extends ContestAwardSelectionUpsertArgs>(args: SelectSubset<T, ContestAwardSelectionUpsertArgs<ExtArgs>>): Prisma__ContestAwardSelectionClient<$Result.GetResult<Prisma.$ContestAwardSelectionPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more ContestAwardSelections that matches the filter.
+     * @param {ContestAwardSelectionFindRawArgs} args - Select which filters you would like to apply.
+     * @example
+     * const contestAwardSelection = await prisma.contestAwardSelection.findRaw({
+     *   filter: { age: { $gt: 25 } }
+     * })
+     */
+    findRaw(args?: ContestAwardSelectionFindRawArgs): Prisma.PrismaPromise<JsonObject>
+
+    /**
+     * Perform aggregation operations on a ContestAwardSelection.
+     * @param {ContestAwardSelectionAggregateRawArgs} args - Select which aggregations you would like to apply.
+     * @example
+     * const contestAwardSelection = await prisma.contestAwardSelection.aggregateRaw({
+     *   pipeline: [
+     *     { $match: { status: "registered" } },
+     *     { $group: { _id: "$country", total: { $sum: 1 } } }
+     *   ]
+     * })
+     */
+    aggregateRaw(args?: ContestAwardSelectionAggregateRawArgs): Prisma.PrismaPromise<JsonObject>
+
+
+    /**
+     * Count the number of ContestAwardSelections.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContestAwardSelectionCountArgs} args - Arguments to filter ContestAwardSelections to count.
+     * @example
+     * // Count the number of ContestAwardSelections
+     * const count = await prisma.contestAwardSelection.count({
+     *   where: {
+     *     // ... the filter for the ContestAwardSelections we want to count
+     *   }
+     * })
+    **/
+    count<T extends ContestAwardSelectionCountArgs>(
+      args?: Subset<T, ContestAwardSelectionCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], ContestAwardSelectionCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a ContestAwardSelection.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContestAwardSelectionAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends ContestAwardSelectionAggregateArgs>(args: Subset<T, ContestAwardSelectionAggregateArgs>): Prisma.PrismaPromise<GetContestAwardSelectionAggregateType<T>>
+
+    /**
+     * Group by ContestAwardSelection.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContestAwardSelectionGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends ContestAwardSelectionGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: ContestAwardSelectionGroupByArgs['orderBy'] }
+        : { orderBy?: ContestAwardSelectionGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, ContestAwardSelectionGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetContestAwardSelectionGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the ContestAwardSelection model
+   */
+  readonly fields: ContestAwardSelectionFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for ContestAwardSelection.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__ContestAwardSelectionClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the ContestAwardSelection model
+   */
+  interface ContestAwardSelectionFieldRefs {
+    readonly id: FieldRef<"ContestAwardSelection", 'String'>
+    readonly selectionKey: FieldRef<"ContestAwardSelection", 'String'>
+    readonly contestId: FieldRef<"ContestAwardSelection", 'String'>
+    readonly contestAwardId: FieldRef<"ContestAwardSelection", 'String'>
+    readonly slotKey: FieldRef<"ContestAwardSelection", 'String'>
+    readonly photoId: FieldRef<"ContestAwardSelection", 'String'>
+    readonly participantId: FieldRef<"ContestAwardSelection", 'String'>
+    readonly selectedById: FieldRef<"ContestAwardSelection", 'String'>
+    readonly createdAt: FieldRef<"ContestAwardSelection", 'DateTime'>
+    readonly updatedAt: FieldRef<"ContestAwardSelection", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * ContestAwardSelection findUnique
+   */
+  export type ContestAwardSelectionFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContestAwardSelection
+     */
+    select?: ContestAwardSelectionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContestAwardSelection
+     */
+    omit?: ContestAwardSelectionOmit<ExtArgs> | null
+    /**
+     * Filter, which ContestAwardSelection to fetch.
+     */
+    where: ContestAwardSelectionWhereUniqueInput
+  }
+
+  /**
+   * ContestAwardSelection findUniqueOrThrow
+   */
+  export type ContestAwardSelectionFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContestAwardSelection
+     */
+    select?: ContestAwardSelectionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContestAwardSelection
+     */
+    omit?: ContestAwardSelectionOmit<ExtArgs> | null
+    /**
+     * Filter, which ContestAwardSelection to fetch.
+     */
+    where: ContestAwardSelectionWhereUniqueInput
+  }
+
+  /**
+   * ContestAwardSelection findFirst
+   */
+  export type ContestAwardSelectionFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContestAwardSelection
+     */
+    select?: ContestAwardSelectionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContestAwardSelection
+     */
+    omit?: ContestAwardSelectionOmit<ExtArgs> | null
+    /**
+     * Filter, which ContestAwardSelection to fetch.
+     */
+    where?: ContestAwardSelectionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ContestAwardSelections to fetch.
+     */
+    orderBy?: ContestAwardSelectionOrderByWithRelationInput | ContestAwardSelectionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ContestAwardSelections.
+     */
+    cursor?: ContestAwardSelectionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ContestAwardSelections from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ContestAwardSelections.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ContestAwardSelections.
+     */
+    distinct?: ContestAwardSelectionScalarFieldEnum | ContestAwardSelectionScalarFieldEnum[]
+  }
+
+  /**
+   * ContestAwardSelection findFirstOrThrow
+   */
+  export type ContestAwardSelectionFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContestAwardSelection
+     */
+    select?: ContestAwardSelectionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContestAwardSelection
+     */
+    omit?: ContestAwardSelectionOmit<ExtArgs> | null
+    /**
+     * Filter, which ContestAwardSelection to fetch.
+     */
+    where?: ContestAwardSelectionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ContestAwardSelections to fetch.
+     */
+    orderBy?: ContestAwardSelectionOrderByWithRelationInput | ContestAwardSelectionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ContestAwardSelections.
+     */
+    cursor?: ContestAwardSelectionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ContestAwardSelections from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ContestAwardSelections.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ContestAwardSelections.
+     */
+    distinct?: ContestAwardSelectionScalarFieldEnum | ContestAwardSelectionScalarFieldEnum[]
+  }
+
+  /**
+   * ContestAwardSelection findMany
+   */
+  export type ContestAwardSelectionFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContestAwardSelection
+     */
+    select?: ContestAwardSelectionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContestAwardSelection
+     */
+    omit?: ContestAwardSelectionOmit<ExtArgs> | null
+    /**
+     * Filter, which ContestAwardSelections to fetch.
+     */
+    where?: ContestAwardSelectionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ContestAwardSelections to fetch.
+     */
+    orderBy?: ContestAwardSelectionOrderByWithRelationInput | ContestAwardSelectionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing ContestAwardSelections.
+     */
+    cursor?: ContestAwardSelectionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ContestAwardSelections from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ContestAwardSelections.
+     */
+    skip?: number
+    distinct?: ContestAwardSelectionScalarFieldEnum | ContestAwardSelectionScalarFieldEnum[]
+  }
+
+  /**
+   * ContestAwardSelection create
+   */
+  export type ContestAwardSelectionCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContestAwardSelection
+     */
+    select?: ContestAwardSelectionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContestAwardSelection
+     */
+    omit?: ContestAwardSelectionOmit<ExtArgs> | null
+    /**
+     * The data needed to create a ContestAwardSelection.
+     */
+    data: XOR<ContestAwardSelectionCreateInput, ContestAwardSelectionUncheckedCreateInput>
+  }
+
+  /**
+   * ContestAwardSelection createMany
+   */
+  export type ContestAwardSelectionCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many ContestAwardSelections.
+     */
+    data: ContestAwardSelectionCreateManyInput | ContestAwardSelectionCreateManyInput[]
+  }
+
+  /**
+   * ContestAwardSelection update
+   */
+  export type ContestAwardSelectionUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContestAwardSelection
+     */
+    select?: ContestAwardSelectionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContestAwardSelection
+     */
+    omit?: ContestAwardSelectionOmit<ExtArgs> | null
+    /**
+     * The data needed to update a ContestAwardSelection.
+     */
+    data: XOR<ContestAwardSelectionUpdateInput, ContestAwardSelectionUncheckedUpdateInput>
+    /**
+     * Choose, which ContestAwardSelection to update.
+     */
+    where: ContestAwardSelectionWhereUniqueInput
+  }
+
+  /**
+   * ContestAwardSelection updateMany
+   */
+  export type ContestAwardSelectionUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update ContestAwardSelections.
+     */
+    data: XOR<ContestAwardSelectionUpdateManyMutationInput, ContestAwardSelectionUncheckedUpdateManyInput>
+    /**
+     * Filter which ContestAwardSelections to update
+     */
+    where?: ContestAwardSelectionWhereInput
+    /**
+     * Limit how many ContestAwardSelections to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * ContestAwardSelection upsert
+   */
+  export type ContestAwardSelectionUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContestAwardSelection
+     */
+    select?: ContestAwardSelectionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContestAwardSelection
+     */
+    omit?: ContestAwardSelectionOmit<ExtArgs> | null
+    /**
+     * The filter to search for the ContestAwardSelection to update in case it exists.
+     */
+    where: ContestAwardSelectionWhereUniqueInput
+    /**
+     * In case the ContestAwardSelection found by the `where` argument doesn't exist, create a new ContestAwardSelection with this data.
+     */
+    create: XOR<ContestAwardSelectionCreateInput, ContestAwardSelectionUncheckedCreateInput>
+    /**
+     * In case the ContestAwardSelection was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<ContestAwardSelectionUpdateInput, ContestAwardSelectionUncheckedUpdateInput>
+  }
+
+  /**
+   * ContestAwardSelection delete
+   */
+  export type ContestAwardSelectionDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContestAwardSelection
+     */
+    select?: ContestAwardSelectionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContestAwardSelection
+     */
+    omit?: ContestAwardSelectionOmit<ExtArgs> | null
+    /**
+     * Filter which ContestAwardSelection to delete.
+     */
+    where: ContestAwardSelectionWhereUniqueInput
+  }
+
+  /**
+   * ContestAwardSelection deleteMany
+   */
+  export type ContestAwardSelectionDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ContestAwardSelections to delete
+     */
+    where?: ContestAwardSelectionWhereInput
+    /**
+     * Limit how many ContestAwardSelections to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * ContestAwardSelection findRaw
+   */
+  export type ContestAwardSelectionFindRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The query predicate filter. If unspecified, then all documents in the collection will match the predicate. ${@link https://docs.mongodb.com/manual/reference/operator/query MongoDB Docs}.
+     */
+    filter?: InputJsonValue
+    /**
+     * Additional options to pass to the `find` command ${@link https://docs.mongodb.com/manual/reference/command/find/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * ContestAwardSelection aggregateRaw
+   */
+  export type ContestAwardSelectionAggregateRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * An array of aggregation stages to process and transform the document stream via the aggregation pipeline. ${@link https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline MongoDB Docs}.
+     */
+    pipeline?: InputJsonValue[]
+    /**
+     * Additional options to pass to the `aggregate` command ${@link https://docs.mongodb.com/manual/reference/command/aggregate/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * ContestAwardSelection without action
+   */
+  export type ContestAwardSelectionDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContestAwardSelection
+     */
+    select?: ContestAwardSelectionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContestAwardSelection
+     */
+    omit?: ContestAwardSelectionOmit<ExtArgs> | null
+  }
+
+
+  /**
+   * Model ContestRewardTransaction
+   */
+
+  export type AggregateContestRewardTransaction = {
+    _count: ContestRewardTransactionCountAggregateOutputType | null
+    _avg: ContestRewardTransactionAvgAggregateOutputType | null
+    _sum: ContestRewardTransactionSumAggregateOutputType | null
+    _min: ContestRewardTransactionMinAggregateOutputType | null
+    _max: ContestRewardTransactionMaxAggregateOutputType | null
+  }
+
+  export type ContestRewardTransactionAvgAggregateOutputType = {
+    key: number | null
+    boost: number | null
+    swap: number | null
+    coin: number | null
+  }
+
+  export type ContestRewardTransactionSumAggregateOutputType = {
+    key: number | null
+    boost: number | null
+    swap: number | null
+    coin: number | null
+  }
+
+  export type ContestRewardTransactionMinAggregateOutputType = {
+    id: string | null
+    grantId: string | null
+    userId: string | null
+    key: number | null
+    boost: number | null
+    swap: number | null
+    coin: number | null
+    createdAt: Date | null
+  }
+
+  export type ContestRewardTransactionMaxAggregateOutputType = {
+    id: string | null
+    grantId: string | null
+    userId: string | null
+    key: number | null
+    boost: number | null
+    swap: number | null
+    coin: number | null
+    createdAt: Date | null
+  }
+
+  export type ContestRewardTransactionCountAggregateOutputType = {
+    id: number
+    grantId: number
+    userId: number
+    key: number
+    boost: number
+    swap: number
+    coin: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type ContestRewardTransactionAvgAggregateInputType = {
+    key?: true
+    boost?: true
+    swap?: true
+    coin?: true
+  }
+
+  export type ContestRewardTransactionSumAggregateInputType = {
+    key?: true
+    boost?: true
+    swap?: true
+    coin?: true
+  }
+
+  export type ContestRewardTransactionMinAggregateInputType = {
+    id?: true
+    grantId?: true
+    userId?: true
+    key?: true
+    boost?: true
+    swap?: true
+    coin?: true
+    createdAt?: true
+  }
+
+  export type ContestRewardTransactionMaxAggregateInputType = {
+    id?: true
+    grantId?: true
+    userId?: true
+    key?: true
+    boost?: true
+    swap?: true
+    coin?: true
+    createdAt?: true
+  }
+
+  export type ContestRewardTransactionCountAggregateInputType = {
+    id?: true
+    grantId?: true
+    userId?: true
+    key?: true
+    boost?: true
+    swap?: true
+    coin?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type ContestRewardTransactionAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ContestRewardTransaction to aggregate.
+     */
+    where?: ContestRewardTransactionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ContestRewardTransactions to fetch.
+     */
+    orderBy?: ContestRewardTransactionOrderByWithRelationInput | ContestRewardTransactionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: ContestRewardTransactionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ContestRewardTransactions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ContestRewardTransactions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned ContestRewardTransactions
+    **/
+    _count?: true | ContestRewardTransactionCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: ContestRewardTransactionAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: ContestRewardTransactionSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: ContestRewardTransactionMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: ContestRewardTransactionMaxAggregateInputType
+  }
+
+  export type GetContestRewardTransactionAggregateType<T extends ContestRewardTransactionAggregateArgs> = {
+        [P in keyof T & keyof AggregateContestRewardTransaction]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateContestRewardTransaction[P]>
+      : GetScalarType<T[P], AggregateContestRewardTransaction[P]>
+  }
+
+
+
+
+  export type ContestRewardTransactionGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ContestRewardTransactionWhereInput
+    orderBy?: ContestRewardTransactionOrderByWithAggregationInput | ContestRewardTransactionOrderByWithAggregationInput[]
+    by: ContestRewardTransactionScalarFieldEnum[] | ContestRewardTransactionScalarFieldEnum
+    having?: ContestRewardTransactionScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: ContestRewardTransactionCountAggregateInputType | true
+    _avg?: ContestRewardTransactionAvgAggregateInputType
+    _sum?: ContestRewardTransactionSumAggregateInputType
+    _min?: ContestRewardTransactionMinAggregateInputType
+    _max?: ContestRewardTransactionMaxAggregateInputType
+  }
+
+  export type ContestRewardTransactionGroupByOutputType = {
+    id: string
+    grantId: string
+    userId: string
+    key: number
+    boost: number
+    swap: number
+    coin: number
+    createdAt: Date
+    _count: ContestRewardTransactionCountAggregateOutputType | null
+    _avg: ContestRewardTransactionAvgAggregateOutputType | null
+    _sum: ContestRewardTransactionSumAggregateOutputType | null
+    _min: ContestRewardTransactionMinAggregateOutputType | null
+    _max: ContestRewardTransactionMaxAggregateOutputType | null
+  }
+
+  type GetContestRewardTransactionGroupByPayload<T extends ContestRewardTransactionGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<ContestRewardTransactionGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof ContestRewardTransactionGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], ContestRewardTransactionGroupByOutputType[P]>
+            : GetScalarType<T[P], ContestRewardTransactionGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type ContestRewardTransactionSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    grantId?: boolean
+    userId?: boolean
+    key?: boolean
+    boost?: boolean
+    swap?: boolean
+    coin?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["contestRewardTransaction"]>
+
+
+
+  export type ContestRewardTransactionSelectScalar = {
+    id?: boolean
+    grantId?: boolean
+    userId?: boolean
+    key?: boolean
+    boost?: boolean
+    swap?: boolean
+    coin?: boolean
+    createdAt?: boolean
+  }
+
+  export type ContestRewardTransactionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "grantId" | "userId" | "key" | "boost" | "swap" | "coin" | "createdAt", ExtArgs["result"]["contestRewardTransaction"]>
+
+  export type $ContestRewardTransactionPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "ContestRewardTransaction"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      grantId: string
+      userId: string
+      key: number
+      boost: number
+      swap: number
+      coin: number
+      createdAt: Date
+    }, ExtArgs["result"]["contestRewardTransaction"]>
+    composites: {}
+  }
+
+  type ContestRewardTransactionGetPayload<S extends boolean | null | undefined | ContestRewardTransactionDefaultArgs> = $Result.GetResult<Prisma.$ContestRewardTransactionPayload, S>
+
+  type ContestRewardTransactionCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<ContestRewardTransactionFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: ContestRewardTransactionCountAggregateInputType | true
+    }
+
+  export interface ContestRewardTransactionDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['ContestRewardTransaction'], meta: { name: 'ContestRewardTransaction' } }
+    /**
+     * Find zero or one ContestRewardTransaction that matches the filter.
+     * @param {ContestRewardTransactionFindUniqueArgs} args - Arguments to find a ContestRewardTransaction
+     * @example
+     * // Get one ContestRewardTransaction
+     * const contestRewardTransaction = await prisma.contestRewardTransaction.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends ContestRewardTransactionFindUniqueArgs>(args: SelectSubset<T, ContestRewardTransactionFindUniqueArgs<ExtArgs>>): Prisma__ContestRewardTransactionClient<$Result.GetResult<Prisma.$ContestRewardTransactionPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one ContestRewardTransaction that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {ContestRewardTransactionFindUniqueOrThrowArgs} args - Arguments to find a ContestRewardTransaction
+     * @example
+     * // Get one ContestRewardTransaction
+     * const contestRewardTransaction = await prisma.contestRewardTransaction.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends ContestRewardTransactionFindUniqueOrThrowArgs>(args: SelectSubset<T, ContestRewardTransactionFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ContestRewardTransactionClient<$Result.GetResult<Prisma.$ContestRewardTransactionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ContestRewardTransaction that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContestRewardTransactionFindFirstArgs} args - Arguments to find a ContestRewardTransaction
+     * @example
+     * // Get one ContestRewardTransaction
+     * const contestRewardTransaction = await prisma.contestRewardTransaction.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends ContestRewardTransactionFindFirstArgs>(args?: SelectSubset<T, ContestRewardTransactionFindFirstArgs<ExtArgs>>): Prisma__ContestRewardTransactionClient<$Result.GetResult<Prisma.$ContestRewardTransactionPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ContestRewardTransaction that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContestRewardTransactionFindFirstOrThrowArgs} args - Arguments to find a ContestRewardTransaction
+     * @example
+     * // Get one ContestRewardTransaction
+     * const contestRewardTransaction = await prisma.contestRewardTransaction.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends ContestRewardTransactionFindFirstOrThrowArgs>(args?: SelectSubset<T, ContestRewardTransactionFindFirstOrThrowArgs<ExtArgs>>): Prisma__ContestRewardTransactionClient<$Result.GetResult<Prisma.$ContestRewardTransactionPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more ContestRewardTransactions that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContestRewardTransactionFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all ContestRewardTransactions
+     * const contestRewardTransactions = await prisma.contestRewardTransaction.findMany()
+     * 
+     * // Get first 10 ContestRewardTransactions
+     * const contestRewardTransactions = await prisma.contestRewardTransaction.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const contestRewardTransactionWithIdOnly = await prisma.contestRewardTransaction.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends ContestRewardTransactionFindManyArgs>(args?: SelectSubset<T, ContestRewardTransactionFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ContestRewardTransactionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a ContestRewardTransaction.
+     * @param {ContestRewardTransactionCreateArgs} args - Arguments to create a ContestRewardTransaction.
+     * @example
+     * // Create one ContestRewardTransaction
+     * const ContestRewardTransaction = await prisma.contestRewardTransaction.create({
+     *   data: {
+     *     // ... data to create a ContestRewardTransaction
+     *   }
+     * })
+     * 
+     */
+    create<T extends ContestRewardTransactionCreateArgs>(args: SelectSubset<T, ContestRewardTransactionCreateArgs<ExtArgs>>): Prisma__ContestRewardTransactionClient<$Result.GetResult<Prisma.$ContestRewardTransactionPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many ContestRewardTransactions.
+     * @param {ContestRewardTransactionCreateManyArgs} args - Arguments to create many ContestRewardTransactions.
+     * @example
+     * // Create many ContestRewardTransactions
+     * const contestRewardTransaction = await prisma.contestRewardTransaction.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends ContestRewardTransactionCreateManyArgs>(args?: SelectSubset<T, ContestRewardTransactionCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a ContestRewardTransaction.
+     * @param {ContestRewardTransactionDeleteArgs} args - Arguments to delete one ContestRewardTransaction.
+     * @example
+     * // Delete one ContestRewardTransaction
+     * const ContestRewardTransaction = await prisma.contestRewardTransaction.delete({
+     *   where: {
+     *     // ... filter to delete one ContestRewardTransaction
+     *   }
+     * })
+     * 
+     */
+    delete<T extends ContestRewardTransactionDeleteArgs>(args: SelectSubset<T, ContestRewardTransactionDeleteArgs<ExtArgs>>): Prisma__ContestRewardTransactionClient<$Result.GetResult<Prisma.$ContestRewardTransactionPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one ContestRewardTransaction.
+     * @param {ContestRewardTransactionUpdateArgs} args - Arguments to update one ContestRewardTransaction.
+     * @example
+     * // Update one ContestRewardTransaction
+     * const contestRewardTransaction = await prisma.contestRewardTransaction.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends ContestRewardTransactionUpdateArgs>(args: SelectSubset<T, ContestRewardTransactionUpdateArgs<ExtArgs>>): Prisma__ContestRewardTransactionClient<$Result.GetResult<Prisma.$ContestRewardTransactionPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more ContestRewardTransactions.
+     * @param {ContestRewardTransactionDeleteManyArgs} args - Arguments to filter ContestRewardTransactions to delete.
+     * @example
+     * // Delete a few ContestRewardTransactions
+     * const { count } = await prisma.contestRewardTransaction.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends ContestRewardTransactionDeleteManyArgs>(args?: SelectSubset<T, ContestRewardTransactionDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ContestRewardTransactions.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContestRewardTransactionUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many ContestRewardTransactions
+     * const contestRewardTransaction = await prisma.contestRewardTransaction.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends ContestRewardTransactionUpdateManyArgs>(args: SelectSubset<T, ContestRewardTransactionUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one ContestRewardTransaction.
+     * @param {ContestRewardTransactionUpsertArgs} args - Arguments to update or create a ContestRewardTransaction.
+     * @example
+     * // Update or create a ContestRewardTransaction
+     * const contestRewardTransaction = await prisma.contestRewardTransaction.upsert({
+     *   create: {
+     *     // ... data to create a ContestRewardTransaction
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the ContestRewardTransaction we want to update
+     *   }
+     * })
+     */
+    upsert<T extends ContestRewardTransactionUpsertArgs>(args: SelectSubset<T, ContestRewardTransactionUpsertArgs<ExtArgs>>): Prisma__ContestRewardTransactionClient<$Result.GetResult<Prisma.$ContestRewardTransactionPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more ContestRewardTransactions that matches the filter.
+     * @param {ContestRewardTransactionFindRawArgs} args - Select which filters you would like to apply.
+     * @example
+     * const contestRewardTransaction = await prisma.contestRewardTransaction.findRaw({
+     *   filter: { age: { $gt: 25 } }
+     * })
+     */
+    findRaw(args?: ContestRewardTransactionFindRawArgs): Prisma.PrismaPromise<JsonObject>
+
+    /**
+     * Perform aggregation operations on a ContestRewardTransaction.
+     * @param {ContestRewardTransactionAggregateRawArgs} args - Select which aggregations you would like to apply.
+     * @example
+     * const contestRewardTransaction = await prisma.contestRewardTransaction.aggregateRaw({
+     *   pipeline: [
+     *     { $match: { status: "registered" } },
+     *     { $group: { _id: "$country", total: { $sum: 1 } } }
+     *   ]
+     * })
+     */
+    aggregateRaw(args?: ContestRewardTransactionAggregateRawArgs): Prisma.PrismaPromise<JsonObject>
+
+
+    /**
+     * Count the number of ContestRewardTransactions.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContestRewardTransactionCountArgs} args - Arguments to filter ContestRewardTransactions to count.
+     * @example
+     * // Count the number of ContestRewardTransactions
+     * const count = await prisma.contestRewardTransaction.count({
+     *   where: {
+     *     // ... the filter for the ContestRewardTransactions we want to count
+     *   }
+     * })
+    **/
+    count<T extends ContestRewardTransactionCountArgs>(
+      args?: Subset<T, ContestRewardTransactionCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], ContestRewardTransactionCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a ContestRewardTransaction.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContestRewardTransactionAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends ContestRewardTransactionAggregateArgs>(args: Subset<T, ContestRewardTransactionAggregateArgs>): Prisma.PrismaPromise<GetContestRewardTransactionAggregateType<T>>
+
+    /**
+     * Group by ContestRewardTransaction.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContestRewardTransactionGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends ContestRewardTransactionGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: ContestRewardTransactionGroupByArgs['orderBy'] }
+        : { orderBy?: ContestRewardTransactionGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, ContestRewardTransactionGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetContestRewardTransactionGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the ContestRewardTransaction model
+   */
+  readonly fields: ContestRewardTransactionFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for ContestRewardTransaction.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__ContestRewardTransactionClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the ContestRewardTransaction model
+   */
+  interface ContestRewardTransactionFieldRefs {
+    readonly id: FieldRef<"ContestRewardTransaction", 'String'>
+    readonly grantId: FieldRef<"ContestRewardTransaction", 'String'>
+    readonly userId: FieldRef<"ContestRewardTransaction", 'String'>
+    readonly key: FieldRef<"ContestRewardTransaction", 'Int'>
+    readonly boost: FieldRef<"ContestRewardTransaction", 'Int'>
+    readonly swap: FieldRef<"ContestRewardTransaction", 'Int'>
+    readonly coin: FieldRef<"ContestRewardTransaction", 'Int'>
+    readonly createdAt: FieldRef<"ContestRewardTransaction", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * ContestRewardTransaction findUnique
+   */
+  export type ContestRewardTransactionFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContestRewardTransaction
+     */
+    select?: ContestRewardTransactionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContestRewardTransaction
+     */
+    omit?: ContestRewardTransactionOmit<ExtArgs> | null
+    /**
+     * Filter, which ContestRewardTransaction to fetch.
+     */
+    where: ContestRewardTransactionWhereUniqueInput
+  }
+
+  /**
+   * ContestRewardTransaction findUniqueOrThrow
+   */
+  export type ContestRewardTransactionFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContestRewardTransaction
+     */
+    select?: ContestRewardTransactionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContestRewardTransaction
+     */
+    omit?: ContestRewardTransactionOmit<ExtArgs> | null
+    /**
+     * Filter, which ContestRewardTransaction to fetch.
+     */
+    where: ContestRewardTransactionWhereUniqueInput
+  }
+
+  /**
+   * ContestRewardTransaction findFirst
+   */
+  export type ContestRewardTransactionFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContestRewardTransaction
+     */
+    select?: ContestRewardTransactionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContestRewardTransaction
+     */
+    omit?: ContestRewardTransactionOmit<ExtArgs> | null
+    /**
+     * Filter, which ContestRewardTransaction to fetch.
+     */
+    where?: ContestRewardTransactionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ContestRewardTransactions to fetch.
+     */
+    orderBy?: ContestRewardTransactionOrderByWithRelationInput | ContestRewardTransactionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ContestRewardTransactions.
+     */
+    cursor?: ContestRewardTransactionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ContestRewardTransactions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ContestRewardTransactions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ContestRewardTransactions.
+     */
+    distinct?: ContestRewardTransactionScalarFieldEnum | ContestRewardTransactionScalarFieldEnum[]
+  }
+
+  /**
+   * ContestRewardTransaction findFirstOrThrow
+   */
+  export type ContestRewardTransactionFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContestRewardTransaction
+     */
+    select?: ContestRewardTransactionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContestRewardTransaction
+     */
+    omit?: ContestRewardTransactionOmit<ExtArgs> | null
+    /**
+     * Filter, which ContestRewardTransaction to fetch.
+     */
+    where?: ContestRewardTransactionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ContestRewardTransactions to fetch.
+     */
+    orderBy?: ContestRewardTransactionOrderByWithRelationInput | ContestRewardTransactionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ContestRewardTransactions.
+     */
+    cursor?: ContestRewardTransactionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ContestRewardTransactions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ContestRewardTransactions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ContestRewardTransactions.
+     */
+    distinct?: ContestRewardTransactionScalarFieldEnum | ContestRewardTransactionScalarFieldEnum[]
+  }
+
+  /**
+   * ContestRewardTransaction findMany
+   */
+  export type ContestRewardTransactionFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContestRewardTransaction
+     */
+    select?: ContestRewardTransactionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContestRewardTransaction
+     */
+    omit?: ContestRewardTransactionOmit<ExtArgs> | null
+    /**
+     * Filter, which ContestRewardTransactions to fetch.
+     */
+    where?: ContestRewardTransactionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ContestRewardTransactions to fetch.
+     */
+    orderBy?: ContestRewardTransactionOrderByWithRelationInput | ContestRewardTransactionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing ContestRewardTransactions.
+     */
+    cursor?: ContestRewardTransactionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ContestRewardTransactions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ContestRewardTransactions.
+     */
+    skip?: number
+    distinct?: ContestRewardTransactionScalarFieldEnum | ContestRewardTransactionScalarFieldEnum[]
+  }
+
+  /**
+   * ContestRewardTransaction create
+   */
+  export type ContestRewardTransactionCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContestRewardTransaction
+     */
+    select?: ContestRewardTransactionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContestRewardTransaction
+     */
+    omit?: ContestRewardTransactionOmit<ExtArgs> | null
+    /**
+     * The data needed to create a ContestRewardTransaction.
+     */
+    data: XOR<ContestRewardTransactionCreateInput, ContestRewardTransactionUncheckedCreateInput>
+  }
+
+  /**
+   * ContestRewardTransaction createMany
+   */
+  export type ContestRewardTransactionCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many ContestRewardTransactions.
+     */
+    data: ContestRewardTransactionCreateManyInput | ContestRewardTransactionCreateManyInput[]
+  }
+
+  /**
+   * ContestRewardTransaction update
+   */
+  export type ContestRewardTransactionUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContestRewardTransaction
+     */
+    select?: ContestRewardTransactionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContestRewardTransaction
+     */
+    omit?: ContestRewardTransactionOmit<ExtArgs> | null
+    /**
+     * The data needed to update a ContestRewardTransaction.
+     */
+    data: XOR<ContestRewardTransactionUpdateInput, ContestRewardTransactionUncheckedUpdateInput>
+    /**
+     * Choose, which ContestRewardTransaction to update.
+     */
+    where: ContestRewardTransactionWhereUniqueInput
+  }
+
+  /**
+   * ContestRewardTransaction updateMany
+   */
+  export type ContestRewardTransactionUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update ContestRewardTransactions.
+     */
+    data: XOR<ContestRewardTransactionUpdateManyMutationInput, ContestRewardTransactionUncheckedUpdateManyInput>
+    /**
+     * Filter which ContestRewardTransactions to update
+     */
+    where?: ContestRewardTransactionWhereInput
+    /**
+     * Limit how many ContestRewardTransactions to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * ContestRewardTransaction upsert
+   */
+  export type ContestRewardTransactionUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContestRewardTransaction
+     */
+    select?: ContestRewardTransactionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContestRewardTransaction
+     */
+    omit?: ContestRewardTransactionOmit<ExtArgs> | null
+    /**
+     * The filter to search for the ContestRewardTransaction to update in case it exists.
+     */
+    where: ContestRewardTransactionWhereUniqueInput
+    /**
+     * In case the ContestRewardTransaction found by the `where` argument doesn't exist, create a new ContestRewardTransaction with this data.
+     */
+    create: XOR<ContestRewardTransactionCreateInput, ContestRewardTransactionUncheckedCreateInput>
+    /**
+     * In case the ContestRewardTransaction was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<ContestRewardTransactionUpdateInput, ContestRewardTransactionUncheckedUpdateInput>
+  }
+
+  /**
+   * ContestRewardTransaction delete
+   */
+  export type ContestRewardTransactionDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContestRewardTransaction
+     */
+    select?: ContestRewardTransactionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContestRewardTransaction
+     */
+    omit?: ContestRewardTransactionOmit<ExtArgs> | null
+    /**
+     * Filter which ContestRewardTransaction to delete.
+     */
+    where: ContestRewardTransactionWhereUniqueInput
+  }
+
+  /**
+   * ContestRewardTransaction deleteMany
+   */
+  export type ContestRewardTransactionDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ContestRewardTransactions to delete
+     */
+    where?: ContestRewardTransactionWhereInput
+    /**
+     * Limit how many ContestRewardTransactions to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * ContestRewardTransaction findRaw
+   */
+  export type ContestRewardTransactionFindRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The query predicate filter. If unspecified, then all documents in the collection will match the predicate. ${@link https://docs.mongodb.com/manual/reference/operator/query MongoDB Docs}.
+     */
+    filter?: InputJsonValue
+    /**
+     * Additional options to pass to the `find` command ${@link https://docs.mongodb.com/manual/reference/command/find/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * ContestRewardTransaction aggregateRaw
+   */
+  export type ContestRewardTransactionAggregateRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * An array of aggregation stages to process and transform the document stream via the aggregation pipeline. ${@link https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline MongoDB Docs}.
+     */
+    pipeline?: InputJsonValue[]
+    /**
+     * Additional options to pass to the `aggregate` command ${@link https://docs.mongodb.com/manual/reference/command/aggregate/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * ContestRewardTransaction without action
+   */
+  export type ContestRewardTransactionDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContestRewardTransaction
+     */
+    select?: ContestRewardTransactionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContestRewardTransaction
+     */
+    omit?: ContestRewardTransactionOmit<ExtArgs> | null
   }
 
 
@@ -39850,10 +48132,12 @@ export namespace Prisma {
 
   export type VoteAvgAggregateOutputType = {
     power: number | null
+    weight: number | null
   }
 
   export type VoteSumAggregateOutputType = {
     power: number | null
+    weight: number | null
   }
 
   export type VoteMinAggregateOutputType = {
@@ -39863,6 +48147,7 @@ export namespace Prisma {
     contestId: string | null
     type: $Enums.VoteType | null
     power: number | null
+    weight: number | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -39874,6 +48159,7 @@ export namespace Prisma {
     contestId: string | null
     type: $Enums.VoteType | null
     power: number | null
+    weight: number | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -39885,6 +48171,7 @@ export namespace Prisma {
     contestId: number
     type: number
     power: number
+    weight: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -39893,10 +48180,12 @@ export namespace Prisma {
 
   export type VoteAvgAggregateInputType = {
     power?: true
+    weight?: true
   }
 
   export type VoteSumAggregateInputType = {
     power?: true
+    weight?: true
   }
 
   export type VoteMinAggregateInputType = {
@@ -39906,6 +48195,7 @@ export namespace Prisma {
     contestId?: true
     type?: true
     power?: true
+    weight?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -39917,6 +48207,7 @@ export namespace Prisma {
     contestId?: true
     type?: true
     power?: true
+    weight?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -39928,6 +48219,7 @@ export namespace Prisma {
     contestId?: true
     type?: true
     power?: true
+    weight?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -40026,6 +48318,7 @@ export namespace Prisma {
     contestId: string
     type: $Enums.VoteType
     power: number
+    weight: number
     createdAt: Date
     updatedAt: Date
     _count: VoteCountAggregateOutputType | null
@@ -40056,6 +48349,7 @@ export namespace Prisma {
     contestId?: boolean
     type?: boolean
     power?: boolean
+    weight?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     provider?: boolean | UserDefaultArgs<ExtArgs>
@@ -40072,11 +48366,12 @@ export namespace Prisma {
     contestId?: boolean
     type?: boolean
     power?: boolean
+    weight?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type VoteOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "providerId" | "photoId" | "contestId" | "type" | "power" | "createdAt" | "updatedAt", ExtArgs["result"]["vote"]>
+  export type VoteOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "providerId" | "photoId" | "contestId" | "type" | "power" | "weight" | "createdAt" | "updatedAt", ExtArgs["result"]["vote"]>
   export type VoteInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     provider?: boolean | UserDefaultArgs<ExtArgs>
     photo?: boolean | ContestPhotoDefaultArgs<ExtArgs>
@@ -40097,6 +48392,7 @@ export namespace Prisma {
       contestId: string
       type: $Enums.VoteType
       power: number
+      weight: number
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["vote"]>
@@ -40500,6 +48796,7 @@ export namespace Prisma {
     readonly contestId: FieldRef<"Vote", 'String'>
     readonly type: FieldRef<"Vote", 'VoteType'>
     readonly power: FieldRef<"Vote", 'Int'>
+    readonly weight: FieldRef<"Vote", 'Int'>
     readonly createdAt: FieldRef<"Vote", 'DateTime'>
     readonly updatedAt: FieldRef<"Vote", 'DateTime'>
   }
@@ -42922,19 +51219,18 @@ export namespace Prisma {
     description: 'description',
     banner: 'banner',
     status: 'status',
-    mode: 'mode',
-    maxUploads: 'maxUploads',
     isMoneyContest: 'isMoneyContest',
     maxPrize: 'maxPrize',
     minPrize: 'minPrize',
-    level_requirements: 'level_requirements',
     startDate: 'startDate',
     endDate: 'endDate',
     startedAt: 'startedAt',
+    endedAt: 'endedAt',
+    finalizedAt: 'finalizedAt',
     recurringContestId: 'recurringContestId',
+    configVersion: 'configVersion',
+    scoringVersion: 'scoringVersion',
     creatorId: 'creatorId',
-    rules: 'rules',
-    prizes: 'prizes',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -42947,11 +51243,9 @@ export namespace Prisma {
     title: 'title',
     description: 'description',
     banner: 'banner',
-    maxUploads: 'maxUploads',
     isMoneyContest: 'isMoneyContest',
     maxPrize: 'maxPrize',
     minPrize: 'minPrize',
-    level_requirements: 'level_requirements',
     startDate: 'startDate',
     endDate: 'endDate',
     creatorId: 'creatorId',
@@ -42966,9 +51260,28 @@ export namespace Prisma {
   export type RecurringContestScalarFieldEnum = (typeof RecurringContestScalarFieldEnum)[keyof typeof RecurringContestScalarFieldEnum]
 
 
+  export const RecurringContestOccurrenceScalarFieldEnum: {
+    id: 'id',
+    occurrenceKey: 'occurrenceKey',
+    recurringContestId: 'recurringContestId',
+    scheduledAt: 'scheduledAt',
+    contestId: 'contestId',
+    status: 'status',
+    startedAt: 'startedAt',
+    error: 'error',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type RecurringContestOccurrenceScalarFieldEnum = (typeof RecurringContestOccurrenceScalarFieldEnum)[keyof typeof RecurringContestOccurrenceScalarFieldEnum]
+
+
   export const PrizeScalarFieldEnum: {
     id: 'id',
     category: 'category',
+    type: 'type',
+    target: 'target',
+    rankLimit: 'rankLimit',
     title: 'title',
     description: 'description',
     icon: 'icon',
@@ -42997,6 +51310,20 @@ export namespace Prisma {
   export type ContestRuleScalarFieldEnum = (typeof ContestRuleScalarFieldEnum)[keyof typeof ContestRuleScalarFieldEnum]
 
 
+  export const ContestRuleConfigScalarFieldEnum: {
+    id: 'id',
+    contestId: 'contestId',
+    key: 'key',
+    value: 'value',
+    enabled: 'enabled',
+    order: 'order',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type ContestRuleConfigScalarFieldEnum = (typeof ContestRuleConfigScalarFieldEnum)[keyof typeof ContestRuleConfigScalarFieldEnum]
+
+
   export const ContestPhotoScalarFieldEnum: {
     id: 'id',
     title: 'title',
@@ -43012,18 +51339,6 @@ export namespace Prisma {
   };
 
   export type ContestPhotoScalarFieldEnum = (typeof ContestPhotoScalarFieldEnum)[keyof typeof ContestPhotoScalarFieldEnum]
-
-
-  export const ContestWinnerScalarFieldEnum: {
-    id: 'id',
-    participantId: 'participantId',
-    contestId: 'contestId',
-    contestPhotoId: 'contestPhotoId',
-    createdAt: 'createdAt',
-    updatedAt: 'updatedAt'
-  };
-
-  export type ContestWinnerScalarFieldEnum = (typeof ContestWinnerScalarFieldEnum)[keyof typeof ContestWinnerScalarFieldEnum]
 
 
   export const ContestParticipantScalarFieldEnum: {
@@ -43045,6 +51360,9 @@ export namespace Prisma {
   export const ContestPrizeScalarFieldEnum: {
     id: 'id',
     category: 'category',
+    type: 'type',
+    target: 'target',
+    rankLimit: 'rankLimit',
     icon: 'icon',
     boost: 'boost',
     swap: 'swap',
@@ -43058,9 +51376,27 @@ export namespace Prisma {
   export type ContestPrizeScalarFieldEnum = (typeof ContestPrizeScalarFieldEnum)[keyof typeof ContestPrizeScalarFieldEnum]
 
 
+  export const ContestRuleAcceptanceScalarFieldEnum: {
+    id: 'id',
+    contestId: 'contestId',
+    userId: 'userId',
+    key: 'key',
+    acceptedAt: 'acceptedAt',
+    ruleVersion: 'ruleVersion'
+  };
+
+  export type ContestRuleAcceptanceScalarFieldEnum = (typeof ContestRuleAcceptanceScalarFieldEnum)[keyof typeof ContestRuleAcceptanceScalarFieldEnum]
+
+
   export const ContestAwardScalarFieldEnum: {
     id: 'id',
     category: 'category',
+    type: 'type',
+    target: 'target',
+    rankLimit: 'rankLimit',
+    slotKey: 'slotKey',
+    title: 'title',
+    description: 'description',
     icon: 'icon',
     boost: 'boost',
     swap: 'swap',
@@ -43078,6 +51414,12 @@ export namespace Prisma {
   export const RecurringContestAwardScalarFieldEnum: {
     id: 'id',
     category: 'category',
+    type: 'type',
+    target: 'target',
+    rankLimit: 'rankLimit',
+    slotKey: 'slotKey',
+    title: 'title',
+    description: 'description',
     icon: 'icon',
     boost: 'boost',
     swap: 'swap',
@@ -43095,14 +51437,116 @@ export namespace Prisma {
   export const ContestAchievementScalarFieldEnum: {
     id: 'id',
     category: 'category',
+    kind: 'kind',
+    type: 'type',
+    target: 'target',
+    rankLimit: 'rankLimit',
+    levelBadge: 'levelBadge',
+    levelOrder: 'levelOrder',
     photoId: 'photoId',
     participantId: 'participantId',
     contestId: 'contestId',
+    grantKey: 'grantKey',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
 
   export type ContestAchievementScalarFieldEnum = (typeof ContestAchievementScalarFieldEnum)[keyof typeof ContestAchievementScalarFieldEnum]
+
+
+  export const ContestFinalizationScalarFieldEnum: {
+    id: 'id',
+    contestId: 'contestId',
+    status: 'status',
+    attemptCount: 'attemptCount',
+    scoringVersion: 'scoringVersion',
+    startedAt: 'startedAt',
+    completedAt: 'completedAt',
+    error: 'error',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type ContestFinalizationScalarFieldEnum = (typeof ContestFinalizationScalarFieldEnum)[keyof typeof ContestFinalizationScalarFieldEnum]
+
+
+  export const ContestRankingResultScalarFieldEnum: {
+    id: 'id',
+    resultKey: 'resultKey',
+    contestId: 'contestId',
+    scope: 'scope',
+    participantId: 'participantId',
+    photoId: 'photoId',
+    score: 'score',
+    rank: 'rank',
+    level: 'level',
+    tieBreakKey: 'tieBreakKey',
+    scoringVersion: 'scoringVersion',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type ContestRankingResultScalarFieldEnum = (typeof ContestRankingResultScalarFieldEnum)[keyof typeof ContestRankingResultScalarFieldEnum]
+
+
+  export const ContestAwardGrantScalarFieldEnum: {
+    id: 'id',
+    grantKey: 'grantKey',
+    contestId: 'contestId',
+    contestAwardId: 'contestAwardId',
+    participantId: 'participantId',
+    userId: 'userId',
+    photoId: 'photoId',
+    category: 'category',
+    kind: 'kind',
+    type: 'type',
+    target: 'target',
+    rankLimit: 'rankLimit',
+    levelBadge: 'levelBadge',
+    levelOrder: 'levelOrder',
+    rank: 'rank',
+    keyReward: 'keyReward',
+    boostReward: 'boostReward',
+    swapReward: 'swapReward',
+    coinReward: 'coinReward',
+    status: 'status',
+    error: 'error',
+    processedAt: 'processedAt',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type ContestAwardGrantScalarFieldEnum = (typeof ContestAwardGrantScalarFieldEnum)[keyof typeof ContestAwardGrantScalarFieldEnum]
+
+
+  export const ContestAwardSelectionScalarFieldEnum: {
+    id: 'id',
+    selectionKey: 'selectionKey',
+    contestId: 'contestId',
+    contestAwardId: 'contestAwardId',
+    slotKey: 'slotKey',
+    photoId: 'photoId',
+    participantId: 'participantId',
+    selectedById: 'selectedById',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type ContestAwardSelectionScalarFieldEnum = (typeof ContestAwardSelectionScalarFieldEnum)[keyof typeof ContestAwardSelectionScalarFieldEnum]
+
+
+  export const ContestRewardTransactionScalarFieldEnum: {
+    id: 'id',
+    grantId: 'grantId',
+    userId: 'userId',
+    key: 'key',
+    boost: 'boost',
+    swap: 'swap',
+    coin: 'coin',
+    createdAt: 'createdAt'
+  };
+
+  export type ContestRewardTransactionScalarFieldEnum = (typeof ContestRewardTransactionScalarFieldEnum)[keyof typeof ContestRewardTransactionScalarFieldEnum]
 
 
   export const NotificationScalarFieldEnum: {
@@ -43425,6 +51869,7 @@ export namespace Prisma {
     contestId: 'contestId',
     type: 'type',
     power: 'power',
+    weight: 'weight',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -43502,16 +51947,9 @@ export namespace Prisma {
 
 
   /**
-   * Reference to a field of type 'ContestMode'
+   * Reference to a field of type 'Boolean'
    */
-  export type EnumContestModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ContestMode'>
-    
-
-
-  /**
-   * Reference to a field of type 'ContestMode[]'
-   */
-  export type ListEnumContestModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ContestMode[]'>
+  export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
     
 
 
@@ -43530,13 +51968,6 @@ export namespace Prisma {
 
 
   /**
-   * Reference to a field of type 'Boolean'
-   */
-  export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
-    
-
-
-  /**
    * Reference to a field of type 'DateTime'
    */
   export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime'>
@@ -43547,13 +51978,6 @@ export namespace Prisma {
    * Reference to a field of type 'DateTime[]'
    */
   export type ListDateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime[]'>
-    
-
-
-  /**
-   * Reference to a field of type 'Json'
-   */
-  export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
     
 
 
@@ -43572,6 +51996,27 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'Json'
+   */
+  export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
+    
+
+
+  /**
+   * Reference to a field of type 'ContestOccurrenceStatus'
+   */
+  export type EnumContestOccurrenceStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ContestOccurrenceStatus'>
+    
+
+
+  /**
+   * Reference to a field of type 'ContestOccurrenceStatus[]'
+   */
+  export type ListEnumContestOccurrenceStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ContestOccurrenceStatus[]'>
+    
+
+
+  /**
    * Reference to a field of type 'PrizeType'
    */
   export type EnumPrizeTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PrizeType'>
@@ -43582,6 +52027,34 @@ export namespace Prisma {
    * Reference to a field of type 'PrizeType[]'
    */
   export type ListEnumPrizeTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PrizeType[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'AwardType'
+   */
+  export type EnumAwardTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AwardType'>
+    
+
+
+  /**
+   * Reference to a field of type 'AwardType[]'
+   */
+  export type ListEnumAwardTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AwardType[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'AwardTarget'
+   */
+  export type EnumAwardTargetFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AwardTarget'>
+    
+
+
+  /**
+   * Reference to a field of type 'AwardTarget[]'
+   */
+  export type ListEnumAwardTargetFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AwardTarget[]'>
     
 
 
@@ -43610,6 +52083,76 @@ export namespace Prisma {
    * Reference to a field of type 'YCLevel[]'
    */
   export type ListEnumYCLevelFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'YCLevel[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'AchievementKind'
+   */
+  export type EnumAchievementKindFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AchievementKind'>
+    
+
+
+  /**
+   * Reference to a field of type 'AchievementKind[]'
+   */
+  export type ListEnumAchievementKindFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AchievementKind[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'ContestLevelBadge'
+   */
+  export type EnumContestLevelBadgeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ContestLevelBadge'>
+    
+
+
+  /**
+   * Reference to a field of type 'ContestLevelBadge[]'
+   */
+  export type ListEnumContestLevelBadgeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ContestLevelBadge[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'ContestFinalizationStatus'
+   */
+  export type EnumContestFinalizationStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ContestFinalizationStatus'>
+    
+
+
+  /**
+   * Reference to a field of type 'ContestFinalizationStatus[]'
+   */
+  export type ListEnumContestFinalizationStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ContestFinalizationStatus[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'ContestRankingScope'
+   */
+  export type EnumContestRankingScopeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ContestRankingScope'>
+    
+
+
+  /**
+   * Reference to a field of type 'ContestRankingScope[]'
+   */
+  export type ListEnumContestRankingScopeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ContestRankingScope[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'ContestGrantStatus'
+   */
+  export type EnumContestGrantStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ContestGrantStatus'>
+    
+
+
+  /**
+   * Reference to a field of type 'ContestGrantStatus[]'
+   */
+  export type ListEnumContestGrantStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ContestGrantStatus[]'>
     
 
 
@@ -43919,19 +52462,18 @@ export namespace Prisma {
     description?: StringFilter<"Contest"> | string
     banner?: StringNullableFilter<"Contest"> | string | null
     status?: EnumContestStatusFilter<"Contest"> | $Enums.ContestStatus
-    mode?: EnumContestModeFilter<"Contest"> | $Enums.ContestMode
-    maxUploads?: IntFilter<"Contest"> | number
     isMoneyContest?: BoolFilter<"Contest"> | boolean
     maxPrize?: IntNullableFilter<"Contest"> | number | null
     minPrize?: IntNullableFilter<"Contest"> | number | null
-    level_requirements?: IntNullableListFilter<"Contest">
     startDate?: DateTimeFilter<"Contest"> | Date | string
     endDate?: DateTimeFilter<"Contest"> | Date | string
     startedAt?: DateTimeNullableFilter<"Contest"> | Date | string | null
+    endedAt?: DateTimeNullableFilter<"Contest"> | Date | string | null
+    finalizedAt?: DateTimeNullableFilter<"Contest"> | Date | string | null
     recurringContestId?: StringNullableFilter<"Contest"> | string | null
+    configVersion?: IntFilter<"Contest"> | number
+    scoringVersion?: IntFilter<"Contest"> | number
     creatorId?: StringFilter<"Contest"> | string
-    rules?: JsonNullableFilter<"Contest">
-    prizes?: JsonNullableFilter<"Contest">
     createdAt?: DateTimeFilter<"Contest"> | Date | string
     updatedAt?: DateTimeFilter<"Contest"> | Date | string
     creator?: XOR<UserScalarRelationFilter, UserWhereInput>
@@ -43939,6 +52481,7 @@ export namespace Prisma {
     teamParticipations?: TeamParticipationListRelationFilter
     votes?: VoteListRelationFilter
     contestRules?: ContestRuleListRelationFilter
+    ruleConfigs?: ContestRuleConfigListRelationFilter
     contestPrizes?: ContestPrizeListRelationFilter
     contestAwards?: ContestAwardListRelationFilter
     achievements?: ContestAchievementListRelationFilter
@@ -43952,19 +52495,18 @@ export namespace Prisma {
     description?: SortOrder
     banner?: SortOrder
     status?: SortOrder
-    mode?: SortOrder
-    maxUploads?: SortOrder
     isMoneyContest?: SortOrder
     maxPrize?: SortOrder
     minPrize?: SortOrder
-    level_requirements?: SortOrder
     startDate?: SortOrder
     endDate?: SortOrder
     startedAt?: SortOrder
+    endedAt?: SortOrder
+    finalizedAt?: SortOrder
     recurringContestId?: SortOrder
+    configVersion?: SortOrder
+    scoringVersion?: SortOrder
     creatorId?: SortOrder
-    rules?: SortOrder
-    prizes?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     creator?: UserOrderByWithRelationInput
@@ -43972,6 +52514,7 @@ export namespace Prisma {
     teamParticipations?: TeamParticipationOrderByRelationAggregateInput
     votes?: VoteOrderByRelationAggregateInput
     contestRules?: ContestRuleOrderByRelationAggregateInput
+    ruleConfigs?: ContestRuleConfigOrderByRelationAggregateInput
     contestPrizes?: ContestPrizeOrderByRelationAggregateInput
     contestAwards?: ContestAwardOrderByRelationAggregateInput
     achievements?: ContestAchievementOrderByRelationAggregateInput
@@ -43988,19 +52531,18 @@ export namespace Prisma {
     description?: StringFilter<"Contest"> | string
     banner?: StringNullableFilter<"Contest"> | string | null
     status?: EnumContestStatusFilter<"Contest"> | $Enums.ContestStatus
-    mode?: EnumContestModeFilter<"Contest"> | $Enums.ContestMode
-    maxUploads?: IntFilter<"Contest"> | number
     isMoneyContest?: BoolFilter<"Contest"> | boolean
     maxPrize?: IntNullableFilter<"Contest"> | number | null
     minPrize?: IntNullableFilter<"Contest"> | number | null
-    level_requirements?: IntNullableListFilter<"Contest">
     startDate?: DateTimeFilter<"Contest"> | Date | string
     endDate?: DateTimeFilter<"Contest"> | Date | string
     startedAt?: DateTimeNullableFilter<"Contest"> | Date | string | null
+    endedAt?: DateTimeNullableFilter<"Contest"> | Date | string | null
+    finalizedAt?: DateTimeNullableFilter<"Contest"> | Date | string | null
     recurringContestId?: StringNullableFilter<"Contest"> | string | null
+    configVersion?: IntFilter<"Contest"> | number
+    scoringVersion?: IntFilter<"Contest"> | number
     creatorId?: StringFilter<"Contest"> | string
-    rules?: JsonNullableFilter<"Contest">
-    prizes?: JsonNullableFilter<"Contest">
     createdAt?: DateTimeFilter<"Contest"> | Date | string
     updatedAt?: DateTimeFilter<"Contest"> | Date | string
     creator?: XOR<UserScalarRelationFilter, UserWhereInput>
@@ -44008,6 +52550,7 @@ export namespace Prisma {
     teamParticipations?: TeamParticipationListRelationFilter
     votes?: VoteListRelationFilter
     contestRules?: ContestRuleListRelationFilter
+    ruleConfigs?: ContestRuleConfigListRelationFilter
     contestPrizes?: ContestPrizeListRelationFilter
     contestAwards?: ContestAwardListRelationFilter
     achievements?: ContestAchievementListRelationFilter
@@ -44021,19 +52564,18 @@ export namespace Prisma {
     description?: SortOrder
     banner?: SortOrder
     status?: SortOrder
-    mode?: SortOrder
-    maxUploads?: SortOrder
     isMoneyContest?: SortOrder
     maxPrize?: SortOrder
     minPrize?: SortOrder
-    level_requirements?: SortOrder
     startDate?: SortOrder
     endDate?: SortOrder
     startedAt?: SortOrder
+    endedAt?: SortOrder
+    finalizedAt?: SortOrder
     recurringContestId?: SortOrder
+    configVersion?: SortOrder
+    scoringVersion?: SortOrder
     creatorId?: SortOrder
-    rules?: SortOrder
-    prizes?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: ContestCountOrderByAggregateInput
@@ -44052,19 +52594,18 @@ export namespace Prisma {
     description?: StringWithAggregatesFilter<"Contest"> | string
     banner?: StringNullableWithAggregatesFilter<"Contest"> | string | null
     status?: EnumContestStatusWithAggregatesFilter<"Contest"> | $Enums.ContestStatus
-    mode?: EnumContestModeWithAggregatesFilter<"Contest"> | $Enums.ContestMode
-    maxUploads?: IntWithAggregatesFilter<"Contest"> | number
     isMoneyContest?: BoolWithAggregatesFilter<"Contest"> | boolean
     maxPrize?: IntNullableWithAggregatesFilter<"Contest"> | number | null
     minPrize?: IntNullableWithAggregatesFilter<"Contest"> | number | null
-    level_requirements?: IntNullableListFilter<"Contest">
     startDate?: DateTimeWithAggregatesFilter<"Contest"> | Date | string
     endDate?: DateTimeWithAggregatesFilter<"Contest"> | Date | string
     startedAt?: DateTimeNullableWithAggregatesFilter<"Contest"> | Date | string | null
+    endedAt?: DateTimeNullableWithAggregatesFilter<"Contest"> | Date | string | null
+    finalizedAt?: DateTimeNullableWithAggregatesFilter<"Contest"> | Date | string | null
     recurringContestId?: StringNullableWithAggregatesFilter<"Contest"> | string | null
+    configVersion?: IntWithAggregatesFilter<"Contest"> | number
+    scoringVersion?: IntWithAggregatesFilter<"Contest"> | number
     creatorId?: StringWithAggregatesFilter<"Contest"> | string
-    rules?: JsonNullableWithAggregatesFilter<"Contest">
-    prizes?: JsonNullableWithAggregatesFilter<"Contest">
     createdAt?: DateTimeWithAggregatesFilter<"Contest"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Contest"> | Date | string
   }
@@ -44077,11 +52618,9 @@ export namespace Prisma {
     title?: StringFilter<"RecurringContest"> | string
     description?: StringFilter<"RecurringContest"> | string
     banner?: StringNullableFilter<"RecurringContest"> | string | null
-    maxUploads?: IntFilter<"RecurringContest"> | number
     isMoneyContest?: BoolFilter<"RecurringContest"> | boolean
     maxPrize?: IntNullableFilter<"RecurringContest"> | number | null
     minPrize?: IntNullableFilter<"RecurringContest"> | number | null
-    level_requirements?: IntNullableListFilter<"RecurringContest">
     startDate?: DateTimeFilter<"RecurringContest"> | Date | string
     endDate?: DateTimeFilter<"RecurringContest"> | Date | string
     creatorId?: StringFilter<"RecurringContest"> | string
@@ -44101,11 +52640,9 @@ export namespace Prisma {
     title?: SortOrder
     description?: SortOrder
     banner?: SortOrder
-    maxUploads?: SortOrder
     isMoneyContest?: SortOrder
     maxPrize?: SortOrder
     minPrize?: SortOrder
-    level_requirements?: SortOrder
     startDate?: SortOrder
     endDate?: SortOrder
     creatorId?: SortOrder
@@ -44128,11 +52665,9 @@ export namespace Prisma {
     title?: StringFilter<"RecurringContest"> | string
     description?: StringFilter<"RecurringContest"> | string
     banner?: StringNullableFilter<"RecurringContest"> | string | null
-    maxUploads?: IntFilter<"RecurringContest"> | number
     isMoneyContest?: BoolFilter<"RecurringContest"> | boolean
     maxPrize?: IntNullableFilter<"RecurringContest"> | number | null
     minPrize?: IntNullableFilter<"RecurringContest"> | number | null
-    level_requirements?: IntNullableListFilter<"RecurringContest">
     startDate?: DateTimeFilter<"RecurringContest"> | Date | string
     endDate?: DateTimeFilter<"RecurringContest"> | Date | string
     creatorId?: StringFilter<"RecurringContest"> | string
@@ -44152,11 +52687,9 @@ export namespace Prisma {
     title?: SortOrder
     description?: SortOrder
     banner?: SortOrder
-    maxUploads?: SortOrder
     isMoneyContest?: SortOrder
     maxPrize?: SortOrder
     minPrize?: SortOrder
-    level_requirements?: SortOrder
     startDate?: SortOrder
     endDate?: SortOrder
     creatorId?: SortOrder
@@ -44181,11 +52714,9 @@ export namespace Prisma {
     title?: StringWithAggregatesFilter<"RecurringContest"> | string
     description?: StringWithAggregatesFilter<"RecurringContest"> | string
     banner?: StringNullableWithAggregatesFilter<"RecurringContest"> | string | null
-    maxUploads?: IntWithAggregatesFilter<"RecurringContest"> | number
     isMoneyContest?: BoolWithAggregatesFilter<"RecurringContest"> | boolean
     maxPrize?: IntNullableWithAggregatesFilter<"RecurringContest"> | number | null
     minPrize?: IntNullableWithAggregatesFilter<"RecurringContest"> | number | null
-    level_requirements?: IntNullableListFilter<"RecurringContest">
     startDate?: DateTimeWithAggregatesFilter<"RecurringContest"> | Date | string
     endDate?: DateTimeWithAggregatesFilter<"RecurringContest"> | Date | string
     creatorId?: StringWithAggregatesFilter<"RecurringContest"> | string
@@ -44197,12 +52728,92 @@ export namespace Prisma {
     updatedAt?: DateTimeWithAggregatesFilter<"RecurringContest"> | Date | string
   }
 
+  export type RecurringContestOccurrenceWhereInput = {
+    AND?: RecurringContestOccurrenceWhereInput | RecurringContestOccurrenceWhereInput[]
+    OR?: RecurringContestOccurrenceWhereInput[]
+    NOT?: RecurringContestOccurrenceWhereInput | RecurringContestOccurrenceWhereInput[]
+    id?: StringFilter<"RecurringContestOccurrence"> | string
+    occurrenceKey?: StringFilter<"RecurringContestOccurrence"> | string
+    recurringContestId?: StringFilter<"RecurringContestOccurrence"> | string
+    scheduledAt?: DateTimeFilter<"RecurringContestOccurrence"> | Date | string
+    contestId?: StringNullableFilter<"RecurringContestOccurrence"> | string | null
+    status?: EnumContestOccurrenceStatusFilter<"RecurringContestOccurrence"> | $Enums.ContestOccurrenceStatus
+    startedAt?: DateTimeNullableFilter<"RecurringContestOccurrence"> | Date | string | null
+    error?: StringNullableFilter<"RecurringContestOccurrence"> | string | null
+    createdAt?: DateTimeFilter<"RecurringContestOccurrence"> | Date | string
+    updatedAt?: DateTimeFilter<"RecurringContestOccurrence"> | Date | string
+  }
+
+  export type RecurringContestOccurrenceOrderByWithRelationInput = {
+    id?: SortOrder
+    occurrenceKey?: SortOrder
+    recurringContestId?: SortOrder
+    scheduledAt?: SortOrder
+    contestId?: SortOrder
+    status?: SortOrder
+    startedAt?: SortOrder
+    error?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type RecurringContestOccurrenceWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    occurrenceKey?: string
+    AND?: RecurringContestOccurrenceWhereInput | RecurringContestOccurrenceWhereInput[]
+    OR?: RecurringContestOccurrenceWhereInput[]
+    NOT?: RecurringContestOccurrenceWhereInput | RecurringContestOccurrenceWhereInput[]
+    recurringContestId?: StringFilter<"RecurringContestOccurrence"> | string
+    scheduledAt?: DateTimeFilter<"RecurringContestOccurrence"> | Date | string
+    contestId?: StringNullableFilter<"RecurringContestOccurrence"> | string | null
+    status?: EnumContestOccurrenceStatusFilter<"RecurringContestOccurrence"> | $Enums.ContestOccurrenceStatus
+    startedAt?: DateTimeNullableFilter<"RecurringContestOccurrence"> | Date | string | null
+    error?: StringNullableFilter<"RecurringContestOccurrence"> | string | null
+    createdAt?: DateTimeFilter<"RecurringContestOccurrence"> | Date | string
+    updatedAt?: DateTimeFilter<"RecurringContestOccurrence"> | Date | string
+  }, "id" | "occurrenceKey">
+
+  export type RecurringContestOccurrenceOrderByWithAggregationInput = {
+    id?: SortOrder
+    occurrenceKey?: SortOrder
+    recurringContestId?: SortOrder
+    scheduledAt?: SortOrder
+    contestId?: SortOrder
+    status?: SortOrder
+    startedAt?: SortOrder
+    error?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: RecurringContestOccurrenceCountOrderByAggregateInput
+    _max?: RecurringContestOccurrenceMaxOrderByAggregateInput
+    _min?: RecurringContestOccurrenceMinOrderByAggregateInput
+  }
+
+  export type RecurringContestOccurrenceScalarWhereWithAggregatesInput = {
+    AND?: RecurringContestOccurrenceScalarWhereWithAggregatesInput | RecurringContestOccurrenceScalarWhereWithAggregatesInput[]
+    OR?: RecurringContestOccurrenceScalarWhereWithAggregatesInput[]
+    NOT?: RecurringContestOccurrenceScalarWhereWithAggregatesInput | RecurringContestOccurrenceScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"RecurringContestOccurrence"> | string
+    occurrenceKey?: StringWithAggregatesFilter<"RecurringContestOccurrence"> | string
+    recurringContestId?: StringWithAggregatesFilter<"RecurringContestOccurrence"> | string
+    scheduledAt?: DateTimeWithAggregatesFilter<"RecurringContestOccurrence"> | Date | string
+    contestId?: StringNullableWithAggregatesFilter<"RecurringContestOccurrence"> | string | null
+    status?: EnumContestOccurrenceStatusWithAggregatesFilter<"RecurringContestOccurrence"> | $Enums.ContestOccurrenceStatus
+    startedAt?: DateTimeNullableWithAggregatesFilter<"RecurringContestOccurrence"> | Date | string | null
+    error?: StringNullableWithAggregatesFilter<"RecurringContestOccurrence"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"RecurringContestOccurrence"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"RecurringContestOccurrence"> | Date | string
+  }
+
   export type PrizeWhereInput = {
     AND?: PrizeWhereInput | PrizeWhereInput[]
     OR?: PrizeWhereInput[]
     NOT?: PrizeWhereInput | PrizeWhereInput[]
     id?: StringFilter<"Prize"> | string
     category?: EnumPrizeTypeFilter<"Prize"> | $Enums.PrizeType
+    type?: EnumAwardTypeNullableFilter<"Prize"> | $Enums.AwardType | null
+    target?: EnumAwardTargetNullableFilter<"Prize"> | $Enums.AwardTarget | null
+    rankLimit?: IntNullableFilter<"Prize"> | number | null
     title?: StringNullableFilter<"Prize"> | string | null
     description?: StringNullableFilter<"Prize"> | string | null
     icon?: StringNullableFilter<"Prize"> | string | null
@@ -44220,6 +52831,9 @@ export namespace Prisma {
   export type PrizeOrderByWithRelationInput = {
     id?: SortOrder
     category?: SortOrder
+    type?: SortOrder
+    target?: SortOrder
+    rankLimit?: SortOrder
     title?: SortOrder
     description?: SortOrder
     icon?: SortOrder
@@ -44236,10 +52850,14 @@ export namespace Prisma {
 
   export type PrizeWhereUniqueInput = Prisma.AtLeast<{
     id?: string
+    type_target_rankLimit?: PrizeTypeTargetRankLimitCompoundUniqueInput
     AND?: PrizeWhereInput | PrizeWhereInput[]
     OR?: PrizeWhereInput[]
     NOT?: PrizeWhereInput | PrizeWhereInput[]
     category?: EnumPrizeTypeFilter<"Prize"> | $Enums.PrizeType
+    type?: EnumAwardTypeNullableFilter<"Prize"> | $Enums.AwardType | null
+    target?: EnumAwardTargetNullableFilter<"Prize"> | $Enums.AwardTarget | null
+    rankLimit?: IntNullableFilter<"Prize"> | number | null
     title?: StringNullableFilter<"Prize"> | string | null
     description?: StringNullableFilter<"Prize"> | string | null
     icon?: StringNullableFilter<"Prize"> | string | null
@@ -44252,11 +52870,14 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Prize"> | Date | string
     contestAwards?: ContestAwardListRelationFilter
     recurringContestAwards?: RecurringContestAwardListRelationFilter
-  }, "id">
+  }, "id" | "type_target_rankLimit">
 
   export type PrizeOrderByWithAggregationInput = {
     id?: SortOrder
     category?: SortOrder
+    type?: SortOrder
+    target?: SortOrder
+    rankLimit?: SortOrder
     title?: SortOrder
     description?: SortOrder
     icon?: SortOrder
@@ -44280,6 +52901,9 @@ export namespace Prisma {
     NOT?: PrizeScalarWhereWithAggregatesInput | PrizeScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"Prize"> | string
     category?: EnumPrizeTypeWithAggregatesFilter<"Prize"> | $Enums.PrizeType
+    type?: EnumAwardTypeNullableWithAggregatesFilter<"Prize"> | $Enums.AwardType | null
+    target?: EnumAwardTargetNullableWithAggregatesFilter<"Prize"> | $Enums.AwardTarget | null
+    rankLimit?: IntNullableWithAggregatesFilter<"Prize"> | number | null
     title?: StringNullableWithAggregatesFilter<"Prize"> | string | null
     description?: StringNullableWithAggregatesFilter<"Prize"> | string | null
     icon?: StringNullableWithAggregatesFilter<"Prize"> | string | null
@@ -44357,6 +52981,79 @@ export namespace Prisma {
     updatedAt?: DateTimeWithAggregatesFilter<"ContestRule"> | Date | string
   }
 
+  export type ContestRuleConfigWhereInput = {
+    AND?: ContestRuleConfigWhereInput | ContestRuleConfigWhereInput[]
+    OR?: ContestRuleConfigWhereInput[]
+    NOT?: ContestRuleConfigWhereInput | ContestRuleConfigWhereInput[]
+    id?: StringFilter<"ContestRuleConfig"> | string
+    contestId?: StringFilter<"ContestRuleConfig"> | string
+    key?: StringFilter<"ContestRuleConfig"> | string
+    value?: JsonFilter<"ContestRuleConfig">
+    enabled?: BoolFilter<"ContestRuleConfig"> | boolean
+    order?: IntFilter<"ContestRuleConfig"> | number
+    createdAt?: DateTimeFilter<"ContestRuleConfig"> | Date | string
+    updatedAt?: DateTimeFilter<"ContestRuleConfig"> | Date | string
+    contest?: XOR<ContestScalarRelationFilter, ContestWhereInput>
+  }
+
+  export type ContestRuleConfigOrderByWithRelationInput = {
+    id?: SortOrder
+    contestId?: SortOrder
+    key?: SortOrder
+    value?: SortOrder
+    enabled?: SortOrder
+    order?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    contest?: ContestOrderByWithRelationInput
+  }
+
+  export type ContestRuleConfigWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    contestId_key?: ContestRuleConfigContestIdKeyCompoundUniqueInput
+    AND?: ContestRuleConfigWhereInput | ContestRuleConfigWhereInput[]
+    OR?: ContestRuleConfigWhereInput[]
+    NOT?: ContestRuleConfigWhereInput | ContestRuleConfigWhereInput[]
+    contestId?: StringFilter<"ContestRuleConfig"> | string
+    key?: StringFilter<"ContestRuleConfig"> | string
+    value?: JsonFilter<"ContestRuleConfig">
+    enabled?: BoolFilter<"ContestRuleConfig"> | boolean
+    order?: IntFilter<"ContestRuleConfig"> | number
+    createdAt?: DateTimeFilter<"ContestRuleConfig"> | Date | string
+    updatedAt?: DateTimeFilter<"ContestRuleConfig"> | Date | string
+    contest?: XOR<ContestScalarRelationFilter, ContestWhereInput>
+  }, "id" | "contestId_key">
+
+  export type ContestRuleConfigOrderByWithAggregationInput = {
+    id?: SortOrder
+    contestId?: SortOrder
+    key?: SortOrder
+    value?: SortOrder
+    enabled?: SortOrder
+    order?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: ContestRuleConfigCountOrderByAggregateInput
+    _avg?: ContestRuleConfigAvgOrderByAggregateInput
+    _max?: ContestRuleConfigMaxOrderByAggregateInput
+    _min?: ContestRuleConfigMinOrderByAggregateInput
+    _sum?: ContestRuleConfigSumOrderByAggregateInput
+  }
+
+  export type ContestRuleConfigScalarWhereWithAggregatesInput = {
+    AND?: ContestRuleConfigScalarWhereWithAggregatesInput | ContestRuleConfigScalarWhereWithAggregatesInput[]
+    OR?: ContestRuleConfigScalarWhereWithAggregatesInput[]
+    NOT?: ContestRuleConfigScalarWhereWithAggregatesInput | ContestRuleConfigScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"ContestRuleConfig"> | string
+    contestId?: StringWithAggregatesFilter<"ContestRuleConfig"> | string
+    key?: StringWithAggregatesFilter<"ContestRuleConfig"> | string
+    value?: JsonWithAggregatesFilter<"ContestRuleConfig">
+    enabled?: BoolWithAggregatesFilter<"ContestRuleConfig"> | boolean
+    order?: IntWithAggregatesFilter<"ContestRuleConfig"> | number
+    createdAt?: DateTimeWithAggregatesFilter<"ContestRuleConfig"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"ContestRuleConfig"> | Date | string
+  }
+
   export type ContestPhotoWhereInput = {
     AND?: ContestPhotoWhereInput | ContestPhotoWhereInput[]
     OR?: ContestPhotoWhereInput[]
@@ -44377,7 +53074,6 @@ export namespace Prisma {
     photo?: XOR<UserPhotoScalarRelationFilter, UserPhotoWhereInput>
     comments?: CommentListRelationFilter
     achievements?: ContestAchievementListRelationFilter
-    ContestWinner?: ContestWinnerListRelationFilter
   }
 
   export type ContestPhotoOrderByWithRelationInput = {
@@ -44397,11 +53093,11 @@ export namespace Prisma {
     photo?: UserPhotoOrderByWithRelationInput
     comments?: CommentOrderByRelationAggregateInput
     achievements?: ContestAchievementOrderByRelationAggregateInput
-    ContestWinner?: ContestWinnerOrderByRelationAggregateInput
   }
 
   export type ContestPhotoWhereUniqueInput = Prisma.AtLeast<{
     id?: string
+    contestId_photoId?: ContestPhotoContestIdPhotoIdCompoundUniqueInput
     AND?: ContestPhotoWhereInput | ContestPhotoWhereInput[]
     OR?: ContestPhotoWhereInput[]
     NOT?: ContestPhotoWhereInput | ContestPhotoWhereInput[]
@@ -44420,8 +53116,7 @@ export namespace Prisma {
     photo?: XOR<UserPhotoScalarRelationFilter, UserPhotoWhereInput>
     comments?: CommentListRelationFilter
     achievements?: ContestAchievementListRelationFilter
-    ContestWinner?: ContestWinnerListRelationFilter
-  }, "id">
+  }, "id" | "contestId_photoId">
 
   export type ContestPhotoOrderByWithAggregationInput = {
     id?: SortOrder
@@ -44459,69 +53154,6 @@ export namespace Prisma {
     updatedAt?: DateTimeWithAggregatesFilter<"ContestPhoto"> | Date | string
   }
 
-  export type ContestWinnerWhereInput = {
-    AND?: ContestWinnerWhereInput | ContestWinnerWhereInput[]
-    OR?: ContestWinnerWhereInput[]
-    NOT?: ContestWinnerWhereInput | ContestWinnerWhereInput[]
-    id?: StringFilter<"ContestWinner"> | string
-    participantId?: StringFilter<"ContestWinner"> | string
-    contestId?: StringFilter<"ContestWinner"> | string
-    contestPhotoId?: StringFilter<"ContestWinner"> | string
-    createdAt?: DateTimeFilter<"ContestWinner"> | Date | string
-    updatedAt?: DateTimeFilter<"ContestWinner"> | Date | string
-    participant?: XOR<ContestParticipantScalarRelationFilter, ContestParticipantWhereInput>
-    photo?: XOR<ContestPhotoScalarRelationFilter, ContestPhotoWhereInput>
-  }
-
-  export type ContestWinnerOrderByWithRelationInput = {
-    id?: SortOrder
-    participantId?: SortOrder
-    contestId?: SortOrder
-    contestPhotoId?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    participant?: ContestParticipantOrderByWithRelationInput
-    photo?: ContestPhotoOrderByWithRelationInput
-  }
-
-  export type ContestWinnerWhereUniqueInput = Prisma.AtLeast<{
-    id?: string
-    AND?: ContestWinnerWhereInput | ContestWinnerWhereInput[]
-    OR?: ContestWinnerWhereInput[]
-    NOT?: ContestWinnerWhereInput | ContestWinnerWhereInput[]
-    participantId?: StringFilter<"ContestWinner"> | string
-    contestId?: StringFilter<"ContestWinner"> | string
-    contestPhotoId?: StringFilter<"ContestWinner"> | string
-    createdAt?: DateTimeFilter<"ContestWinner"> | Date | string
-    updatedAt?: DateTimeFilter<"ContestWinner"> | Date | string
-    participant?: XOR<ContestParticipantScalarRelationFilter, ContestParticipantWhereInput>
-    photo?: XOR<ContestPhotoScalarRelationFilter, ContestPhotoWhereInput>
-  }, "id">
-
-  export type ContestWinnerOrderByWithAggregationInput = {
-    id?: SortOrder
-    participantId?: SortOrder
-    contestId?: SortOrder
-    contestPhotoId?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    _count?: ContestWinnerCountOrderByAggregateInput
-    _max?: ContestWinnerMaxOrderByAggregateInput
-    _min?: ContestWinnerMinOrderByAggregateInput
-  }
-
-  export type ContestWinnerScalarWhereWithAggregatesInput = {
-    AND?: ContestWinnerScalarWhereWithAggregatesInput | ContestWinnerScalarWhereWithAggregatesInput[]
-    OR?: ContestWinnerScalarWhereWithAggregatesInput[]
-    NOT?: ContestWinnerScalarWhereWithAggregatesInput | ContestWinnerScalarWhereWithAggregatesInput[]
-    id?: StringWithAggregatesFilter<"ContestWinner"> | string
-    participantId?: StringWithAggregatesFilter<"ContestWinner"> | string
-    contestId?: StringWithAggregatesFilter<"ContestWinner"> | string
-    contestPhotoId?: StringWithAggregatesFilter<"ContestWinner"> | string
-    createdAt?: DateTimeWithAggregatesFilter<"ContestWinner"> | Date | string
-    updatedAt?: DateTimeWithAggregatesFilter<"ContestWinner"> | Date | string
-  }
-
   export type ContestParticipantWhereInput = {
     AND?: ContestParticipantWhereInput | ContestParticipantWhereInput[]
     OR?: ContestParticipantWhereInput[]
@@ -44540,7 +53172,6 @@ export namespace Prisma {
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
     member?: XOR<TeamMemberNullableScalarRelationFilter, TeamMemberWhereInput> | null
     photos?: ContestPhotoListRelationFilter
-    ContestWinner?: ContestWinnerListRelationFilter
     contestAchievement?: ContestAchievementListRelationFilter
   }
 
@@ -44559,7 +53190,6 @@ export namespace Prisma {
     user?: UserOrderByWithRelationInput
     member?: TeamMemberOrderByWithRelationInput
     photos?: ContestPhotoOrderByRelationAggregateInput
-    ContestWinner?: ContestWinnerOrderByRelationAggregateInput
     contestAchievement?: ContestAchievementOrderByRelationAggregateInput
   }
 
@@ -44582,7 +53212,6 @@ export namespace Prisma {
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
     member?: XOR<TeamMemberNullableScalarRelationFilter, TeamMemberWhereInput> | null
     photos?: ContestPhotoListRelationFilter
-    ContestWinner?: ContestWinnerListRelationFilter
     contestAchievement?: ContestAchievementListRelationFilter
   }, "id" | "contestId_userId">
 
@@ -44626,6 +53255,9 @@ export namespace Prisma {
     NOT?: ContestPrizeWhereInput | ContestPrizeWhereInput[]
     id?: StringFilter<"ContestPrize"> | string
     category?: EnumPrizeTypeFilter<"ContestPrize"> | $Enums.PrizeType
+    type?: EnumAwardTypeNullableFilter<"ContestPrize"> | $Enums.AwardType | null
+    target?: EnumAwardTargetNullableFilter<"ContestPrize"> | $Enums.AwardTarget | null
+    rankLimit?: IntNullableFilter<"ContestPrize"> | number | null
     icon?: StringNullableFilter<"ContestPrize"> | string | null
     boost?: IntFilter<"ContestPrize"> | number
     swap?: IntFilter<"ContestPrize"> | number
@@ -44640,6 +53272,9 @@ export namespace Prisma {
   export type ContestPrizeOrderByWithRelationInput = {
     id?: SortOrder
     category?: SortOrder
+    type?: SortOrder
+    target?: SortOrder
+    rankLimit?: SortOrder
     icon?: SortOrder
     boost?: SortOrder
     swap?: SortOrder
@@ -44653,10 +53288,14 @@ export namespace Prisma {
 
   export type ContestPrizeWhereUniqueInput = Prisma.AtLeast<{
     id?: string
+    contestId_type_target_rankLimit?: ContestPrizeContestIdTypeTargetRankLimitCompoundUniqueInput
     AND?: ContestPrizeWhereInput | ContestPrizeWhereInput[]
     OR?: ContestPrizeWhereInput[]
     NOT?: ContestPrizeWhereInput | ContestPrizeWhereInput[]
     category?: EnumPrizeTypeFilter<"ContestPrize"> | $Enums.PrizeType
+    type?: EnumAwardTypeNullableFilter<"ContestPrize"> | $Enums.AwardType | null
+    target?: EnumAwardTargetNullableFilter<"ContestPrize"> | $Enums.AwardTarget | null
+    rankLimit?: IntNullableFilter<"ContestPrize"> | number | null
     icon?: StringNullableFilter<"ContestPrize"> | string | null
     boost?: IntFilter<"ContestPrize"> | number
     swap?: IntFilter<"ContestPrize"> | number
@@ -44666,11 +53305,14 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"ContestPrize"> | Date | string
     updatedAt?: DateTimeFilter<"ContestPrize"> | Date | string
     contest?: XOR<ContestScalarRelationFilter, ContestWhereInput>
-  }, "id">
+  }, "id" | "contestId_type_target_rankLimit">
 
   export type ContestPrizeOrderByWithAggregationInput = {
     id?: SortOrder
     category?: SortOrder
+    type?: SortOrder
+    target?: SortOrder
+    rankLimit?: SortOrder
     icon?: SortOrder
     boost?: SortOrder
     swap?: SortOrder
@@ -44692,6 +53334,9 @@ export namespace Prisma {
     NOT?: ContestPrizeScalarWhereWithAggregatesInput | ContestPrizeScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"ContestPrize"> | string
     category?: EnumPrizeTypeWithAggregatesFilter<"ContestPrize"> | $Enums.PrizeType
+    type?: EnumAwardTypeNullableWithAggregatesFilter<"ContestPrize"> | $Enums.AwardType | null
+    target?: EnumAwardTargetNullableWithAggregatesFilter<"ContestPrize"> | $Enums.AwardTarget | null
+    rankLimit?: IntNullableWithAggregatesFilter<"ContestPrize"> | number | null
     icon?: StringNullableWithAggregatesFilter<"ContestPrize"> | string | null
     boost?: IntWithAggregatesFilter<"ContestPrize"> | number
     swap?: IntWithAggregatesFilter<"ContestPrize"> | number
@@ -44702,12 +53347,78 @@ export namespace Prisma {
     updatedAt?: DateTimeWithAggregatesFilter<"ContestPrize"> | Date | string
   }
 
+  export type ContestRuleAcceptanceWhereInput = {
+    AND?: ContestRuleAcceptanceWhereInput | ContestRuleAcceptanceWhereInput[]
+    OR?: ContestRuleAcceptanceWhereInput[]
+    NOT?: ContestRuleAcceptanceWhereInput | ContestRuleAcceptanceWhereInput[]
+    id?: StringFilter<"ContestRuleAcceptance"> | string
+    contestId?: StringFilter<"ContestRuleAcceptance"> | string
+    userId?: StringFilter<"ContestRuleAcceptance"> | string
+    key?: StringFilter<"ContestRuleAcceptance"> | string
+    acceptedAt?: DateTimeFilter<"ContestRuleAcceptance"> | Date | string
+    ruleVersion?: IntFilter<"ContestRuleAcceptance"> | number
+  }
+
+  export type ContestRuleAcceptanceOrderByWithRelationInput = {
+    id?: SortOrder
+    contestId?: SortOrder
+    userId?: SortOrder
+    key?: SortOrder
+    acceptedAt?: SortOrder
+    ruleVersion?: SortOrder
+  }
+
+  export type ContestRuleAcceptanceWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    contestId_userId_key?: ContestRuleAcceptanceContestIdUserIdKeyCompoundUniqueInput
+    AND?: ContestRuleAcceptanceWhereInput | ContestRuleAcceptanceWhereInput[]
+    OR?: ContestRuleAcceptanceWhereInput[]
+    NOT?: ContestRuleAcceptanceWhereInput | ContestRuleAcceptanceWhereInput[]
+    contestId?: StringFilter<"ContestRuleAcceptance"> | string
+    userId?: StringFilter<"ContestRuleAcceptance"> | string
+    key?: StringFilter<"ContestRuleAcceptance"> | string
+    acceptedAt?: DateTimeFilter<"ContestRuleAcceptance"> | Date | string
+    ruleVersion?: IntFilter<"ContestRuleAcceptance"> | number
+  }, "id" | "contestId_userId_key">
+
+  export type ContestRuleAcceptanceOrderByWithAggregationInput = {
+    id?: SortOrder
+    contestId?: SortOrder
+    userId?: SortOrder
+    key?: SortOrder
+    acceptedAt?: SortOrder
+    ruleVersion?: SortOrder
+    _count?: ContestRuleAcceptanceCountOrderByAggregateInput
+    _avg?: ContestRuleAcceptanceAvgOrderByAggregateInput
+    _max?: ContestRuleAcceptanceMaxOrderByAggregateInput
+    _min?: ContestRuleAcceptanceMinOrderByAggregateInput
+    _sum?: ContestRuleAcceptanceSumOrderByAggregateInput
+  }
+
+  export type ContestRuleAcceptanceScalarWhereWithAggregatesInput = {
+    AND?: ContestRuleAcceptanceScalarWhereWithAggregatesInput | ContestRuleAcceptanceScalarWhereWithAggregatesInput[]
+    OR?: ContestRuleAcceptanceScalarWhereWithAggregatesInput[]
+    NOT?: ContestRuleAcceptanceScalarWhereWithAggregatesInput | ContestRuleAcceptanceScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"ContestRuleAcceptance"> | string
+    contestId?: StringWithAggregatesFilter<"ContestRuleAcceptance"> | string
+    userId?: StringWithAggregatesFilter<"ContestRuleAcceptance"> | string
+    key?: StringWithAggregatesFilter<"ContestRuleAcceptance"> | string
+    acceptedAt?: DateTimeWithAggregatesFilter<"ContestRuleAcceptance"> | Date | string
+    ruleVersion?: IntWithAggregatesFilter<"ContestRuleAcceptance"> | number
+  }
+
   export type ContestAwardWhereInput = {
     AND?: ContestAwardWhereInput | ContestAwardWhereInput[]
     OR?: ContestAwardWhereInput[]
     NOT?: ContestAwardWhereInput | ContestAwardWhereInput[]
     id?: StringFilter<"ContestAward"> | string
     category?: EnumPrizeTypeFilter<"ContestAward"> | $Enums.PrizeType
+    type?: EnumAwardTypeNullableFilter<"ContestAward"> | $Enums.AwardType | null
+    target?: EnumAwardTargetNullableFilter<"ContestAward"> | $Enums.AwardTarget | null
+    rankLimit?: IntNullableFilter<"ContestAward"> | number | null
+    slotKey?: StringNullableFilter<"ContestAward"> | string | null
+    title?: StringNullableFilter<"ContestAward"> | string | null
+    description?: StringNullableFilter<"ContestAward"> | string | null
     icon?: StringNullableFilter<"ContestAward"> | string | null
     boost?: IntFilter<"ContestAward"> | number
     swap?: IntFilter<"ContestAward"> | number
@@ -44724,6 +53435,12 @@ export namespace Prisma {
   export type ContestAwardOrderByWithRelationInput = {
     id?: SortOrder
     category?: SortOrder
+    type?: SortOrder
+    target?: SortOrder
+    rankLimit?: SortOrder
+    slotKey?: SortOrder
+    title?: SortOrder
+    description?: SortOrder
     icon?: SortOrder
     boost?: SortOrder
     swap?: SortOrder
@@ -44739,11 +53456,17 @@ export namespace Prisma {
 
   export type ContestAwardWhereUniqueInput = Prisma.AtLeast<{
     id?: string
-    contestId_category?: ContestAwardContestIdCategoryCompoundUniqueInput
+    contestId_type_target_rankLimit?: ContestAwardContestIdTypeTargetRankLimitCompoundUniqueInput
     AND?: ContestAwardWhereInput | ContestAwardWhereInput[]
     OR?: ContestAwardWhereInput[]
     NOT?: ContestAwardWhereInput | ContestAwardWhereInput[]
     category?: EnumPrizeTypeFilter<"ContestAward"> | $Enums.PrizeType
+    type?: EnumAwardTypeNullableFilter<"ContestAward"> | $Enums.AwardType | null
+    target?: EnumAwardTargetNullableFilter<"ContestAward"> | $Enums.AwardTarget | null
+    rankLimit?: IntNullableFilter<"ContestAward"> | number | null
+    slotKey?: StringNullableFilter<"ContestAward"> | string | null
+    title?: StringNullableFilter<"ContestAward"> | string | null
+    description?: StringNullableFilter<"ContestAward"> | string | null
     icon?: StringNullableFilter<"ContestAward"> | string | null
     boost?: IntFilter<"ContestAward"> | number
     swap?: IntFilter<"ContestAward"> | number
@@ -44755,11 +53478,17 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"ContestAward"> | Date | string
     contest?: XOR<ContestScalarRelationFilter, ContestWhereInput>
     prize?: XOR<PrizeScalarRelationFilter, PrizeWhereInput>
-  }, "id" | "contestId_category">
+  }, "id" | "contestId_type_target_rankLimit">
 
   export type ContestAwardOrderByWithAggregationInput = {
     id?: SortOrder
     category?: SortOrder
+    type?: SortOrder
+    target?: SortOrder
+    rankLimit?: SortOrder
+    slotKey?: SortOrder
+    title?: SortOrder
+    description?: SortOrder
     icon?: SortOrder
     boost?: SortOrder
     swap?: SortOrder
@@ -44782,6 +53511,12 @@ export namespace Prisma {
     NOT?: ContestAwardScalarWhereWithAggregatesInput | ContestAwardScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"ContestAward"> | string
     category?: EnumPrizeTypeWithAggregatesFilter<"ContestAward"> | $Enums.PrizeType
+    type?: EnumAwardTypeNullableWithAggregatesFilter<"ContestAward"> | $Enums.AwardType | null
+    target?: EnumAwardTargetNullableWithAggregatesFilter<"ContestAward"> | $Enums.AwardTarget | null
+    rankLimit?: IntNullableWithAggregatesFilter<"ContestAward"> | number | null
+    slotKey?: StringNullableWithAggregatesFilter<"ContestAward"> | string | null
+    title?: StringNullableWithAggregatesFilter<"ContestAward"> | string | null
+    description?: StringNullableWithAggregatesFilter<"ContestAward"> | string | null
     icon?: StringNullableWithAggregatesFilter<"ContestAward"> | string | null
     boost?: IntWithAggregatesFilter<"ContestAward"> | number
     swap?: IntWithAggregatesFilter<"ContestAward"> | number
@@ -44799,6 +53534,12 @@ export namespace Prisma {
     NOT?: RecurringContestAwardWhereInput | RecurringContestAwardWhereInput[]
     id?: StringFilter<"RecurringContestAward"> | string
     category?: EnumPrizeTypeFilter<"RecurringContestAward"> | $Enums.PrizeType
+    type?: EnumAwardTypeNullableFilter<"RecurringContestAward"> | $Enums.AwardType | null
+    target?: EnumAwardTargetNullableFilter<"RecurringContestAward"> | $Enums.AwardTarget | null
+    rankLimit?: IntNullableFilter<"RecurringContestAward"> | number | null
+    slotKey?: StringNullableFilter<"RecurringContestAward"> | string | null
+    title?: StringNullableFilter<"RecurringContestAward"> | string | null
+    description?: StringNullableFilter<"RecurringContestAward"> | string | null
     icon?: StringNullableFilter<"RecurringContestAward"> | string | null
     boost?: IntFilter<"RecurringContestAward"> | number
     swap?: IntFilter<"RecurringContestAward"> | number
@@ -44815,6 +53556,12 @@ export namespace Prisma {
   export type RecurringContestAwardOrderByWithRelationInput = {
     id?: SortOrder
     category?: SortOrder
+    type?: SortOrder
+    target?: SortOrder
+    rankLimit?: SortOrder
+    slotKey?: SortOrder
+    title?: SortOrder
+    description?: SortOrder
     icon?: SortOrder
     boost?: SortOrder
     swap?: SortOrder
@@ -44830,11 +53577,17 @@ export namespace Prisma {
 
   export type RecurringContestAwardWhereUniqueInput = Prisma.AtLeast<{
     id?: string
-    recurringContestId_category?: RecurringContestAwardRecurringContestIdCategoryCompoundUniqueInput
+    recurringContestId_type_target_rankLimit?: RecurringContestAwardRecurringContestIdTypeTargetRankLimitCompoundUniqueInput
     AND?: RecurringContestAwardWhereInput | RecurringContestAwardWhereInput[]
     OR?: RecurringContestAwardWhereInput[]
     NOT?: RecurringContestAwardWhereInput | RecurringContestAwardWhereInput[]
     category?: EnumPrizeTypeFilter<"RecurringContestAward"> | $Enums.PrizeType
+    type?: EnumAwardTypeNullableFilter<"RecurringContestAward"> | $Enums.AwardType | null
+    target?: EnumAwardTargetNullableFilter<"RecurringContestAward"> | $Enums.AwardTarget | null
+    rankLimit?: IntNullableFilter<"RecurringContestAward"> | number | null
+    slotKey?: StringNullableFilter<"RecurringContestAward"> | string | null
+    title?: StringNullableFilter<"RecurringContestAward"> | string | null
+    description?: StringNullableFilter<"RecurringContestAward"> | string | null
     icon?: StringNullableFilter<"RecurringContestAward"> | string | null
     boost?: IntFilter<"RecurringContestAward"> | number
     swap?: IntFilter<"RecurringContestAward"> | number
@@ -44846,11 +53599,17 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"RecurringContestAward"> | Date | string
     recurringContest?: XOR<RecurringContestScalarRelationFilter, RecurringContestWhereInput>
     prize?: XOR<PrizeScalarRelationFilter, PrizeWhereInput>
-  }, "id" | "recurringContestId_category">
+  }, "id" | "recurringContestId_type_target_rankLimit">
 
   export type RecurringContestAwardOrderByWithAggregationInput = {
     id?: SortOrder
     category?: SortOrder
+    type?: SortOrder
+    target?: SortOrder
+    rankLimit?: SortOrder
+    slotKey?: SortOrder
+    title?: SortOrder
+    description?: SortOrder
     icon?: SortOrder
     boost?: SortOrder
     swap?: SortOrder
@@ -44873,6 +53632,12 @@ export namespace Prisma {
     NOT?: RecurringContestAwardScalarWhereWithAggregatesInput | RecurringContestAwardScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"RecurringContestAward"> | string
     category?: EnumPrizeTypeWithAggregatesFilter<"RecurringContestAward"> | $Enums.PrizeType
+    type?: EnumAwardTypeNullableWithAggregatesFilter<"RecurringContestAward"> | $Enums.AwardType | null
+    target?: EnumAwardTargetNullableWithAggregatesFilter<"RecurringContestAward"> | $Enums.AwardTarget | null
+    rankLimit?: IntNullableWithAggregatesFilter<"RecurringContestAward"> | number | null
+    slotKey?: StringNullableWithAggregatesFilter<"RecurringContestAward"> | string | null
+    title?: StringNullableWithAggregatesFilter<"RecurringContestAward"> | string | null
+    description?: StringNullableWithAggregatesFilter<"RecurringContestAward"> | string | null
     icon?: StringNullableWithAggregatesFilter<"RecurringContestAward"> | string | null
     boost?: IntWithAggregatesFilter<"RecurringContestAward"> | number
     swap?: IntWithAggregatesFilter<"RecurringContestAward"> | number
@@ -44890,9 +53655,16 @@ export namespace Prisma {
     NOT?: ContestAchievementWhereInput | ContestAchievementWhereInput[]
     id?: StringFilter<"ContestAchievement"> | string
     category?: EnumPrizeTypeFilter<"ContestAchievement"> | $Enums.PrizeType
+    kind?: EnumAchievementKindFilter<"ContestAchievement"> | $Enums.AchievementKind
+    type?: EnumAwardTypeNullableFilter<"ContestAchievement"> | $Enums.AwardType | null
+    target?: EnumAwardTargetNullableFilter<"ContestAchievement"> | $Enums.AwardTarget | null
+    rankLimit?: IntNullableFilter<"ContestAchievement"> | number | null
+    levelBadge?: EnumContestLevelBadgeNullableFilter<"ContestAchievement"> | $Enums.ContestLevelBadge | null
+    levelOrder?: IntNullableFilter<"ContestAchievement"> | number | null
     photoId?: StringNullableFilter<"ContestAchievement"> | string | null
     participantId?: StringNullableFilter<"ContestAchievement"> | string | null
     contestId?: StringFilter<"ContestAchievement"> | string
+    grantKey?: StringNullableFilter<"ContestAchievement"> | string | null
     createdAt?: DateTimeFilter<"ContestAchievement"> | Date | string
     updatedAt?: DateTimeFilter<"ContestAchievement"> | Date | string
     photo?: XOR<ContestPhotoNullableScalarRelationFilter, ContestPhotoWhereInput> | null
@@ -44903,9 +53675,16 @@ export namespace Prisma {
   export type ContestAchievementOrderByWithRelationInput = {
     id?: SortOrder
     category?: SortOrder
+    kind?: SortOrder
+    type?: SortOrder
+    target?: SortOrder
+    rankLimit?: SortOrder
+    levelBadge?: SortOrder
+    levelOrder?: SortOrder
     photoId?: SortOrder
     participantId?: SortOrder
     contestId?: SortOrder
+    grantKey?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     photo?: ContestPhotoOrderByWithRelationInput
@@ -44919,9 +53698,16 @@ export namespace Prisma {
     OR?: ContestAchievementWhereInput[]
     NOT?: ContestAchievementWhereInput | ContestAchievementWhereInput[]
     category?: EnumPrizeTypeFilter<"ContestAchievement"> | $Enums.PrizeType
+    kind?: EnumAchievementKindFilter<"ContestAchievement"> | $Enums.AchievementKind
+    type?: EnumAwardTypeNullableFilter<"ContestAchievement"> | $Enums.AwardType | null
+    target?: EnumAwardTargetNullableFilter<"ContestAchievement"> | $Enums.AwardTarget | null
+    rankLimit?: IntNullableFilter<"ContestAchievement"> | number | null
+    levelBadge?: EnumContestLevelBadgeNullableFilter<"ContestAchievement"> | $Enums.ContestLevelBadge | null
+    levelOrder?: IntNullableFilter<"ContestAchievement"> | number | null
     photoId?: StringNullableFilter<"ContestAchievement"> | string | null
     participantId?: StringNullableFilter<"ContestAchievement"> | string | null
     contestId?: StringFilter<"ContestAchievement"> | string
+    grantKey?: StringNullableFilter<"ContestAchievement"> | string | null
     createdAt?: DateTimeFilter<"ContestAchievement"> | Date | string
     updatedAt?: DateTimeFilter<"ContestAchievement"> | Date | string
     photo?: XOR<ContestPhotoNullableScalarRelationFilter, ContestPhotoWhereInput> | null
@@ -44932,14 +53718,23 @@ export namespace Prisma {
   export type ContestAchievementOrderByWithAggregationInput = {
     id?: SortOrder
     category?: SortOrder
+    kind?: SortOrder
+    type?: SortOrder
+    target?: SortOrder
+    rankLimit?: SortOrder
+    levelBadge?: SortOrder
+    levelOrder?: SortOrder
     photoId?: SortOrder
     participantId?: SortOrder
     contestId?: SortOrder
+    grantKey?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: ContestAchievementCountOrderByAggregateInput
+    _avg?: ContestAchievementAvgOrderByAggregateInput
     _max?: ContestAchievementMaxOrderByAggregateInput
     _min?: ContestAchievementMinOrderByAggregateInput
+    _sum?: ContestAchievementSumOrderByAggregateInput
   }
 
   export type ContestAchievementScalarWhereWithAggregatesInput = {
@@ -44948,11 +53743,487 @@ export namespace Prisma {
     NOT?: ContestAchievementScalarWhereWithAggregatesInput | ContestAchievementScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"ContestAchievement"> | string
     category?: EnumPrizeTypeWithAggregatesFilter<"ContestAchievement"> | $Enums.PrizeType
+    kind?: EnumAchievementKindWithAggregatesFilter<"ContestAchievement"> | $Enums.AchievementKind
+    type?: EnumAwardTypeNullableWithAggregatesFilter<"ContestAchievement"> | $Enums.AwardType | null
+    target?: EnumAwardTargetNullableWithAggregatesFilter<"ContestAchievement"> | $Enums.AwardTarget | null
+    rankLimit?: IntNullableWithAggregatesFilter<"ContestAchievement"> | number | null
+    levelBadge?: EnumContestLevelBadgeNullableWithAggregatesFilter<"ContestAchievement"> | $Enums.ContestLevelBadge | null
+    levelOrder?: IntNullableWithAggregatesFilter<"ContestAchievement"> | number | null
     photoId?: StringNullableWithAggregatesFilter<"ContestAchievement"> | string | null
     participantId?: StringNullableWithAggregatesFilter<"ContestAchievement"> | string | null
     contestId?: StringWithAggregatesFilter<"ContestAchievement"> | string
+    grantKey?: StringNullableWithAggregatesFilter<"ContestAchievement"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"ContestAchievement"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"ContestAchievement"> | Date | string
+  }
+
+  export type ContestFinalizationWhereInput = {
+    AND?: ContestFinalizationWhereInput | ContestFinalizationWhereInput[]
+    OR?: ContestFinalizationWhereInput[]
+    NOT?: ContestFinalizationWhereInput | ContestFinalizationWhereInput[]
+    id?: StringFilter<"ContestFinalization"> | string
+    contestId?: StringFilter<"ContestFinalization"> | string
+    status?: EnumContestFinalizationStatusFilter<"ContestFinalization"> | $Enums.ContestFinalizationStatus
+    attemptCount?: IntFilter<"ContestFinalization"> | number
+    scoringVersion?: IntFilter<"ContestFinalization"> | number
+    startedAt?: DateTimeNullableFilter<"ContestFinalization"> | Date | string | null
+    completedAt?: DateTimeNullableFilter<"ContestFinalization"> | Date | string | null
+    error?: StringNullableFilter<"ContestFinalization"> | string | null
+    createdAt?: DateTimeFilter<"ContestFinalization"> | Date | string
+    updatedAt?: DateTimeFilter<"ContestFinalization"> | Date | string
+  }
+
+  export type ContestFinalizationOrderByWithRelationInput = {
+    id?: SortOrder
+    contestId?: SortOrder
+    status?: SortOrder
+    attemptCount?: SortOrder
+    scoringVersion?: SortOrder
+    startedAt?: SortOrder
+    completedAt?: SortOrder
+    error?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ContestFinalizationWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    contestId?: string
+    AND?: ContestFinalizationWhereInput | ContestFinalizationWhereInput[]
+    OR?: ContestFinalizationWhereInput[]
+    NOT?: ContestFinalizationWhereInput | ContestFinalizationWhereInput[]
+    status?: EnumContestFinalizationStatusFilter<"ContestFinalization"> | $Enums.ContestFinalizationStatus
+    attemptCount?: IntFilter<"ContestFinalization"> | number
+    scoringVersion?: IntFilter<"ContestFinalization"> | number
+    startedAt?: DateTimeNullableFilter<"ContestFinalization"> | Date | string | null
+    completedAt?: DateTimeNullableFilter<"ContestFinalization"> | Date | string | null
+    error?: StringNullableFilter<"ContestFinalization"> | string | null
+    createdAt?: DateTimeFilter<"ContestFinalization"> | Date | string
+    updatedAt?: DateTimeFilter<"ContestFinalization"> | Date | string
+  }, "id" | "contestId">
+
+  export type ContestFinalizationOrderByWithAggregationInput = {
+    id?: SortOrder
+    contestId?: SortOrder
+    status?: SortOrder
+    attemptCount?: SortOrder
+    scoringVersion?: SortOrder
+    startedAt?: SortOrder
+    completedAt?: SortOrder
+    error?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: ContestFinalizationCountOrderByAggregateInput
+    _avg?: ContestFinalizationAvgOrderByAggregateInput
+    _max?: ContestFinalizationMaxOrderByAggregateInput
+    _min?: ContestFinalizationMinOrderByAggregateInput
+    _sum?: ContestFinalizationSumOrderByAggregateInput
+  }
+
+  export type ContestFinalizationScalarWhereWithAggregatesInput = {
+    AND?: ContestFinalizationScalarWhereWithAggregatesInput | ContestFinalizationScalarWhereWithAggregatesInput[]
+    OR?: ContestFinalizationScalarWhereWithAggregatesInput[]
+    NOT?: ContestFinalizationScalarWhereWithAggregatesInput | ContestFinalizationScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"ContestFinalization"> | string
+    contestId?: StringWithAggregatesFilter<"ContestFinalization"> | string
+    status?: EnumContestFinalizationStatusWithAggregatesFilter<"ContestFinalization"> | $Enums.ContestFinalizationStatus
+    attemptCount?: IntWithAggregatesFilter<"ContestFinalization"> | number
+    scoringVersion?: IntWithAggregatesFilter<"ContestFinalization"> | number
+    startedAt?: DateTimeNullableWithAggregatesFilter<"ContestFinalization"> | Date | string | null
+    completedAt?: DateTimeNullableWithAggregatesFilter<"ContestFinalization"> | Date | string | null
+    error?: StringNullableWithAggregatesFilter<"ContestFinalization"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"ContestFinalization"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"ContestFinalization"> | Date | string
+  }
+
+  export type ContestRankingResultWhereInput = {
+    AND?: ContestRankingResultWhereInput | ContestRankingResultWhereInput[]
+    OR?: ContestRankingResultWhereInput[]
+    NOT?: ContestRankingResultWhereInput | ContestRankingResultWhereInput[]
+    id?: StringFilter<"ContestRankingResult"> | string
+    resultKey?: StringFilter<"ContestRankingResult"> | string
+    contestId?: StringFilter<"ContestRankingResult"> | string
+    scope?: EnumContestRankingScopeFilter<"ContestRankingResult"> | $Enums.ContestRankingScope
+    participantId?: StringFilter<"ContestRankingResult"> | string
+    photoId?: StringNullableFilter<"ContestRankingResult"> | string | null
+    score?: IntFilter<"ContestRankingResult"> | number
+    rank?: IntFilter<"ContestRankingResult"> | number
+    level?: EnumYCLevelNullableFilter<"ContestRankingResult"> | $Enums.YCLevel | null
+    tieBreakKey?: StringFilter<"ContestRankingResult"> | string
+    scoringVersion?: IntFilter<"ContestRankingResult"> | number
+    createdAt?: DateTimeFilter<"ContestRankingResult"> | Date | string
+    updatedAt?: DateTimeFilter<"ContestRankingResult"> | Date | string
+  }
+
+  export type ContestRankingResultOrderByWithRelationInput = {
+    id?: SortOrder
+    resultKey?: SortOrder
+    contestId?: SortOrder
+    scope?: SortOrder
+    participantId?: SortOrder
+    photoId?: SortOrder
+    score?: SortOrder
+    rank?: SortOrder
+    level?: SortOrder
+    tieBreakKey?: SortOrder
+    scoringVersion?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ContestRankingResultWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    resultKey?: string
+    contestId_scope_rank?: ContestRankingResultContestIdScopeRankCompoundUniqueInput
+    AND?: ContestRankingResultWhereInput | ContestRankingResultWhereInput[]
+    OR?: ContestRankingResultWhereInput[]
+    NOT?: ContestRankingResultWhereInput | ContestRankingResultWhereInput[]
+    contestId?: StringFilter<"ContestRankingResult"> | string
+    scope?: EnumContestRankingScopeFilter<"ContestRankingResult"> | $Enums.ContestRankingScope
+    participantId?: StringFilter<"ContestRankingResult"> | string
+    photoId?: StringNullableFilter<"ContestRankingResult"> | string | null
+    score?: IntFilter<"ContestRankingResult"> | number
+    rank?: IntFilter<"ContestRankingResult"> | number
+    level?: EnumYCLevelNullableFilter<"ContestRankingResult"> | $Enums.YCLevel | null
+    tieBreakKey?: StringFilter<"ContestRankingResult"> | string
+    scoringVersion?: IntFilter<"ContestRankingResult"> | number
+    createdAt?: DateTimeFilter<"ContestRankingResult"> | Date | string
+    updatedAt?: DateTimeFilter<"ContestRankingResult"> | Date | string
+  }, "id" | "resultKey" | "contestId_scope_rank">
+
+  export type ContestRankingResultOrderByWithAggregationInput = {
+    id?: SortOrder
+    resultKey?: SortOrder
+    contestId?: SortOrder
+    scope?: SortOrder
+    participantId?: SortOrder
+    photoId?: SortOrder
+    score?: SortOrder
+    rank?: SortOrder
+    level?: SortOrder
+    tieBreakKey?: SortOrder
+    scoringVersion?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: ContestRankingResultCountOrderByAggregateInput
+    _avg?: ContestRankingResultAvgOrderByAggregateInput
+    _max?: ContestRankingResultMaxOrderByAggregateInput
+    _min?: ContestRankingResultMinOrderByAggregateInput
+    _sum?: ContestRankingResultSumOrderByAggregateInput
+  }
+
+  export type ContestRankingResultScalarWhereWithAggregatesInput = {
+    AND?: ContestRankingResultScalarWhereWithAggregatesInput | ContestRankingResultScalarWhereWithAggregatesInput[]
+    OR?: ContestRankingResultScalarWhereWithAggregatesInput[]
+    NOT?: ContestRankingResultScalarWhereWithAggregatesInput | ContestRankingResultScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"ContestRankingResult"> | string
+    resultKey?: StringWithAggregatesFilter<"ContestRankingResult"> | string
+    contestId?: StringWithAggregatesFilter<"ContestRankingResult"> | string
+    scope?: EnumContestRankingScopeWithAggregatesFilter<"ContestRankingResult"> | $Enums.ContestRankingScope
+    participantId?: StringWithAggregatesFilter<"ContestRankingResult"> | string
+    photoId?: StringNullableWithAggregatesFilter<"ContestRankingResult"> | string | null
+    score?: IntWithAggregatesFilter<"ContestRankingResult"> | number
+    rank?: IntWithAggregatesFilter<"ContestRankingResult"> | number
+    level?: EnumYCLevelNullableWithAggregatesFilter<"ContestRankingResult"> | $Enums.YCLevel | null
+    tieBreakKey?: StringWithAggregatesFilter<"ContestRankingResult"> | string
+    scoringVersion?: IntWithAggregatesFilter<"ContestRankingResult"> | number
+    createdAt?: DateTimeWithAggregatesFilter<"ContestRankingResult"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"ContestRankingResult"> | Date | string
+  }
+
+  export type ContestAwardGrantWhereInput = {
+    AND?: ContestAwardGrantWhereInput | ContestAwardGrantWhereInput[]
+    OR?: ContestAwardGrantWhereInput[]
+    NOT?: ContestAwardGrantWhereInput | ContestAwardGrantWhereInput[]
+    id?: StringFilter<"ContestAwardGrant"> | string
+    grantKey?: StringFilter<"ContestAwardGrant"> | string
+    contestId?: StringFilter<"ContestAwardGrant"> | string
+    contestAwardId?: StringNullableFilter<"ContestAwardGrant"> | string | null
+    participantId?: StringFilter<"ContestAwardGrant"> | string
+    userId?: StringFilter<"ContestAwardGrant"> | string
+    photoId?: StringNullableFilter<"ContestAwardGrant"> | string | null
+    category?: EnumPrizeTypeFilter<"ContestAwardGrant"> | $Enums.PrizeType
+    kind?: EnumAchievementKindFilter<"ContestAwardGrant"> | $Enums.AchievementKind
+    type?: EnumAwardTypeNullableFilter<"ContestAwardGrant"> | $Enums.AwardType | null
+    target?: EnumAwardTargetNullableFilter<"ContestAwardGrant"> | $Enums.AwardTarget | null
+    rankLimit?: IntNullableFilter<"ContestAwardGrant"> | number | null
+    levelBadge?: EnumContestLevelBadgeNullableFilter<"ContestAwardGrant"> | $Enums.ContestLevelBadge | null
+    levelOrder?: IntNullableFilter<"ContestAwardGrant"> | number | null
+    rank?: IntNullableFilter<"ContestAwardGrant"> | number | null
+    keyReward?: IntFilter<"ContestAwardGrant"> | number
+    boostReward?: IntFilter<"ContestAwardGrant"> | number
+    swapReward?: IntFilter<"ContestAwardGrant"> | number
+    coinReward?: IntFilter<"ContestAwardGrant"> | number
+    status?: EnumContestGrantStatusFilter<"ContestAwardGrant"> | $Enums.ContestGrantStatus
+    error?: StringNullableFilter<"ContestAwardGrant"> | string | null
+    processedAt?: DateTimeNullableFilter<"ContestAwardGrant"> | Date | string | null
+    createdAt?: DateTimeFilter<"ContestAwardGrant"> | Date | string
+    updatedAt?: DateTimeFilter<"ContestAwardGrant"> | Date | string
+  }
+
+  export type ContestAwardGrantOrderByWithRelationInput = {
+    id?: SortOrder
+    grantKey?: SortOrder
+    contestId?: SortOrder
+    contestAwardId?: SortOrder
+    participantId?: SortOrder
+    userId?: SortOrder
+    photoId?: SortOrder
+    category?: SortOrder
+    kind?: SortOrder
+    type?: SortOrder
+    target?: SortOrder
+    rankLimit?: SortOrder
+    levelBadge?: SortOrder
+    levelOrder?: SortOrder
+    rank?: SortOrder
+    keyReward?: SortOrder
+    boostReward?: SortOrder
+    swapReward?: SortOrder
+    coinReward?: SortOrder
+    status?: SortOrder
+    error?: SortOrder
+    processedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ContestAwardGrantWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    grantKey?: string
+    AND?: ContestAwardGrantWhereInput | ContestAwardGrantWhereInput[]
+    OR?: ContestAwardGrantWhereInput[]
+    NOT?: ContestAwardGrantWhereInput | ContestAwardGrantWhereInput[]
+    contestId?: StringFilter<"ContestAwardGrant"> | string
+    contestAwardId?: StringNullableFilter<"ContestAwardGrant"> | string | null
+    participantId?: StringFilter<"ContestAwardGrant"> | string
+    userId?: StringFilter<"ContestAwardGrant"> | string
+    photoId?: StringNullableFilter<"ContestAwardGrant"> | string | null
+    category?: EnumPrizeTypeFilter<"ContestAwardGrant"> | $Enums.PrizeType
+    kind?: EnumAchievementKindFilter<"ContestAwardGrant"> | $Enums.AchievementKind
+    type?: EnumAwardTypeNullableFilter<"ContestAwardGrant"> | $Enums.AwardType | null
+    target?: EnumAwardTargetNullableFilter<"ContestAwardGrant"> | $Enums.AwardTarget | null
+    rankLimit?: IntNullableFilter<"ContestAwardGrant"> | number | null
+    levelBadge?: EnumContestLevelBadgeNullableFilter<"ContestAwardGrant"> | $Enums.ContestLevelBadge | null
+    levelOrder?: IntNullableFilter<"ContestAwardGrant"> | number | null
+    rank?: IntNullableFilter<"ContestAwardGrant"> | number | null
+    keyReward?: IntFilter<"ContestAwardGrant"> | number
+    boostReward?: IntFilter<"ContestAwardGrant"> | number
+    swapReward?: IntFilter<"ContestAwardGrant"> | number
+    coinReward?: IntFilter<"ContestAwardGrant"> | number
+    status?: EnumContestGrantStatusFilter<"ContestAwardGrant"> | $Enums.ContestGrantStatus
+    error?: StringNullableFilter<"ContestAwardGrant"> | string | null
+    processedAt?: DateTimeNullableFilter<"ContestAwardGrant"> | Date | string | null
+    createdAt?: DateTimeFilter<"ContestAwardGrant"> | Date | string
+    updatedAt?: DateTimeFilter<"ContestAwardGrant"> | Date | string
+  }, "id" | "grantKey">
+
+  export type ContestAwardGrantOrderByWithAggregationInput = {
+    id?: SortOrder
+    grantKey?: SortOrder
+    contestId?: SortOrder
+    contestAwardId?: SortOrder
+    participantId?: SortOrder
+    userId?: SortOrder
+    photoId?: SortOrder
+    category?: SortOrder
+    kind?: SortOrder
+    type?: SortOrder
+    target?: SortOrder
+    rankLimit?: SortOrder
+    levelBadge?: SortOrder
+    levelOrder?: SortOrder
+    rank?: SortOrder
+    keyReward?: SortOrder
+    boostReward?: SortOrder
+    swapReward?: SortOrder
+    coinReward?: SortOrder
+    status?: SortOrder
+    error?: SortOrder
+    processedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: ContestAwardGrantCountOrderByAggregateInput
+    _avg?: ContestAwardGrantAvgOrderByAggregateInput
+    _max?: ContestAwardGrantMaxOrderByAggregateInput
+    _min?: ContestAwardGrantMinOrderByAggregateInput
+    _sum?: ContestAwardGrantSumOrderByAggregateInput
+  }
+
+  export type ContestAwardGrantScalarWhereWithAggregatesInput = {
+    AND?: ContestAwardGrantScalarWhereWithAggregatesInput | ContestAwardGrantScalarWhereWithAggregatesInput[]
+    OR?: ContestAwardGrantScalarWhereWithAggregatesInput[]
+    NOT?: ContestAwardGrantScalarWhereWithAggregatesInput | ContestAwardGrantScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"ContestAwardGrant"> | string
+    grantKey?: StringWithAggregatesFilter<"ContestAwardGrant"> | string
+    contestId?: StringWithAggregatesFilter<"ContestAwardGrant"> | string
+    contestAwardId?: StringNullableWithAggregatesFilter<"ContestAwardGrant"> | string | null
+    participantId?: StringWithAggregatesFilter<"ContestAwardGrant"> | string
+    userId?: StringWithAggregatesFilter<"ContestAwardGrant"> | string
+    photoId?: StringNullableWithAggregatesFilter<"ContestAwardGrant"> | string | null
+    category?: EnumPrizeTypeWithAggregatesFilter<"ContestAwardGrant"> | $Enums.PrizeType
+    kind?: EnumAchievementKindWithAggregatesFilter<"ContestAwardGrant"> | $Enums.AchievementKind
+    type?: EnumAwardTypeNullableWithAggregatesFilter<"ContestAwardGrant"> | $Enums.AwardType | null
+    target?: EnumAwardTargetNullableWithAggregatesFilter<"ContestAwardGrant"> | $Enums.AwardTarget | null
+    rankLimit?: IntNullableWithAggregatesFilter<"ContestAwardGrant"> | number | null
+    levelBadge?: EnumContestLevelBadgeNullableWithAggregatesFilter<"ContestAwardGrant"> | $Enums.ContestLevelBadge | null
+    levelOrder?: IntNullableWithAggregatesFilter<"ContestAwardGrant"> | number | null
+    rank?: IntNullableWithAggregatesFilter<"ContestAwardGrant"> | number | null
+    keyReward?: IntWithAggregatesFilter<"ContestAwardGrant"> | number
+    boostReward?: IntWithAggregatesFilter<"ContestAwardGrant"> | number
+    swapReward?: IntWithAggregatesFilter<"ContestAwardGrant"> | number
+    coinReward?: IntWithAggregatesFilter<"ContestAwardGrant"> | number
+    status?: EnumContestGrantStatusWithAggregatesFilter<"ContestAwardGrant"> | $Enums.ContestGrantStatus
+    error?: StringNullableWithAggregatesFilter<"ContestAwardGrant"> | string | null
+    processedAt?: DateTimeNullableWithAggregatesFilter<"ContestAwardGrant"> | Date | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"ContestAwardGrant"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"ContestAwardGrant"> | Date | string
+  }
+
+  export type ContestAwardSelectionWhereInput = {
+    AND?: ContestAwardSelectionWhereInput | ContestAwardSelectionWhereInput[]
+    OR?: ContestAwardSelectionWhereInput[]
+    NOT?: ContestAwardSelectionWhereInput | ContestAwardSelectionWhereInput[]
+    id?: StringFilter<"ContestAwardSelection"> | string
+    selectionKey?: StringFilter<"ContestAwardSelection"> | string
+    contestId?: StringFilter<"ContestAwardSelection"> | string
+    contestAwardId?: StringFilter<"ContestAwardSelection"> | string
+    slotKey?: StringFilter<"ContestAwardSelection"> | string
+    photoId?: StringFilter<"ContestAwardSelection"> | string
+    participantId?: StringFilter<"ContestAwardSelection"> | string
+    selectedById?: StringFilter<"ContestAwardSelection"> | string
+    createdAt?: DateTimeFilter<"ContestAwardSelection"> | Date | string
+    updatedAt?: DateTimeFilter<"ContestAwardSelection"> | Date | string
+  }
+
+  export type ContestAwardSelectionOrderByWithRelationInput = {
+    id?: SortOrder
+    selectionKey?: SortOrder
+    contestId?: SortOrder
+    contestAwardId?: SortOrder
+    slotKey?: SortOrder
+    photoId?: SortOrder
+    participantId?: SortOrder
+    selectedById?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ContestAwardSelectionWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    selectionKey?: string
+    AND?: ContestAwardSelectionWhereInput | ContestAwardSelectionWhereInput[]
+    OR?: ContestAwardSelectionWhereInput[]
+    NOT?: ContestAwardSelectionWhereInput | ContestAwardSelectionWhereInput[]
+    contestId?: StringFilter<"ContestAwardSelection"> | string
+    contestAwardId?: StringFilter<"ContestAwardSelection"> | string
+    slotKey?: StringFilter<"ContestAwardSelection"> | string
+    photoId?: StringFilter<"ContestAwardSelection"> | string
+    participantId?: StringFilter<"ContestAwardSelection"> | string
+    selectedById?: StringFilter<"ContestAwardSelection"> | string
+    createdAt?: DateTimeFilter<"ContestAwardSelection"> | Date | string
+    updatedAt?: DateTimeFilter<"ContestAwardSelection"> | Date | string
+  }, "id" | "selectionKey">
+
+  export type ContestAwardSelectionOrderByWithAggregationInput = {
+    id?: SortOrder
+    selectionKey?: SortOrder
+    contestId?: SortOrder
+    contestAwardId?: SortOrder
+    slotKey?: SortOrder
+    photoId?: SortOrder
+    participantId?: SortOrder
+    selectedById?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: ContestAwardSelectionCountOrderByAggregateInput
+    _max?: ContestAwardSelectionMaxOrderByAggregateInput
+    _min?: ContestAwardSelectionMinOrderByAggregateInput
+  }
+
+  export type ContestAwardSelectionScalarWhereWithAggregatesInput = {
+    AND?: ContestAwardSelectionScalarWhereWithAggregatesInput | ContestAwardSelectionScalarWhereWithAggregatesInput[]
+    OR?: ContestAwardSelectionScalarWhereWithAggregatesInput[]
+    NOT?: ContestAwardSelectionScalarWhereWithAggregatesInput | ContestAwardSelectionScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"ContestAwardSelection"> | string
+    selectionKey?: StringWithAggregatesFilter<"ContestAwardSelection"> | string
+    contestId?: StringWithAggregatesFilter<"ContestAwardSelection"> | string
+    contestAwardId?: StringWithAggregatesFilter<"ContestAwardSelection"> | string
+    slotKey?: StringWithAggregatesFilter<"ContestAwardSelection"> | string
+    photoId?: StringWithAggregatesFilter<"ContestAwardSelection"> | string
+    participantId?: StringWithAggregatesFilter<"ContestAwardSelection"> | string
+    selectedById?: StringWithAggregatesFilter<"ContestAwardSelection"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"ContestAwardSelection"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"ContestAwardSelection"> | Date | string
+  }
+
+  export type ContestRewardTransactionWhereInput = {
+    AND?: ContestRewardTransactionWhereInput | ContestRewardTransactionWhereInput[]
+    OR?: ContestRewardTransactionWhereInput[]
+    NOT?: ContestRewardTransactionWhereInput | ContestRewardTransactionWhereInput[]
+    id?: StringFilter<"ContestRewardTransaction"> | string
+    grantId?: StringFilter<"ContestRewardTransaction"> | string
+    userId?: StringFilter<"ContestRewardTransaction"> | string
+    key?: IntFilter<"ContestRewardTransaction"> | number
+    boost?: IntFilter<"ContestRewardTransaction"> | number
+    swap?: IntFilter<"ContestRewardTransaction"> | number
+    coin?: IntFilter<"ContestRewardTransaction"> | number
+    createdAt?: DateTimeFilter<"ContestRewardTransaction"> | Date | string
+  }
+
+  export type ContestRewardTransactionOrderByWithRelationInput = {
+    id?: SortOrder
+    grantId?: SortOrder
+    userId?: SortOrder
+    key?: SortOrder
+    boost?: SortOrder
+    swap?: SortOrder
+    coin?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type ContestRewardTransactionWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    grantId?: string
+    AND?: ContestRewardTransactionWhereInput | ContestRewardTransactionWhereInput[]
+    OR?: ContestRewardTransactionWhereInput[]
+    NOT?: ContestRewardTransactionWhereInput | ContestRewardTransactionWhereInput[]
+    userId?: StringFilter<"ContestRewardTransaction"> | string
+    key?: IntFilter<"ContestRewardTransaction"> | number
+    boost?: IntFilter<"ContestRewardTransaction"> | number
+    swap?: IntFilter<"ContestRewardTransaction"> | number
+    coin?: IntFilter<"ContestRewardTransaction"> | number
+    createdAt?: DateTimeFilter<"ContestRewardTransaction"> | Date | string
+  }, "id" | "grantId">
+
+  export type ContestRewardTransactionOrderByWithAggregationInput = {
+    id?: SortOrder
+    grantId?: SortOrder
+    userId?: SortOrder
+    key?: SortOrder
+    boost?: SortOrder
+    swap?: SortOrder
+    coin?: SortOrder
+    createdAt?: SortOrder
+    _count?: ContestRewardTransactionCountOrderByAggregateInput
+    _avg?: ContestRewardTransactionAvgOrderByAggregateInput
+    _max?: ContestRewardTransactionMaxOrderByAggregateInput
+    _min?: ContestRewardTransactionMinOrderByAggregateInput
+    _sum?: ContestRewardTransactionSumOrderByAggregateInput
+  }
+
+  export type ContestRewardTransactionScalarWhereWithAggregatesInput = {
+    AND?: ContestRewardTransactionScalarWhereWithAggregatesInput | ContestRewardTransactionScalarWhereWithAggregatesInput[]
+    OR?: ContestRewardTransactionScalarWhereWithAggregatesInput[]
+    NOT?: ContestRewardTransactionScalarWhereWithAggregatesInput | ContestRewardTransactionScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"ContestRewardTransaction"> | string
+    grantId?: StringWithAggregatesFilter<"ContestRewardTransaction"> | string
+    userId?: StringWithAggregatesFilter<"ContestRewardTransaction"> | string
+    key?: IntWithAggregatesFilter<"ContestRewardTransaction"> | number
+    boost?: IntWithAggregatesFilter<"ContestRewardTransaction"> | number
+    swap?: IntWithAggregatesFilter<"ContestRewardTransaction"> | number
+    coin?: IntWithAggregatesFilter<"ContestRewardTransaction"> | number
+    createdAt?: DateTimeWithAggregatesFilter<"ContestRewardTransaction"> | Date | string
   }
 
   export type NotificationWhereInput = {
@@ -46630,6 +55901,7 @@ export namespace Prisma {
     contestId?: StringFilter<"Vote"> | string
     type?: EnumVoteTypeFilter<"Vote"> | $Enums.VoteType
     power?: IntFilter<"Vote"> | number
+    weight?: IntFilter<"Vote"> | number
     createdAt?: DateTimeFilter<"Vote"> | Date | string
     updatedAt?: DateTimeFilter<"Vote"> | Date | string
     provider?: XOR<UserScalarRelationFilter, UserWhereInput>
@@ -46644,6 +55916,7 @@ export namespace Prisma {
     contestId?: SortOrder
     type?: SortOrder
     power?: SortOrder
+    weight?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     provider?: UserOrderByWithRelationInput
@@ -46653,6 +55926,7 @@ export namespace Prisma {
 
   export type VoteWhereUniqueInput = Prisma.AtLeast<{
     id?: string
+    providerId_contestId_photoId?: VoteProviderIdContestIdPhotoIdCompoundUniqueInput
     AND?: VoteWhereInput | VoteWhereInput[]
     OR?: VoteWhereInput[]
     NOT?: VoteWhereInput | VoteWhereInput[]
@@ -46661,12 +55935,13 @@ export namespace Prisma {
     contestId?: StringFilter<"Vote"> | string
     type?: EnumVoteTypeFilter<"Vote"> | $Enums.VoteType
     power?: IntFilter<"Vote"> | number
+    weight?: IntFilter<"Vote"> | number
     createdAt?: DateTimeFilter<"Vote"> | Date | string
     updatedAt?: DateTimeFilter<"Vote"> | Date | string
     provider?: XOR<UserScalarRelationFilter, UserWhereInput>
     photo?: XOR<ContestPhotoScalarRelationFilter, ContestPhotoWhereInput>
     contest?: XOR<ContestScalarRelationFilter, ContestWhereInput>
-  }, "id">
+  }, "id" | "providerId_contestId_photoId">
 
   export type VoteOrderByWithAggregationInput = {
     id?: SortOrder
@@ -46675,6 +55950,7 @@ export namespace Prisma {
     contestId?: SortOrder
     type?: SortOrder
     power?: SortOrder
+    weight?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: VoteCountOrderByAggregateInput
@@ -46694,6 +55970,7 @@ export namespace Prisma {
     contestId?: StringWithAggregatesFilter<"Vote"> | string
     type?: EnumVoteTypeWithAggregatesFilter<"Vote"> | $Enums.VoteType
     power?: IntWithAggregatesFilter<"Vote"> | number
+    weight?: IntWithAggregatesFilter<"Vote"> | number
     createdAt?: DateTimeWithAggregatesFilter<"Vote"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Vote"> | Date | string
   }
@@ -46812,17 +56089,16 @@ export namespace Prisma {
     description: string
     banner?: string | null
     status?: $Enums.ContestStatus
-    mode?: $Enums.ContestMode
-    maxUploads?: number
     isMoneyContest?: boolean
     maxPrize?: number | null
     minPrize?: number | null
-    level_requirements?: ContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
     startedAt?: Date | string | null
-    rules?: InputJsonValue | null
-    prizes?: InputJsonValue | null
+    endedAt?: Date | string | null
+    finalizedAt?: Date | string | null
+    configVersion?: number
+    scoringVersion?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     creator: UserCreateNestedOneWithoutCreatedContestsInput
@@ -46830,6 +56106,7 @@ export namespace Prisma {
     teamParticipations?: TeamParticipationCreateNestedManyWithoutContestInput
     votes?: VoteCreateNestedManyWithoutContestInput
     contestRules?: ContestRuleCreateNestedManyWithoutContestInput
+    ruleConfigs?: ContestRuleConfigCreateNestedManyWithoutContestInput
     contestPrizes?: ContestPrizeCreateNestedManyWithoutContestInput
     contestAwards?: ContestAwardCreateNestedManyWithoutContestInput
     achievements?: ContestAchievementCreateNestedManyWithoutContestInput
@@ -46843,25 +56120,25 @@ export namespace Prisma {
     description: string
     banner?: string | null
     status?: $Enums.ContestStatus
-    mode?: $Enums.ContestMode
-    maxUploads?: number
     isMoneyContest?: boolean
     maxPrize?: number | null
     minPrize?: number | null
-    level_requirements?: ContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
     startedAt?: Date | string | null
+    endedAt?: Date | string | null
+    finalizedAt?: Date | string | null
     recurringContestId?: string | null
+    configVersion?: number
+    scoringVersion?: number
     creatorId: string
-    rules?: InputJsonValue | null
-    prizes?: InputJsonValue | null
     createdAt?: Date | string
     updatedAt?: Date | string
     participants?: ContestParticipantUncheckedCreateNestedManyWithoutContestInput
     teamParticipations?: TeamParticipationUncheckedCreateNestedManyWithoutContestInput
     votes?: VoteUncheckedCreateNestedManyWithoutContestInput
     contestRules?: ContestRuleUncheckedCreateNestedManyWithoutContestInput
+    ruleConfigs?: ContestRuleConfigUncheckedCreateNestedManyWithoutContestInput
     contestPrizes?: ContestPrizeUncheckedCreateNestedManyWithoutContestInput
     contestAwards?: ContestAwardUncheckedCreateNestedManyWithoutContestInput
     achievements?: ContestAchievementUncheckedCreateNestedManyWithoutContestInput
@@ -46873,17 +56150,16 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     banner?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumContestStatusFieldUpdateOperationsInput | $Enums.ContestStatus
-    mode?: EnumContestModeFieldUpdateOperationsInput | $Enums.ContestMode
-    maxUploads?: IntFieldUpdateOperationsInput | number
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
-    level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    rules?: InputJsonValue | InputJsonValue | null
-    prizes?: InputJsonValue | InputJsonValue | null
+    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    finalizedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    configVersion?: IntFieldUpdateOperationsInput | number
+    scoringVersion?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     creator?: UserUpdateOneRequiredWithoutCreatedContestsNestedInput
@@ -46891,6 +56167,7 @@ export namespace Prisma {
     teamParticipations?: TeamParticipationUpdateManyWithoutContestNestedInput
     votes?: VoteUpdateManyWithoutContestNestedInput
     contestRules?: ContestRuleUpdateManyWithoutContestNestedInput
+    ruleConfigs?: ContestRuleConfigUpdateManyWithoutContestNestedInput
     contestPrizes?: ContestPrizeUpdateManyWithoutContestNestedInput
     contestAwards?: ContestAwardUpdateManyWithoutContestNestedInput
     achievements?: ContestAchievementUpdateManyWithoutContestNestedInput
@@ -46903,25 +56180,25 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     banner?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumContestStatusFieldUpdateOperationsInput | $Enums.ContestStatus
-    mode?: EnumContestModeFieldUpdateOperationsInput | $Enums.ContestMode
-    maxUploads?: IntFieldUpdateOperationsInput | number
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
-    level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    finalizedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     recurringContestId?: NullableStringFieldUpdateOperationsInput | string | null
+    configVersion?: IntFieldUpdateOperationsInput | number
+    scoringVersion?: IntFieldUpdateOperationsInput | number
     creatorId?: StringFieldUpdateOperationsInput | string
-    rules?: InputJsonValue | InputJsonValue | null
-    prizes?: InputJsonValue | InputJsonValue | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     participants?: ContestParticipantUncheckedUpdateManyWithoutContestNestedInput
     teamParticipations?: TeamParticipationUncheckedUpdateManyWithoutContestNestedInput
     votes?: VoteUncheckedUpdateManyWithoutContestNestedInput
     contestRules?: ContestRuleUncheckedUpdateManyWithoutContestNestedInput
+    ruleConfigs?: ContestRuleConfigUncheckedUpdateManyWithoutContestNestedInput
     contestPrizes?: ContestPrizeUncheckedUpdateManyWithoutContestNestedInput
     contestAwards?: ContestAwardUncheckedUpdateManyWithoutContestNestedInput
     achievements?: ContestAchievementUncheckedUpdateManyWithoutContestNestedInput
@@ -46934,19 +56211,18 @@ export namespace Prisma {
     description: string
     banner?: string | null
     status?: $Enums.ContestStatus
-    mode?: $Enums.ContestMode
-    maxUploads?: number
     isMoneyContest?: boolean
     maxPrize?: number | null
     minPrize?: number | null
-    level_requirements?: ContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
     startedAt?: Date | string | null
+    endedAt?: Date | string | null
+    finalizedAt?: Date | string | null
     recurringContestId?: string | null
+    configVersion?: number
+    scoringVersion?: number
     creatorId: string
-    rules?: InputJsonValue | null
-    prizes?: InputJsonValue | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -46956,17 +56232,16 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     banner?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumContestStatusFieldUpdateOperationsInput | $Enums.ContestStatus
-    mode?: EnumContestModeFieldUpdateOperationsInput | $Enums.ContestMode
-    maxUploads?: IntFieldUpdateOperationsInput | number
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
-    level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    rules?: InputJsonValue | InputJsonValue | null
-    prizes?: InputJsonValue | InputJsonValue | null
+    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    finalizedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    configVersion?: IntFieldUpdateOperationsInput | number
+    scoringVersion?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -46976,19 +56251,18 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     banner?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumContestStatusFieldUpdateOperationsInput | $Enums.ContestStatus
-    mode?: EnumContestModeFieldUpdateOperationsInput | $Enums.ContestMode
-    maxUploads?: IntFieldUpdateOperationsInput | number
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
-    level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    finalizedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     recurringContestId?: NullableStringFieldUpdateOperationsInput | string | null
+    configVersion?: IntFieldUpdateOperationsInput | number
+    scoringVersion?: IntFieldUpdateOperationsInput | number
     creatorId?: StringFieldUpdateOperationsInput | string
-    rules?: InputJsonValue | InputJsonValue | null
-    prizes?: InputJsonValue | InputJsonValue | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -46998,11 +56272,9 @@ export namespace Prisma {
     title: string
     description: string
     banner?: string | null
-    maxUploads?: number
     isMoneyContest?: boolean
     maxPrize?: number | null
     minPrize?: number | null
-    level_requirements?: RecurringContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
     creatorId: string
@@ -47022,11 +56294,9 @@ export namespace Prisma {
     title: string
     description: string
     banner?: string | null
-    maxUploads?: number
     isMoneyContest?: boolean
     maxPrize?: number | null
     minPrize?: number | null
-    level_requirements?: RecurringContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
     creatorId: string
@@ -47045,11 +56315,9 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
     banner?: NullableStringFieldUpdateOperationsInput | string | null
-    maxUploads?: IntFieldUpdateOperationsInput | number
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
-    level_requirements?: RecurringContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     creatorId?: StringFieldUpdateOperationsInput | string
@@ -47068,11 +56336,9 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
     banner?: NullableStringFieldUpdateOperationsInput | string | null
-    maxUploads?: IntFieldUpdateOperationsInput | number
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
-    level_requirements?: RecurringContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     creatorId?: StringFieldUpdateOperationsInput | string
@@ -47092,11 +56358,9 @@ export namespace Prisma {
     title: string
     description: string
     banner?: string | null
-    maxUploads?: number
     isMoneyContest?: boolean
     maxPrize?: number | null
     minPrize?: number | null
-    level_requirements?: RecurringContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
     creatorId: string
@@ -47113,11 +56377,9 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
     banner?: NullableStringFieldUpdateOperationsInput | string | null
-    maxUploads?: IntFieldUpdateOperationsInput | number
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
-    level_requirements?: RecurringContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     creatorId?: StringFieldUpdateOperationsInput | string
@@ -47134,11 +56396,9 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
     banner?: NullableStringFieldUpdateOperationsInput | string | null
-    maxUploads?: IntFieldUpdateOperationsInput | number
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
-    level_requirements?: RecurringContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     creatorId?: StringFieldUpdateOperationsInput | string
@@ -47151,9 +56411,99 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type RecurringContestOccurrenceCreateInput = {
+    id?: string
+    occurrenceKey: string
+    recurringContestId: string
+    scheduledAt: Date | string
+    contestId?: string | null
+    status?: $Enums.ContestOccurrenceStatus
+    startedAt?: Date | string | null
+    error?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type RecurringContestOccurrenceUncheckedCreateInput = {
+    id?: string
+    occurrenceKey: string
+    recurringContestId: string
+    scheduledAt: Date | string
+    contestId?: string | null
+    status?: $Enums.ContestOccurrenceStatus
+    startedAt?: Date | string | null
+    error?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type RecurringContestOccurrenceUpdateInput = {
+    occurrenceKey?: StringFieldUpdateOperationsInput | string
+    recurringContestId?: StringFieldUpdateOperationsInput | string
+    scheduledAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    contestId?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumContestOccurrenceStatusFieldUpdateOperationsInput | $Enums.ContestOccurrenceStatus
+    startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    error?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type RecurringContestOccurrenceUncheckedUpdateInput = {
+    occurrenceKey?: StringFieldUpdateOperationsInput | string
+    recurringContestId?: StringFieldUpdateOperationsInput | string
+    scheduledAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    contestId?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumContestOccurrenceStatusFieldUpdateOperationsInput | $Enums.ContestOccurrenceStatus
+    startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    error?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type RecurringContestOccurrenceCreateManyInput = {
+    id?: string
+    occurrenceKey: string
+    recurringContestId: string
+    scheduledAt: Date | string
+    contestId?: string | null
+    status?: $Enums.ContestOccurrenceStatus
+    startedAt?: Date | string | null
+    error?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type RecurringContestOccurrenceUpdateManyMutationInput = {
+    occurrenceKey?: StringFieldUpdateOperationsInput | string
+    recurringContestId?: StringFieldUpdateOperationsInput | string
+    scheduledAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    contestId?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumContestOccurrenceStatusFieldUpdateOperationsInput | $Enums.ContestOccurrenceStatus
+    startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    error?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type RecurringContestOccurrenceUncheckedUpdateManyInput = {
+    occurrenceKey?: StringFieldUpdateOperationsInput | string
+    recurringContestId?: StringFieldUpdateOperationsInput | string
+    scheduledAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    contestId?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumContestOccurrenceStatusFieldUpdateOperationsInput | $Enums.ContestOccurrenceStatus
+    startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    error?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type PrizeCreateInput = {
     id?: string
     category: $Enums.PrizeType
+    type?: $Enums.AwardType | null
+    target?: $Enums.AwardTarget | null
+    rankLimit?: number | null
     title?: string | null
     description?: string | null
     icon?: string | null
@@ -47171,6 +56521,9 @@ export namespace Prisma {
   export type PrizeUncheckedCreateInput = {
     id?: string
     category: $Enums.PrizeType
+    type?: $Enums.AwardType | null
+    target?: $Enums.AwardTarget | null
+    rankLimit?: number | null
     title?: string | null
     description?: string | null
     icon?: string | null
@@ -47187,6 +56540,9 @@ export namespace Prisma {
 
   export type PrizeUpdateInput = {
     category?: EnumPrizeTypeFieldUpdateOperationsInput | $Enums.PrizeType
+    type?: NullableEnumAwardTypeFieldUpdateOperationsInput | $Enums.AwardType | null
+    target?: NullableEnumAwardTargetFieldUpdateOperationsInput | $Enums.AwardTarget | null
+    rankLimit?: NullableIntFieldUpdateOperationsInput | number | null
     title?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     icon?: NullableStringFieldUpdateOperationsInput | string | null
@@ -47203,6 +56559,9 @@ export namespace Prisma {
 
   export type PrizeUncheckedUpdateInput = {
     category?: EnumPrizeTypeFieldUpdateOperationsInput | $Enums.PrizeType
+    type?: NullableEnumAwardTypeFieldUpdateOperationsInput | $Enums.AwardType | null
+    target?: NullableEnumAwardTargetFieldUpdateOperationsInput | $Enums.AwardTarget | null
+    rankLimit?: NullableIntFieldUpdateOperationsInput | number | null
     title?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     icon?: NullableStringFieldUpdateOperationsInput | string | null
@@ -47220,6 +56579,9 @@ export namespace Prisma {
   export type PrizeCreateManyInput = {
     id?: string
     category: $Enums.PrizeType
+    type?: $Enums.AwardType | null
+    target?: $Enums.AwardTarget | null
+    rankLimit?: number | null
     title?: string | null
     description?: string | null
     icon?: string | null
@@ -47234,6 +56596,9 @@ export namespace Prisma {
 
   export type PrizeUpdateManyMutationInput = {
     category?: EnumPrizeTypeFieldUpdateOperationsInput | $Enums.PrizeType
+    type?: NullableEnumAwardTypeFieldUpdateOperationsInput | $Enums.AwardType | null
+    target?: NullableEnumAwardTargetFieldUpdateOperationsInput | $Enums.AwardTarget | null
+    rankLimit?: NullableIntFieldUpdateOperationsInput | number | null
     title?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     icon?: NullableStringFieldUpdateOperationsInput | string | null
@@ -47248,6 +56613,9 @@ export namespace Prisma {
 
   export type PrizeUncheckedUpdateManyInput = {
     category?: EnumPrizeTypeFieldUpdateOperationsInput | $Enums.PrizeType
+    type?: NullableEnumAwardTypeFieldUpdateOperationsInput | $Enums.AwardType | null
+    target?: NullableEnumAwardTargetFieldUpdateOperationsInput | $Enums.AwardTarget | null
+    rankLimit?: NullableIntFieldUpdateOperationsInput | number | null
     title?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     icon?: NullableStringFieldUpdateOperationsInput | string | null
@@ -47325,6 +56693,78 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type ContestRuleConfigCreateInput = {
+    id?: string
+    key: string
+    value: InputJsonValue
+    enabled?: boolean
+    order?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    contest: ContestCreateNestedOneWithoutRuleConfigsInput
+  }
+
+  export type ContestRuleConfigUncheckedCreateInput = {
+    id?: string
+    contestId: string
+    key: string
+    value: InputJsonValue
+    enabled?: boolean
+    order?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ContestRuleConfigUpdateInput = {
+    key?: StringFieldUpdateOperationsInput | string
+    value?: InputJsonValue | InputJsonValue
+    enabled?: BoolFieldUpdateOperationsInput | boolean
+    order?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    contest?: ContestUpdateOneRequiredWithoutRuleConfigsNestedInput
+  }
+
+  export type ContestRuleConfigUncheckedUpdateInput = {
+    contestId?: StringFieldUpdateOperationsInput | string
+    key?: StringFieldUpdateOperationsInput | string
+    value?: InputJsonValue | InputJsonValue
+    enabled?: BoolFieldUpdateOperationsInput | boolean
+    order?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ContestRuleConfigCreateManyInput = {
+    id?: string
+    contestId: string
+    key: string
+    value: InputJsonValue
+    enabled?: boolean
+    order?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ContestRuleConfigUpdateManyMutationInput = {
+    key?: StringFieldUpdateOperationsInput | string
+    value?: InputJsonValue | InputJsonValue
+    enabled?: BoolFieldUpdateOperationsInput | boolean
+    order?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ContestRuleConfigUncheckedUpdateManyInput = {
+    contestId?: StringFieldUpdateOperationsInput | string
+    key?: StringFieldUpdateOperationsInput | string
+    value?: InputJsonValue | InputJsonValue
+    enabled?: BoolFieldUpdateOperationsInput | boolean
+    order?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type ContestPhotoCreateInput = {
     id?: string
     title?: string | null
@@ -47340,7 +56780,6 @@ export namespace Prisma {
     photo: UserPhotoCreateNestedOneWithoutContestUploadInput
     comments?: CommentCreateNestedManyWithoutPhotoInput
     achievements?: ContestAchievementCreateNestedManyWithoutPhotoInput
-    ContestWinner?: ContestWinnerCreateNestedManyWithoutPhotoInput
   }
 
   export type ContestPhotoUncheckedCreateInput = {
@@ -47358,7 +56797,6 @@ export namespace Prisma {
     votes?: VoteUncheckedCreateNestedManyWithoutPhotoInput
     comments?: CommentUncheckedCreateNestedManyWithoutPhotoInput
     achievements?: ContestAchievementUncheckedCreateNestedManyWithoutPhotoInput
-    ContestWinner?: ContestWinnerUncheckedCreateNestedManyWithoutPhotoInput
   }
 
   export type ContestPhotoUpdateInput = {
@@ -47375,7 +56813,6 @@ export namespace Prisma {
     photo?: UserPhotoUpdateOneRequiredWithoutContestUploadNestedInput
     comments?: CommentUpdateManyWithoutPhotoNestedInput
     achievements?: ContestAchievementUpdateManyWithoutPhotoNestedInput
-    ContestWinner?: ContestWinnerUpdateManyWithoutPhotoNestedInput
   }
 
   export type ContestPhotoUncheckedUpdateInput = {
@@ -47392,7 +56829,6 @@ export namespace Prisma {
     votes?: VoteUncheckedUpdateManyWithoutPhotoNestedInput
     comments?: CommentUncheckedUpdateManyWithoutPhotoNestedInput
     achievements?: ContestAchievementUncheckedUpdateManyWithoutPhotoNestedInput
-    ContestWinner?: ContestWinnerUncheckedUpdateManyWithoutPhotoNestedInput
   }
 
   export type ContestPhotoCreateManyInput = {
@@ -47433,63 +56869,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type ContestWinnerCreateInput = {
-    id?: string
-    contestId: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    participant: ContestParticipantCreateNestedOneWithoutContestWinnerInput
-    photo: ContestPhotoCreateNestedOneWithoutContestWinnerInput
-  }
-
-  export type ContestWinnerUncheckedCreateInput = {
-    id?: string
-    participantId: string
-    contestId: string
-    contestPhotoId: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type ContestWinnerUpdateInput = {
-    contestId?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    participant?: ContestParticipantUpdateOneRequiredWithoutContestWinnerNestedInput
-    photo?: ContestPhotoUpdateOneRequiredWithoutContestWinnerNestedInput
-  }
-
-  export type ContestWinnerUncheckedUpdateInput = {
-    participantId?: StringFieldUpdateOperationsInput | string
-    contestId?: StringFieldUpdateOperationsInput | string
-    contestPhotoId?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type ContestWinnerCreateManyInput = {
-    id?: string
-    participantId: string
-    contestId: string
-    contestPhotoId: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type ContestWinnerUpdateManyMutationInput = {
-    contestId?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type ContestWinnerUncheckedUpdateManyInput = {
-    participantId?: StringFieldUpdateOperationsInput | string
-    contestId?: StringFieldUpdateOperationsInput | string
-    contestPhotoId?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
   export type ContestParticipantCreateInput = {
     id?: string
     status?: $Enums.ContestParticipantStatus
@@ -47502,7 +56881,6 @@ export namespace Prisma {
     user: UserCreateNestedOneWithoutContestParticipantInput
     member?: TeamMemberCreateNestedOneWithoutContestParticipantInput
     photos?: ContestPhotoCreateNestedManyWithoutParticipantInput
-    ContestWinner?: ContestWinnerCreateNestedManyWithoutParticipantInput
     contestAchievement?: ContestAchievementCreateNestedManyWithoutParticipantInput
   }
 
@@ -47518,7 +56896,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     photos?: ContestPhotoUncheckedCreateNestedManyWithoutParticipantInput
-    ContestWinner?: ContestWinnerUncheckedCreateNestedManyWithoutParticipantInput
     contestAchievement?: ContestAchievementUncheckedCreateNestedManyWithoutParticipantInput
   }
 
@@ -47533,7 +56910,6 @@ export namespace Prisma {
     user?: UserUpdateOneRequiredWithoutContestParticipantNestedInput
     member?: TeamMemberUpdateOneWithoutContestParticipantNestedInput
     photos?: ContestPhotoUpdateManyWithoutParticipantNestedInput
-    ContestWinner?: ContestWinnerUpdateManyWithoutParticipantNestedInput
     contestAchievement?: ContestAchievementUpdateManyWithoutParticipantNestedInput
   }
 
@@ -47548,7 +56924,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     photos?: ContestPhotoUncheckedUpdateManyWithoutParticipantNestedInput
-    ContestWinner?: ContestWinnerUncheckedUpdateManyWithoutParticipantNestedInput
     contestAchievement?: ContestAchievementUncheckedUpdateManyWithoutParticipantNestedInput
   }
 
@@ -47589,6 +56964,9 @@ export namespace Prisma {
   export type ContestPrizeCreateInput = {
     id?: string
     category: $Enums.PrizeType
+    type?: $Enums.AwardType | null
+    target?: $Enums.AwardTarget | null
+    rankLimit?: number | null
     icon?: string | null
     boost?: number
     swap?: number
@@ -47602,6 +56980,9 @@ export namespace Prisma {
   export type ContestPrizeUncheckedCreateInput = {
     id?: string
     category: $Enums.PrizeType
+    type?: $Enums.AwardType | null
+    target?: $Enums.AwardTarget | null
+    rankLimit?: number | null
     icon?: string | null
     boost?: number
     swap?: number
@@ -47614,6 +56995,9 @@ export namespace Prisma {
 
   export type ContestPrizeUpdateInput = {
     category?: EnumPrizeTypeFieldUpdateOperationsInput | $Enums.PrizeType
+    type?: NullableEnumAwardTypeFieldUpdateOperationsInput | $Enums.AwardType | null
+    target?: NullableEnumAwardTargetFieldUpdateOperationsInput | $Enums.AwardTarget | null
+    rankLimit?: NullableIntFieldUpdateOperationsInput | number | null
     icon?: NullableStringFieldUpdateOperationsInput | string | null
     boost?: IntFieldUpdateOperationsInput | number
     swap?: IntFieldUpdateOperationsInput | number
@@ -47626,6 +57010,9 @@ export namespace Prisma {
 
   export type ContestPrizeUncheckedUpdateInput = {
     category?: EnumPrizeTypeFieldUpdateOperationsInput | $Enums.PrizeType
+    type?: NullableEnumAwardTypeFieldUpdateOperationsInput | $Enums.AwardType | null
+    target?: NullableEnumAwardTargetFieldUpdateOperationsInput | $Enums.AwardTarget | null
+    rankLimit?: NullableIntFieldUpdateOperationsInput | number | null
     icon?: NullableStringFieldUpdateOperationsInput | string | null
     boost?: IntFieldUpdateOperationsInput | number
     swap?: IntFieldUpdateOperationsInput | number
@@ -47639,6 +57026,9 @@ export namespace Prisma {
   export type ContestPrizeCreateManyInput = {
     id?: string
     category: $Enums.PrizeType
+    type?: $Enums.AwardType | null
+    target?: $Enums.AwardTarget | null
+    rankLimit?: number | null
     icon?: string | null
     boost?: number
     swap?: number
@@ -47651,6 +57041,9 @@ export namespace Prisma {
 
   export type ContestPrizeUpdateManyMutationInput = {
     category?: EnumPrizeTypeFieldUpdateOperationsInput | $Enums.PrizeType
+    type?: NullableEnumAwardTypeFieldUpdateOperationsInput | $Enums.AwardType | null
+    target?: NullableEnumAwardTargetFieldUpdateOperationsInput | $Enums.AwardTarget | null
+    rankLimit?: NullableIntFieldUpdateOperationsInput | number | null
     icon?: NullableStringFieldUpdateOperationsInput | string | null
     boost?: IntFieldUpdateOperationsInput | number
     swap?: IntFieldUpdateOperationsInput | number
@@ -47662,6 +57055,9 @@ export namespace Prisma {
 
   export type ContestPrizeUncheckedUpdateManyInput = {
     category?: EnumPrizeTypeFieldUpdateOperationsInput | $Enums.PrizeType
+    type?: NullableEnumAwardTypeFieldUpdateOperationsInput | $Enums.AwardType | null
+    target?: NullableEnumAwardTargetFieldUpdateOperationsInput | $Enums.AwardTarget | null
+    rankLimit?: NullableIntFieldUpdateOperationsInput | number | null
     icon?: NullableStringFieldUpdateOperationsInput | string | null
     boost?: IntFieldUpdateOperationsInput | number
     swap?: IntFieldUpdateOperationsInput | number
@@ -47672,9 +57068,74 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type ContestRuleAcceptanceCreateInput = {
+    id?: string
+    contestId: string
+    userId: string
+    key: string
+    acceptedAt?: Date | string
+    ruleVersion?: number
+  }
+
+  export type ContestRuleAcceptanceUncheckedCreateInput = {
+    id?: string
+    contestId: string
+    userId: string
+    key: string
+    acceptedAt?: Date | string
+    ruleVersion?: number
+  }
+
+  export type ContestRuleAcceptanceUpdateInput = {
+    contestId?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    key?: StringFieldUpdateOperationsInput | string
+    acceptedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    ruleVersion?: IntFieldUpdateOperationsInput | number
+  }
+
+  export type ContestRuleAcceptanceUncheckedUpdateInput = {
+    contestId?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    key?: StringFieldUpdateOperationsInput | string
+    acceptedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    ruleVersion?: IntFieldUpdateOperationsInput | number
+  }
+
+  export type ContestRuleAcceptanceCreateManyInput = {
+    id?: string
+    contestId: string
+    userId: string
+    key: string
+    acceptedAt?: Date | string
+    ruleVersion?: number
+  }
+
+  export type ContestRuleAcceptanceUpdateManyMutationInput = {
+    contestId?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    key?: StringFieldUpdateOperationsInput | string
+    acceptedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    ruleVersion?: IntFieldUpdateOperationsInput | number
+  }
+
+  export type ContestRuleAcceptanceUncheckedUpdateManyInput = {
+    contestId?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    key?: StringFieldUpdateOperationsInput | string
+    acceptedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    ruleVersion?: IntFieldUpdateOperationsInput | number
+  }
+
   export type ContestAwardCreateInput = {
     id?: string
     category: $Enums.PrizeType
+    type?: $Enums.AwardType | null
+    target?: $Enums.AwardTarget | null
+    rankLimit?: number | null
+    slotKey?: string | null
+    title?: string | null
+    description?: string | null
     icon?: string | null
     boost?: number
     swap?: number
@@ -47689,6 +57150,12 @@ export namespace Prisma {
   export type ContestAwardUncheckedCreateInput = {
     id?: string
     category: $Enums.PrizeType
+    type?: $Enums.AwardType | null
+    target?: $Enums.AwardTarget | null
+    rankLimit?: number | null
+    slotKey?: string | null
+    title?: string | null
+    description?: string | null
     icon?: string | null
     boost?: number
     swap?: number
@@ -47702,6 +57169,12 @@ export namespace Prisma {
 
   export type ContestAwardUpdateInput = {
     category?: EnumPrizeTypeFieldUpdateOperationsInput | $Enums.PrizeType
+    type?: NullableEnumAwardTypeFieldUpdateOperationsInput | $Enums.AwardType | null
+    target?: NullableEnumAwardTargetFieldUpdateOperationsInput | $Enums.AwardTarget | null
+    rankLimit?: NullableIntFieldUpdateOperationsInput | number | null
+    slotKey?: NullableStringFieldUpdateOperationsInput | string | null
+    title?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     icon?: NullableStringFieldUpdateOperationsInput | string | null
     boost?: IntFieldUpdateOperationsInput | number
     swap?: IntFieldUpdateOperationsInput | number
@@ -47715,6 +57188,12 @@ export namespace Prisma {
 
   export type ContestAwardUncheckedUpdateInput = {
     category?: EnumPrizeTypeFieldUpdateOperationsInput | $Enums.PrizeType
+    type?: NullableEnumAwardTypeFieldUpdateOperationsInput | $Enums.AwardType | null
+    target?: NullableEnumAwardTargetFieldUpdateOperationsInput | $Enums.AwardTarget | null
+    rankLimit?: NullableIntFieldUpdateOperationsInput | number | null
+    slotKey?: NullableStringFieldUpdateOperationsInput | string | null
+    title?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     icon?: NullableStringFieldUpdateOperationsInput | string | null
     boost?: IntFieldUpdateOperationsInput | number
     swap?: IntFieldUpdateOperationsInput | number
@@ -47729,6 +57208,12 @@ export namespace Prisma {
   export type ContestAwardCreateManyInput = {
     id?: string
     category: $Enums.PrizeType
+    type?: $Enums.AwardType | null
+    target?: $Enums.AwardTarget | null
+    rankLimit?: number | null
+    slotKey?: string | null
+    title?: string | null
+    description?: string | null
     icon?: string | null
     boost?: number
     swap?: number
@@ -47742,6 +57227,12 @@ export namespace Prisma {
 
   export type ContestAwardUpdateManyMutationInput = {
     category?: EnumPrizeTypeFieldUpdateOperationsInput | $Enums.PrizeType
+    type?: NullableEnumAwardTypeFieldUpdateOperationsInput | $Enums.AwardType | null
+    target?: NullableEnumAwardTargetFieldUpdateOperationsInput | $Enums.AwardTarget | null
+    rankLimit?: NullableIntFieldUpdateOperationsInput | number | null
+    slotKey?: NullableStringFieldUpdateOperationsInput | string | null
+    title?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     icon?: NullableStringFieldUpdateOperationsInput | string | null
     boost?: IntFieldUpdateOperationsInput | number
     swap?: IntFieldUpdateOperationsInput | number
@@ -47753,6 +57244,12 @@ export namespace Prisma {
 
   export type ContestAwardUncheckedUpdateManyInput = {
     category?: EnumPrizeTypeFieldUpdateOperationsInput | $Enums.PrizeType
+    type?: NullableEnumAwardTypeFieldUpdateOperationsInput | $Enums.AwardType | null
+    target?: NullableEnumAwardTargetFieldUpdateOperationsInput | $Enums.AwardTarget | null
+    rankLimit?: NullableIntFieldUpdateOperationsInput | number | null
+    slotKey?: NullableStringFieldUpdateOperationsInput | string | null
+    title?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     icon?: NullableStringFieldUpdateOperationsInput | string | null
     boost?: IntFieldUpdateOperationsInput | number
     swap?: IntFieldUpdateOperationsInput | number
@@ -47767,6 +57264,12 @@ export namespace Prisma {
   export type RecurringContestAwardCreateInput = {
     id?: string
     category: $Enums.PrizeType
+    type?: $Enums.AwardType | null
+    target?: $Enums.AwardTarget | null
+    rankLimit?: number | null
+    slotKey?: string | null
+    title?: string | null
+    description?: string | null
     icon?: string | null
     boost?: number
     swap?: number
@@ -47781,6 +57284,12 @@ export namespace Prisma {
   export type RecurringContestAwardUncheckedCreateInput = {
     id?: string
     category: $Enums.PrizeType
+    type?: $Enums.AwardType | null
+    target?: $Enums.AwardTarget | null
+    rankLimit?: number | null
+    slotKey?: string | null
+    title?: string | null
+    description?: string | null
     icon?: string | null
     boost?: number
     swap?: number
@@ -47794,6 +57303,12 @@ export namespace Prisma {
 
   export type RecurringContestAwardUpdateInput = {
     category?: EnumPrizeTypeFieldUpdateOperationsInput | $Enums.PrizeType
+    type?: NullableEnumAwardTypeFieldUpdateOperationsInput | $Enums.AwardType | null
+    target?: NullableEnumAwardTargetFieldUpdateOperationsInput | $Enums.AwardTarget | null
+    rankLimit?: NullableIntFieldUpdateOperationsInput | number | null
+    slotKey?: NullableStringFieldUpdateOperationsInput | string | null
+    title?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     icon?: NullableStringFieldUpdateOperationsInput | string | null
     boost?: IntFieldUpdateOperationsInput | number
     swap?: IntFieldUpdateOperationsInput | number
@@ -47807,6 +57322,12 @@ export namespace Prisma {
 
   export type RecurringContestAwardUncheckedUpdateInput = {
     category?: EnumPrizeTypeFieldUpdateOperationsInput | $Enums.PrizeType
+    type?: NullableEnumAwardTypeFieldUpdateOperationsInput | $Enums.AwardType | null
+    target?: NullableEnumAwardTargetFieldUpdateOperationsInput | $Enums.AwardTarget | null
+    rankLimit?: NullableIntFieldUpdateOperationsInput | number | null
+    slotKey?: NullableStringFieldUpdateOperationsInput | string | null
+    title?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     icon?: NullableStringFieldUpdateOperationsInput | string | null
     boost?: IntFieldUpdateOperationsInput | number
     swap?: IntFieldUpdateOperationsInput | number
@@ -47821,6 +57342,12 @@ export namespace Prisma {
   export type RecurringContestAwardCreateManyInput = {
     id?: string
     category: $Enums.PrizeType
+    type?: $Enums.AwardType | null
+    target?: $Enums.AwardTarget | null
+    rankLimit?: number | null
+    slotKey?: string | null
+    title?: string | null
+    description?: string | null
     icon?: string | null
     boost?: number
     swap?: number
@@ -47834,6 +57361,12 @@ export namespace Prisma {
 
   export type RecurringContestAwardUpdateManyMutationInput = {
     category?: EnumPrizeTypeFieldUpdateOperationsInput | $Enums.PrizeType
+    type?: NullableEnumAwardTypeFieldUpdateOperationsInput | $Enums.AwardType | null
+    target?: NullableEnumAwardTargetFieldUpdateOperationsInput | $Enums.AwardTarget | null
+    rankLimit?: NullableIntFieldUpdateOperationsInput | number | null
+    slotKey?: NullableStringFieldUpdateOperationsInput | string | null
+    title?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     icon?: NullableStringFieldUpdateOperationsInput | string | null
     boost?: IntFieldUpdateOperationsInput | number
     swap?: IntFieldUpdateOperationsInput | number
@@ -47845,6 +57378,12 @@ export namespace Prisma {
 
   export type RecurringContestAwardUncheckedUpdateManyInput = {
     category?: EnumPrizeTypeFieldUpdateOperationsInput | $Enums.PrizeType
+    type?: NullableEnumAwardTypeFieldUpdateOperationsInput | $Enums.AwardType | null
+    target?: NullableEnumAwardTargetFieldUpdateOperationsInput | $Enums.AwardTarget | null
+    rankLimit?: NullableIntFieldUpdateOperationsInput | number | null
+    slotKey?: NullableStringFieldUpdateOperationsInput | string | null
+    title?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     icon?: NullableStringFieldUpdateOperationsInput | string | null
     boost?: IntFieldUpdateOperationsInput | number
     swap?: IntFieldUpdateOperationsInput | number
@@ -47859,6 +57398,13 @@ export namespace Prisma {
   export type ContestAchievementCreateInput = {
     id?: string
     category: $Enums.PrizeType
+    kind?: $Enums.AchievementKind
+    type?: $Enums.AwardType | null
+    target?: $Enums.AwardTarget | null
+    rankLimit?: number | null
+    levelBadge?: $Enums.ContestLevelBadge | null
+    levelOrder?: number | null
+    grantKey?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     photo?: ContestPhotoCreateNestedOneWithoutAchievementsInput
@@ -47869,15 +57415,29 @@ export namespace Prisma {
   export type ContestAchievementUncheckedCreateInput = {
     id?: string
     category: $Enums.PrizeType
+    kind?: $Enums.AchievementKind
+    type?: $Enums.AwardType | null
+    target?: $Enums.AwardTarget | null
+    rankLimit?: number | null
+    levelBadge?: $Enums.ContestLevelBadge | null
+    levelOrder?: number | null
     photoId?: string | null
     participantId?: string | null
     contestId: string
+    grantKey?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
 
   export type ContestAchievementUpdateInput = {
     category?: EnumPrizeTypeFieldUpdateOperationsInput | $Enums.PrizeType
+    kind?: EnumAchievementKindFieldUpdateOperationsInput | $Enums.AchievementKind
+    type?: NullableEnumAwardTypeFieldUpdateOperationsInput | $Enums.AwardType | null
+    target?: NullableEnumAwardTargetFieldUpdateOperationsInput | $Enums.AwardTarget | null
+    rankLimit?: NullableIntFieldUpdateOperationsInput | number | null
+    levelBadge?: NullableEnumContestLevelBadgeFieldUpdateOperationsInput | $Enums.ContestLevelBadge | null
+    levelOrder?: NullableIntFieldUpdateOperationsInput | number | null
+    grantKey?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     photo?: ContestPhotoUpdateOneWithoutAchievementsNestedInput
@@ -47887,9 +57447,16 @@ export namespace Prisma {
 
   export type ContestAchievementUncheckedUpdateInput = {
     category?: EnumPrizeTypeFieldUpdateOperationsInput | $Enums.PrizeType
+    kind?: EnumAchievementKindFieldUpdateOperationsInput | $Enums.AchievementKind
+    type?: NullableEnumAwardTypeFieldUpdateOperationsInput | $Enums.AwardType | null
+    target?: NullableEnumAwardTargetFieldUpdateOperationsInput | $Enums.AwardTarget | null
+    rankLimit?: NullableIntFieldUpdateOperationsInput | number | null
+    levelBadge?: NullableEnumContestLevelBadgeFieldUpdateOperationsInput | $Enums.ContestLevelBadge | null
+    levelOrder?: NullableIntFieldUpdateOperationsInput | number | null
     photoId?: NullableStringFieldUpdateOperationsInput | string | null
     participantId?: NullableStringFieldUpdateOperationsInput | string | null
     contestId?: StringFieldUpdateOperationsInput | string
+    grantKey?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -47897,26 +57464,587 @@ export namespace Prisma {
   export type ContestAchievementCreateManyInput = {
     id?: string
     category: $Enums.PrizeType
+    kind?: $Enums.AchievementKind
+    type?: $Enums.AwardType | null
+    target?: $Enums.AwardTarget | null
+    rankLimit?: number | null
+    levelBadge?: $Enums.ContestLevelBadge | null
+    levelOrder?: number | null
     photoId?: string | null
     participantId?: string | null
     contestId: string
+    grantKey?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
 
   export type ContestAchievementUpdateManyMutationInput = {
     category?: EnumPrizeTypeFieldUpdateOperationsInput | $Enums.PrizeType
+    kind?: EnumAchievementKindFieldUpdateOperationsInput | $Enums.AchievementKind
+    type?: NullableEnumAwardTypeFieldUpdateOperationsInput | $Enums.AwardType | null
+    target?: NullableEnumAwardTargetFieldUpdateOperationsInput | $Enums.AwardTarget | null
+    rankLimit?: NullableIntFieldUpdateOperationsInput | number | null
+    levelBadge?: NullableEnumContestLevelBadgeFieldUpdateOperationsInput | $Enums.ContestLevelBadge | null
+    levelOrder?: NullableIntFieldUpdateOperationsInput | number | null
+    grantKey?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type ContestAchievementUncheckedUpdateManyInput = {
     category?: EnumPrizeTypeFieldUpdateOperationsInput | $Enums.PrizeType
+    kind?: EnumAchievementKindFieldUpdateOperationsInput | $Enums.AchievementKind
+    type?: NullableEnumAwardTypeFieldUpdateOperationsInput | $Enums.AwardType | null
+    target?: NullableEnumAwardTargetFieldUpdateOperationsInput | $Enums.AwardTarget | null
+    rankLimit?: NullableIntFieldUpdateOperationsInput | number | null
+    levelBadge?: NullableEnumContestLevelBadgeFieldUpdateOperationsInput | $Enums.ContestLevelBadge | null
+    levelOrder?: NullableIntFieldUpdateOperationsInput | number | null
     photoId?: NullableStringFieldUpdateOperationsInput | string | null
     participantId?: NullableStringFieldUpdateOperationsInput | string | null
     contestId?: StringFieldUpdateOperationsInput | string
+    grantKey?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ContestFinalizationCreateInput = {
+    id?: string
+    contestId: string
+    status?: $Enums.ContestFinalizationStatus
+    attemptCount?: number
+    scoringVersion?: number
+    startedAt?: Date | string | null
+    completedAt?: Date | string | null
+    error?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ContestFinalizationUncheckedCreateInput = {
+    id?: string
+    contestId: string
+    status?: $Enums.ContestFinalizationStatus
+    attemptCount?: number
+    scoringVersion?: number
+    startedAt?: Date | string | null
+    completedAt?: Date | string | null
+    error?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ContestFinalizationUpdateInput = {
+    contestId?: StringFieldUpdateOperationsInput | string
+    status?: EnumContestFinalizationStatusFieldUpdateOperationsInput | $Enums.ContestFinalizationStatus
+    attemptCount?: IntFieldUpdateOperationsInput | number
+    scoringVersion?: IntFieldUpdateOperationsInput | number
+    startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    error?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ContestFinalizationUncheckedUpdateInput = {
+    contestId?: StringFieldUpdateOperationsInput | string
+    status?: EnumContestFinalizationStatusFieldUpdateOperationsInput | $Enums.ContestFinalizationStatus
+    attemptCount?: IntFieldUpdateOperationsInput | number
+    scoringVersion?: IntFieldUpdateOperationsInput | number
+    startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    error?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ContestFinalizationCreateManyInput = {
+    id?: string
+    contestId: string
+    status?: $Enums.ContestFinalizationStatus
+    attemptCount?: number
+    scoringVersion?: number
+    startedAt?: Date | string | null
+    completedAt?: Date | string | null
+    error?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ContestFinalizationUpdateManyMutationInput = {
+    contestId?: StringFieldUpdateOperationsInput | string
+    status?: EnumContestFinalizationStatusFieldUpdateOperationsInput | $Enums.ContestFinalizationStatus
+    attemptCount?: IntFieldUpdateOperationsInput | number
+    scoringVersion?: IntFieldUpdateOperationsInput | number
+    startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    error?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ContestFinalizationUncheckedUpdateManyInput = {
+    contestId?: StringFieldUpdateOperationsInput | string
+    status?: EnumContestFinalizationStatusFieldUpdateOperationsInput | $Enums.ContestFinalizationStatus
+    attemptCount?: IntFieldUpdateOperationsInput | number
+    scoringVersion?: IntFieldUpdateOperationsInput | number
+    startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    error?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ContestRankingResultCreateInput = {
+    id?: string
+    resultKey: string
+    contestId: string
+    scope: $Enums.ContestRankingScope
+    participantId: string
+    photoId?: string | null
+    score: number
+    rank: number
+    level?: $Enums.YCLevel | null
+    tieBreakKey: string
+    scoringVersion?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ContestRankingResultUncheckedCreateInput = {
+    id?: string
+    resultKey: string
+    contestId: string
+    scope: $Enums.ContestRankingScope
+    participantId: string
+    photoId?: string | null
+    score: number
+    rank: number
+    level?: $Enums.YCLevel | null
+    tieBreakKey: string
+    scoringVersion?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ContestRankingResultUpdateInput = {
+    resultKey?: StringFieldUpdateOperationsInput | string
+    contestId?: StringFieldUpdateOperationsInput | string
+    scope?: EnumContestRankingScopeFieldUpdateOperationsInput | $Enums.ContestRankingScope
+    participantId?: StringFieldUpdateOperationsInput | string
+    photoId?: NullableStringFieldUpdateOperationsInput | string | null
+    score?: IntFieldUpdateOperationsInput | number
+    rank?: IntFieldUpdateOperationsInput | number
+    level?: NullableEnumYCLevelFieldUpdateOperationsInput | $Enums.YCLevel | null
+    tieBreakKey?: StringFieldUpdateOperationsInput | string
+    scoringVersion?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ContestRankingResultUncheckedUpdateInput = {
+    resultKey?: StringFieldUpdateOperationsInput | string
+    contestId?: StringFieldUpdateOperationsInput | string
+    scope?: EnumContestRankingScopeFieldUpdateOperationsInput | $Enums.ContestRankingScope
+    participantId?: StringFieldUpdateOperationsInput | string
+    photoId?: NullableStringFieldUpdateOperationsInput | string | null
+    score?: IntFieldUpdateOperationsInput | number
+    rank?: IntFieldUpdateOperationsInput | number
+    level?: NullableEnumYCLevelFieldUpdateOperationsInput | $Enums.YCLevel | null
+    tieBreakKey?: StringFieldUpdateOperationsInput | string
+    scoringVersion?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ContestRankingResultCreateManyInput = {
+    id?: string
+    resultKey: string
+    contestId: string
+    scope: $Enums.ContestRankingScope
+    participantId: string
+    photoId?: string | null
+    score: number
+    rank: number
+    level?: $Enums.YCLevel | null
+    tieBreakKey: string
+    scoringVersion?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ContestRankingResultUpdateManyMutationInput = {
+    resultKey?: StringFieldUpdateOperationsInput | string
+    contestId?: StringFieldUpdateOperationsInput | string
+    scope?: EnumContestRankingScopeFieldUpdateOperationsInput | $Enums.ContestRankingScope
+    participantId?: StringFieldUpdateOperationsInput | string
+    photoId?: NullableStringFieldUpdateOperationsInput | string | null
+    score?: IntFieldUpdateOperationsInput | number
+    rank?: IntFieldUpdateOperationsInput | number
+    level?: NullableEnumYCLevelFieldUpdateOperationsInput | $Enums.YCLevel | null
+    tieBreakKey?: StringFieldUpdateOperationsInput | string
+    scoringVersion?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ContestRankingResultUncheckedUpdateManyInput = {
+    resultKey?: StringFieldUpdateOperationsInput | string
+    contestId?: StringFieldUpdateOperationsInput | string
+    scope?: EnumContestRankingScopeFieldUpdateOperationsInput | $Enums.ContestRankingScope
+    participantId?: StringFieldUpdateOperationsInput | string
+    photoId?: NullableStringFieldUpdateOperationsInput | string | null
+    score?: IntFieldUpdateOperationsInput | number
+    rank?: IntFieldUpdateOperationsInput | number
+    level?: NullableEnumYCLevelFieldUpdateOperationsInput | $Enums.YCLevel | null
+    tieBreakKey?: StringFieldUpdateOperationsInput | string
+    scoringVersion?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ContestAwardGrantCreateInput = {
+    id?: string
+    grantKey: string
+    contestId: string
+    contestAwardId?: string | null
+    participantId: string
+    userId: string
+    photoId?: string | null
+    category: $Enums.PrizeType
+    kind?: $Enums.AchievementKind
+    type?: $Enums.AwardType | null
+    target?: $Enums.AwardTarget | null
+    rankLimit?: number | null
+    levelBadge?: $Enums.ContestLevelBadge | null
+    levelOrder?: number | null
+    rank?: number | null
+    keyReward?: number
+    boostReward?: number
+    swapReward?: number
+    coinReward?: number
+    status?: $Enums.ContestGrantStatus
+    error?: string | null
+    processedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ContestAwardGrantUncheckedCreateInput = {
+    id?: string
+    grantKey: string
+    contestId: string
+    contestAwardId?: string | null
+    participantId: string
+    userId: string
+    photoId?: string | null
+    category: $Enums.PrizeType
+    kind?: $Enums.AchievementKind
+    type?: $Enums.AwardType | null
+    target?: $Enums.AwardTarget | null
+    rankLimit?: number | null
+    levelBadge?: $Enums.ContestLevelBadge | null
+    levelOrder?: number | null
+    rank?: number | null
+    keyReward?: number
+    boostReward?: number
+    swapReward?: number
+    coinReward?: number
+    status?: $Enums.ContestGrantStatus
+    error?: string | null
+    processedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ContestAwardGrantUpdateInput = {
+    grantKey?: StringFieldUpdateOperationsInput | string
+    contestId?: StringFieldUpdateOperationsInput | string
+    contestAwardId?: NullableStringFieldUpdateOperationsInput | string | null
+    participantId?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    photoId?: NullableStringFieldUpdateOperationsInput | string | null
+    category?: EnumPrizeTypeFieldUpdateOperationsInput | $Enums.PrizeType
+    kind?: EnumAchievementKindFieldUpdateOperationsInput | $Enums.AchievementKind
+    type?: NullableEnumAwardTypeFieldUpdateOperationsInput | $Enums.AwardType | null
+    target?: NullableEnumAwardTargetFieldUpdateOperationsInput | $Enums.AwardTarget | null
+    rankLimit?: NullableIntFieldUpdateOperationsInput | number | null
+    levelBadge?: NullableEnumContestLevelBadgeFieldUpdateOperationsInput | $Enums.ContestLevelBadge | null
+    levelOrder?: NullableIntFieldUpdateOperationsInput | number | null
+    rank?: NullableIntFieldUpdateOperationsInput | number | null
+    keyReward?: IntFieldUpdateOperationsInput | number
+    boostReward?: IntFieldUpdateOperationsInput | number
+    swapReward?: IntFieldUpdateOperationsInput | number
+    coinReward?: IntFieldUpdateOperationsInput | number
+    status?: EnumContestGrantStatusFieldUpdateOperationsInput | $Enums.ContestGrantStatus
+    error?: NullableStringFieldUpdateOperationsInput | string | null
+    processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ContestAwardGrantUncheckedUpdateInput = {
+    grantKey?: StringFieldUpdateOperationsInput | string
+    contestId?: StringFieldUpdateOperationsInput | string
+    contestAwardId?: NullableStringFieldUpdateOperationsInput | string | null
+    participantId?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    photoId?: NullableStringFieldUpdateOperationsInput | string | null
+    category?: EnumPrizeTypeFieldUpdateOperationsInput | $Enums.PrizeType
+    kind?: EnumAchievementKindFieldUpdateOperationsInput | $Enums.AchievementKind
+    type?: NullableEnumAwardTypeFieldUpdateOperationsInput | $Enums.AwardType | null
+    target?: NullableEnumAwardTargetFieldUpdateOperationsInput | $Enums.AwardTarget | null
+    rankLimit?: NullableIntFieldUpdateOperationsInput | number | null
+    levelBadge?: NullableEnumContestLevelBadgeFieldUpdateOperationsInput | $Enums.ContestLevelBadge | null
+    levelOrder?: NullableIntFieldUpdateOperationsInput | number | null
+    rank?: NullableIntFieldUpdateOperationsInput | number | null
+    keyReward?: IntFieldUpdateOperationsInput | number
+    boostReward?: IntFieldUpdateOperationsInput | number
+    swapReward?: IntFieldUpdateOperationsInput | number
+    coinReward?: IntFieldUpdateOperationsInput | number
+    status?: EnumContestGrantStatusFieldUpdateOperationsInput | $Enums.ContestGrantStatus
+    error?: NullableStringFieldUpdateOperationsInput | string | null
+    processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ContestAwardGrantCreateManyInput = {
+    id?: string
+    grantKey: string
+    contestId: string
+    contestAwardId?: string | null
+    participantId: string
+    userId: string
+    photoId?: string | null
+    category: $Enums.PrizeType
+    kind?: $Enums.AchievementKind
+    type?: $Enums.AwardType | null
+    target?: $Enums.AwardTarget | null
+    rankLimit?: number | null
+    levelBadge?: $Enums.ContestLevelBadge | null
+    levelOrder?: number | null
+    rank?: number | null
+    keyReward?: number
+    boostReward?: number
+    swapReward?: number
+    coinReward?: number
+    status?: $Enums.ContestGrantStatus
+    error?: string | null
+    processedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ContestAwardGrantUpdateManyMutationInput = {
+    grantKey?: StringFieldUpdateOperationsInput | string
+    contestId?: StringFieldUpdateOperationsInput | string
+    contestAwardId?: NullableStringFieldUpdateOperationsInput | string | null
+    participantId?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    photoId?: NullableStringFieldUpdateOperationsInput | string | null
+    category?: EnumPrizeTypeFieldUpdateOperationsInput | $Enums.PrizeType
+    kind?: EnumAchievementKindFieldUpdateOperationsInput | $Enums.AchievementKind
+    type?: NullableEnumAwardTypeFieldUpdateOperationsInput | $Enums.AwardType | null
+    target?: NullableEnumAwardTargetFieldUpdateOperationsInput | $Enums.AwardTarget | null
+    rankLimit?: NullableIntFieldUpdateOperationsInput | number | null
+    levelBadge?: NullableEnumContestLevelBadgeFieldUpdateOperationsInput | $Enums.ContestLevelBadge | null
+    levelOrder?: NullableIntFieldUpdateOperationsInput | number | null
+    rank?: NullableIntFieldUpdateOperationsInput | number | null
+    keyReward?: IntFieldUpdateOperationsInput | number
+    boostReward?: IntFieldUpdateOperationsInput | number
+    swapReward?: IntFieldUpdateOperationsInput | number
+    coinReward?: IntFieldUpdateOperationsInput | number
+    status?: EnumContestGrantStatusFieldUpdateOperationsInput | $Enums.ContestGrantStatus
+    error?: NullableStringFieldUpdateOperationsInput | string | null
+    processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ContestAwardGrantUncheckedUpdateManyInput = {
+    grantKey?: StringFieldUpdateOperationsInput | string
+    contestId?: StringFieldUpdateOperationsInput | string
+    contestAwardId?: NullableStringFieldUpdateOperationsInput | string | null
+    participantId?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    photoId?: NullableStringFieldUpdateOperationsInput | string | null
+    category?: EnumPrizeTypeFieldUpdateOperationsInput | $Enums.PrizeType
+    kind?: EnumAchievementKindFieldUpdateOperationsInput | $Enums.AchievementKind
+    type?: NullableEnumAwardTypeFieldUpdateOperationsInput | $Enums.AwardType | null
+    target?: NullableEnumAwardTargetFieldUpdateOperationsInput | $Enums.AwardTarget | null
+    rankLimit?: NullableIntFieldUpdateOperationsInput | number | null
+    levelBadge?: NullableEnumContestLevelBadgeFieldUpdateOperationsInput | $Enums.ContestLevelBadge | null
+    levelOrder?: NullableIntFieldUpdateOperationsInput | number | null
+    rank?: NullableIntFieldUpdateOperationsInput | number | null
+    keyReward?: IntFieldUpdateOperationsInput | number
+    boostReward?: IntFieldUpdateOperationsInput | number
+    swapReward?: IntFieldUpdateOperationsInput | number
+    coinReward?: IntFieldUpdateOperationsInput | number
+    status?: EnumContestGrantStatusFieldUpdateOperationsInput | $Enums.ContestGrantStatus
+    error?: NullableStringFieldUpdateOperationsInput | string | null
+    processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ContestAwardSelectionCreateInput = {
+    id?: string
+    selectionKey: string
+    contestId: string
+    contestAwardId: string
+    slotKey: string
+    photoId: string
+    participantId: string
+    selectedById: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ContestAwardSelectionUncheckedCreateInput = {
+    id?: string
+    selectionKey: string
+    contestId: string
+    contestAwardId: string
+    slotKey: string
+    photoId: string
+    participantId: string
+    selectedById: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ContestAwardSelectionUpdateInput = {
+    selectionKey?: StringFieldUpdateOperationsInput | string
+    contestId?: StringFieldUpdateOperationsInput | string
+    contestAwardId?: StringFieldUpdateOperationsInput | string
+    slotKey?: StringFieldUpdateOperationsInput | string
+    photoId?: StringFieldUpdateOperationsInput | string
+    participantId?: StringFieldUpdateOperationsInput | string
+    selectedById?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ContestAwardSelectionUncheckedUpdateInput = {
+    selectionKey?: StringFieldUpdateOperationsInput | string
+    contestId?: StringFieldUpdateOperationsInput | string
+    contestAwardId?: StringFieldUpdateOperationsInput | string
+    slotKey?: StringFieldUpdateOperationsInput | string
+    photoId?: StringFieldUpdateOperationsInput | string
+    participantId?: StringFieldUpdateOperationsInput | string
+    selectedById?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ContestAwardSelectionCreateManyInput = {
+    id?: string
+    selectionKey: string
+    contestId: string
+    contestAwardId: string
+    slotKey: string
+    photoId: string
+    participantId: string
+    selectedById: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ContestAwardSelectionUpdateManyMutationInput = {
+    selectionKey?: StringFieldUpdateOperationsInput | string
+    contestId?: StringFieldUpdateOperationsInput | string
+    contestAwardId?: StringFieldUpdateOperationsInput | string
+    slotKey?: StringFieldUpdateOperationsInput | string
+    photoId?: StringFieldUpdateOperationsInput | string
+    participantId?: StringFieldUpdateOperationsInput | string
+    selectedById?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ContestAwardSelectionUncheckedUpdateManyInput = {
+    selectionKey?: StringFieldUpdateOperationsInput | string
+    contestId?: StringFieldUpdateOperationsInput | string
+    contestAwardId?: StringFieldUpdateOperationsInput | string
+    slotKey?: StringFieldUpdateOperationsInput | string
+    photoId?: StringFieldUpdateOperationsInput | string
+    participantId?: StringFieldUpdateOperationsInput | string
+    selectedById?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ContestRewardTransactionCreateInput = {
+    id?: string
+    grantId: string
+    userId: string
+    key?: number
+    boost?: number
+    swap?: number
+    coin?: number
+    createdAt?: Date | string
+  }
+
+  export type ContestRewardTransactionUncheckedCreateInput = {
+    id?: string
+    grantId: string
+    userId: string
+    key?: number
+    boost?: number
+    swap?: number
+    coin?: number
+    createdAt?: Date | string
+  }
+
+  export type ContestRewardTransactionUpdateInput = {
+    grantId?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    key?: IntFieldUpdateOperationsInput | number
+    boost?: IntFieldUpdateOperationsInput | number
+    swap?: IntFieldUpdateOperationsInput | number
+    coin?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ContestRewardTransactionUncheckedUpdateInput = {
+    grantId?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    key?: IntFieldUpdateOperationsInput | number
+    boost?: IntFieldUpdateOperationsInput | number
+    swap?: IntFieldUpdateOperationsInput | number
+    coin?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ContestRewardTransactionCreateManyInput = {
+    id?: string
+    grantId: string
+    userId: string
+    key?: number
+    boost?: number
+    swap?: number
+    coin?: number
+    createdAt?: Date | string
+  }
+
+  export type ContestRewardTransactionUpdateManyMutationInput = {
+    grantId?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    key?: IntFieldUpdateOperationsInput | number
+    boost?: IntFieldUpdateOperationsInput | number
+    swap?: IntFieldUpdateOperationsInput | number
+    coin?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ContestRewardTransactionUncheckedUpdateManyInput = {
+    grantId?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    key?: IntFieldUpdateOperationsInput | number
+    boost?: IntFieldUpdateOperationsInput | number
+    swap?: IntFieldUpdateOperationsInput | number
+    coin?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type NotificationCreateInput = {
@@ -49675,6 +59803,7 @@ export namespace Prisma {
     id?: string
     type: $Enums.VoteType
     power?: number
+    weight?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     provider: UserCreateNestedOneWithoutVotesInput
@@ -49689,6 +59818,7 @@ export namespace Prisma {
     contestId: string
     type: $Enums.VoteType
     power?: number
+    weight?: number
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -49696,6 +59826,7 @@ export namespace Prisma {
   export type VoteUpdateInput = {
     type?: EnumVoteTypeFieldUpdateOperationsInput | $Enums.VoteType
     power?: IntFieldUpdateOperationsInput | number
+    weight?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     provider?: UserUpdateOneRequiredWithoutVotesNestedInput
@@ -49709,6 +59840,7 @@ export namespace Prisma {
     contestId?: StringFieldUpdateOperationsInput | string
     type?: EnumVoteTypeFieldUpdateOperationsInput | $Enums.VoteType
     power?: IntFieldUpdateOperationsInput | number
+    weight?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -49720,6 +59852,7 @@ export namespace Prisma {
     contestId: string
     type: $Enums.VoteType
     power?: number
+    weight?: number
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -49727,6 +59860,7 @@ export namespace Prisma {
   export type VoteUpdateManyMutationInput = {
     type?: EnumVoteTypeFieldUpdateOperationsInput | $Enums.VoteType
     power?: IntFieldUpdateOperationsInput | number
+    weight?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -49737,6 +59871,7 @@ export namespace Prisma {
     contestId?: StringFieldUpdateOperationsInput | string
     type?: EnumVoteTypeFieldUpdateOperationsInput | $Enums.VoteType
     power?: IntFieldUpdateOperationsInput | number
+    weight?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -49879,24 +60014,6 @@ export namespace Prisma {
     not?: NestedEnumContestStatusFilter<$PrismaModel> | $Enums.ContestStatus
   }
 
-  export type EnumContestModeFilter<$PrismaModel = never> = {
-    equals?: $Enums.ContestMode | EnumContestModeFieldRefInput<$PrismaModel>
-    in?: $Enums.ContestMode[] | ListEnumContestModeFieldRefInput<$PrismaModel>
-    notIn?: $Enums.ContestMode[] | ListEnumContestModeFieldRefInput<$PrismaModel>
-    not?: NestedEnumContestModeFilter<$PrismaModel> | $Enums.ContestMode
-  }
-
-  export type IntFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel>
-    in?: number[] | ListIntFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntFilter<$PrismaModel> | number
-  }
-
   export type BoolFilter<$PrismaModel = never> = {
     equals?: boolean | BooleanFieldRefInput<$PrismaModel>
     not?: NestedBoolFilter<$PrismaModel> | boolean
@@ -49912,14 +60029,6 @@ export namespace Prisma {
     gte?: number | IntFieldRefInput<$PrismaModel>
     not?: NestedIntNullableFilter<$PrismaModel> | number | null
     isSet?: boolean
-  }
-
-  export type IntNullableListFilter<$PrismaModel = never> = {
-    equals?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    has?: number | IntFieldRefInput<$PrismaModel> | null
-    hasEvery?: number[] | ListIntFieldRefInput<$PrismaModel>
-    hasSome?: number[] | ListIntFieldRefInput<$PrismaModel>
-    isEmpty?: boolean
   }
 
   export type DateTimeFilter<$PrismaModel = never> = {
@@ -49944,17 +60053,16 @@ export namespace Prisma {
     not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
     isSet?: boolean
   }
-  export type JsonNullableFilter<$PrismaModel = never> =
-    | PatchUndefined<
-        Either<Required<JsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>,
-        Required<JsonNullableFilterBase<$PrismaModel>>
-      >
-    | OptionalFlat<Omit<Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>
 
-  export type JsonNullableFilterBase<$PrismaModel = never> = {
-    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    isSet?: boolean
+  export type IntFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntFilter<$PrismaModel> | number
   }
 
   export type UserScalarRelationFilter = {
@@ -49984,6 +60092,12 @@ export namespace Prisma {
     every?: ContestRuleWhereInput
     some?: ContestRuleWhereInput
     none?: ContestRuleWhereInput
+  }
+
+  export type ContestRuleConfigListRelationFilter = {
+    every?: ContestRuleConfigWhereInput
+    some?: ContestRuleConfigWhereInput
+    none?: ContestRuleConfigWhereInput
   }
 
   export type ContestPrizeListRelationFilter = {
@@ -50031,6 +60145,10 @@ export namespace Prisma {
     _count?: SortOrder
   }
 
+  export type ContestRuleConfigOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
   export type ContestPrizeOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
@@ -50053,28 +60171,27 @@ export namespace Prisma {
     description?: SortOrder
     banner?: SortOrder
     status?: SortOrder
-    mode?: SortOrder
-    maxUploads?: SortOrder
     isMoneyContest?: SortOrder
     maxPrize?: SortOrder
     minPrize?: SortOrder
-    level_requirements?: SortOrder
     startDate?: SortOrder
     endDate?: SortOrder
     startedAt?: SortOrder
+    endedAt?: SortOrder
+    finalizedAt?: SortOrder
     recurringContestId?: SortOrder
+    configVersion?: SortOrder
+    scoringVersion?: SortOrder
     creatorId?: SortOrder
-    rules?: SortOrder
-    prizes?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
 
   export type ContestAvgOrderByAggregateInput = {
-    maxUploads?: SortOrder
     maxPrize?: SortOrder
     minPrize?: SortOrder
-    level_requirements?: SortOrder
+    configVersion?: SortOrder
+    scoringVersion?: SortOrder
   }
 
   export type ContestMaxOrderByAggregateInput = {
@@ -50083,15 +60200,17 @@ export namespace Prisma {
     description?: SortOrder
     banner?: SortOrder
     status?: SortOrder
-    mode?: SortOrder
-    maxUploads?: SortOrder
     isMoneyContest?: SortOrder
     maxPrize?: SortOrder
     minPrize?: SortOrder
     startDate?: SortOrder
     endDate?: SortOrder
     startedAt?: SortOrder
+    endedAt?: SortOrder
+    finalizedAt?: SortOrder
     recurringContestId?: SortOrder
+    configVersion?: SortOrder
+    scoringVersion?: SortOrder
     creatorId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -50103,25 +60222,27 @@ export namespace Prisma {
     description?: SortOrder
     banner?: SortOrder
     status?: SortOrder
-    mode?: SortOrder
-    maxUploads?: SortOrder
     isMoneyContest?: SortOrder
     maxPrize?: SortOrder
     minPrize?: SortOrder
     startDate?: SortOrder
     endDate?: SortOrder
     startedAt?: SortOrder
+    endedAt?: SortOrder
+    finalizedAt?: SortOrder
     recurringContestId?: SortOrder
+    configVersion?: SortOrder
+    scoringVersion?: SortOrder
     creatorId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
 
   export type ContestSumOrderByAggregateInput = {
-    maxUploads?: SortOrder
     maxPrize?: SortOrder
     minPrize?: SortOrder
-    level_requirements?: SortOrder
+    configVersion?: SortOrder
+    scoringVersion?: SortOrder
   }
 
   export type StringWithAggregatesFilter<$PrismaModel = never> = {
@@ -50169,32 +60290,6 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumContestStatusFilter<$PrismaModel>
     _max?: NestedEnumContestStatusFilter<$PrismaModel>
-  }
-
-  export type EnumContestModeWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.ContestMode | EnumContestModeFieldRefInput<$PrismaModel>
-    in?: $Enums.ContestMode[] | ListEnumContestModeFieldRefInput<$PrismaModel>
-    notIn?: $Enums.ContestMode[] | ListEnumContestModeFieldRefInput<$PrismaModel>
-    not?: NestedEnumContestModeWithAggregatesFilter<$PrismaModel> | $Enums.ContestMode
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumContestModeFilter<$PrismaModel>
-    _max?: NestedEnumContestModeFilter<$PrismaModel>
-  }
-
-  export type IntWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel>
-    in?: number[] | ListIntFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
-    _count?: NestedIntFilter<$PrismaModel>
-    _avg?: NestedFloatFilter<$PrismaModel>
-    _sum?: NestedIntFilter<$PrismaModel>
-    _min?: NestedIntFilter<$PrismaModel>
-    _max?: NestedIntFilter<$PrismaModel>
   }
 
   export type BoolWithAggregatesFilter<$PrismaModel = never> = {
@@ -50250,20 +60345,21 @@ export namespace Prisma {
     _max?: NestedDateTimeNullableFilter<$PrismaModel>
     isSet?: boolean
   }
-  export type JsonNullableWithAggregatesFilter<$PrismaModel = never> =
-    | PatchUndefined<
-        Either<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
-        Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>
-      >
-    | OptionalFlat<Omit<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
 
-  export type JsonNullableWithAggregatesFilterBase<$PrismaModel = never> = {
-    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedJsonNullableFilter<$PrismaModel>
-    _max?: NestedJsonNullableFilter<$PrismaModel>
-    isSet?: boolean
+  export type IntWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedIntFilter<$PrismaModel>
+    _min?: NestedIntFilter<$PrismaModel>
+    _max?: NestedIntFilter<$PrismaModel>
   }
 
   export type EnumRecurringContestStatusFilter<$PrismaModel = never> = {
@@ -50295,6 +60391,18 @@ export namespace Prisma {
   export type JsonFilterBase<$PrismaModel = never> = {
     equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
     not?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+  }
+  export type JsonNullableFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonNullableFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonNullableFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    isSet?: boolean
   }
 
   export type RecurringContestAwardListRelationFilter = {
@@ -50329,11 +60437,9 @@ export namespace Prisma {
     title?: SortOrder
     description?: SortOrder
     banner?: SortOrder
-    maxUploads?: SortOrder
     isMoneyContest?: SortOrder
     maxPrize?: SortOrder
     minPrize?: SortOrder
-    level_requirements?: SortOrder
     startDate?: SortOrder
     endDate?: SortOrder
     creatorId?: SortOrder
@@ -50346,10 +60452,8 @@ export namespace Prisma {
   }
 
   export type RecurringContestAvgOrderByAggregateInput = {
-    maxUploads?: SortOrder
     maxPrize?: SortOrder
     minPrize?: SortOrder
-    level_requirements?: SortOrder
   }
 
   export type RecurringContestMaxOrderByAggregateInput = {
@@ -50357,7 +60461,6 @@ export namespace Prisma {
     title?: SortOrder
     description?: SortOrder
     banner?: SortOrder
-    maxUploads?: SortOrder
     isMoneyContest?: SortOrder
     maxPrize?: SortOrder
     minPrize?: SortOrder
@@ -50375,7 +60478,6 @@ export namespace Prisma {
     title?: SortOrder
     description?: SortOrder
     banner?: SortOrder
-    maxUploads?: SortOrder
     isMoneyContest?: SortOrder
     maxPrize?: SortOrder
     minPrize?: SortOrder
@@ -50389,10 +60491,8 @@ export namespace Prisma {
   }
 
   export type RecurringContestSumOrderByAggregateInput = {
-    maxUploads?: SortOrder
     maxPrize?: SortOrder
     minPrize?: SortOrder
-    level_requirements?: SortOrder
   }
 
   export type EnumRecurringContestStatusWithAggregatesFilter<$PrismaModel = never> = {
@@ -50418,6 +60518,77 @@ export namespace Prisma {
     _min?: NestedJsonFilter<$PrismaModel>
     _max?: NestedJsonFilter<$PrismaModel>
   }
+  export type JsonNullableWithAggregatesFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonNullableWithAggregatesFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedJsonNullableFilter<$PrismaModel>
+    _max?: NestedJsonNullableFilter<$PrismaModel>
+    isSet?: boolean
+  }
+
+  export type EnumContestOccurrenceStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.ContestOccurrenceStatus | EnumContestOccurrenceStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.ContestOccurrenceStatus[] | ListEnumContestOccurrenceStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ContestOccurrenceStatus[] | ListEnumContestOccurrenceStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumContestOccurrenceStatusFilter<$PrismaModel> | $Enums.ContestOccurrenceStatus
+  }
+
+  export type RecurringContestOccurrenceCountOrderByAggregateInput = {
+    id?: SortOrder
+    occurrenceKey?: SortOrder
+    recurringContestId?: SortOrder
+    scheduledAt?: SortOrder
+    contestId?: SortOrder
+    status?: SortOrder
+    startedAt?: SortOrder
+    error?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type RecurringContestOccurrenceMaxOrderByAggregateInput = {
+    id?: SortOrder
+    occurrenceKey?: SortOrder
+    recurringContestId?: SortOrder
+    scheduledAt?: SortOrder
+    contestId?: SortOrder
+    status?: SortOrder
+    startedAt?: SortOrder
+    error?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type RecurringContestOccurrenceMinOrderByAggregateInput = {
+    id?: SortOrder
+    occurrenceKey?: SortOrder
+    recurringContestId?: SortOrder
+    scheduledAt?: SortOrder
+    contestId?: SortOrder
+    status?: SortOrder
+    startedAt?: SortOrder
+    error?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type EnumContestOccurrenceStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ContestOccurrenceStatus | EnumContestOccurrenceStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.ContestOccurrenceStatus[] | ListEnumContestOccurrenceStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ContestOccurrenceStatus[] | ListEnumContestOccurrenceStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumContestOccurrenceStatusWithAggregatesFilter<$PrismaModel> | $Enums.ContestOccurrenceStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumContestOccurrenceStatusFilter<$PrismaModel>
+    _max?: NestedEnumContestOccurrenceStatusFilter<$PrismaModel>
+  }
 
   export type EnumPrizeTypeFilter<$PrismaModel = never> = {
     equals?: $Enums.PrizeType | EnumPrizeTypeFieldRefInput<$PrismaModel>
@@ -50426,9 +60597,34 @@ export namespace Prisma {
     not?: NestedEnumPrizeTypeFilter<$PrismaModel> | $Enums.PrizeType
   }
 
+  export type EnumAwardTypeNullableFilter<$PrismaModel = never> = {
+    equals?: $Enums.AwardType | EnumAwardTypeFieldRefInput<$PrismaModel> | null
+    in?: $Enums.AwardType[] | ListEnumAwardTypeFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.AwardType[] | ListEnumAwardTypeFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumAwardTypeNullableFilter<$PrismaModel> | $Enums.AwardType | null
+    isSet?: boolean
+  }
+
+  export type EnumAwardTargetNullableFilter<$PrismaModel = never> = {
+    equals?: $Enums.AwardTarget | EnumAwardTargetFieldRefInput<$PrismaModel> | null
+    in?: $Enums.AwardTarget[] | ListEnumAwardTargetFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.AwardTarget[] | ListEnumAwardTargetFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumAwardTargetNullableFilter<$PrismaModel> | $Enums.AwardTarget | null
+    isSet?: boolean
+  }
+
+  export type PrizeTypeTargetRankLimitCompoundUniqueInput = {
+    type: $Enums.AwardType
+    target: $Enums.AwardTarget
+    rankLimit: number
+  }
+
   export type PrizeCountOrderByAggregateInput = {
     id?: SortOrder
     category?: SortOrder
+    type?: SortOrder
+    target?: SortOrder
+    rankLimit?: SortOrder
     title?: SortOrder
     description?: SortOrder
     icon?: SortOrder
@@ -50442,6 +60638,7 @@ export namespace Prisma {
   }
 
   export type PrizeAvgOrderByAggregateInput = {
+    rankLimit?: SortOrder
     boost?: SortOrder
     swap?: SortOrder
     key?: SortOrder
@@ -50451,6 +60648,9 @@ export namespace Prisma {
   export type PrizeMaxOrderByAggregateInput = {
     id?: SortOrder
     category?: SortOrder
+    type?: SortOrder
+    target?: SortOrder
+    rankLimit?: SortOrder
     title?: SortOrder
     description?: SortOrder
     icon?: SortOrder
@@ -50466,6 +60666,9 @@ export namespace Prisma {
   export type PrizeMinOrderByAggregateInput = {
     id?: SortOrder
     category?: SortOrder
+    type?: SortOrder
+    target?: SortOrder
+    rankLimit?: SortOrder
     title?: SortOrder
     description?: SortOrder
     icon?: SortOrder
@@ -50479,6 +60682,7 @@ export namespace Prisma {
   }
 
   export type PrizeSumOrderByAggregateInput = {
+    rankLimit?: SortOrder
     boost?: SortOrder
     swap?: SortOrder
     key?: SortOrder
@@ -50493,6 +60697,28 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumPrizeTypeFilter<$PrismaModel>
     _max?: NestedEnumPrizeTypeFilter<$PrismaModel>
+  }
+
+  export type EnumAwardTypeNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.AwardType | EnumAwardTypeFieldRefInput<$PrismaModel> | null
+    in?: $Enums.AwardType[] | ListEnumAwardTypeFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.AwardType[] | ListEnumAwardTypeFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumAwardTypeNullableWithAggregatesFilter<$PrismaModel> | $Enums.AwardType | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedEnumAwardTypeNullableFilter<$PrismaModel>
+    _max?: NestedEnumAwardTypeNullableFilter<$PrismaModel>
+    isSet?: boolean
+  }
+
+  export type EnumAwardTargetNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.AwardTarget | EnumAwardTargetFieldRefInput<$PrismaModel> | null
+    in?: $Enums.AwardTarget[] | ListEnumAwardTargetFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.AwardTarget[] | ListEnumAwardTargetFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumAwardTargetNullableWithAggregatesFilter<$PrismaModel> | $Enums.AwardTarget | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedEnumAwardTargetNullableFilter<$PrismaModel>
+    _max?: NestedEnumAwardTargetNullableFilter<$PrismaModel>
+    isSet?: boolean
   }
 
   export type ContestScalarRelationFilter = {
@@ -50530,6 +60756,50 @@ export namespace Prisma {
     updatedAt?: SortOrder
   }
 
+  export type ContestRuleConfigContestIdKeyCompoundUniqueInput = {
+    contestId: string
+    key: string
+  }
+
+  export type ContestRuleConfigCountOrderByAggregateInput = {
+    id?: SortOrder
+    contestId?: SortOrder
+    key?: SortOrder
+    value?: SortOrder
+    enabled?: SortOrder
+    order?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ContestRuleConfigAvgOrderByAggregateInput = {
+    order?: SortOrder
+  }
+
+  export type ContestRuleConfigMaxOrderByAggregateInput = {
+    id?: SortOrder
+    contestId?: SortOrder
+    key?: SortOrder
+    enabled?: SortOrder
+    order?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ContestRuleConfigMinOrderByAggregateInput = {
+    id?: SortOrder
+    contestId?: SortOrder
+    key?: SortOrder
+    enabled?: SortOrder
+    order?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ContestRuleConfigSumOrderByAggregateInput = {
+    order?: SortOrder
+  }
+
   export type ContestParticipantScalarRelationFilter = {
     is?: ContestParticipantWhereInput
     isNot?: ContestParticipantWhereInput
@@ -50546,18 +60816,13 @@ export namespace Prisma {
     none?: CommentWhereInput
   }
 
-  export type ContestWinnerListRelationFilter = {
-    every?: ContestWinnerWhereInput
-    some?: ContestWinnerWhereInput
-    none?: ContestWinnerWhereInput
-  }
-
   export type CommentOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
-  export type ContestWinnerOrderByRelationAggregateInput = {
-    _count?: SortOrder
+  export type ContestPhotoContestIdPhotoIdCompoundUniqueInput = {
+    contestId: string
+    photoId: string
   }
 
   export type ContestPhotoCountOrderByAggregateInput = {
@@ -50610,38 +60875,6 @@ export namespace Prisma {
   export type ContestPhotoSumOrderByAggregateInput = {
     rank?: SortOrder
     initialVotes?: SortOrder
-  }
-
-  export type ContestPhotoScalarRelationFilter = {
-    is?: ContestPhotoWhereInput
-    isNot?: ContestPhotoWhereInput
-  }
-
-  export type ContestWinnerCountOrderByAggregateInput = {
-    id?: SortOrder
-    participantId?: SortOrder
-    contestId?: SortOrder
-    contestPhotoId?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-  }
-
-  export type ContestWinnerMaxOrderByAggregateInput = {
-    id?: SortOrder
-    participantId?: SortOrder
-    contestId?: SortOrder
-    contestPhotoId?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-  }
-
-  export type ContestWinnerMinOrderByAggregateInput = {
-    id?: SortOrder
-    participantId?: SortOrder
-    contestId?: SortOrder
-    contestPhotoId?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
   }
 
   export type EnumContestParticipantStatusFilter<$PrismaModel = never> = {
@@ -50747,9 +60980,19 @@ export namespace Prisma {
     _max?: NestedEnumYCLevelFilter<$PrismaModel>
   }
 
+  export type ContestPrizeContestIdTypeTargetRankLimitCompoundUniqueInput = {
+    contestId: string
+    type: $Enums.AwardType
+    target: $Enums.AwardTarget
+    rankLimit: number
+  }
+
   export type ContestPrizeCountOrderByAggregateInput = {
     id?: SortOrder
     category?: SortOrder
+    type?: SortOrder
+    target?: SortOrder
+    rankLimit?: SortOrder
     icon?: SortOrder
     boost?: SortOrder
     swap?: SortOrder
@@ -50761,6 +61004,7 @@ export namespace Prisma {
   }
 
   export type ContestPrizeAvgOrderByAggregateInput = {
+    rankLimit?: SortOrder
     boost?: SortOrder
     swap?: SortOrder
     key?: SortOrder
@@ -50770,6 +61014,9 @@ export namespace Prisma {
   export type ContestPrizeMaxOrderByAggregateInput = {
     id?: SortOrder
     category?: SortOrder
+    type?: SortOrder
+    target?: SortOrder
+    rankLimit?: SortOrder
     icon?: SortOrder
     boost?: SortOrder
     swap?: SortOrder
@@ -50783,6 +61030,9 @@ export namespace Prisma {
   export type ContestPrizeMinOrderByAggregateInput = {
     id?: SortOrder
     category?: SortOrder
+    type?: SortOrder
+    target?: SortOrder
+    rankLimit?: SortOrder
     icon?: SortOrder
     boost?: SortOrder
     swap?: SortOrder
@@ -50794,10 +61044,52 @@ export namespace Prisma {
   }
 
   export type ContestPrizeSumOrderByAggregateInput = {
+    rankLimit?: SortOrder
     boost?: SortOrder
     swap?: SortOrder
     key?: SortOrder
     coin?: SortOrder
+  }
+
+  export type ContestRuleAcceptanceContestIdUserIdKeyCompoundUniqueInput = {
+    contestId: string
+    userId: string
+    key: string
+  }
+
+  export type ContestRuleAcceptanceCountOrderByAggregateInput = {
+    id?: SortOrder
+    contestId?: SortOrder
+    userId?: SortOrder
+    key?: SortOrder
+    acceptedAt?: SortOrder
+    ruleVersion?: SortOrder
+  }
+
+  export type ContestRuleAcceptanceAvgOrderByAggregateInput = {
+    ruleVersion?: SortOrder
+  }
+
+  export type ContestRuleAcceptanceMaxOrderByAggregateInput = {
+    id?: SortOrder
+    contestId?: SortOrder
+    userId?: SortOrder
+    key?: SortOrder
+    acceptedAt?: SortOrder
+    ruleVersion?: SortOrder
+  }
+
+  export type ContestRuleAcceptanceMinOrderByAggregateInput = {
+    id?: SortOrder
+    contestId?: SortOrder
+    userId?: SortOrder
+    key?: SortOrder
+    acceptedAt?: SortOrder
+    ruleVersion?: SortOrder
+  }
+
+  export type ContestRuleAcceptanceSumOrderByAggregateInput = {
+    ruleVersion?: SortOrder
   }
 
   export type PrizeScalarRelationFilter = {
@@ -50805,14 +61097,22 @@ export namespace Prisma {
     isNot?: PrizeWhereInput
   }
 
-  export type ContestAwardContestIdCategoryCompoundUniqueInput = {
+  export type ContestAwardContestIdTypeTargetRankLimitCompoundUniqueInput = {
     contestId: string
-    category: $Enums.PrizeType
+    type: $Enums.AwardType
+    target: $Enums.AwardTarget
+    rankLimit: number
   }
 
   export type ContestAwardCountOrderByAggregateInput = {
     id?: SortOrder
     category?: SortOrder
+    type?: SortOrder
+    target?: SortOrder
+    rankLimit?: SortOrder
+    slotKey?: SortOrder
+    title?: SortOrder
+    description?: SortOrder
     icon?: SortOrder
     boost?: SortOrder
     swap?: SortOrder
@@ -50825,6 +61125,7 @@ export namespace Prisma {
   }
 
   export type ContestAwardAvgOrderByAggregateInput = {
+    rankLimit?: SortOrder
     boost?: SortOrder
     swap?: SortOrder
     key?: SortOrder
@@ -50834,6 +61135,12 @@ export namespace Prisma {
   export type ContestAwardMaxOrderByAggregateInput = {
     id?: SortOrder
     category?: SortOrder
+    type?: SortOrder
+    target?: SortOrder
+    rankLimit?: SortOrder
+    slotKey?: SortOrder
+    title?: SortOrder
+    description?: SortOrder
     icon?: SortOrder
     boost?: SortOrder
     swap?: SortOrder
@@ -50848,6 +61155,12 @@ export namespace Prisma {
   export type ContestAwardMinOrderByAggregateInput = {
     id?: SortOrder
     category?: SortOrder
+    type?: SortOrder
+    target?: SortOrder
+    rankLimit?: SortOrder
+    slotKey?: SortOrder
+    title?: SortOrder
+    description?: SortOrder
     icon?: SortOrder
     boost?: SortOrder
     swap?: SortOrder
@@ -50860,6 +61173,7 @@ export namespace Prisma {
   }
 
   export type ContestAwardSumOrderByAggregateInput = {
+    rankLimit?: SortOrder
     boost?: SortOrder
     swap?: SortOrder
     key?: SortOrder
@@ -50871,14 +61185,22 @@ export namespace Prisma {
     isNot?: RecurringContestWhereInput
   }
 
-  export type RecurringContestAwardRecurringContestIdCategoryCompoundUniqueInput = {
+  export type RecurringContestAwardRecurringContestIdTypeTargetRankLimitCompoundUniqueInput = {
     recurringContestId: string
-    category: $Enums.PrizeType
+    type: $Enums.AwardType
+    target: $Enums.AwardTarget
+    rankLimit: number
   }
 
   export type RecurringContestAwardCountOrderByAggregateInput = {
     id?: SortOrder
     category?: SortOrder
+    type?: SortOrder
+    target?: SortOrder
+    rankLimit?: SortOrder
+    slotKey?: SortOrder
+    title?: SortOrder
+    description?: SortOrder
     icon?: SortOrder
     boost?: SortOrder
     swap?: SortOrder
@@ -50891,6 +61213,7 @@ export namespace Prisma {
   }
 
   export type RecurringContestAwardAvgOrderByAggregateInput = {
+    rankLimit?: SortOrder
     boost?: SortOrder
     swap?: SortOrder
     key?: SortOrder
@@ -50900,6 +61223,12 @@ export namespace Prisma {
   export type RecurringContestAwardMaxOrderByAggregateInput = {
     id?: SortOrder
     category?: SortOrder
+    type?: SortOrder
+    target?: SortOrder
+    rankLimit?: SortOrder
+    slotKey?: SortOrder
+    title?: SortOrder
+    description?: SortOrder
     icon?: SortOrder
     boost?: SortOrder
     swap?: SortOrder
@@ -50914,6 +61243,12 @@ export namespace Prisma {
   export type RecurringContestAwardMinOrderByAggregateInput = {
     id?: SortOrder
     category?: SortOrder
+    type?: SortOrder
+    target?: SortOrder
+    rankLimit?: SortOrder
+    slotKey?: SortOrder
+    title?: SortOrder
+    description?: SortOrder
     icon?: SortOrder
     boost?: SortOrder
     swap?: SortOrder
@@ -50926,10 +61261,26 @@ export namespace Prisma {
   }
 
   export type RecurringContestAwardSumOrderByAggregateInput = {
+    rankLimit?: SortOrder
     boost?: SortOrder
     swap?: SortOrder
     key?: SortOrder
     coin?: SortOrder
+  }
+
+  export type EnumAchievementKindFilter<$PrismaModel = never> = {
+    equals?: $Enums.AchievementKind | EnumAchievementKindFieldRefInput<$PrismaModel>
+    in?: $Enums.AchievementKind[] | ListEnumAchievementKindFieldRefInput<$PrismaModel>
+    notIn?: $Enums.AchievementKind[] | ListEnumAchievementKindFieldRefInput<$PrismaModel>
+    not?: NestedEnumAchievementKindFilter<$PrismaModel> | $Enums.AchievementKind
+  }
+
+  export type EnumContestLevelBadgeNullableFilter<$PrismaModel = never> = {
+    equals?: $Enums.ContestLevelBadge | EnumContestLevelBadgeFieldRefInput<$PrismaModel> | null
+    in?: $Enums.ContestLevelBadge[] | ListEnumContestLevelBadgeFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.ContestLevelBadge[] | ListEnumContestLevelBadgeFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumContestLevelBadgeNullableFilter<$PrismaModel> | $Enums.ContestLevelBadge | null
+    isSet?: boolean
   }
 
   export type ContestPhotoNullableScalarRelationFilter = {
@@ -50945,19 +61296,38 @@ export namespace Prisma {
   export type ContestAchievementCountOrderByAggregateInput = {
     id?: SortOrder
     category?: SortOrder
+    kind?: SortOrder
+    type?: SortOrder
+    target?: SortOrder
+    rankLimit?: SortOrder
+    levelBadge?: SortOrder
+    levelOrder?: SortOrder
     photoId?: SortOrder
     participantId?: SortOrder
     contestId?: SortOrder
+    grantKey?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+  }
+
+  export type ContestAchievementAvgOrderByAggregateInput = {
+    rankLimit?: SortOrder
+    levelOrder?: SortOrder
   }
 
   export type ContestAchievementMaxOrderByAggregateInput = {
     id?: SortOrder
     category?: SortOrder
+    kind?: SortOrder
+    type?: SortOrder
+    target?: SortOrder
+    rankLimit?: SortOrder
+    levelBadge?: SortOrder
+    levelOrder?: SortOrder
     photoId?: SortOrder
     participantId?: SortOrder
     contestId?: SortOrder
+    grantKey?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -50965,11 +61335,416 @@ export namespace Prisma {
   export type ContestAchievementMinOrderByAggregateInput = {
     id?: SortOrder
     category?: SortOrder
+    kind?: SortOrder
+    type?: SortOrder
+    target?: SortOrder
+    rankLimit?: SortOrder
+    levelBadge?: SortOrder
+    levelOrder?: SortOrder
     photoId?: SortOrder
     participantId?: SortOrder
     contestId?: SortOrder
+    grantKey?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+  }
+
+  export type ContestAchievementSumOrderByAggregateInput = {
+    rankLimit?: SortOrder
+    levelOrder?: SortOrder
+  }
+
+  export type EnumAchievementKindWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.AchievementKind | EnumAchievementKindFieldRefInput<$PrismaModel>
+    in?: $Enums.AchievementKind[] | ListEnumAchievementKindFieldRefInput<$PrismaModel>
+    notIn?: $Enums.AchievementKind[] | ListEnumAchievementKindFieldRefInput<$PrismaModel>
+    not?: NestedEnumAchievementKindWithAggregatesFilter<$PrismaModel> | $Enums.AchievementKind
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumAchievementKindFilter<$PrismaModel>
+    _max?: NestedEnumAchievementKindFilter<$PrismaModel>
+  }
+
+  export type EnumContestLevelBadgeNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ContestLevelBadge | EnumContestLevelBadgeFieldRefInput<$PrismaModel> | null
+    in?: $Enums.ContestLevelBadge[] | ListEnumContestLevelBadgeFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.ContestLevelBadge[] | ListEnumContestLevelBadgeFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumContestLevelBadgeNullableWithAggregatesFilter<$PrismaModel> | $Enums.ContestLevelBadge | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedEnumContestLevelBadgeNullableFilter<$PrismaModel>
+    _max?: NestedEnumContestLevelBadgeNullableFilter<$PrismaModel>
+    isSet?: boolean
+  }
+
+  export type EnumContestFinalizationStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.ContestFinalizationStatus | EnumContestFinalizationStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.ContestFinalizationStatus[] | ListEnumContestFinalizationStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ContestFinalizationStatus[] | ListEnumContestFinalizationStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumContestFinalizationStatusFilter<$PrismaModel> | $Enums.ContestFinalizationStatus
+  }
+
+  export type ContestFinalizationCountOrderByAggregateInput = {
+    id?: SortOrder
+    contestId?: SortOrder
+    status?: SortOrder
+    attemptCount?: SortOrder
+    scoringVersion?: SortOrder
+    startedAt?: SortOrder
+    completedAt?: SortOrder
+    error?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ContestFinalizationAvgOrderByAggregateInput = {
+    attemptCount?: SortOrder
+    scoringVersion?: SortOrder
+  }
+
+  export type ContestFinalizationMaxOrderByAggregateInput = {
+    id?: SortOrder
+    contestId?: SortOrder
+    status?: SortOrder
+    attemptCount?: SortOrder
+    scoringVersion?: SortOrder
+    startedAt?: SortOrder
+    completedAt?: SortOrder
+    error?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ContestFinalizationMinOrderByAggregateInput = {
+    id?: SortOrder
+    contestId?: SortOrder
+    status?: SortOrder
+    attemptCount?: SortOrder
+    scoringVersion?: SortOrder
+    startedAt?: SortOrder
+    completedAt?: SortOrder
+    error?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ContestFinalizationSumOrderByAggregateInput = {
+    attemptCount?: SortOrder
+    scoringVersion?: SortOrder
+  }
+
+  export type EnumContestFinalizationStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ContestFinalizationStatus | EnumContestFinalizationStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.ContestFinalizationStatus[] | ListEnumContestFinalizationStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ContestFinalizationStatus[] | ListEnumContestFinalizationStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumContestFinalizationStatusWithAggregatesFilter<$PrismaModel> | $Enums.ContestFinalizationStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumContestFinalizationStatusFilter<$PrismaModel>
+    _max?: NestedEnumContestFinalizationStatusFilter<$PrismaModel>
+  }
+
+  export type EnumContestRankingScopeFilter<$PrismaModel = never> = {
+    equals?: $Enums.ContestRankingScope | EnumContestRankingScopeFieldRefInput<$PrismaModel>
+    in?: $Enums.ContestRankingScope[] | ListEnumContestRankingScopeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ContestRankingScope[] | ListEnumContestRankingScopeFieldRefInput<$PrismaModel>
+    not?: NestedEnumContestRankingScopeFilter<$PrismaModel> | $Enums.ContestRankingScope
+  }
+
+  export type EnumYCLevelNullableFilter<$PrismaModel = never> = {
+    equals?: $Enums.YCLevel | EnumYCLevelFieldRefInput<$PrismaModel> | null
+    in?: $Enums.YCLevel[] | ListEnumYCLevelFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.YCLevel[] | ListEnumYCLevelFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumYCLevelNullableFilter<$PrismaModel> | $Enums.YCLevel | null
+    isSet?: boolean
+  }
+
+  export type ContestRankingResultContestIdScopeRankCompoundUniqueInput = {
+    contestId: string
+    scope: $Enums.ContestRankingScope
+    rank: number
+  }
+
+  export type ContestRankingResultCountOrderByAggregateInput = {
+    id?: SortOrder
+    resultKey?: SortOrder
+    contestId?: SortOrder
+    scope?: SortOrder
+    participantId?: SortOrder
+    photoId?: SortOrder
+    score?: SortOrder
+    rank?: SortOrder
+    level?: SortOrder
+    tieBreakKey?: SortOrder
+    scoringVersion?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ContestRankingResultAvgOrderByAggregateInput = {
+    score?: SortOrder
+    rank?: SortOrder
+    scoringVersion?: SortOrder
+  }
+
+  export type ContestRankingResultMaxOrderByAggregateInput = {
+    id?: SortOrder
+    resultKey?: SortOrder
+    contestId?: SortOrder
+    scope?: SortOrder
+    participantId?: SortOrder
+    photoId?: SortOrder
+    score?: SortOrder
+    rank?: SortOrder
+    level?: SortOrder
+    tieBreakKey?: SortOrder
+    scoringVersion?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ContestRankingResultMinOrderByAggregateInput = {
+    id?: SortOrder
+    resultKey?: SortOrder
+    contestId?: SortOrder
+    scope?: SortOrder
+    participantId?: SortOrder
+    photoId?: SortOrder
+    score?: SortOrder
+    rank?: SortOrder
+    level?: SortOrder
+    tieBreakKey?: SortOrder
+    scoringVersion?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ContestRankingResultSumOrderByAggregateInput = {
+    score?: SortOrder
+    rank?: SortOrder
+    scoringVersion?: SortOrder
+  }
+
+  export type EnumContestRankingScopeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ContestRankingScope | EnumContestRankingScopeFieldRefInput<$PrismaModel>
+    in?: $Enums.ContestRankingScope[] | ListEnumContestRankingScopeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ContestRankingScope[] | ListEnumContestRankingScopeFieldRefInput<$PrismaModel>
+    not?: NestedEnumContestRankingScopeWithAggregatesFilter<$PrismaModel> | $Enums.ContestRankingScope
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumContestRankingScopeFilter<$PrismaModel>
+    _max?: NestedEnumContestRankingScopeFilter<$PrismaModel>
+  }
+
+  export type EnumYCLevelNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.YCLevel | EnumYCLevelFieldRefInput<$PrismaModel> | null
+    in?: $Enums.YCLevel[] | ListEnumYCLevelFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.YCLevel[] | ListEnumYCLevelFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumYCLevelNullableWithAggregatesFilter<$PrismaModel> | $Enums.YCLevel | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedEnumYCLevelNullableFilter<$PrismaModel>
+    _max?: NestedEnumYCLevelNullableFilter<$PrismaModel>
+    isSet?: boolean
+  }
+
+  export type EnumContestGrantStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.ContestGrantStatus | EnumContestGrantStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.ContestGrantStatus[] | ListEnumContestGrantStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ContestGrantStatus[] | ListEnumContestGrantStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumContestGrantStatusFilter<$PrismaModel> | $Enums.ContestGrantStatus
+  }
+
+  export type ContestAwardGrantCountOrderByAggregateInput = {
+    id?: SortOrder
+    grantKey?: SortOrder
+    contestId?: SortOrder
+    contestAwardId?: SortOrder
+    participantId?: SortOrder
+    userId?: SortOrder
+    photoId?: SortOrder
+    category?: SortOrder
+    kind?: SortOrder
+    type?: SortOrder
+    target?: SortOrder
+    rankLimit?: SortOrder
+    levelBadge?: SortOrder
+    levelOrder?: SortOrder
+    rank?: SortOrder
+    keyReward?: SortOrder
+    boostReward?: SortOrder
+    swapReward?: SortOrder
+    coinReward?: SortOrder
+    status?: SortOrder
+    error?: SortOrder
+    processedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ContestAwardGrantAvgOrderByAggregateInput = {
+    rankLimit?: SortOrder
+    levelOrder?: SortOrder
+    rank?: SortOrder
+    keyReward?: SortOrder
+    boostReward?: SortOrder
+    swapReward?: SortOrder
+    coinReward?: SortOrder
+  }
+
+  export type ContestAwardGrantMaxOrderByAggregateInput = {
+    id?: SortOrder
+    grantKey?: SortOrder
+    contestId?: SortOrder
+    contestAwardId?: SortOrder
+    participantId?: SortOrder
+    userId?: SortOrder
+    photoId?: SortOrder
+    category?: SortOrder
+    kind?: SortOrder
+    type?: SortOrder
+    target?: SortOrder
+    rankLimit?: SortOrder
+    levelBadge?: SortOrder
+    levelOrder?: SortOrder
+    rank?: SortOrder
+    keyReward?: SortOrder
+    boostReward?: SortOrder
+    swapReward?: SortOrder
+    coinReward?: SortOrder
+    status?: SortOrder
+    error?: SortOrder
+    processedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ContestAwardGrantMinOrderByAggregateInput = {
+    id?: SortOrder
+    grantKey?: SortOrder
+    contestId?: SortOrder
+    contestAwardId?: SortOrder
+    participantId?: SortOrder
+    userId?: SortOrder
+    photoId?: SortOrder
+    category?: SortOrder
+    kind?: SortOrder
+    type?: SortOrder
+    target?: SortOrder
+    rankLimit?: SortOrder
+    levelBadge?: SortOrder
+    levelOrder?: SortOrder
+    rank?: SortOrder
+    keyReward?: SortOrder
+    boostReward?: SortOrder
+    swapReward?: SortOrder
+    coinReward?: SortOrder
+    status?: SortOrder
+    error?: SortOrder
+    processedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ContestAwardGrantSumOrderByAggregateInput = {
+    rankLimit?: SortOrder
+    levelOrder?: SortOrder
+    rank?: SortOrder
+    keyReward?: SortOrder
+    boostReward?: SortOrder
+    swapReward?: SortOrder
+    coinReward?: SortOrder
+  }
+
+  export type EnumContestGrantStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ContestGrantStatus | EnumContestGrantStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.ContestGrantStatus[] | ListEnumContestGrantStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ContestGrantStatus[] | ListEnumContestGrantStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumContestGrantStatusWithAggregatesFilter<$PrismaModel> | $Enums.ContestGrantStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumContestGrantStatusFilter<$PrismaModel>
+    _max?: NestedEnumContestGrantStatusFilter<$PrismaModel>
+  }
+
+  export type ContestAwardSelectionCountOrderByAggregateInput = {
+    id?: SortOrder
+    selectionKey?: SortOrder
+    contestId?: SortOrder
+    contestAwardId?: SortOrder
+    slotKey?: SortOrder
+    photoId?: SortOrder
+    participantId?: SortOrder
+    selectedById?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ContestAwardSelectionMaxOrderByAggregateInput = {
+    id?: SortOrder
+    selectionKey?: SortOrder
+    contestId?: SortOrder
+    contestAwardId?: SortOrder
+    slotKey?: SortOrder
+    photoId?: SortOrder
+    participantId?: SortOrder
+    selectedById?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ContestAwardSelectionMinOrderByAggregateInput = {
+    id?: SortOrder
+    selectionKey?: SortOrder
+    contestId?: SortOrder
+    contestAwardId?: SortOrder
+    slotKey?: SortOrder
+    photoId?: SortOrder
+    participantId?: SortOrder
+    selectedById?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ContestRewardTransactionCountOrderByAggregateInput = {
+    id?: SortOrder
+    grantId?: SortOrder
+    userId?: SortOrder
+    key?: SortOrder
+    boost?: SortOrder
+    swap?: SortOrder
+    coin?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type ContestRewardTransactionAvgOrderByAggregateInput = {
+    key?: SortOrder
+    boost?: SortOrder
+    swap?: SortOrder
+    coin?: SortOrder
+  }
+
+  export type ContestRewardTransactionMaxOrderByAggregateInput = {
+    id?: SortOrder
+    grantId?: SortOrder
+    userId?: SortOrder
+    key?: SortOrder
+    boost?: SortOrder
+    swap?: SortOrder
+    coin?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type ContestRewardTransactionMinOrderByAggregateInput = {
+    id?: SortOrder
+    grantId?: SortOrder
+    userId?: SortOrder
+    key?: SortOrder
+    boost?: SortOrder
+    swap?: SortOrder
+    coin?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type ContestRewardTransactionSumOrderByAggregateInput = {
+    key?: SortOrder
+    boost?: SortOrder
+    swap?: SortOrder
+    coin?: SortOrder
   }
 
   export type EnumNotificationTypeFilter<$PrismaModel = never> = {
@@ -52317,6 +63092,17 @@ export namespace Prisma {
     not?: NestedEnumVoteTypeFilter<$PrismaModel> | $Enums.VoteType
   }
 
+  export type ContestPhotoScalarRelationFilter = {
+    is?: ContestPhotoWhereInput
+    isNot?: ContestPhotoWhereInput
+  }
+
+  export type VoteProviderIdContestIdPhotoIdCompoundUniqueInput = {
+    providerId: string
+    contestId: string
+    photoId: string
+  }
+
   export type VoteCountOrderByAggregateInput = {
     id?: SortOrder
     providerId?: SortOrder
@@ -52324,12 +63110,14 @@ export namespace Prisma {
     contestId?: SortOrder
     type?: SortOrder
     power?: SortOrder
+    weight?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
 
   export type VoteAvgOrderByAggregateInput = {
     power?: SortOrder
+    weight?: SortOrder
   }
 
   export type VoteMaxOrderByAggregateInput = {
@@ -52339,6 +63127,7 @@ export namespace Prisma {
     contestId?: SortOrder
     type?: SortOrder
     power?: SortOrder
+    weight?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -52350,12 +63139,14 @@ export namespace Prisma {
     contestId?: SortOrder
     type?: SortOrder
     power?: SortOrder
+    weight?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
 
   export type VoteSumOrderByAggregateInput = {
     power?: SortOrder
+    weight?: SortOrder
   }
 
   export type EnumVoteTypeWithAggregatesFilter<$PrismaModel = never> = {
@@ -52468,10 +63259,6 @@ export namespace Prisma {
     _max?: NestedEnumLevelNameFilter<$PrismaModel>
   }
 
-  export type ContestCreatelevel_requirementsInput = {
-    set: number[]
-  }
-
   export type UserCreateNestedOneWithoutCreatedContestsInput = {
     create?: XOR<UserCreateWithoutCreatedContestsInput, UserUncheckedCreateWithoutCreatedContestsInput>
     connectOrCreate?: UserCreateOrConnectWithoutCreatedContestsInput
@@ -52504,6 +63291,13 @@ export namespace Prisma {
     connectOrCreate?: ContestRuleCreateOrConnectWithoutContestInput | ContestRuleCreateOrConnectWithoutContestInput[]
     createMany?: ContestRuleCreateManyContestInputEnvelope
     connect?: ContestRuleWhereUniqueInput | ContestRuleWhereUniqueInput[]
+  }
+
+  export type ContestRuleConfigCreateNestedManyWithoutContestInput = {
+    create?: XOR<ContestRuleConfigCreateWithoutContestInput, ContestRuleConfigUncheckedCreateWithoutContestInput> | ContestRuleConfigCreateWithoutContestInput[] | ContestRuleConfigUncheckedCreateWithoutContestInput[]
+    connectOrCreate?: ContestRuleConfigCreateOrConnectWithoutContestInput | ContestRuleConfigCreateOrConnectWithoutContestInput[]
+    createMany?: ContestRuleConfigCreateManyContestInputEnvelope
+    connect?: ContestRuleConfigWhereUniqueInput | ContestRuleConfigWhereUniqueInput[]
   }
 
   export type ContestPrizeCreateNestedManyWithoutContestInput = {
@@ -52568,6 +63362,13 @@ export namespace Prisma {
     connect?: ContestRuleWhereUniqueInput | ContestRuleWhereUniqueInput[]
   }
 
+  export type ContestRuleConfigUncheckedCreateNestedManyWithoutContestInput = {
+    create?: XOR<ContestRuleConfigCreateWithoutContestInput, ContestRuleConfigUncheckedCreateWithoutContestInput> | ContestRuleConfigCreateWithoutContestInput[] | ContestRuleConfigUncheckedCreateWithoutContestInput[]
+    connectOrCreate?: ContestRuleConfigCreateOrConnectWithoutContestInput | ContestRuleConfigCreateOrConnectWithoutContestInput[]
+    createMany?: ContestRuleConfigCreateManyContestInputEnvelope
+    connect?: ContestRuleConfigWhereUniqueInput | ContestRuleConfigWhereUniqueInput[]
+  }
+
   export type ContestPrizeUncheckedCreateNestedManyWithoutContestInput = {
     create?: XOR<ContestPrizeCreateWithoutContestInput, ContestPrizeUncheckedCreateWithoutContestInput> | ContestPrizeCreateWithoutContestInput[] | ContestPrizeUncheckedCreateWithoutContestInput[]
     connectOrCreate?: ContestPrizeCreateOrConnectWithoutContestInput | ContestPrizeCreateOrConnectWithoutContestInput[]
@@ -52609,18 +63410,6 @@ export namespace Prisma {
     set?: $Enums.ContestStatus
   }
 
-  export type EnumContestModeFieldUpdateOperationsInput = {
-    set?: $Enums.ContestMode
-  }
-
-  export type IntFieldUpdateOperationsInput = {
-    set?: number
-    increment?: number
-    decrement?: number
-    multiply?: number
-    divide?: number
-  }
-
   export type BoolFieldUpdateOperationsInput = {
     set?: boolean
   }
@@ -52634,11 +63423,6 @@ export namespace Prisma {
     unset?: boolean
   }
 
-  export type ContestUpdatelevel_requirementsInput = {
-    set?: number[]
-    push?: number | number[]
-  }
-
   export type DateTimeFieldUpdateOperationsInput = {
     set?: Date | string
   }
@@ -52646,6 +63430,14 @@ export namespace Prisma {
   export type NullableDateTimeFieldUpdateOperationsInput = {
     set?: Date | string | null
     unset?: boolean
+  }
+
+  export type IntFieldUpdateOperationsInput = {
+    set?: number
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
   }
 
   export type UserUpdateOneRequiredWithoutCreatedContestsNestedInput = {
@@ -52710,6 +63502,20 @@ export namespace Prisma {
     update?: ContestRuleUpdateWithWhereUniqueWithoutContestInput | ContestRuleUpdateWithWhereUniqueWithoutContestInput[]
     updateMany?: ContestRuleUpdateManyWithWhereWithoutContestInput | ContestRuleUpdateManyWithWhereWithoutContestInput[]
     deleteMany?: ContestRuleScalarWhereInput | ContestRuleScalarWhereInput[]
+  }
+
+  export type ContestRuleConfigUpdateManyWithoutContestNestedInput = {
+    create?: XOR<ContestRuleConfigCreateWithoutContestInput, ContestRuleConfigUncheckedCreateWithoutContestInput> | ContestRuleConfigCreateWithoutContestInput[] | ContestRuleConfigUncheckedCreateWithoutContestInput[]
+    connectOrCreate?: ContestRuleConfigCreateOrConnectWithoutContestInput | ContestRuleConfigCreateOrConnectWithoutContestInput[]
+    upsert?: ContestRuleConfigUpsertWithWhereUniqueWithoutContestInput | ContestRuleConfigUpsertWithWhereUniqueWithoutContestInput[]
+    createMany?: ContestRuleConfigCreateManyContestInputEnvelope
+    set?: ContestRuleConfigWhereUniqueInput | ContestRuleConfigWhereUniqueInput[]
+    disconnect?: ContestRuleConfigWhereUniqueInput | ContestRuleConfigWhereUniqueInput[]
+    delete?: ContestRuleConfigWhereUniqueInput | ContestRuleConfigWhereUniqueInput[]
+    connect?: ContestRuleConfigWhereUniqueInput | ContestRuleConfigWhereUniqueInput[]
+    update?: ContestRuleConfigUpdateWithWhereUniqueWithoutContestInput | ContestRuleConfigUpdateWithWhereUniqueWithoutContestInput[]
+    updateMany?: ContestRuleConfigUpdateManyWithWhereWithoutContestInput | ContestRuleConfigUpdateManyWithWhereWithoutContestInput[]
+    deleteMany?: ContestRuleConfigScalarWhereInput | ContestRuleConfigScalarWhereInput[]
   }
 
   export type ContestPrizeUpdateManyWithoutContestNestedInput = {
@@ -52834,6 +63640,20 @@ export namespace Prisma {
     deleteMany?: ContestRuleScalarWhereInput | ContestRuleScalarWhereInput[]
   }
 
+  export type ContestRuleConfigUncheckedUpdateManyWithoutContestNestedInput = {
+    create?: XOR<ContestRuleConfigCreateWithoutContestInput, ContestRuleConfigUncheckedCreateWithoutContestInput> | ContestRuleConfigCreateWithoutContestInput[] | ContestRuleConfigUncheckedCreateWithoutContestInput[]
+    connectOrCreate?: ContestRuleConfigCreateOrConnectWithoutContestInput | ContestRuleConfigCreateOrConnectWithoutContestInput[]
+    upsert?: ContestRuleConfigUpsertWithWhereUniqueWithoutContestInput | ContestRuleConfigUpsertWithWhereUniqueWithoutContestInput[]
+    createMany?: ContestRuleConfigCreateManyContestInputEnvelope
+    set?: ContestRuleConfigWhereUniqueInput | ContestRuleConfigWhereUniqueInput[]
+    disconnect?: ContestRuleConfigWhereUniqueInput | ContestRuleConfigWhereUniqueInput[]
+    delete?: ContestRuleConfigWhereUniqueInput | ContestRuleConfigWhereUniqueInput[]
+    connect?: ContestRuleConfigWhereUniqueInput | ContestRuleConfigWhereUniqueInput[]
+    update?: ContestRuleConfigUpdateWithWhereUniqueWithoutContestInput | ContestRuleConfigUpdateWithWhereUniqueWithoutContestInput[]
+    updateMany?: ContestRuleConfigUpdateManyWithWhereWithoutContestInput | ContestRuleConfigUpdateManyWithWhereWithoutContestInput[]
+    deleteMany?: ContestRuleConfigScalarWhereInput | ContestRuleConfigScalarWhereInput[]
+  }
+
   export type ContestPrizeUncheckedUpdateManyWithoutContestNestedInput = {
     create?: XOR<ContestPrizeCreateWithoutContestInput, ContestPrizeUncheckedCreateWithoutContestInput> | ContestPrizeCreateWithoutContestInput[] | ContestPrizeUncheckedCreateWithoutContestInput[]
     connectOrCreate?: ContestPrizeCreateOrConnectWithoutContestInput | ContestPrizeCreateOrConnectWithoutContestInput[]
@@ -52890,10 +63710,6 @@ export namespace Prisma {
     deleteMany?: TeamMatchScalarWhereInput | TeamMatchScalarWhereInput[]
   }
 
-  export type RecurringContestCreatelevel_requirementsInput = {
-    set: number[]
-  }
-
   export type RecurringDataCreateEnvelopeInput = {
     set?: RecurringDataCreateInput
   }
@@ -52931,11 +63747,6 @@ export namespace Prisma {
     connectOrCreate?: ContestCreateOrConnectWithoutRecurringContestInput | ContestCreateOrConnectWithoutRecurringContestInput[]
     createMany?: ContestCreateManyRecurringContestInputEnvelope
     connect?: ContestWhereUniqueInput | ContestWhereUniqueInput[]
-  }
-
-  export type RecurringContestUpdatelevel_requirementsInput = {
-    set?: number[]
-    push?: number | number[]
   }
 
   export type EnumRecurringContestStatusFieldUpdateOperationsInput = {
@@ -53003,6 +63814,10 @@ export namespace Prisma {
     deleteMany?: ContestScalarWhereInput | ContestScalarWhereInput[]
   }
 
+  export type EnumContestOccurrenceStatusFieldUpdateOperationsInput = {
+    set?: $Enums.ContestOccurrenceStatus
+  }
+
   export type ContestAwardCreateNestedManyWithoutPrizeInput = {
     create?: XOR<ContestAwardCreateWithoutPrizeInput, ContestAwardUncheckedCreateWithoutPrizeInput> | ContestAwardCreateWithoutPrizeInput[] | ContestAwardUncheckedCreateWithoutPrizeInput[]
     connectOrCreate?: ContestAwardCreateOrConnectWithoutPrizeInput | ContestAwardCreateOrConnectWithoutPrizeInput[]
@@ -53033,6 +63848,16 @@ export namespace Prisma {
 
   export type EnumPrizeTypeFieldUpdateOperationsInput = {
     set?: $Enums.PrizeType
+  }
+
+  export type NullableEnumAwardTypeFieldUpdateOperationsInput = {
+    set?: $Enums.AwardType | null
+    unset?: boolean
+  }
+
+  export type NullableEnumAwardTargetFieldUpdateOperationsInput = {
+    set?: $Enums.AwardTarget | null
+    unset?: boolean
   }
 
   export type ContestAwardUpdateManyWithoutPrizeNestedInput = {
@@ -53105,6 +63930,20 @@ export namespace Prisma {
     update?: XOR<XOR<ContestUpdateToOneWithWhereWithoutContestRulesInput, ContestUpdateWithoutContestRulesInput>, ContestUncheckedUpdateWithoutContestRulesInput>
   }
 
+  export type ContestCreateNestedOneWithoutRuleConfigsInput = {
+    create?: XOR<ContestCreateWithoutRuleConfigsInput, ContestUncheckedCreateWithoutRuleConfigsInput>
+    connectOrCreate?: ContestCreateOrConnectWithoutRuleConfigsInput
+    connect?: ContestWhereUniqueInput
+  }
+
+  export type ContestUpdateOneRequiredWithoutRuleConfigsNestedInput = {
+    create?: XOR<ContestCreateWithoutRuleConfigsInput, ContestUncheckedCreateWithoutRuleConfigsInput>
+    connectOrCreate?: ContestCreateOrConnectWithoutRuleConfigsInput
+    upsert?: ContestUpsertWithoutRuleConfigsInput
+    connect?: ContestWhereUniqueInput
+    update?: XOR<XOR<ContestUpdateToOneWithWhereWithoutRuleConfigsInput, ContestUpdateWithoutRuleConfigsInput>, ContestUncheckedUpdateWithoutRuleConfigsInput>
+  }
+
   export type ContestParticipantCreateNestedOneWithoutPhotosInput = {
     create?: XOR<ContestParticipantCreateWithoutPhotosInput, ContestParticipantUncheckedCreateWithoutPhotosInput>
     connectOrCreate?: ContestParticipantCreateOrConnectWithoutPhotosInput
@@ -53138,13 +63977,6 @@ export namespace Prisma {
     connect?: ContestAchievementWhereUniqueInput | ContestAchievementWhereUniqueInput[]
   }
 
-  export type ContestWinnerCreateNestedManyWithoutPhotoInput = {
-    create?: XOR<ContestWinnerCreateWithoutPhotoInput, ContestWinnerUncheckedCreateWithoutPhotoInput> | ContestWinnerCreateWithoutPhotoInput[] | ContestWinnerUncheckedCreateWithoutPhotoInput[]
-    connectOrCreate?: ContestWinnerCreateOrConnectWithoutPhotoInput | ContestWinnerCreateOrConnectWithoutPhotoInput[]
-    createMany?: ContestWinnerCreateManyPhotoInputEnvelope
-    connect?: ContestWinnerWhereUniqueInput | ContestWinnerWhereUniqueInput[]
-  }
-
   export type VoteUncheckedCreateNestedManyWithoutPhotoInput = {
     create?: XOR<VoteCreateWithoutPhotoInput, VoteUncheckedCreateWithoutPhotoInput> | VoteCreateWithoutPhotoInput[] | VoteUncheckedCreateWithoutPhotoInput[]
     connectOrCreate?: VoteCreateOrConnectWithoutPhotoInput | VoteCreateOrConnectWithoutPhotoInput[]
@@ -53164,13 +63996,6 @@ export namespace Prisma {
     connectOrCreate?: ContestAchievementCreateOrConnectWithoutPhotoInput | ContestAchievementCreateOrConnectWithoutPhotoInput[]
     createMany?: ContestAchievementCreateManyPhotoInputEnvelope
     connect?: ContestAchievementWhereUniqueInput | ContestAchievementWhereUniqueInput[]
-  }
-
-  export type ContestWinnerUncheckedCreateNestedManyWithoutPhotoInput = {
-    create?: XOR<ContestWinnerCreateWithoutPhotoInput, ContestWinnerUncheckedCreateWithoutPhotoInput> | ContestWinnerCreateWithoutPhotoInput[] | ContestWinnerUncheckedCreateWithoutPhotoInput[]
-    connectOrCreate?: ContestWinnerCreateOrConnectWithoutPhotoInput | ContestWinnerCreateOrConnectWithoutPhotoInput[]
-    createMany?: ContestWinnerCreateManyPhotoInputEnvelope
-    connect?: ContestWinnerWhereUniqueInput | ContestWinnerWhereUniqueInput[]
   }
 
   export type ContestParticipantUpdateOneRequiredWithoutPhotosNestedInput = {
@@ -53231,20 +64056,6 @@ export namespace Prisma {
     deleteMany?: ContestAchievementScalarWhereInput | ContestAchievementScalarWhereInput[]
   }
 
-  export type ContestWinnerUpdateManyWithoutPhotoNestedInput = {
-    create?: XOR<ContestWinnerCreateWithoutPhotoInput, ContestWinnerUncheckedCreateWithoutPhotoInput> | ContestWinnerCreateWithoutPhotoInput[] | ContestWinnerUncheckedCreateWithoutPhotoInput[]
-    connectOrCreate?: ContestWinnerCreateOrConnectWithoutPhotoInput | ContestWinnerCreateOrConnectWithoutPhotoInput[]
-    upsert?: ContestWinnerUpsertWithWhereUniqueWithoutPhotoInput | ContestWinnerUpsertWithWhereUniqueWithoutPhotoInput[]
-    createMany?: ContestWinnerCreateManyPhotoInputEnvelope
-    set?: ContestWinnerWhereUniqueInput | ContestWinnerWhereUniqueInput[]
-    disconnect?: ContestWinnerWhereUniqueInput | ContestWinnerWhereUniqueInput[]
-    delete?: ContestWinnerWhereUniqueInput | ContestWinnerWhereUniqueInput[]
-    connect?: ContestWinnerWhereUniqueInput | ContestWinnerWhereUniqueInput[]
-    update?: ContestWinnerUpdateWithWhereUniqueWithoutPhotoInput | ContestWinnerUpdateWithWhereUniqueWithoutPhotoInput[]
-    updateMany?: ContestWinnerUpdateManyWithWhereWithoutPhotoInput | ContestWinnerUpdateManyWithWhereWithoutPhotoInput[]
-    deleteMany?: ContestWinnerScalarWhereInput | ContestWinnerScalarWhereInput[]
-  }
-
   export type VoteUncheckedUpdateManyWithoutPhotoNestedInput = {
     create?: XOR<VoteCreateWithoutPhotoInput, VoteUncheckedCreateWithoutPhotoInput> | VoteCreateWithoutPhotoInput[] | VoteUncheckedCreateWithoutPhotoInput[]
     connectOrCreate?: VoteCreateOrConnectWithoutPhotoInput | VoteCreateOrConnectWithoutPhotoInput[]
@@ -53287,48 +64098,6 @@ export namespace Prisma {
     deleteMany?: ContestAchievementScalarWhereInput | ContestAchievementScalarWhereInput[]
   }
 
-  export type ContestWinnerUncheckedUpdateManyWithoutPhotoNestedInput = {
-    create?: XOR<ContestWinnerCreateWithoutPhotoInput, ContestWinnerUncheckedCreateWithoutPhotoInput> | ContestWinnerCreateWithoutPhotoInput[] | ContestWinnerUncheckedCreateWithoutPhotoInput[]
-    connectOrCreate?: ContestWinnerCreateOrConnectWithoutPhotoInput | ContestWinnerCreateOrConnectWithoutPhotoInput[]
-    upsert?: ContestWinnerUpsertWithWhereUniqueWithoutPhotoInput | ContestWinnerUpsertWithWhereUniqueWithoutPhotoInput[]
-    createMany?: ContestWinnerCreateManyPhotoInputEnvelope
-    set?: ContestWinnerWhereUniqueInput | ContestWinnerWhereUniqueInput[]
-    disconnect?: ContestWinnerWhereUniqueInput | ContestWinnerWhereUniqueInput[]
-    delete?: ContestWinnerWhereUniqueInput | ContestWinnerWhereUniqueInput[]
-    connect?: ContestWinnerWhereUniqueInput | ContestWinnerWhereUniqueInput[]
-    update?: ContestWinnerUpdateWithWhereUniqueWithoutPhotoInput | ContestWinnerUpdateWithWhereUniqueWithoutPhotoInput[]
-    updateMany?: ContestWinnerUpdateManyWithWhereWithoutPhotoInput | ContestWinnerUpdateManyWithWhereWithoutPhotoInput[]
-    deleteMany?: ContestWinnerScalarWhereInput | ContestWinnerScalarWhereInput[]
-  }
-
-  export type ContestParticipantCreateNestedOneWithoutContestWinnerInput = {
-    create?: XOR<ContestParticipantCreateWithoutContestWinnerInput, ContestParticipantUncheckedCreateWithoutContestWinnerInput>
-    connectOrCreate?: ContestParticipantCreateOrConnectWithoutContestWinnerInput
-    connect?: ContestParticipantWhereUniqueInput
-  }
-
-  export type ContestPhotoCreateNestedOneWithoutContestWinnerInput = {
-    create?: XOR<ContestPhotoCreateWithoutContestWinnerInput, ContestPhotoUncheckedCreateWithoutContestWinnerInput>
-    connectOrCreate?: ContestPhotoCreateOrConnectWithoutContestWinnerInput
-    connect?: ContestPhotoWhereUniqueInput
-  }
-
-  export type ContestParticipantUpdateOneRequiredWithoutContestWinnerNestedInput = {
-    create?: XOR<ContestParticipantCreateWithoutContestWinnerInput, ContestParticipantUncheckedCreateWithoutContestWinnerInput>
-    connectOrCreate?: ContestParticipantCreateOrConnectWithoutContestWinnerInput
-    upsert?: ContestParticipantUpsertWithoutContestWinnerInput
-    connect?: ContestParticipantWhereUniqueInput
-    update?: XOR<XOR<ContestParticipantUpdateToOneWithWhereWithoutContestWinnerInput, ContestParticipantUpdateWithoutContestWinnerInput>, ContestParticipantUncheckedUpdateWithoutContestWinnerInput>
-  }
-
-  export type ContestPhotoUpdateOneRequiredWithoutContestWinnerNestedInput = {
-    create?: XOR<ContestPhotoCreateWithoutContestWinnerInput, ContestPhotoUncheckedCreateWithoutContestWinnerInput>
-    connectOrCreate?: ContestPhotoCreateOrConnectWithoutContestWinnerInput
-    upsert?: ContestPhotoUpsertWithoutContestWinnerInput
-    connect?: ContestPhotoWhereUniqueInput
-    update?: XOR<XOR<ContestPhotoUpdateToOneWithWhereWithoutContestWinnerInput, ContestPhotoUpdateWithoutContestWinnerInput>, ContestPhotoUncheckedUpdateWithoutContestWinnerInput>
-  }
-
   export type ContestCreateNestedOneWithoutParticipantsInput = {
     create?: XOR<ContestCreateWithoutParticipantsInput, ContestUncheckedCreateWithoutParticipantsInput>
     connectOrCreate?: ContestCreateOrConnectWithoutParticipantsInput
@@ -53354,13 +64123,6 @@ export namespace Prisma {
     connect?: ContestPhotoWhereUniqueInput | ContestPhotoWhereUniqueInput[]
   }
 
-  export type ContestWinnerCreateNestedManyWithoutParticipantInput = {
-    create?: XOR<ContestWinnerCreateWithoutParticipantInput, ContestWinnerUncheckedCreateWithoutParticipantInput> | ContestWinnerCreateWithoutParticipantInput[] | ContestWinnerUncheckedCreateWithoutParticipantInput[]
-    connectOrCreate?: ContestWinnerCreateOrConnectWithoutParticipantInput | ContestWinnerCreateOrConnectWithoutParticipantInput[]
-    createMany?: ContestWinnerCreateManyParticipantInputEnvelope
-    connect?: ContestWinnerWhereUniqueInput | ContestWinnerWhereUniqueInput[]
-  }
-
   export type ContestAchievementCreateNestedManyWithoutParticipantInput = {
     create?: XOR<ContestAchievementCreateWithoutParticipantInput, ContestAchievementUncheckedCreateWithoutParticipantInput> | ContestAchievementCreateWithoutParticipantInput[] | ContestAchievementUncheckedCreateWithoutParticipantInput[]
     connectOrCreate?: ContestAchievementCreateOrConnectWithoutParticipantInput | ContestAchievementCreateOrConnectWithoutParticipantInput[]
@@ -53373,13 +64135,6 @@ export namespace Prisma {
     connectOrCreate?: ContestPhotoCreateOrConnectWithoutParticipantInput | ContestPhotoCreateOrConnectWithoutParticipantInput[]
     createMany?: ContestPhotoCreateManyParticipantInputEnvelope
     connect?: ContestPhotoWhereUniqueInput | ContestPhotoWhereUniqueInput[]
-  }
-
-  export type ContestWinnerUncheckedCreateNestedManyWithoutParticipantInput = {
-    create?: XOR<ContestWinnerCreateWithoutParticipantInput, ContestWinnerUncheckedCreateWithoutParticipantInput> | ContestWinnerCreateWithoutParticipantInput[] | ContestWinnerUncheckedCreateWithoutParticipantInput[]
-    connectOrCreate?: ContestWinnerCreateOrConnectWithoutParticipantInput | ContestWinnerCreateOrConnectWithoutParticipantInput[]
-    createMany?: ContestWinnerCreateManyParticipantInputEnvelope
-    connect?: ContestWinnerWhereUniqueInput | ContestWinnerWhereUniqueInput[]
   }
 
   export type ContestAchievementUncheckedCreateNestedManyWithoutParticipantInput = {
@@ -53437,20 +64192,6 @@ export namespace Prisma {
     deleteMany?: ContestPhotoScalarWhereInput | ContestPhotoScalarWhereInput[]
   }
 
-  export type ContestWinnerUpdateManyWithoutParticipantNestedInput = {
-    create?: XOR<ContestWinnerCreateWithoutParticipantInput, ContestWinnerUncheckedCreateWithoutParticipantInput> | ContestWinnerCreateWithoutParticipantInput[] | ContestWinnerUncheckedCreateWithoutParticipantInput[]
-    connectOrCreate?: ContestWinnerCreateOrConnectWithoutParticipantInput | ContestWinnerCreateOrConnectWithoutParticipantInput[]
-    upsert?: ContestWinnerUpsertWithWhereUniqueWithoutParticipantInput | ContestWinnerUpsertWithWhereUniqueWithoutParticipantInput[]
-    createMany?: ContestWinnerCreateManyParticipantInputEnvelope
-    set?: ContestWinnerWhereUniqueInput | ContestWinnerWhereUniqueInput[]
-    disconnect?: ContestWinnerWhereUniqueInput | ContestWinnerWhereUniqueInput[]
-    delete?: ContestWinnerWhereUniqueInput | ContestWinnerWhereUniqueInput[]
-    connect?: ContestWinnerWhereUniqueInput | ContestWinnerWhereUniqueInput[]
-    update?: ContestWinnerUpdateWithWhereUniqueWithoutParticipantInput | ContestWinnerUpdateWithWhereUniqueWithoutParticipantInput[]
-    updateMany?: ContestWinnerUpdateManyWithWhereWithoutParticipantInput | ContestWinnerUpdateManyWithWhereWithoutParticipantInput[]
-    deleteMany?: ContestWinnerScalarWhereInput | ContestWinnerScalarWhereInput[]
-  }
-
   export type ContestAchievementUpdateManyWithoutParticipantNestedInput = {
     create?: XOR<ContestAchievementCreateWithoutParticipantInput, ContestAchievementUncheckedCreateWithoutParticipantInput> | ContestAchievementCreateWithoutParticipantInput[] | ContestAchievementUncheckedCreateWithoutParticipantInput[]
     connectOrCreate?: ContestAchievementCreateOrConnectWithoutParticipantInput | ContestAchievementCreateOrConnectWithoutParticipantInput[]
@@ -53477,20 +64218,6 @@ export namespace Prisma {
     update?: ContestPhotoUpdateWithWhereUniqueWithoutParticipantInput | ContestPhotoUpdateWithWhereUniqueWithoutParticipantInput[]
     updateMany?: ContestPhotoUpdateManyWithWhereWithoutParticipantInput | ContestPhotoUpdateManyWithWhereWithoutParticipantInput[]
     deleteMany?: ContestPhotoScalarWhereInput | ContestPhotoScalarWhereInput[]
-  }
-
-  export type ContestWinnerUncheckedUpdateManyWithoutParticipantNestedInput = {
-    create?: XOR<ContestWinnerCreateWithoutParticipantInput, ContestWinnerUncheckedCreateWithoutParticipantInput> | ContestWinnerCreateWithoutParticipantInput[] | ContestWinnerUncheckedCreateWithoutParticipantInput[]
-    connectOrCreate?: ContestWinnerCreateOrConnectWithoutParticipantInput | ContestWinnerCreateOrConnectWithoutParticipantInput[]
-    upsert?: ContestWinnerUpsertWithWhereUniqueWithoutParticipantInput | ContestWinnerUpsertWithWhereUniqueWithoutParticipantInput[]
-    createMany?: ContestWinnerCreateManyParticipantInputEnvelope
-    set?: ContestWinnerWhereUniqueInput | ContestWinnerWhereUniqueInput[]
-    disconnect?: ContestWinnerWhereUniqueInput | ContestWinnerWhereUniqueInput[]
-    delete?: ContestWinnerWhereUniqueInput | ContestWinnerWhereUniqueInput[]
-    connect?: ContestWinnerWhereUniqueInput | ContestWinnerWhereUniqueInput[]
-    update?: ContestWinnerUpdateWithWhereUniqueWithoutParticipantInput | ContestWinnerUpdateWithWhereUniqueWithoutParticipantInput[]
-    updateMany?: ContestWinnerUpdateManyWithWhereWithoutParticipantInput | ContestWinnerUpdateManyWithWhereWithoutParticipantInput[]
-    deleteMany?: ContestWinnerScalarWhereInput | ContestWinnerScalarWhereInput[]
   }
 
   export type ContestAchievementUncheckedUpdateManyWithoutParticipantNestedInput = {
@@ -53595,6 +64322,15 @@ export namespace Prisma {
     connect?: ContestParticipantWhereUniqueInput
   }
 
+  export type EnumAchievementKindFieldUpdateOperationsInput = {
+    set?: $Enums.AchievementKind
+  }
+
+  export type NullableEnumContestLevelBadgeFieldUpdateOperationsInput = {
+    set?: $Enums.ContestLevelBadge | null
+    unset?: boolean
+  }
+
   export type ContestPhotoUpdateOneWithoutAchievementsNestedInput = {
     create?: XOR<ContestPhotoCreateWithoutAchievementsInput, ContestPhotoUncheckedCreateWithoutAchievementsInput>
     connectOrCreate?: ContestPhotoCreateOrConnectWithoutAchievementsInput
@@ -53621,6 +64357,23 @@ export namespace Prisma {
     delete?: ContestParticipantWhereInput | boolean
     connect?: ContestParticipantWhereUniqueInput
     update?: XOR<XOR<ContestParticipantUpdateToOneWithWhereWithoutContestAchievementInput, ContestParticipantUpdateWithoutContestAchievementInput>, ContestParticipantUncheckedUpdateWithoutContestAchievementInput>
+  }
+
+  export type EnumContestFinalizationStatusFieldUpdateOperationsInput = {
+    set?: $Enums.ContestFinalizationStatus
+  }
+
+  export type EnumContestRankingScopeFieldUpdateOperationsInput = {
+    set?: $Enums.ContestRankingScope
+  }
+
+  export type NullableEnumYCLevelFieldUpdateOperationsInput = {
+    set?: $Enums.YCLevel | null
+    unset?: boolean
+  }
+
+  export type EnumContestGrantStatusFieldUpdateOperationsInput = {
+    set?: $Enums.ContestGrantStatus
   }
 
   export type EnumNotificationTypeFieldUpdateOperationsInput = {
@@ -55233,24 +65986,6 @@ export namespace Prisma {
     not?: NestedEnumContestStatusFilter<$PrismaModel> | $Enums.ContestStatus
   }
 
-  export type NestedEnumContestModeFilter<$PrismaModel = never> = {
-    equals?: $Enums.ContestMode | EnumContestModeFieldRefInput<$PrismaModel>
-    in?: $Enums.ContestMode[] | ListEnumContestModeFieldRefInput<$PrismaModel>
-    notIn?: $Enums.ContestMode[] | ListEnumContestModeFieldRefInput<$PrismaModel>
-    not?: NestedEnumContestModeFilter<$PrismaModel> | $Enums.ContestMode
-  }
-
-  export type NestedIntFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel>
-    in?: number[] | ListIntFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntFilter<$PrismaModel> | number
-  }
-
   export type NestedBoolFilter<$PrismaModel = never> = {
     equals?: boolean | BooleanFieldRefInput<$PrismaModel>
     not?: NestedBoolFilter<$PrismaModel> | boolean
@@ -55289,6 +66024,17 @@ export namespace Prisma {
     gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
     isSet?: boolean
+  }
+
+  export type NestedIntFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntFilter<$PrismaModel> | number
   }
 
   export type NestedStringWithAggregatesFilter<$PrismaModel = never> = {
@@ -55334,43 +66080,6 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumContestStatusFilter<$PrismaModel>
     _max?: NestedEnumContestStatusFilter<$PrismaModel>
-  }
-
-  export type NestedEnumContestModeWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.ContestMode | EnumContestModeFieldRefInput<$PrismaModel>
-    in?: $Enums.ContestMode[] | ListEnumContestModeFieldRefInput<$PrismaModel>
-    notIn?: $Enums.ContestMode[] | ListEnumContestModeFieldRefInput<$PrismaModel>
-    not?: NestedEnumContestModeWithAggregatesFilter<$PrismaModel> | $Enums.ContestMode
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumContestModeFilter<$PrismaModel>
-    _max?: NestedEnumContestModeFilter<$PrismaModel>
-  }
-
-  export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel>
-    in?: number[] | ListIntFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
-    _count?: NestedIntFilter<$PrismaModel>
-    _avg?: NestedFloatFilter<$PrismaModel>
-    _sum?: NestedIntFilter<$PrismaModel>
-    _min?: NestedIntFilter<$PrismaModel>
-    _max?: NestedIntFilter<$PrismaModel>
-  }
-
-  export type NestedFloatFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel>
-    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatFilter<$PrismaModel> | number
   }
 
   export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
@@ -55438,17 +66147,32 @@ export namespace Prisma {
     _max?: NestedDateTimeNullableFilter<$PrismaModel>
     isSet?: boolean
   }
-  export type NestedJsonNullableFilter<$PrismaModel = never> =
-    | PatchUndefined<
-        Either<Required<NestedJsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>,
-        Required<NestedJsonNullableFilterBase<$PrismaModel>>
-      >
-    | OptionalFlat<Omit<Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>
 
-  export type NestedJsonNullableFilterBase<$PrismaModel = never> = {
-    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    isSet?: boolean
+  export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedIntFilter<$PrismaModel>
+    _min?: NestedIntFilter<$PrismaModel>
+    _max?: NestedIntFilter<$PrismaModel>
+  }
+
+  export type NestedFloatFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel>
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatFilter<$PrismaModel> | number
   }
 
   export type NestedEnumRecurringContestStatusFilter<$PrismaModel = never> = {
@@ -55488,12 +66212,57 @@ export namespace Prisma {
     equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
     not?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
   }
+  export type NestedJsonNullableFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<NestedJsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>,
+        Required<NestedJsonNullableFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>
+
+  export type NestedJsonNullableFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    isSet?: boolean
+  }
+
+  export type NestedEnumContestOccurrenceStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.ContestOccurrenceStatus | EnumContestOccurrenceStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.ContestOccurrenceStatus[] | ListEnumContestOccurrenceStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ContestOccurrenceStatus[] | ListEnumContestOccurrenceStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumContestOccurrenceStatusFilter<$PrismaModel> | $Enums.ContestOccurrenceStatus
+  }
+
+  export type NestedEnumContestOccurrenceStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ContestOccurrenceStatus | EnumContestOccurrenceStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.ContestOccurrenceStatus[] | ListEnumContestOccurrenceStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ContestOccurrenceStatus[] | ListEnumContestOccurrenceStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumContestOccurrenceStatusWithAggregatesFilter<$PrismaModel> | $Enums.ContestOccurrenceStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumContestOccurrenceStatusFilter<$PrismaModel>
+    _max?: NestedEnumContestOccurrenceStatusFilter<$PrismaModel>
+  }
 
   export type NestedEnumPrizeTypeFilter<$PrismaModel = never> = {
     equals?: $Enums.PrizeType | EnumPrizeTypeFieldRefInput<$PrismaModel>
     in?: $Enums.PrizeType[] | ListEnumPrizeTypeFieldRefInput<$PrismaModel>
     notIn?: $Enums.PrizeType[] | ListEnumPrizeTypeFieldRefInput<$PrismaModel>
     not?: NestedEnumPrizeTypeFilter<$PrismaModel> | $Enums.PrizeType
+  }
+
+  export type NestedEnumAwardTypeNullableFilter<$PrismaModel = never> = {
+    equals?: $Enums.AwardType | EnumAwardTypeFieldRefInput<$PrismaModel> | null
+    in?: $Enums.AwardType[] | ListEnumAwardTypeFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.AwardType[] | ListEnumAwardTypeFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumAwardTypeNullableFilter<$PrismaModel> | $Enums.AwardType | null
+    isSet?: boolean
+  }
+
+  export type NestedEnumAwardTargetNullableFilter<$PrismaModel = never> = {
+    equals?: $Enums.AwardTarget | EnumAwardTargetFieldRefInput<$PrismaModel> | null
+    in?: $Enums.AwardTarget[] | ListEnumAwardTargetFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.AwardTarget[] | ListEnumAwardTargetFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumAwardTargetNullableFilter<$PrismaModel> | $Enums.AwardTarget | null
+    isSet?: boolean
   }
 
   export type NestedEnumPrizeTypeWithAggregatesFilter<$PrismaModel = never> = {
@@ -55504,6 +66273,28 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumPrizeTypeFilter<$PrismaModel>
     _max?: NestedEnumPrizeTypeFilter<$PrismaModel>
+  }
+
+  export type NestedEnumAwardTypeNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.AwardType | EnumAwardTypeFieldRefInput<$PrismaModel> | null
+    in?: $Enums.AwardType[] | ListEnumAwardTypeFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.AwardType[] | ListEnumAwardTypeFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumAwardTypeNullableWithAggregatesFilter<$PrismaModel> | $Enums.AwardType | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedEnumAwardTypeNullableFilter<$PrismaModel>
+    _max?: NestedEnumAwardTypeNullableFilter<$PrismaModel>
+    isSet?: boolean
+  }
+
+  export type NestedEnumAwardTargetNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.AwardTarget | EnumAwardTargetFieldRefInput<$PrismaModel> | null
+    in?: $Enums.AwardTarget[] | ListEnumAwardTargetFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.AwardTarget[] | ListEnumAwardTargetFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumAwardTargetNullableWithAggregatesFilter<$PrismaModel> | $Enums.AwardTarget | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedEnumAwardTargetNullableFilter<$PrismaModel>
+    _max?: NestedEnumAwardTargetNullableFilter<$PrismaModel>
+    isSet?: boolean
   }
 
   export type NestedEnumContestParticipantStatusFilter<$PrismaModel = never> = {
@@ -55538,6 +66329,112 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumYCLevelFilter<$PrismaModel>
     _max?: NestedEnumYCLevelFilter<$PrismaModel>
+  }
+
+  export type NestedEnumAchievementKindFilter<$PrismaModel = never> = {
+    equals?: $Enums.AchievementKind | EnumAchievementKindFieldRefInput<$PrismaModel>
+    in?: $Enums.AchievementKind[] | ListEnumAchievementKindFieldRefInput<$PrismaModel>
+    notIn?: $Enums.AchievementKind[] | ListEnumAchievementKindFieldRefInput<$PrismaModel>
+    not?: NestedEnumAchievementKindFilter<$PrismaModel> | $Enums.AchievementKind
+  }
+
+  export type NestedEnumContestLevelBadgeNullableFilter<$PrismaModel = never> = {
+    equals?: $Enums.ContestLevelBadge | EnumContestLevelBadgeFieldRefInput<$PrismaModel> | null
+    in?: $Enums.ContestLevelBadge[] | ListEnumContestLevelBadgeFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.ContestLevelBadge[] | ListEnumContestLevelBadgeFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumContestLevelBadgeNullableFilter<$PrismaModel> | $Enums.ContestLevelBadge | null
+    isSet?: boolean
+  }
+
+  export type NestedEnumAchievementKindWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.AchievementKind | EnumAchievementKindFieldRefInput<$PrismaModel>
+    in?: $Enums.AchievementKind[] | ListEnumAchievementKindFieldRefInput<$PrismaModel>
+    notIn?: $Enums.AchievementKind[] | ListEnumAchievementKindFieldRefInput<$PrismaModel>
+    not?: NestedEnumAchievementKindWithAggregatesFilter<$PrismaModel> | $Enums.AchievementKind
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumAchievementKindFilter<$PrismaModel>
+    _max?: NestedEnumAchievementKindFilter<$PrismaModel>
+  }
+
+  export type NestedEnumContestLevelBadgeNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ContestLevelBadge | EnumContestLevelBadgeFieldRefInput<$PrismaModel> | null
+    in?: $Enums.ContestLevelBadge[] | ListEnumContestLevelBadgeFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.ContestLevelBadge[] | ListEnumContestLevelBadgeFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumContestLevelBadgeNullableWithAggregatesFilter<$PrismaModel> | $Enums.ContestLevelBadge | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedEnumContestLevelBadgeNullableFilter<$PrismaModel>
+    _max?: NestedEnumContestLevelBadgeNullableFilter<$PrismaModel>
+    isSet?: boolean
+  }
+
+  export type NestedEnumContestFinalizationStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.ContestFinalizationStatus | EnumContestFinalizationStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.ContestFinalizationStatus[] | ListEnumContestFinalizationStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ContestFinalizationStatus[] | ListEnumContestFinalizationStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumContestFinalizationStatusFilter<$PrismaModel> | $Enums.ContestFinalizationStatus
+  }
+
+  export type NestedEnumContestFinalizationStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ContestFinalizationStatus | EnumContestFinalizationStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.ContestFinalizationStatus[] | ListEnumContestFinalizationStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ContestFinalizationStatus[] | ListEnumContestFinalizationStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumContestFinalizationStatusWithAggregatesFilter<$PrismaModel> | $Enums.ContestFinalizationStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumContestFinalizationStatusFilter<$PrismaModel>
+    _max?: NestedEnumContestFinalizationStatusFilter<$PrismaModel>
+  }
+
+  export type NestedEnumContestRankingScopeFilter<$PrismaModel = never> = {
+    equals?: $Enums.ContestRankingScope | EnumContestRankingScopeFieldRefInput<$PrismaModel>
+    in?: $Enums.ContestRankingScope[] | ListEnumContestRankingScopeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ContestRankingScope[] | ListEnumContestRankingScopeFieldRefInput<$PrismaModel>
+    not?: NestedEnumContestRankingScopeFilter<$PrismaModel> | $Enums.ContestRankingScope
+  }
+
+  export type NestedEnumYCLevelNullableFilter<$PrismaModel = never> = {
+    equals?: $Enums.YCLevel | EnumYCLevelFieldRefInput<$PrismaModel> | null
+    in?: $Enums.YCLevel[] | ListEnumYCLevelFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.YCLevel[] | ListEnumYCLevelFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumYCLevelNullableFilter<$PrismaModel> | $Enums.YCLevel | null
+    isSet?: boolean
+  }
+
+  export type NestedEnumContestRankingScopeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ContestRankingScope | EnumContestRankingScopeFieldRefInput<$PrismaModel>
+    in?: $Enums.ContestRankingScope[] | ListEnumContestRankingScopeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ContestRankingScope[] | ListEnumContestRankingScopeFieldRefInput<$PrismaModel>
+    not?: NestedEnumContestRankingScopeWithAggregatesFilter<$PrismaModel> | $Enums.ContestRankingScope
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumContestRankingScopeFilter<$PrismaModel>
+    _max?: NestedEnumContestRankingScopeFilter<$PrismaModel>
+  }
+
+  export type NestedEnumYCLevelNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.YCLevel | EnumYCLevelFieldRefInput<$PrismaModel> | null
+    in?: $Enums.YCLevel[] | ListEnumYCLevelFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.YCLevel[] | ListEnumYCLevelFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumYCLevelNullableWithAggregatesFilter<$PrismaModel> | $Enums.YCLevel | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedEnumYCLevelNullableFilter<$PrismaModel>
+    _max?: NestedEnumYCLevelNullableFilter<$PrismaModel>
+    isSet?: boolean
+  }
+
+  export type NestedEnumContestGrantStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.ContestGrantStatus | EnumContestGrantStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.ContestGrantStatus[] | ListEnumContestGrantStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ContestGrantStatus[] | ListEnumContestGrantStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumContestGrantStatusFilter<$PrismaModel> | $Enums.ContestGrantStatus
+  }
+
+  export type NestedEnumContestGrantStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ContestGrantStatus | EnumContestGrantStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.ContestGrantStatus[] | ListEnumContestGrantStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ContestGrantStatus[] | ListEnumContestGrantStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumContestGrantStatusWithAggregatesFilter<$PrismaModel> | $Enums.ContestGrantStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumContestGrantStatusFilter<$PrismaModel>
+    _max?: NestedEnumContestGrantStatusFilter<$PrismaModel>
   }
 
   export type NestedEnumNotificationTypeFilter<$PrismaModel = never> = {
@@ -56033,7 +66930,6 @@ export namespace Prisma {
     user: UserCreateNestedOneWithoutContestParticipantInput
     member?: TeamMemberCreateNestedOneWithoutContestParticipantInput
     photos?: ContestPhotoCreateNestedManyWithoutParticipantInput
-    ContestWinner?: ContestWinnerCreateNestedManyWithoutParticipantInput
     contestAchievement?: ContestAchievementCreateNestedManyWithoutParticipantInput
   }
 
@@ -56048,7 +66944,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     photos?: ContestPhotoUncheckedCreateNestedManyWithoutParticipantInput
-    ContestWinner?: ContestWinnerUncheckedCreateNestedManyWithoutParticipantInput
     contestAchievement?: ContestAchievementUncheckedCreateNestedManyWithoutParticipantInput
   }
 
@@ -56084,6 +66979,7 @@ export namespace Prisma {
     id?: string
     type: $Enums.VoteType
     power?: number
+    weight?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     provider: UserCreateNestedOneWithoutVotesInput
@@ -56096,6 +66992,7 @@ export namespace Prisma {
     photoId: string
     type: $Enums.VoteType
     power?: number
+    weight?: number
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -56136,9 +67033,41 @@ export namespace Prisma {
     data: ContestRuleCreateManyContestInput | ContestRuleCreateManyContestInput[]
   }
 
+  export type ContestRuleConfigCreateWithoutContestInput = {
+    id?: string
+    key: string
+    value: InputJsonValue
+    enabled?: boolean
+    order?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ContestRuleConfigUncheckedCreateWithoutContestInput = {
+    id?: string
+    key: string
+    value: InputJsonValue
+    enabled?: boolean
+    order?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ContestRuleConfigCreateOrConnectWithoutContestInput = {
+    where: ContestRuleConfigWhereUniqueInput
+    create: XOR<ContestRuleConfigCreateWithoutContestInput, ContestRuleConfigUncheckedCreateWithoutContestInput>
+  }
+
+  export type ContestRuleConfigCreateManyContestInputEnvelope = {
+    data: ContestRuleConfigCreateManyContestInput | ContestRuleConfigCreateManyContestInput[]
+  }
+
   export type ContestPrizeCreateWithoutContestInput = {
     id?: string
     category: $Enums.PrizeType
+    type?: $Enums.AwardType | null
+    target?: $Enums.AwardTarget | null
+    rankLimit?: number | null
     icon?: string | null
     boost?: number
     swap?: number
@@ -56151,6 +67080,9 @@ export namespace Prisma {
   export type ContestPrizeUncheckedCreateWithoutContestInput = {
     id?: string
     category: $Enums.PrizeType
+    type?: $Enums.AwardType | null
+    target?: $Enums.AwardTarget | null
+    rankLimit?: number | null
     icon?: string | null
     boost?: number
     swap?: number
@@ -56172,6 +67104,12 @@ export namespace Prisma {
   export type ContestAwardCreateWithoutContestInput = {
     id?: string
     category: $Enums.PrizeType
+    type?: $Enums.AwardType | null
+    target?: $Enums.AwardTarget | null
+    rankLimit?: number | null
+    slotKey?: string | null
+    title?: string | null
+    description?: string | null
     icon?: string | null
     boost?: number
     swap?: number
@@ -56185,6 +67123,12 @@ export namespace Prisma {
   export type ContestAwardUncheckedCreateWithoutContestInput = {
     id?: string
     category: $Enums.PrizeType
+    type?: $Enums.AwardType | null
+    target?: $Enums.AwardTarget | null
+    rankLimit?: number | null
+    slotKey?: string | null
+    title?: string | null
+    description?: string | null
     icon?: string | null
     boost?: number
     swap?: number
@@ -56207,6 +67151,13 @@ export namespace Prisma {
   export type ContestAchievementCreateWithoutContestInput = {
     id?: string
     category: $Enums.PrizeType
+    kind?: $Enums.AchievementKind
+    type?: $Enums.AwardType | null
+    target?: $Enums.AwardTarget | null
+    rankLimit?: number | null
+    levelBadge?: $Enums.ContestLevelBadge | null
+    levelOrder?: number | null
+    grantKey?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     photo?: ContestPhotoCreateNestedOneWithoutAchievementsInput
@@ -56216,8 +67167,15 @@ export namespace Prisma {
   export type ContestAchievementUncheckedCreateWithoutContestInput = {
     id?: string
     category: $Enums.PrizeType
+    kind?: $Enums.AchievementKind
+    type?: $Enums.AwardType | null
+    target?: $Enums.AwardTarget | null
+    rankLimit?: number | null
+    levelBadge?: $Enums.ContestLevelBadge | null
+    levelOrder?: number | null
     photoId?: string | null
     participantId?: string | null
+    grantKey?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -56267,11 +67225,9 @@ export namespace Prisma {
     title: string
     description: string
     banner?: string | null
-    maxUploads?: number
     isMoneyContest?: boolean
     maxPrize?: number | null
     minPrize?: number | null
-    level_requirements?: RecurringContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
     creatorId: string
@@ -56290,11 +67246,9 @@ export namespace Prisma {
     title: string
     description: string
     banner?: string | null
-    maxUploads?: number
     isMoneyContest?: boolean
     maxPrize?: number | null
     minPrize?: number | null
-    level_requirements?: RecurringContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
     creatorId: string
@@ -56487,6 +67441,7 @@ export namespace Prisma {
     contestId?: StringFilter<"Vote"> | string
     type?: EnumVoteTypeFilter<"Vote"> | $Enums.VoteType
     power?: IntFilter<"Vote"> | number
+    weight?: IntFilter<"Vote"> | number
     createdAt?: DateTimeFilter<"Vote"> | Date | string
     updatedAt?: DateTimeFilter<"Vote"> | Date | string
   }
@@ -56520,6 +67475,36 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"ContestRule"> | Date | string
   }
 
+  export type ContestRuleConfigUpsertWithWhereUniqueWithoutContestInput = {
+    where: ContestRuleConfigWhereUniqueInput
+    update: XOR<ContestRuleConfigUpdateWithoutContestInput, ContestRuleConfigUncheckedUpdateWithoutContestInput>
+    create: XOR<ContestRuleConfigCreateWithoutContestInput, ContestRuleConfigUncheckedCreateWithoutContestInput>
+  }
+
+  export type ContestRuleConfigUpdateWithWhereUniqueWithoutContestInput = {
+    where: ContestRuleConfigWhereUniqueInput
+    data: XOR<ContestRuleConfigUpdateWithoutContestInput, ContestRuleConfigUncheckedUpdateWithoutContestInput>
+  }
+
+  export type ContestRuleConfigUpdateManyWithWhereWithoutContestInput = {
+    where: ContestRuleConfigScalarWhereInput
+    data: XOR<ContestRuleConfigUpdateManyMutationInput, ContestRuleConfigUncheckedUpdateManyWithoutContestInput>
+  }
+
+  export type ContestRuleConfigScalarWhereInput = {
+    AND?: ContestRuleConfigScalarWhereInput | ContestRuleConfigScalarWhereInput[]
+    OR?: ContestRuleConfigScalarWhereInput[]
+    NOT?: ContestRuleConfigScalarWhereInput | ContestRuleConfigScalarWhereInput[]
+    id?: StringFilter<"ContestRuleConfig"> | string
+    contestId?: StringFilter<"ContestRuleConfig"> | string
+    key?: StringFilter<"ContestRuleConfig"> | string
+    value?: JsonFilter<"ContestRuleConfig">
+    enabled?: BoolFilter<"ContestRuleConfig"> | boolean
+    order?: IntFilter<"ContestRuleConfig"> | number
+    createdAt?: DateTimeFilter<"ContestRuleConfig"> | Date | string
+    updatedAt?: DateTimeFilter<"ContestRuleConfig"> | Date | string
+  }
+
   export type ContestPrizeUpsertWithWhereUniqueWithoutContestInput = {
     where: ContestPrizeWhereUniqueInput
     update: XOR<ContestPrizeUpdateWithoutContestInput, ContestPrizeUncheckedUpdateWithoutContestInput>
@@ -56542,6 +67527,9 @@ export namespace Prisma {
     NOT?: ContestPrizeScalarWhereInput | ContestPrizeScalarWhereInput[]
     id?: StringFilter<"ContestPrize"> | string
     category?: EnumPrizeTypeFilter<"ContestPrize"> | $Enums.PrizeType
+    type?: EnumAwardTypeNullableFilter<"ContestPrize"> | $Enums.AwardType | null
+    target?: EnumAwardTargetNullableFilter<"ContestPrize"> | $Enums.AwardTarget | null
+    rankLimit?: IntNullableFilter<"ContestPrize"> | number | null
     icon?: StringNullableFilter<"ContestPrize"> | string | null
     boost?: IntFilter<"ContestPrize"> | number
     swap?: IntFilter<"ContestPrize"> | number
@@ -56574,6 +67562,12 @@ export namespace Prisma {
     NOT?: ContestAwardScalarWhereInput | ContestAwardScalarWhereInput[]
     id?: StringFilter<"ContestAward"> | string
     category?: EnumPrizeTypeFilter<"ContestAward"> | $Enums.PrizeType
+    type?: EnumAwardTypeNullableFilter<"ContestAward"> | $Enums.AwardType | null
+    target?: EnumAwardTargetNullableFilter<"ContestAward"> | $Enums.AwardTarget | null
+    rankLimit?: IntNullableFilter<"ContestAward"> | number | null
+    slotKey?: StringNullableFilter<"ContestAward"> | string | null
+    title?: StringNullableFilter<"ContestAward"> | string | null
+    description?: StringNullableFilter<"ContestAward"> | string | null
     icon?: StringNullableFilter<"ContestAward"> | string | null
     boost?: IntFilter<"ContestAward"> | number
     swap?: IntFilter<"ContestAward"> | number
@@ -56607,9 +67601,16 @@ export namespace Prisma {
     NOT?: ContestAchievementScalarWhereInput | ContestAchievementScalarWhereInput[]
     id?: StringFilter<"ContestAchievement"> | string
     category?: EnumPrizeTypeFilter<"ContestAchievement"> | $Enums.PrizeType
+    kind?: EnumAchievementKindFilter<"ContestAchievement"> | $Enums.AchievementKind
+    type?: EnumAwardTypeNullableFilter<"ContestAchievement"> | $Enums.AwardType | null
+    target?: EnumAwardTargetNullableFilter<"ContestAchievement"> | $Enums.AwardTarget | null
+    rankLimit?: IntNullableFilter<"ContestAchievement"> | number | null
+    levelBadge?: EnumContestLevelBadgeNullableFilter<"ContestAchievement"> | $Enums.ContestLevelBadge | null
+    levelOrder?: IntNullableFilter<"ContestAchievement"> | number | null
     photoId?: StringNullableFilter<"ContestAchievement"> | string | null
     participantId?: StringNullableFilter<"ContestAchievement"> | string | null
     contestId?: StringFilter<"ContestAchievement"> | string
+    grantKey?: StringNullableFilter<"ContestAchievement"> | string | null
     createdAt?: DateTimeFilter<"ContestAchievement"> | Date | string
     updatedAt?: DateTimeFilter<"ContestAchievement"> | Date | string
   }
@@ -56660,11 +67661,9 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
     banner?: NullableStringFieldUpdateOperationsInput | string | null
-    maxUploads?: IntFieldUpdateOperationsInput | number
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
-    level_requirements?: RecurringContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     creatorId?: StringFieldUpdateOperationsInput | string
@@ -56682,11 +67681,9 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
     banner?: NullableStringFieldUpdateOperationsInput | string | null
-    maxUploads?: IntFieldUpdateOperationsInput | number
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
-    level_requirements?: RecurringContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     creatorId?: StringFieldUpdateOperationsInput | string
@@ -56703,6 +67700,12 @@ export namespace Prisma {
   export type RecurringContestAwardCreateWithoutRecurringContestInput = {
     id?: string
     category: $Enums.PrizeType
+    type?: $Enums.AwardType | null
+    target?: $Enums.AwardTarget | null
+    rankLimit?: number | null
+    slotKey?: string | null
+    title?: string | null
+    description?: string | null
     icon?: string | null
     boost?: number
     swap?: number
@@ -56716,6 +67719,12 @@ export namespace Prisma {
   export type RecurringContestAwardUncheckedCreateWithoutRecurringContestInput = {
     id?: string
     category: $Enums.PrizeType
+    type?: $Enums.AwardType | null
+    target?: $Enums.AwardTarget | null
+    rankLimit?: number | null
+    slotKey?: string | null
+    title?: string | null
+    description?: string | null
     icon?: string | null
     boost?: number
     swap?: number
@@ -56741,17 +67750,16 @@ export namespace Prisma {
     description: string
     banner?: string | null
     status?: $Enums.ContestStatus
-    mode?: $Enums.ContestMode
-    maxUploads?: number
     isMoneyContest?: boolean
     maxPrize?: number | null
     minPrize?: number | null
-    level_requirements?: ContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
     startedAt?: Date | string | null
-    rules?: InputJsonValue | null
-    prizes?: InputJsonValue | null
+    endedAt?: Date | string | null
+    finalizedAt?: Date | string | null
+    configVersion?: number
+    scoringVersion?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     creator: UserCreateNestedOneWithoutCreatedContestsInput
@@ -56759,6 +67767,7 @@ export namespace Prisma {
     teamParticipations?: TeamParticipationCreateNestedManyWithoutContestInput
     votes?: VoteCreateNestedManyWithoutContestInput
     contestRules?: ContestRuleCreateNestedManyWithoutContestInput
+    ruleConfigs?: ContestRuleConfigCreateNestedManyWithoutContestInput
     contestPrizes?: ContestPrizeCreateNestedManyWithoutContestInput
     contestAwards?: ContestAwardCreateNestedManyWithoutContestInput
     achievements?: ContestAchievementCreateNestedManyWithoutContestInput
@@ -56771,24 +67780,24 @@ export namespace Prisma {
     description: string
     banner?: string | null
     status?: $Enums.ContestStatus
-    mode?: $Enums.ContestMode
-    maxUploads?: number
     isMoneyContest?: boolean
     maxPrize?: number | null
     minPrize?: number | null
-    level_requirements?: ContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
     startedAt?: Date | string | null
+    endedAt?: Date | string | null
+    finalizedAt?: Date | string | null
+    configVersion?: number
+    scoringVersion?: number
     creatorId: string
-    rules?: InputJsonValue | null
-    prizes?: InputJsonValue | null
     createdAt?: Date | string
     updatedAt?: Date | string
     participants?: ContestParticipantUncheckedCreateNestedManyWithoutContestInput
     teamParticipations?: TeamParticipationUncheckedCreateNestedManyWithoutContestInput
     votes?: VoteUncheckedCreateNestedManyWithoutContestInput
     contestRules?: ContestRuleUncheckedCreateNestedManyWithoutContestInput
+    ruleConfigs?: ContestRuleConfigUncheckedCreateNestedManyWithoutContestInput
     contestPrizes?: ContestPrizeUncheckedCreateNestedManyWithoutContestInput
     contestAwards?: ContestAwardUncheckedCreateNestedManyWithoutContestInput
     achievements?: ContestAchievementUncheckedCreateNestedManyWithoutContestInput
@@ -56833,6 +67842,12 @@ export namespace Prisma {
     NOT?: RecurringContestAwardScalarWhereInput | RecurringContestAwardScalarWhereInput[]
     id?: StringFilter<"RecurringContestAward"> | string
     category?: EnumPrizeTypeFilter<"RecurringContestAward"> | $Enums.PrizeType
+    type?: EnumAwardTypeNullableFilter<"RecurringContestAward"> | $Enums.AwardType | null
+    target?: EnumAwardTargetNullableFilter<"RecurringContestAward"> | $Enums.AwardTarget | null
+    rankLimit?: IntNullableFilter<"RecurringContestAward"> | number | null
+    slotKey?: StringNullableFilter<"RecurringContestAward"> | string | null
+    title?: StringNullableFilter<"RecurringContestAward"> | string | null
+    description?: StringNullableFilter<"RecurringContestAward"> | string | null
     icon?: StringNullableFilter<"RecurringContestAward"> | string | null
     boost?: IntFilter<"RecurringContestAward"> | number
     swap?: IntFilter<"RecurringContestAward"> | number
@@ -56869,19 +67884,18 @@ export namespace Prisma {
     description?: StringFilter<"Contest"> | string
     banner?: StringNullableFilter<"Contest"> | string | null
     status?: EnumContestStatusFilter<"Contest"> | $Enums.ContestStatus
-    mode?: EnumContestModeFilter<"Contest"> | $Enums.ContestMode
-    maxUploads?: IntFilter<"Contest"> | number
     isMoneyContest?: BoolFilter<"Contest"> | boolean
     maxPrize?: IntNullableFilter<"Contest"> | number | null
     minPrize?: IntNullableFilter<"Contest"> | number | null
-    level_requirements?: IntNullableListFilter<"Contest">
     startDate?: DateTimeFilter<"Contest"> | Date | string
     endDate?: DateTimeFilter<"Contest"> | Date | string
     startedAt?: DateTimeNullableFilter<"Contest"> | Date | string | null
+    endedAt?: DateTimeNullableFilter<"Contest"> | Date | string | null
+    finalizedAt?: DateTimeNullableFilter<"Contest"> | Date | string | null
     recurringContestId?: StringNullableFilter<"Contest"> | string | null
+    configVersion?: IntFilter<"Contest"> | number
+    scoringVersion?: IntFilter<"Contest"> | number
     creatorId?: StringFilter<"Contest"> | string
-    rules?: JsonNullableFilter<"Contest">
-    prizes?: JsonNullableFilter<"Contest">
     createdAt?: DateTimeFilter<"Contest"> | Date | string
     updatedAt?: DateTimeFilter<"Contest"> | Date | string
   }
@@ -56889,6 +67903,12 @@ export namespace Prisma {
   export type ContestAwardCreateWithoutPrizeInput = {
     id?: string
     category: $Enums.PrizeType
+    type?: $Enums.AwardType | null
+    target?: $Enums.AwardTarget | null
+    rankLimit?: number | null
+    slotKey?: string | null
+    title?: string | null
+    description?: string | null
     icon?: string | null
     boost?: number
     swap?: number
@@ -56902,6 +67922,12 @@ export namespace Prisma {
   export type ContestAwardUncheckedCreateWithoutPrizeInput = {
     id?: string
     category: $Enums.PrizeType
+    type?: $Enums.AwardType | null
+    target?: $Enums.AwardTarget | null
+    rankLimit?: number | null
+    slotKey?: string | null
+    title?: string | null
+    description?: string | null
     icon?: string | null
     boost?: number
     swap?: number
@@ -56924,6 +67950,12 @@ export namespace Prisma {
   export type RecurringContestAwardCreateWithoutPrizeInput = {
     id?: string
     category: $Enums.PrizeType
+    type?: $Enums.AwardType | null
+    target?: $Enums.AwardTarget | null
+    rankLimit?: number | null
+    slotKey?: string | null
+    title?: string | null
+    description?: string | null
     icon?: string | null
     boost?: number
     swap?: number
@@ -56937,6 +67969,12 @@ export namespace Prisma {
   export type RecurringContestAwardUncheckedCreateWithoutPrizeInput = {
     id?: string
     category: $Enums.PrizeType
+    type?: $Enums.AwardType | null
+    target?: $Enums.AwardTarget | null
+    rankLimit?: number | null
+    slotKey?: string | null
+    title?: string | null
+    description?: string | null
     icon?: string | null
     boost?: number
     swap?: number
@@ -56994,23 +68032,23 @@ export namespace Prisma {
     description: string
     banner?: string | null
     status?: $Enums.ContestStatus
-    mode?: $Enums.ContestMode
-    maxUploads?: number
     isMoneyContest?: boolean
     maxPrize?: number | null
     minPrize?: number | null
-    level_requirements?: ContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
     startedAt?: Date | string | null
-    rules?: InputJsonValue | null
-    prizes?: InputJsonValue | null
+    endedAt?: Date | string | null
+    finalizedAt?: Date | string | null
+    configVersion?: number
+    scoringVersion?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     creator: UserCreateNestedOneWithoutCreatedContestsInput
     participants?: ContestParticipantCreateNestedManyWithoutContestInput
     teamParticipations?: TeamParticipationCreateNestedManyWithoutContestInput
     votes?: VoteCreateNestedManyWithoutContestInput
+    ruleConfigs?: ContestRuleConfigCreateNestedManyWithoutContestInput
     contestPrizes?: ContestPrizeCreateNestedManyWithoutContestInput
     contestAwards?: ContestAwardCreateNestedManyWithoutContestInput
     achievements?: ContestAchievementCreateNestedManyWithoutContestInput
@@ -57024,24 +68062,24 @@ export namespace Prisma {
     description: string
     banner?: string | null
     status?: $Enums.ContestStatus
-    mode?: $Enums.ContestMode
-    maxUploads?: number
     isMoneyContest?: boolean
     maxPrize?: number | null
     minPrize?: number | null
-    level_requirements?: ContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
     startedAt?: Date | string | null
+    endedAt?: Date | string | null
+    finalizedAt?: Date | string | null
     recurringContestId?: string | null
+    configVersion?: number
+    scoringVersion?: number
     creatorId: string
-    rules?: InputJsonValue | null
-    prizes?: InputJsonValue | null
     createdAt?: Date | string
     updatedAt?: Date | string
     participants?: ContestParticipantUncheckedCreateNestedManyWithoutContestInput
     teamParticipations?: TeamParticipationUncheckedCreateNestedManyWithoutContestInput
     votes?: VoteUncheckedCreateNestedManyWithoutContestInput
+    ruleConfigs?: ContestRuleConfigUncheckedCreateNestedManyWithoutContestInput
     contestPrizes?: ContestPrizeUncheckedCreateNestedManyWithoutContestInput
     contestAwards?: ContestAwardUncheckedCreateNestedManyWithoutContestInput
     achievements?: ContestAchievementUncheckedCreateNestedManyWithoutContestInput
@@ -57069,23 +68107,23 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     banner?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumContestStatusFieldUpdateOperationsInput | $Enums.ContestStatus
-    mode?: EnumContestModeFieldUpdateOperationsInput | $Enums.ContestMode
-    maxUploads?: IntFieldUpdateOperationsInput | number
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
-    level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    rules?: InputJsonValue | InputJsonValue | null
-    prizes?: InputJsonValue | InputJsonValue | null
+    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    finalizedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    configVersion?: IntFieldUpdateOperationsInput | number
+    scoringVersion?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     creator?: UserUpdateOneRequiredWithoutCreatedContestsNestedInput
     participants?: ContestParticipantUpdateManyWithoutContestNestedInput
     teamParticipations?: TeamParticipationUpdateManyWithoutContestNestedInput
     votes?: VoteUpdateManyWithoutContestNestedInput
+    ruleConfigs?: ContestRuleConfigUpdateManyWithoutContestNestedInput
     contestPrizes?: ContestPrizeUpdateManyWithoutContestNestedInput
     contestAwards?: ContestAwardUpdateManyWithoutContestNestedInput
     achievements?: ContestAchievementUpdateManyWithoutContestNestedInput
@@ -57098,24 +68136,158 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     banner?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumContestStatusFieldUpdateOperationsInput | $Enums.ContestStatus
-    mode?: EnumContestModeFieldUpdateOperationsInput | $Enums.ContestMode
-    maxUploads?: IntFieldUpdateOperationsInput | number
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
-    level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    finalizedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     recurringContestId?: NullableStringFieldUpdateOperationsInput | string | null
+    configVersion?: IntFieldUpdateOperationsInput | number
+    scoringVersion?: IntFieldUpdateOperationsInput | number
     creatorId?: StringFieldUpdateOperationsInput | string
-    rules?: InputJsonValue | InputJsonValue | null
-    prizes?: InputJsonValue | InputJsonValue | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     participants?: ContestParticipantUncheckedUpdateManyWithoutContestNestedInput
     teamParticipations?: TeamParticipationUncheckedUpdateManyWithoutContestNestedInput
     votes?: VoteUncheckedUpdateManyWithoutContestNestedInput
+    ruleConfigs?: ContestRuleConfigUncheckedUpdateManyWithoutContestNestedInput
+    contestPrizes?: ContestPrizeUncheckedUpdateManyWithoutContestNestedInput
+    contestAwards?: ContestAwardUncheckedUpdateManyWithoutContestNestedInput
+    achievements?: ContestAchievementUncheckedUpdateManyWithoutContestNestedInput
+    teamMatch?: TeamMatchUncheckedUpdateManyWithoutContestNestedInput
+  }
+
+  export type ContestCreateWithoutRuleConfigsInput = {
+    id?: string
+    title: string
+    description: string
+    banner?: string | null
+    status?: $Enums.ContestStatus
+    isMoneyContest?: boolean
+    maxPrize?: number | null
+    minPrize?: number | null
+    startDate: Date | string
+    endDate: Date | string
+    startedAt?: Date | string | null
+    endedAt?: Date | string | null
+    finalizedAt?: Date | string | null
+    configVersion?: number
+    scoringVersion?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    creator: UserCreateNestedOneWithoutCreatedContestsInput
+    participants?: ContestParticipantCreateNestedManyWithoutContestInput
+    teamParticipations?: TeamParticipationCreateNestedManyWithoutContestInput
+    votes?: VoteCreateNestedManyWithoutContestInput
+    contestRules?: ContestRuleCreateNestedManyWithoutContestInput
+    contestPrizes?: ContestPrizeCreateNestedManyWithoutContestInput
+    contestAwards?: ContestAwardCreateNestedManyWithoutContestInput
+    achievements?: ContestAchievementCreateNestedManyWithoutContestInput
+    teamMatch?: TeamMatchCreateNestedManyWithoutContestInput
+    recurringContest?: RecurringContestCreateNestedOneWithoutContestInstancesInput
+  }
+
+  export type ContestUncheckedCreateWithoutRuleConfigsInput = {
+    id?: string
+    title: string
+    description: string
+    banner?: string | null
+    status?: $Enums.ContestStatus
+    isMoneyContest?: boolean
+    maxPrize?: number | null
+    minPrize?: number | null
+    startDate: Date | string
+    endDate: Date | string
+    startedAt?: Date | string | null
+    endedAt?: Date | string | null
+    finalizedAt?: Date | string | null
+    recurringContestId?: string | null
+    configVersion?: number
+    scoringVersion?: number
+    creatorId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    participants?: ContestParticipantUncheckedCreateNestedManyWithoutContestInput
+    teamParticipations?: TeamParticipationUncheckedCreateNestedManyWithoutContestInput
+    votes?: VoteUncheckedCreateNestedManyWithoutContestInput
+    contestRules?: ContestRuleUncheckedCreateNestedManyWithoutContestInput
+    contestPrizes?: ContestPrizeUncheckedCreateNestedManyWithoutContestInput
+    contestAwards?: ContestAwardUncheckedCreateNestedManyWithoutContestInput
+    achievements?: ContestAchievementUncheckedCreateNestedManyWithoutContestInput
+    teamMatch?: TeamMatchUncheckedCreateNestedManyWithoutContestInput
+  }
+
+  export type ContestCreateOrConnectWithoutRuleConfigsInput = {
+    where: ContestWhereUniqueInput
+    create: XOR<ContestCreateWithoutRuleConfigsInput, ContestUncheckedCreateWithoutRuleConfigsInput>
+  }
+
+  export type ContestUpsertWithoutRuleConfigsInput = {
+    update: XOR<ContestUpdateWithoutRuleConfigsInput, ContestUncheckedUpdateWithoutRuleConfigsInput>
+    create: XOR<ContestCreateWithoutRuleConfigsInput, ContestUncheckedCreateWithoutRuleConfigsInput>
+    where?: ContestWhereInput
+  }
+
+  export type ContestUpdateToOneWithWhereWithoutRuleConfigsInput = {
+    where?: ContestWhereInput
+    data: XOR<ContestUpdateWithoutRuleConfigsInput, ContestUncheckedUpdateWithoutRuleConfigsInput>
+  }
+
+  export type ContestUpdateWithoutRuleConfigsInput = {
+    title?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    banner?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumContestStatusFieldUpdateOperationsInput | $Enums.ContestStatus
+    isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
+    maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
+    minPrize?: NullableIntFieldUpdateOperationsInput | number | null
+    startDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    endDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    finalizedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    configVersion?: IntFieldUpdateOperationsInput | number
+    scoringVersion?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    creator?: UserUpdateOneRequiredWithoutCreatedContestsNestedInput
+    participants?: ContestParticipantUpdateManyWithoutContestNestedInput
+    teamParticipations?: TeamParticipationUpdateManyWithoutContestNestedInput
+    votes?: VoteUpdateManyWithoutContestNestedInput
+    contestRules?: ContestRuleUpdateManyWithoutContestNestedInput
+    contestPrizes?: ContestPrizeUpdateManyWithoutContestNestedInput
+    contestAwards?: ContestAwardUpdateManyWithoutContestNestedInput
+    achievements?: ContestAchievementUpdateManyWithoutContestNestedInput
+    teamMatch?: TeamMatchUpdateManyWithoutContestNestedInput
+    recurringContest?: RecurringContestUpdateOneWithoutContestInstancesNestedInput
+  }
+
+  export type ContestUncheckedUpdateWithoutRuleConfigsInput = {
+    title?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    banner?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumContestStatusFieldUpdateOperationsInput | $Enums.ContestStatus
+    isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
+    maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
+    minPrize?: NullableIntFieldUpdateOperationsInput | number | null
+    startDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    endDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    finalizedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    recurringContestId?: NullableStringFieldUpdateOperationsInput | string | null
+    configVersion?: IntFieldUpdateOperationsInput | number
+    scoringVersion?: IntFieldUpdateOperationsInput | number
+    creatorId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    participants?: ContestParticipantUncheckedUpdateManyWithoutContestNestedInput
+    teamParticipations?: TeamParticipationUncheckedUpdateManyWithoutContestNestedInput
+    votes?: VoteUncheckedUpdateManyWithoutContestNestedInput
+    contestRules?: ContestRuleUncheckedUpdateManyWithoutContestNestedInput
     contestPrizes?: ContestPrizeUncheckedUpdateManyWithoutContestNestedInput
     contestAwards?: ContestAwardUncheckedUpdateManyWithoutContestNestedInput
     achievements?: ContestAchievementUncheckedUpdateManyWithoutContestNestedInput
@@ -57133,7 +68305,6 @@ export namespace Prisma {
     contest: ContestCreateNestedOneWithoutParticipantsInput
     user: UserCreateNestedOneWithoutContestParticipantInput
     member?: TeamMemberCreateNestedOneWithoutContestParticipantInput
-    ContestWinner?: ContestWinnerCreateNestedManyWithoutParticipantInput
     contestAchievement?: ContestAchievementCreateNestedManyWithoutParticipantInput
   }
 
@@ -57148,7 +68319,6 @@ export namespace Prisma {
     exposure_bonus?: number
     createdAt?: Date | string
     updatedAt?: Date | string
-    ContestWinner?: ContestWinnerUncheckedCreateNestedManyWithoutParticipantInput
     contestAchievement?: ContestAchievementUncheckedCreateNestedManyWithoutParticipantInput
   }
 
@@ -57161,6 +68331,7 @@ export namespace Prisma {
     id?: string
     type: $Enums.VoteType
     power?: number
+    weight?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     provider: UserCreateNestedOneWithoutVotesInput
@@ -57173,6 +68344,7 @@ export namespace Prisma {
     contestId: string
     type: $Enums.VoteType
     power?: number
+    weight?: number
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -57253,6 +68425,13 @@ export namespace Prisma {
   export type ContestAchievementCreateWithoutPhotoInput = {
     id?: string
     category: $Enums.PrizeType
+    kind?: $Enums.AchievementKind
+    type?: $Enums.AwardType | null
+    target?: $Enums.AwardTarget | null
+    rankLimit?: number | null
+    levelBadge?: $Enums.ContestLevelBadge | null
+    levelOrder?: number | null
+    grantKey?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     contest: ContestCreateNestedOneWithoutAchievementsInput
@@ -57262,8 +68441,15 @@ export namespace Prisma {
   export type ContestAchievementUncheckedCreateWithoutPhotoInput = {
     id?: string
     category: $Enums.PrizeType
+    kind?: $Enums.AchievementKind
+    type?: $Enums.AwardType | null
+    target?: $Enums.AwardTarget | null
+    rankLimit?: number | null
+    levelBadge?: $Enums.ContestLevelBadge | null
+    levelOrder?: number | null
     participantId?: string | null
     contestId: string
+    grantKey?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -57275,31 +68461,6 @@ export namespace Prisma {
 
   export type ContestAchievementCreateManyPhotoInputEnvelope = {
     data: ContestAchievementCreateManyPhotoInput | ContestAchievementCreateManyPhotoInput[]
-  }
-
-  export type ContestWinnerCreateWithoutPhotoInput = {
-    id?: string
-    contestId: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    participant: ContestParticipantCreateNestedOneWithoutContestWinnerInput
-  }
-
-  export type ContestWinnerUncheckedCreateWithoutPhotoInput = {
-    id?: string
-    participantId: string
-    contestId: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type ContestWinnerCreateOrConnectWithoutPhotoInput = {
-    where: ContestWinnerWhereUniqueInput
-    create: XOR<ContestWinnerCreateWithoutPhotoInput, ContestWinnerUncheckedCreateWithoutPhotoInput>
-  }
-
-  export type ContestWinnerCreateManyPhotoInputEnvelope = {
-    data: ContestWinnerCreateManyPhotoInput | ContestWinnerCreateManyPhotoInput[]
   }
 
   export type ContestParticipantUpsertWithoutPhotosInput = {
@@ -57323,7 +68484,6 @@ export namespace Prisma {
     contest?: ContestUpdateOneRequiredWithoutParticipantsNestedInput
     user?: UserUpdateOneRequiredWithoutContestParticipantNestedInput
     member?: TeamMemberUpdateOneWithoutContestParticipantNestedInput
-    ContestWinner?: ContestWinnerUpdateManyWithoutParticipantNestedInput
     contestAchievement?: ContestAchievementUpdateManyWithoutParticipantNestedInput
   }
 
@@ -57337,7 +68497,6 @@ export namespace Prisma {
     exposure_bonus?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    ContestWinner?: ContestWinnerUncheckedUpdateManyWithoutParticipantNestedInput
     contestAchievement?: ContestAchievementUncheckedUpdateManyWithoutParticipantNestedInput
   }
 
@@ -57441,213 +68600,29 @@ export namespace Prisma {
     data: XOR<ContestAchievementUpdateManyMutationInput, ContestAchievementUncheckedUpdateManyWithoutPhotoInput>
   }
 
-  export type ContestWinnerUpsertWithWhereUniqueWithoutPhotoInput = {
-    where: ContestWinnerWhereUniqueInput
-    update: XOR<ContestWinnerUpdateWithoutPhotoInput, ContestWinnerUncheckedUpdateWithoutPhotoInput>
-    create: XOR<ContestWinnerCreateWithoutPhotoInput, ContestWinnerUncheckedCreateWithoutPhotoInput>
-  }
-
-  export type ContestWinnerUpdateWithWhereUniqueWithoutPhotoInput = {
-    where: ContestWinnerWhereUniqueInput
-    data: XOR<ContestWinnerUpdateWithoutPhotoInput, ContestWinnerUncheckedUpdateWithoutPhotoInput>
-  }
-
-  export type ContestWinnerUpdateManyWithWhereWithoutPhotoInput = {
-    where: ContestWinnerScalarWhereInput
-    data: XOR<ContestWinnerUpdateManyMutationInput, ContestWinnerUncheckedUpdateManyWithoutPhotoInput>
-  }
-
-  export type ContestWinnerScalarWhereInput = {
-    AND?: ContestWinnerScalarWhereInput | ContestWinnerScalarWhereInput[]
-    OR?: ContestWinnerScalarWhereInput[]
-    NOT?: ContestWinnerScalarWhereInput | ContestWinnerScalarWhereInput[]
-    id?: StringFilter<"ContestWinner"> | string
-    participantId?: StringFilter<"ContestWinner"> | string
-    contestId?: StringFilter<"ContestWinner"> | string
-    contestPhotoId?: StringFilter<"ContestWinner"> | string
-    createdAt?: DateTimeFilter<"ContestWinner"> | Date | string
-    updatedAt?: DateTimeFilter<"ContestWinner"> | Date | string
-  }
-
-  export type ContestParticipantCreateWithoutContestWinnerInput = {
-    id?: string
-    status?: $Enums.ContestParticipantStatus
-    level?: $Enums.YCLevel
-    rank?: number | null
-    exposure_bonus?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    contest: ContestCreateNestedOneWithoutParticipantsInput
-    user: UserCreateNestedOneWithoutContestParticipantInput
-    member?: TeamMemberCreateNestedOneWithoutContestParticipantInput
-    photos?: ContestPhotoCreateNestedManyWithoutParticipantInput
-    contestAchievement?: ContestAchievementCreateNestedManyWithoutParticipantInput
-  }
-
-  export type ContestParticipantUncheckedCreateWithoutContestWinnerInput = {
-    id?: string
-    status?: $Enums.ContestParticipantStatus
-    contestId: string
-    userId: string
-    memberId?: string | null
-    level?: $Enums.YCLevel
-    rank?: number | null
-    exposure_bonus?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    photos?: ContestPhotoUncheckedCreateNestedManyWithoutParticipantInput
-    contestAchievement?: ContestAchievementUncheckedCreateNestedManyWithoutParticipantInput
-  }
-
-  export type ContestParticipantCreateOrConnectWithoutContestWinnerInput = {
-    where: ContestParticipantWhereUniqueInput
-    create: XOR<ContestParticipantCreateWithoutContestWinnerInput, ContestParticipantUncheckedCreateWithoutContestWinnerInput>
-  }
-
-  export type ContestPhotoCreateWithoutContestWinnerInput = {
-    id?: string
-    title?: string | null
-    contestId: string
-    rank?: number | null
-    promoted?: boolean
-    promotionExpiresAt?: Date | string | null
-    initialVotes?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    participant: ContestParticipantCreateNestedOneWithoutPhotosInput
-    votes?: VoteCreateNestedManyWithoutPhotoInput
-    photo: UserPhotoCreateNestedOneWithoutContestUploadInput
-    comments?: CommentCreateNestedManyWithoutPhotoInput
-    achievements?: ContestAchievementCreateNestedManyWithoutPhotoInput
-  }
-
-  export type ContestPhotoUncheckedCreateWithoutContestWinnerInput = {
-    id?: string
-    title?: string | null
-    contestId: string
-    participantId: string
-    photoId: string
-    rank?: number | null
-    promoted?: boolean
-    promotionExpiresAt?: Date | string | null
-    initialVotes?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    votes?: VoteUncheckedCreateNestedManyWithoutPhotoInput
-    comments?: CommentUncheckedCreateNestedManyWithoutPhotoInput
-    achievements?: ContestAchievementUncheckedCreateNestedManyWithoutPhotoInput
-  }
-
-  export type ContestPhotoCreateOrConnectWithoutContestWinnerInput = {
-    where: ContestPhotoWhereUniqueInput
-    create: XOR<ContestPhotoCreateWithoutContestWinnerInput, ContestPhotoUncheckedCreateWithoutContestWinnerInput>
-  }
-
-  export type ContestParticipantUpsertWithoutContestWinnerInput = {
-    update: XOR<ContestParticipantUpdateWithoutContestWinnerInput, ContestParticipantUncheckedUpdateWithoutContestWinnerInput>
-    create: XOR<ContestParticipantCreateWithoutContestWinnerInput, ContestParticipantUncheckedCreateWithoutContestWinnerInput>
-    where?: ContestParticipantWhereInput
-  }
-
-  export type ContestParticipantUpdateToOneWithWhereWithoutContestWinnerInput = {
-    where?: ContestParticipantWhereInput
-    data: XOR<ContestParticipantUpdateWithoutContestWinnerInput, ContestParticipantUncheckedUpdateWithoutContestWinnerInput>
-  }
-
-  export type ContestParticipantUpdateWithoutContestWinnerInput = {
-    status?: EnumContestParticipantStatusFieldUpdateOperationsInput | $Enums.ContestParticipantStatus
-    level?: EnumYCLevelFieldUpdateOperationsInput | $Enums.YCLevel
-    rank?: NullableIntFieldUpdateOperationsInput | number | null
-    exposure_bonus?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    contest?: ContestUpdateOneRequiredWithoutParticipantsNestedInput
-    user?: UserUpdateOneRequiredWithoutContestParticipantNestedInput
-    member?: TeamMemberUpdateOneWithoutContestParticipantNestedInput
-    photos?: ContestPhotoUpdateManyWithoutParticipantNestedInput
-    contestAchievement?: ContestAchievementUpdateManyWithoutParticipantNestedInput
-  }
-
-  export type ContestParticipantUncheckedUpdateWithoutContestWinnerInput = {
-    status?: EnumContestParticipantStatusFieldUpdateOperationsInput | $Enums.ContestParticipantStatus
-    contestId?: StringFieldUpdateOperationsInput | string
-    userId?: StringFieldUpdateOperationsInput | string
-    memberId?: NullableStringFieldUpdateOperationsInput | string | null
-    level?: EnumYCLevelFieldUpdateOperationsInput | $Enums.YCLevel
-    rank?: NullableIntFieldUpdateOperationsInput | number | null
-    exposure_bonus?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    photos?: ContestPhotoUncheckedUpdateManyWithoutParticipantNestedInput
-    contestAchievement?: ContestAchievementUncheckedUpdateManyWithoutParticipantNestedInput
-  }
-
-  export type ContestPhotoUpsertWithoutContestWinnerInput = {
-    update: XOR<ContestPhotoUpdateWithoutContestWinnerInput, ContestPhotoUncheckedUpdateWithoutContestWinnerInput>
-    create: XOR<ContestPhotoCreateWithoutContestWinnerInput, ContestPhotoUncheckedCreateWithoutContestWinnerInput>
-    where?: ContestPhotoWhereInput
-  }
-
-  export type ContestPhotoUpdateToOneWithWhereWithoutContestWinnerInput = {
-    where?: ContestPhotoWhereInput
-    data: XOR<ContestPhotoUpdateWithoutContestWinnerInput, ContestPhotoUncheckedUpdateWithoutContestWinnerInput>
-  }
-
-  export type ContestPhotoUpdateWithoutContestWinnerInput = {
-    title?: NullableStringFieldUpdateOperationsInput | string | null
-    contestId?: StringFieldUpdateOperationsInput | string
-    rank?: NullableIntFieldUpdateOperationsInput | number | null
-    promoted?: BoolFieldUpdateOperationsInput | boolean
-    promotionExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    initialVotes?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    participant?: ContestParticipantUpdateOneRequiredWithoutPhotosNestedInput
-    votes?: VoteUpdateManyWithoutPhotoNestedInput
-    photo?: UserPhotoUpdateOneRequiredWithoutContestUploadNestedInput
-    comments?: CommentUpdateManyWithoutPhotoNestedInput
-    achievements?: ContestAchievementUpdateManyWithoutPhotoNestedInput
-  }
-
-  export type ContestPhotoUncheckedUpdateWithoutContestWinnerInput = {
-    title?: NullableStringFieldUpdateOperationsInput | string | null
-    contestId?: StringFieldUpdateOperationsInput | string
-    participantId?: StringFieldUpdateOperationsInput | string
-    photoId?: StringFieldUpdateOperationsInput | string
-    rank?: NullableIntFieldUpdateOperationsInput | number | null
-    promoted?: BoolFieldUpdateOperationsInput | boolean
-    promotionExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    initialVotes?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    votes?: VoteUncheckedUpdateManyWithoutPhotoNestedInput
-    comments?: CommentUncheckedUpdateManyWithoutPhotoNestedInput
-    achievements?: ContestAchievementUncheckedUpdateManyWithoutPhotoNestedInput
-  }
-
   export type ContestCreateWithoutParticipantsInput = {
     id?: string
     title: string
     description: string
     banner?: string | null
     status?: $Enums.ContestStatus
-    mode?: $Enums.ContestMode
-    maxUploads?: number
     isMoneyContest?: boolean
     maxPrize?: number | null
     minPrize?: number | null
-    level_requirements?: ContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
     startedAt?: Date | string | null
-    rules?: InputJsonValue | null
-    prizes?: InputJsonValue | null
+    endedAt?: Date | string | null
+    finalizedAt?: Date | string | null
+    configVersion?: number
+    scoringVersion?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     creator: UserCreateNestedOneWithoutCreatedContestsInput
     teamParticipations?: TeamParticipationCreateNestedManyWithoutContestInput
     votes?: VoteCreateNestedManyWithoutContestInput
     contestRules?: ContestRuleCreateNestedManyWithoutContestInput
+    ruleConfigs?: ContestRuleConfigCreateNestedManyWithoutContestInput
     contestPrizes?: ContestPrizeCreateNestedManyWithoutContestInput
     contestAwards?: ContestAwardCreateNestedManyWithoutContestInput
     achievements?: ContestAchievementCreateNestedManyWithoutContestInput
@@ -57661,24 +68636,24 @@ export namespace Prisma {
     description: string
     banner?: string | null
     status?: $Enums.ContestStatus
-    mode?: $Enums.ContestMode
-    maxUploads?: number
     isMoneyContest?: boolean
     maxPrize?: number | null
     minPrize?: number | null
-    level_requirements?: ContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
     startedAt?: Date | string | null
+    endedAt?: Date | string | null
+    finalizedAt?: Date | string | null
     recurringContestId?: string | null
+    configVersion?: number
+    scoringVersion?: number
     creatorId: string
-    rules?: InputJsonValue | null
-    prizes?: InputJsonValue | null
     createdAt?: Date | string
     updatedAt?: Date | string
     teamParticipations?: TeamParticipationUncheckedCreateNestedManyWithoutContestInput
     votes?: VoteUncheckedCreateNestedManyWithoutContestInput
     contestRules?: ContestRuleUncheckedCreateNestedManyWithoutContestInput
+    ruleConfigs?: ContestRuleConfigUncheckedCreateNestedManyWithoutContestInput
     contestPrizes?: ContestPrizeUncheckedCreateNestedManyWithoutContestInput
     contestAwards?: ContestAwardUncheckedCreateNestedManyWithoutContestInput
     achievements?: ContestAchievementUncheckedCreateNestedManyWithoutContestInput
@@ -57816,7 +68791,6 @@ export namespace Prisma {
     photo: UserPhotoCreateNestedOneWithoutContestUploadInput
     comments?: CommentCreateNestedManyWithoutPhotoInput
     achievements?: ContestAchievementCreateNestedManyWithoutPhotoInput
-    ContestWinner?: ContestWinnerCreateNestedManyWithoutPhotoInput
   }
 
   export type ContestPhotoUncheckedCreateWithoutParticipantInput = {
@@ -57833,7 +68807,6 @@ export namespace Prisma {
     votes?: VoteUncheckedCreateNestedManyWithoutPhotoInput
     comments?: CommentUncheckedCreateNestedManyWithoutPhotoInput
     achievements?: ContestAchievementUncheckedCreateNestedManyWithoutPhotoInput
-    ContestWinner?: ContestWinnerUncheckedCreateNestedManyWithoutPhotoInput
   }
 
   export type ContestPhotoCreateOrConnectWithoutParticipantInput = {
@@ -57845,34 +68818,16 @@ export namespace Prisma {
     data: ContestPhotoCreateManyParticipantInput | ContestPhotoCreateManyParticipantInput[]
   }
 
-  export type ContestWinnerCreateWithoutParticipantInput = {
-    id?: string
-    contestId: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    photo: ContestPhotoCreateNestedOneWithoutContestWinnerInput
-  }
-
-  export type ContestWinnerUncheckedCreateWithoutParticipantInput = {
-    id?: string
-    contestId: string
-    contestPhotoId: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type ContestWinnerCreateOrConnectWithoutParticipantInput = {
-    where: ContestWinnerWhereUniqueInput
-    create: XOR<ContestWinnerCreateWithoutParticipantInput, ContestWinnerUncheckedCreateWithoutParticipantInput>
-  }
-
-  export type ContestWinnerCreateManyParticipantInputEnvelope = {
-    data: ContestWinnerCreateManyParticipantInput | ContestWinnerCreateManyParticipantInput[]
-  }
-
   export type ContestAchievementCreateWithoutParticipantInput = {
     id?: string
     category: $Enums.PrizeType
+    kind?: $Enums.AchievementKind
+    type?: $Enums.AwardType | null
+    target?: $Enums.AwardTarget | null
+    rankLimit?: number | null
+    levelBadge?: $Enums.ContestLevelBadge | null
+    levelOrder?: number | null
+    grantKey?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     photo?: ContestPhotoCreateNestedOneWithoutAchievementsInput
@@ -57882,8 +68837,15 @@ export namespace Prisma {
   export type ContestAchievementUncheckedCreateWithoutParticipantInput = {
     id?: string
     category: $Enums.PrizeType
+    kind?: $Enums.AchievementKind
+    type?: $Enums.AwardType | null
+    target?: $Enums.AwardTarget | null
+    rankLimit?: number | null
+    levelBadge?: $Enums.ContestLevelBadge | null
+    levelOrder?: number | null
     photoId?: string | null
     contestId: string
+    grantKey?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -57913,23 +68875,23 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     banner?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumContestStatusFieldUpdateOperationsInput | $Enums.ContestStatus
-    mode?: EnumContestModeFieldUpdateOperationsInput | $Enums.ContestMode
-    maxUploads?: IntFieldUpdateOperationsInput | number
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
-    level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    rules?: InputJsonValue | InputJsonValue | null
-    prizes?: InputJsonValue | InputJsonValue | null
+    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    finalizedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    configVersion?: IntFieldUpdateOperationsInput | number
+    scoringVersion?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     creator?: UserUpdateOneRequiredWithoutCreatedContestsNestedInput
     teamParticipations?: TeamParticipationUpdateManyWithoutContestNestedInput
     votes?: VoteUpdateManyWithoutContestNestedInput
     contestRules?: ContestRuleUpdateManyWithoutContestNestedInput
+    ruleConfigs?: ContestRuleConfigUpdateManyWithoutContestNestedInput
     contestPrizes?: ContestPrizeUpdateManyWithoutContestNestedInput
     contestAwards?: ContestAwardUpdateManyWithoutContestNestedInput
     achievements?: ContestAchievementUpdateManyWithoutContestNestedInput
@@ -57942,24 +68904,24 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     banner?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumContestStatusFieldUpdateOperationsInput | $Enums.ContestStatus
-    mode?: EnumContestModeFieldUpdateOperationsInput | $Enums.ContestMode
-    maxUploads?: IntFieldUpdateOperationsInput | number
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
-    level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    finalizedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     recurringContestId?: NullableStringFieldUpdateOperationsInput | string | null
+    configVersion?: IntFieldUpdateOperationsInput | number
+    scoringVersion?: IntFieldUpdateOperationsInput | number
     creatorId?: StringFieldUpdateOperationsInput | string
-    rules?: InputJsonValue | InputJsonValue | null
-    prizes?: InputJsonValue | InputJsonValue | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     teamParticipations?: TeamParticipationUncheckedUpdateManyWithoutContestNestedInput
     votes?: VoteUncheckedUpdateManyWithoutContestNestedInput
     contestRules?: ContestRuleUncheckedUpdateManyWithoutContestNestedInput
+    ruleConfigs?: ContestRuleConfigUncheckedUpdateManyWithoutContestNestedInput
     contestPrizes?: ContestPrizeUncheckedUpdateManyWithoutContestNestedInput
     contestAwards?: ContestAwardUncheckedUpdateManyWithoutContestNestedInput
     achievements?: ContestAchievementUncheckedUpdateManyWithoutContestNestedInput
@@ -58119,22 +69081,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"ContestPhoto"> | Date | string
   }
 
-  export type ContestWinnerUpsertWithWhereUniqueWithoutParticipantInput = {
-    where: ContestWinnerWhereUniqueInput
-    update: XOR<ContestWinnerUpdateWithoutParticipantInput, ContestWinnerUncheckedUpdateWithoutParticipantInput>
-    create: XOR<ContestWinnerCreateWithoutParticipantInput, ContestWinnerUncheckedCreateWithoutParticipantInput>
-  }
-
-  export type ContestWinnerUpdateWithWhereUniqueWithoutParticipantInput = {
-    where: ContestWinnerWhereUniqueInput
-    data: XOR<ContestWinnerUpdateWithoutParticipantInput, ContestWinnerUncheckedUpdateWithoutParticipantInput>
-  }
-
-  export type ContestWinnerUpdateManyWithWhereWithoutParticipantInput = {
-    where: ContestWinnerScalarWhereInput
-    data: XOR<ContestWinnerUpdateManyMutationInput, ContestWinnerUncheckedUpdateManyWithoutParticipantInput>
-  }
-
   export type ContestAchievementUpsertWithWhereUniqueWithoutParticipantInput = {
     where: ContestAchievementWhereUniqueInput
     update: XOR<ContestAchievementUpdateWithoutParticipantInput, ContestAchievementUncheckedUpdateWithoutParticipantInput>
@@ -58157,17 +69103,16 @@ export namespace Prisma {
     description: string
     banner?: string | null
     status?: $Enums.ContestStatus
-    mode?: $Enums.ContestMode
-    maxUploads?: number
     isMoneyContest?: boolean
     maxPrize?: number | null
     minPrize?: number | null
-    level_requirements?: ContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
     startedAt?: Date | string | null
-    rules?: InputJsonValue | null
-    prizes?: InputJsonValue | null
+    endedAt?: Date | string | null
+    finalizedAt?: Date | string | null
+    configVersion?: number
+    scoringVersion?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     creator: UserCreateNestedOneWithoutCreatedContestsInput
@@ -58175,6 +69120,7 @@ export namespace Prisma {
     teamParticipations?: TeamParticipationCreateNestedManyWithoutContestInput
     votes?: VoteCreateNestedManyWithoutContestInput
     contestRules?: ContestRuleCreateNestedManyWithoutContestInput
+    ruleConfigs?: ContestRuleConfigCreateNestedManyWithoutContestInput
     contestAwards?: ContestAwardCreateNestedManyWithoutContestInput
     achievements?: ContestAchievementCreateNestedManyWithoutContestInput
     teamMatch?: TeamMatchCreateNestedManyWithoutContestInput
@@ -58187,25 +69133,25 @@ export namespace Prisma {
     description: string
     banner?: string | null
     status?: $Enums.ContestStatus
-    mode?: $Enums.ContestMode
-    maxUploads?: number
     isMoneyContest?: boolean
     maxPrize?: number | null
     minPrize?: number | null
-    level_requirements?: ContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
     startedAt?: Date | string | null
+    endedAt?: Date | string | null
+    finalizedAt?: Date | string | null
     recurringContestId?: string | null
+    configVersion?: number
+    scoringVersion?: number
     creatorId: string
-    rules?: InputJsonValue | null
-    prizes?: InputJsonValue | null
     createdAt?: Date | string
     updatedAt?: Date | string
     participants?: ContestParticipantUncheckedCreateNestedManyWithoutContestInput
     teamParticipations?: TeamParticipationUncheckedCreateNestedManyWithoutContestInput
     votes?: VoteUncheckedCreateNestedManyWithoutContestInput
     contestRules?: ContestRuleUncheckedCreateNestedManyWithoutContestInput
+    ruleConfigs?: ContestRuleConfigUncheckedCreateNestedManyWithoutContestInput
     contestAwards?: ContestAwardUncheckedCreateNestedManyWithoutContestInput
     achievements?: ContestAchievementUncheckedCreateNestedManyWithoutContestInput
     teamMatch?: TeamMatchUncheckedCreateNestedManyWithoutContestInput
@@ -58232,17 +69178,16 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     banner?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumContestStatusFieldUpdateOperationsInput | $Enums.ContestStatus
-    mode?: EnumContestModeFieldUpdateOperationsInput | $Enums.ContestMode
-    maxUploads?: IntFieldUpdateOperationsInput | number
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
-    level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    rules?: InputJsonValue | InputJsonValue | null
-    prizes?: InputJsonValue | InputJsonValue | null
+    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    finalizedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    configVersion?: IntFieldUpdateOperationsInput | number
+    scoringVersion?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     creator?: UserUpdateOneRequiredWithoutCreatedContestsNestedInput
@@ -58250,6 +69195,7 @@ export namespace Prisma {
     teamParticipations?: TeamParticipationUpdateManyWithoutContestNestedInput
     votes?: VoteUpdateManyWithoutContestNestedInput
     contestRules?: ContestRuleUpdateManyWithoutContestNestedInput
+    ruleConfigs?: ContestRuleConfigUpdateManyWithoutContestNestedInput
     contestAwards?: ContestAwardUpdateManyWithoutContestNestedInput
     achievements?: ContestAchievementUpdateManyWithoutContestNestedInput
     teamMatch?: TeamMatchUpdateManyWithoutContestNestedInput
@@ -58261,25 +69207,25 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     banner?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumContestStatusFieldUpdateOperationsInput | $Enums.ContestStatus
-    mode?: EnumContestModeFieldUpdateOperationsInput | $Enums.ContestMode
-    maxUploads?: IntFieldUpdateOperationsInput | number
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
-    level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    finalizedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     recurringContestId?: NullableStringFieldUpdateOperationsInput | string | null
+    configVersion?: IntFieldUpdateOperationsInput | number
+    scoringVersion?: IntFieldUpdateOperationsInput | number
     creatorId?: StringFieldUpdateOperationsInput | string
-    rules?: InputJsonValue | InputJsonValue | null
-    prizes?: InputJsonValue | InputJsonValue | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     participants?: ContestParticipantUncheckedUpdateManyWithoutContestNestedInput
     teamParticipations?: TeamParticipationUncheckedUpdateManyWithoutContestNestedInput
     votes?: VoteUncheckedUpdateManyWithoutContestNestedInput
     contestRules?: ContestRuleUncheckedUpdateManyWithoutContestNestedInput
+    ruleConfigs?: ContestRuleConfigUncheckedUpdateManyWithoutContestNestedInput
     contestAwards?: ContestAwardUncheckedUpdateManyWithoutContestNestedInput
     achievements?: ContestAchievementUncheckedUpdateManyWithoutContestNestedInput
     teamMatch?: TeamMatchUncheckedUpdateManyWithoutContestNestedInput
@@ -58291,17 +69237,16 @@ export namespace Prisma {
     description: string
     banner?: string | null
     status?: $Enums.ContestStatus
-    mode?: $Enums.ContestMode
-    maxUploads?: number
     isMoneyContest?: boolean
     maxPrize?: number | null
     minPrize?: number | null
-    level_requirements?: ContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
     startedAt?: Date | string | null
-    rules?: InputJsonValue | null
-    prizes?: InputJsonValue | null
+    endedAt?: Date | string | null
+    finalizedAt?: Date | string | null
+    configVersion?: number
+    scoringVersion?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     creator: UserCreateNestedOneWithoutCreatedContestsInput
@@ -58309,6 +69254,7 @@ export namespace Prisma {
     teamParticipations?: TeamParticipationCreateNestedManyWithoutContestInput
     votes?: VoteCreateNestedManyWithoutContestInput
     contestRules?: ContestRuleCreateNestedManyWithoutContestInput
+    ruleConfigs?: ContestRuleConfigCreateNestedManyWithoutContestInput
     contestPrizes?: ContestPrizeCreateNestedManyWithoutContestInput
     achievements?: ContestAchievementCreateNestedManyWithoutContestInput
     teamMatch?: TeamMatchCreateNestedManyWithoutContestInput
@@ -58321,25 +69267,25 @@ export namespace Prisma {
     description: string
     banner?: string | null
     status?: $Enums.ContestStatus
-    mode?: $Enums.ContestMode
-    maxUploads?: number
     isMoneyContest?: boolean
     maxPrize?: number | null
     minPrize?: number | null
-    level_requirements?: ContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
     startedAt?: Date | string | null
+    endedAt?: Date | string | null
+    finalizedAt?: Date | string | null
     recurringContestId?: string | null
+    configVersion?: number
+    scoringVersion?: number
     creatorId: string
-    rules?: InputJsonValue | null
-    prizes?: InputJsonValue | null
     createdAt?: Date | string
     updatedAt?: Date | string
     participants?: ContestParticipantUncheckedCreateNestedManyWithoutContestInput
     teamParticipations?: TeamParticipationUncheckedCreateNestedManyWithoutContestInput
     votes?: VoteUncheckedCreateNestedManyWithoutContestInput
     contestRules?: ContestRuleUncheckedCreateNestedManyWithoutContestInput
+    ruleConfigs?: ContestRuleConfigUncheckedCreateNestedManyWithoutContestInput
     contestPrizes?: ContestPrizeUncheckedCreateNestedManyWithoutContestInput
     achievements?: ContestAchievementUncheckedCreateNestedManyWithoutContestInput
     teamMatch?: TeamMatchUncheckedCreateNestedManyWithoutContestInput
@@ -58353,6 +69299,9 @@ export namespace Prisma {
   export type PrizeCreateWithoutContestAwardsInput = {
     id?: string
     category: $Enums.PrizeType
+    type?: $Enums.AwardType | null
+    target?: $Enums.AwardTarget | null
+    rankLimit?: number | null
     title?: string | null
     description?: string | null
     icon?: string | null
@@ -58369,6 +69318,9 @@ export namespace Prisma {
   export type PrizeUncheckedCreateWithoutContestAwardsInput = {
     id?: string
     category: $Enums.PrizeType
+    type?: $Enums.AwardType | null
+    target?: $Enums.AwardTarget | null
+    rankLimit?: number | null
     title?: string | null
     description?: string | null
     icon?: string | null
@@ -58403,17 +69355,16 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     banner?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumContestStatusFieldUpdateOperationsInput | $Enums.ContestStatus
-    mode?: EnumContestModeFieldUpdateOperationsInput | $Enums.ContestMode
-    maxUploads?: IntFieldUpdateOperationsInput | number
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
-    level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    rules?: InputJsonValue | InputJsonValue | null
-    prizes?: InputJsonValue | InputJsonValue | null
+    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    finalizedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    configVersion?: IntFieldUpdateOperationsInput | number
+    scoringVersion?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     creator?: UserUpdateOneRequiredWithoutCreatedContestsNestedInput
@@ -58421,6 +69372,7 @@ export namespace Prisma {
     teamParticipations?: TeamParticipationUpdateManyWithoutContestNestedInput
     votes?: VoteUpdateManyWithoutContestNestedInput
     contestRules?: ContestRuleUpdateManyWithoutContestNestedInput
+    ruleConfigs?: ContestRuleConfigUpdateManyWithoutContestNestedInput
     contestPrizes?: ContestPrizeUpdateManyWithoutContestNestedInput
     achievements?: ContestAchievementUpdateManyWithoutContestNestedInput
     teamMatch?: TeamMatchUpdateManyWithoutContestNestedInput
@@ -58432,25 +69384,25 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     banner?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumContestStatusFieldUpdateOperationsInput | $Enums.ContestStatus
-    mode?: EnumContestModeFieldUpdateOperationsInput | $Enums.ContestMode
-    maxUploads?: IntFieldUpdateOperationsInput | number
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
-    level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    finalizedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     recurringContestId?: NullableStringFieldUpdateOperationsInput | string | null
+    configVersion?: IntFieldUpdateOperationsInput | number
+    scoringVersion?: IntFieldUpdateOperationsInput | number
     creatorId?: StringFieldUpdateOperationsInput | string
-    rules?: InputJsonValue | InputJsonValue | null
-    prizes?: InputJsonValue | InputJsonValue | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     participants?: ContestParticipantUncheckedUpdateManyWithoutContestNestedInput
     teamParticipations?: TeamParticipationUncheckedUpdateManyWithoutContestNestedInput
     votes?: VoteUncheckedUpdateManyWithoutContestNestedInput
     contestRules?: ContestRuleUncheckedUpdateManyWithoutContestNestedInput
+    ruleConfigs?: ContestRuleConfigUncheckedUpdateManyWithoutContestNestedInput
     contestPrizes?: ContestPrizeUncheckedUpdateManyWithoutContestNestedInput
     achievements?: ContestAchievementUncheckedUpdateManyWithoutContestNestedInput
     teamMatch?: TeamMatchUncheckedUpdateManyWithoutContestNestedInput
@@ -58469,6 +69421,9 @@ export namespace Prisma {
 
   export type PrizeUpdateWithoutContestAwardsInput = {
     category?: EnumPrizeTypeFieldUpdateOperationsInput | $Enums.PrizeType
+    type?: NullableEnumAwardTypeFieldUpdateOperationsInput | $Enums.AwardType | null
+    target?: NullableEnumAwardTargetFieldUpdateOperationsInput | $Enums.AwardTarget | null
+    rankLimit?: NullableIntFieldUpdateOperationsInput | number | null
     title?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     icon?: NullableStringFieldUpdateOperationsInput | string | null
@@ -58484,6 +69439,9 @@ export namespace Prisma {
 
   export type PrizeUncheckedUpdateWithoutContestAwardsInput = {
     category?: EnumPrizeTypeFieldUpdateOperationsInput | $Enums.PrizeType
+    type?: NullableEnumAwardTypeFieldUpdateOperationsInput | $Enums.AwardType | null
+    target?: NullableEnumAwardTargetFieldUpdateOperationsInput | $Enums.AwardTarget | null
+    rankLimit?: NullableIntFieldUpdateOperationsInput | number | null
     title?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     icon?: NullableStringFieldUpdateOperationsInput | string | null
@@ -58502,11 +69460,9 @@ export namespace Prisma {
     title: string
     description: string
     banner?: string | null
-    maxUploads?: number
     isMoneyContest?: boolean
     maxPrize?: number | null
     minPrize?: number | null
-    level_requirements?: RecurringContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
     creatorId: string
@@ -58525,11 +69481,9 @@ export namespace Prisma {
     title: string
     description: string
     banner?: string | null
-    maxUploads?: number
     isMoneyContest?: boolean
     maxPrize?: number | null
     minPrize?: number | null
-    level_requirements?: RecurringContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
     creatorId: string
@@ -58551,6 +69505,9 @@ export namespace Prisma {
   export type PrizeCreateWithoutRecurringContestAwardsInput = {
     id?: string
     category: $Enums.PrizeType
+    type?: $Enums.AwardType | null
+    target?: $Enums.AwardTarget | null
+    rankLimit?: number | null
     title?: string | null
     description?: string | null
     icon?: string | null
@@ -58567,6 +69524,9 @@ export namespace Prisma {
   export type PrizeUncheckedCreateWithoutRecurringContestAwardsInput = {
     id?: string
     category: $Enums.PrizeType
+    type?: $Enums.AwardType | null
+    target?: $Enums.AwardTarget | null
+    rankLimit?: number | null
     title?: string | null
     description?: string | null
     icon?: string | null
@@ -58600,11 +69560,9 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
     banner?: NullableStringFieldUpdateOperationsInput | string | null
-    maxUploads?: IntFieldUpdateOperationsInput | number
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
-    level_requirements?: RecurringContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     creatorId?: StringFieldUpdateOperationsInput | string
@@ -58622,11 +69580,9 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
     banner?: NullableStringFieldUpdateOperationsInput | string | null
-    maxUploads?: IntFieldUpdateOperationsInput | number
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
-    level_requirements?: RecurringContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     creatorId?: StringFieldUpdateOperationsInput | string
@@ -58653,6 +69609,9 @@ export namespace Prisma {
 
   export type PrizeUpdateWithoutRecurringContestAwardsInput = {
     category?: EnumPrizeTypeFieldUpdateOperationsInput | $Enums.PrizeType
+    type?: NullableEnumAwardTypeFieldUpdateOperationsInput | $Enums.AwardType | null
+    target?: NullableEnumAwardTargetFieldUpdateOperationsInput | $Enums.AwardTarget | null
+    rankLimit?: NullableIntFieldUpdateOperationsInput | number | null
     title?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     icon?: NullableStringFieldUpdateOperationsInput | string | null
@@ -58668,6 +69627,9 @@ export namespace Prisma {
 
   export type PrizeUncheckedUpdateWithoutRecurringContestAwardsInput = {
     category?: EnumPrizeTypeFieldUpdateOperationsInput | $Enums.PrizeType
+    type?: NullableEnumAwardTypeFieldUpdateOperationsInput | $Enums.AwardType | null
+    target?: NullableEnumAwardTargetFieldUpdateOperationsInput | $Enums.AwardTarget | null
+    rankLimit?: NullableIntFieldUpdateOperationsInput | number | null
     title?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     icon?: NullableStringFieldUpdateOperationsInput | string | null
@@ -58695,7 +69657,6 @@ export namespace Prisma {
     votes?: VoteCreateNestedManyWithoutPhotoInput
     photo: UserPhotoCreateNestedOneWithoutContestUploadInput
     comments?: CommentCreateNestedManyWithoutPhotoInput
-    ContestWinner?: ContestWinnerCreateNestedManyWithoutPhotoInput
   }
 
   export type ContestPhotoUncheckedCreateWithoutAchievementsInput = {
@@ -58712,7 +69673,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     votes?: VoteUncheckedCreateNestedManyWithoutPhotoInput
     comments?: CommentUncheckedCreateNestedManyWithoutPhotoInput
-    ContestWinner?: ContestWinnerUncheckedCreateNestedManyWithoutPhotoInput
   }
 
   export type ContestPhotoCreateOrConnectWithoutAchievementsInput = {
@@ -58726,17 +69686,16 @@ export namespace Prisma {
     description: string
     banner?: string | null
     status?: $Enums.ContestStatus
-    mode?: $Enums.ContestMode
-    maxUploads?: number
     isMoneyContest?: boolean
     maxPrize?: number | null
     minPrize?: number | null
-    level_requirements?: ContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
     startedAt?: Date | string | null
-    rules?: InputJsonValue | null
-    prizes?: InputJsonValue | null
+    endedAt?: Date | string | null
+    finalizedAt?: Date | string | null
+    configVersion?: number
+    scoringVersion?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     creator: UserCreateNestedOneWithoutCreatedContestsInput
@@ -58744,6 +69703,7 @@ export namespace Prisma {
     teamParticipations?: TeamParticipationCreateNestedManyWithoutContestInput
     votes?: VoteCreateNestedManyWithoutContestInput
     contestRules?: ContestRuleCreateNestedManyWithoutContestInput
+    ruleConfigs?: ContestRuleConfigCreateNestedManyWithoutContestInput
     contestPrizes?: ContestPrizeCreateNestedManyWithoutContestInput
     contestAwards?: ContestAwardCreateNestedManyWithoutContestInput
     teamMatch?: TeamMatchCreateNestedManyWithoutContestInput
@@ -58756,25 +69716,25 @@ export namespace Prisma {
     description: string
     banner?: string | null
     status?: $Enums.ContestStatus
-    mode?: $Enums.ContestMode
-    maxUploads?: number
     isMoneyContest?: boolean
     maxPrize?: number | null
     minPrize?: number | null
-    level_requirements?: ContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
     startedAt?: Date | string | null
+    endedAt?: Date | string | null
+    finalizedAt?: Date | string | null
     recurringContestId?: string | null
+    configVersion?: number
+    scoringVersion?: number
     creatorId: string
-    rules?: InputJsonValue | null
-    prizes?: InputJsonValue | null
     createdAt?: Date | string
     updatedAt?: Date | string
     participants?: ContestParticipantUncheckedCreateNestedManyWithoutContestInput
     teamParticipations?: TeamParticipationUncheckedCreateNestedManyWithoutContestInput
     votes?: VoteUncheckedCreateNestedManyWithoutContestInput
     contestRules?: ContestRuleUncheckedCreateNestedManyWithoutContestInput
+    ruleConfigs?: ContestRuleConfigUncheckedCreateNestedManyWithoutContestInput
     contestPrizes?: ContestPrizeUncheckedCreateNestedManyWithoutContestInput
     contestAwards?: ContestAwardUncheckedCreateNestedManyWithoutContestInput
     teamMatch?: TeamMatchUncheckedCreateNestedManyWithoutContestInput
@@ -58797,7 +69757,6 @@ export namespace Prisma {
     user: UserCreateNestedOneWithoutContestParticipantInput
     member?: TeamMemberCreateNestedOneWithoutContestParticipantInput
     photos?: ContestPhotoCreateNestedManyWithoutParticipantInput
-    ContestWinner?: ContestWinnerCreateNestedManyWithoutParticipantInput
   }
 
   export type ContestParticipantUncheckedCreateWithoutContestAchievementInput = {
@@ -58812,7 +69771,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     photos?: ContestPhotoUncheckedCreateNestedManyWithoutParticipantInput
-    ContestWinner?: ContestWinnerUncheckedCreateNestedManyWithoutParticipantInput
   }
 
   export type ContestParticipantCreateOrConnectWithoutContestAchievementInput = {
@@ -58844,7 +69802,6 @@ export namespace Prisma {
     votes?: VoteUpdateManyWithoutPhotoNestedInput
     photo?: UserPhotoUpdateOneRequiredWithoutContestUploadNestedInput
     comments?: CommentUpdateManyWithoutPhotoNestedInput
-    ContestWinner?: ContestWinnerUpdateManyWithoutPhotoNestedInput
   }
 
   export type ContestPhotoUncheckedUpdateWithoutAchievementsInput = {
@@ -58860,7 +69817,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     votes?: VoteUncheckedUpdateManyWithoutPhotoNestedInput
     comments?: CommentUncheckedUpdateManyWithoutPhotoNestedInput
-    ContestWinner?: ContestWinnerUncheckedUpdateManyWithoutPhotoNestedInput
   }
 
   export type ContestUpsertWithoutAchievementsInput = {
@@ -58879,17 +69835,16 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     banner?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumContestStatusFieldUpdateOperationsInput | $Enums.ContestStatus
-    mode?: EnumContestModeFieldUpdateOperationsInput | $Enums.ContestMode
-    maxUploads?: IntFieldUpdateOperationsInput | number
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
-    level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    rules?: InputJsonValue | InputJsonValue | null
-    prizes?: InputJsonValue | InputJsonValue | null
+    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    finalizedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    configVersion?: IntFieldUpdateOperationsInput | number
+    scoringVersion?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     creator?: UserUpdateOneRequiredWithoutCreatedContestsNestedInput
@@ -58897,6 +69852,7 @@ export namespace Prisma {
     teamParticipations?: TeamParticipationUpdateManyWithoutContestNestedInput
     votes?: VoteUpdateManyWithoutContestNestedInput
     contestRules?: ContestRuleUpdateManyWithoutContestNestedInput
+    ruleConfigs?: ContestRuleConfigUpdateManyWithoutContestNestedInput
     contestPrizes?: ContestPrizeUpdateManyWithoutContestNestedInput
     contestAwards?: ContestAwardUpdateManyWithoutContestNestedInput
     teamMatch?: TeamMatchUpdateManyWithoutContestNestedInput
@@ -58908,25 +69864,25 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     banner?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumContestStatusFieldUpdateOperationsInput | $Enums.ContestStatus
-    mode?: EnumContestModeFieldUpdateOperationsInput | $Enums.ContestMode
-    maxUploads?: IntFieldUpdateOperationsInput | number
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
-    level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    finalizedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     recurringContestId?: NullableStringFieldUpdateOperationsInput | string | null
+    configVersion?: IntFieldUpdateOperationsInput | number
+    scoringVersion?: IntFieldUpdateOperationsInput | number
     creatorId?: StringFieldUpdateOperationsInput | string
-    rules?: InputJsonValue | InputJsonValue | null
-    prizes?: InputJsonValue | InputJsonValue | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     participants?: ContestParticipantUncheckedUpdateManyWithoutContestNestedInput
     teamParticipations?: TeamParticipationUncheckedUpdateManyWithoutContestNestedInput
     votes?: VoteUncheckedUpdateManyWithoutContestNestedInput
     contestRules?: ContestRuleUncheckedUpdateManyWithoutContestNestedInput
+    ruleConfigs?: ContestRuleConfigUncheckedUpdateManyWithoutContestNestedInput
     contestPrizes?: ContestPrizeUncheckedUpdateManyWithoutContestNestedInput
     contestAwards?: ContestAwardUncheckedUpdateManyWithoutContestNestedInput
     teamMatch?: TeamMatchUncheckedUpdateManyWithoutContestNestedInput
@@ -58954,7 +69910,6 @@ export namespace Prisma {
     user?: UserUpdateOneRequiredWithoutContestParticipantNestedInput
     member?: TeamMemberUpdateOneWithoutContestParticipantNestedInput
     photos?: ContestPhotoUpdateManyWithoutParticipantNestedInput
-    ContestWinner?: ContestWinnerUpdateManyWithoutParticipantNestedInput
   }
 
   export type ContestParticipantUncheckedUpdateWithoutContestAchievementInput = {
@@ -58968,7 +69923,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     photos?: ContestPhotoUncheckedUpdateManyWithoutParticipantNestedInput
-    ContestWinner?: ContestWinnerUncheckedUpdateManyWithoutParticipantNestedInput
   }
 
   export type UserCreateWithoutPaymentsInput = {
@@ -60039,17 +70993,16 @@ export namespace Prisma {
     description: string
     banner?: string | null
     status?: $Enums.ContestStatus
-    mode?: $Enums.ContestMode
-    maxUploads?: number
     isMoneyContest?: boolean
     maxPrize?: number | null
     minPrize?: number | null
-    level_requirements?: ContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
     startedAt?: Date | string | null
-    rules?: InputJsonValue | null
-    prizes?: InputJsonValue | null
+    endedAt?: Date | string | null
+    finalizedAt?: Date | string | null
+    configVersion?: number
+    scoringVersion?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     creator: UserCreateNestedOneWithoutCreatedContestsInput
@@ -60057,6 +71010,7 @@ export namespace Prisma {
     teamParticipations?: TeamParticipationCreateNestedManyWithoutContestInput
     votes?: VoteCreateNestedManyWithoutContestInput
     contestRules?: ContestRuleCreateNestedManyWithoutContestInput
+    ruleConfigs?: ContestRuleConfigCreateNestedManyWithoutContestInput
     contestPrizes?: ContestPrizeCreateNestedManyWithoutContestInput
     contestAwards?: ContestAwardCreateNestedManyWithoutContestInput
     achievements?: ContestAchievementCreateNestedManyWithoutContestInput
@@ -60069,25 +71023,25 @@ export namespace Prisma {
     description: string
     banner?: string | null
     status?: $Enums.ContestStatus
-    mode?: $Enums.ContestMode
-    maxUploads?: number
     isMoneyContest?: boolean
     maxPrize?: number | null
     minPrize?: number | null
-    level_requirements?: ContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
     startedAt?: Date | string | null
+    endedAt?: Date | string | null
+    finalizedAt?: Date | string | null
     recurringContestId?: string | null
+    configVersion?: number
+    scoringVersion?: number
     creatorId: string
-    rules?: InputJsonValue | null
-    prizes?: InputJsonValue | null
     createdAt?: Date | string
     updatedAt?: Date | string
     participants?: ContestParticipantUncheckedCreateNestedManyWithoutContestInput
     teamParticipations?: TeamParticipationUncheckedCreateNestedManyWithoutContestInput
     votes?: VoteUncheckedCreateNestedManyWithoutContestInput
     contestRules?: ContestRuleUncheckedCreateNestedManyWithoutContestInput
+    ruleConfigs?: ContestRuleConfigUncheckedCreateNestedManyWithoutContestInput
     contestPrizes?: ContestPrizeUncheckedCreateNestedManyWithoutContestInput
     contestAwards?: ContestAwardUncheckedCreateNestedManyWithoutContestInput
     achievements?: ContestAchievementUncheckedCreateNestedManyWithoutContestInput
@@ -60220,17 +71174,16 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     banner?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumContestStatusFieldUpdateOperationsInput | $Enums.ContestStatus
-    mode?: EnumContestModeFieldUpdateOperationsInput | $Enums.ContestMode
-    maxUploads?: IntFieldUpdateOperationsInput | number
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
-    level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    rules?: InputJsonValue | InputJsonValue | null
-    prizes?: InputJsonValue | InputJsonValue | null
+    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    finalizedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    configVersion?: IntFieldUpdateOperationsInput | number
+    scoringVersion?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     creator?: UserUpdateOneRequiredWithoutCreatedContestsNestedInput
@@ -60238,6 +71191,7 @@ export namespace Prisma {
     teamParticipations?: TeamParticipationUpdateManyWithoutContestNestedInput
     votes?: VoteUpdateManyWithoutContestNestedInput
     contestRules?: ContestRuleUpdateManyWithoutContestNestedInput
+    ruleConfigs?: ContestRuleConfigUpdateManyWithoutContestNestedInput
     contestPrizes?: ContestPrizeUpdateManyWithoutContestNestedInput
     contestAwards?: ContestAwardUpdateManyWithoutContestNestedInput
     achievements?: ContestAchievementUpdateManyWithoutContestNestedInput
@@ -60249,25 +71203,25 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     banner?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumContestStatusFieldUpdateOperationsInput | $Enums.ContestStatus
-    mode?: EnumContestModeFieldUpdateOperationsInput | $Enums.ContestMode
-    maxUploads?: IntFieldUpdateOperationsInput | number
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
-    level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    finalizedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     recurringContestId?: NullableStringFieldUpdateOperationsInput | string | null
+    configVersion?: IntFieldUpdateOperationsInput | number
+    scoringVersion?: IntFieldUpdateOperationsInput | number
     creatorId?: StringFieldUpdateOperationsInput | string
-    rules?: InputJsonValue | InputJsonValue | null
-    prizes?: InputJsonValue | InputJsonValue | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     participants?: ContestParticipantUncheckedUpdateManyWithoutContestNestedInput
     teamParticipations?: TeamParticipationUncheckedUpdateManyWithoutContestNestedInput
     votes?: VoteUncheckedUpdateManyWithoutContestNestedInput
     contestRules?: ContestRuleUncheckedUpdateManyWithoutContestNestedInput
+    ruleConfigs?: ContestRuleConfigUncheckedUpdateManyWithoutContestNestedInput
     contestPrizes?: ContestPrizeUncheckedUpdateManyWithoutContestNestedInput
     contestAwards?: ContestAwardUncheckedUpdateManyWithoutContestNestedInput
     achievements?: ContestAchievementUncheckedUpdateManyWithoutContestNestedInput
@@ -60538,7 +71492,6 @@ export namespace Prisma {
     contest: ContestCreateNestedOneWithoutParticipantsInput
     user: UserCreateNestedOneWithoutContestParticipantInput
     photos?: ContestPhotoCreateNestedManyWithoutParticipantInput
-    ContestWinner?: ContestWinnerCreateNestedManyWithoutParticipantInput
     contestAchievement?: ContestAchievementCreateNestedManyWithoutParticipantInput
   }
 
@@ -60553,7 +71506,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     photos?: ContestPhotoUncheckedCreateNestedManyWithoutParticipantInput
-    ContestWinner?: ContestWinnerUncheckedCreateNestedManyWithoutParticipantInput
     contestAchievement?: ContestAchievementUncheckedCreateNestedManyWithoutParticipantInput
   }
 
@@ -60789,23 +71741,23 @@ export namespace Prisma {
     description: string
     banner?: string | null
     status?: $Enums.ContestStatus
-    mode?: $Enums.ContestMode
-    maxUploads?: number
     isMoneyContest?: boolean
     maxPrize?: number | null
     minPrize?: number | null
-    level_requirements?: ContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
     startedAt?: Date | string | null
-    rules?: InputJsonValue | null
-    prizes?: InputJsonValue | null
+    endedAt?: Date | string | null
+    finalizedAt?: Date | string | null
+    configVersion?: number
+    scoringVersion?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     creator: UserCreateNestedOneWithoutCreatedContestsInput
     participants?: ContestParticipantCreateNestedManyWithoutContestInput
     votes?: VoteCreateNestedManyWithoutContestInput
     contestRules?: ContestRuleCreateNestedManyWithoutContestInput
+    ruleConfigs?: ContestRuleConfigCreateNestedManyWithoutContestInput
     contestPrizes?: ContestPrizeCreateNestedManyWithoutContestInput
     contestAwards?: ContestAwardCreateNestedManyWithoutContestInput
     achievements?: ContestAchievementCreateNestedManyWithoutContestInput
@@ -60819,24 +71771,24 @@ export namespace Prisma {
     description: string
     banner?: string | null
     status?: $Enums.ContestStatus
-    mode?: $Enums.ContestMode
-    maxUploads?: number
     isMoneyContest?: boolean
     maxPrize?: number | null
     minPrize?: number | null
-    level_requirements?: ContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
     startedAt?: Date | string | null
+    endedAt?: Date | string | null
+    finalizedAt?: Date | string | null
     recurringContestId?: string | null
+    configVersion?: number
+    scoringVersion?: number
     creatorId: string
-    rules?: InputJsonValue | null
-    prizes?: InputJsonValue | null
     createdAt?: Date | string
     updatedAt?: Date | string
     participants?: ContestParticipantUncheckedCreateNestedManyWithoutContestInput
     votes?: VoteUncheckedCreateNestedManyWithoutContestInput
     contestRules?: ContestRuleUncheckedCreateNestedManyWithoutContestInput
+    ruleConfigs?: ContestRuleConfigUncheckedCreateNestedManyWithoutContestInput
     contestPrizes?: ContestPrizeUncheckedCreateNestedManyWithoutContestInput
     contestAwards?: ContestAwardUncheckedCreateNestedManyWithoutContestInput
     achievements?: ContestAchievementUncheckedCreateNestedManyWithoutContestInput
@@ -60921,23 +71873,23 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     banner?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumContestStatusFieldUpdateOperationsInput | $Enums.ContestStatus
-    mode?: EnumContestModeFieldUpdateOperationsInput | $Enums.ContestMode
-    maxUploads?: IntFieldUpdateOperationsInput | number
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
-    level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    rules?: InputJsonValue | InputJsonValue | null
-    prizes?: InputJsonValue | InputJsonValue | null
+    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    finalizedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    configVersion?: IntFieldUpdateOperationsInput | number
+    scoringVersion?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     creator?: UserUpdateOneRequiredWithoutCreatedContestsNestedInput
     participants?: ContestParticipantUpdateManyWithoutContestNestedInput
     votes?: VoteUpdateManyWithoutContestNestedInput
     contestRules?: ContestRuleUpdateManyWithoutContestNestedInput
+    ruleConfigs?: ContestRuleConfigUpdateManyWithoutContestNestedInput
     contestPrizes?: ContestPrizeUpdateManyWithoutContestNestedInput
     contestAwards?: ContestAwardUpdateManyWithoutContestNestedInput
     achievements?: ContestAchievementUpdateManyWithoutContestNestedInput
@@ -60950,24 +71902,24 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     banner?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumContestStatusFieldUpdateOperationsInput | $Enums.ContestStatus
-    mode?: EnumContestModeFieldUpdateOperationsInput | $Enums.ContestMode
-    maxUploads?: IntFieldUpdateOperationsInput | number
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
-    level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    finalizedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     recurringContestId?: NullableStringFieldUpdateOperationsInput | string | null
+    configVersion?: IntFieldUpdateOperationsInput | number
+    scoringVersion?: IntFieldUpdateOperationsInput | number
     creatorId?: StringFieldUpdateOperationsInput | string
-    rules?: InputJsonValue | InputJsonValue | null
-    prizes?: InputJsonValue | InputJsonValue | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     participants?: ContestParticipantUncheckedUpdateManyWithoutContestNestedInput
     votes?: VoteUncheckedUpdateManyWithoutContestNestedInput
     contestRules?: ContestRuleUncheckedUpdateManyWithoutContestNestedInput
+    ruleConfigs?: ContestRuleConfigUncheckedUpdateManyWithoutContestNestedInput
     contestPrizes?: ContestPrizeUncheckedUpdateManyWithoutContestNestedInput
     contestAwards?: ContestAwardUncheckedUpdateManyWithoutContestNestedInput
     achievements?: ContestAchievementUncheckedUpdateManyWithoutContestNestedInput
@@ -61127,23 +72079,23 @@ export namespace Prisma {
     description: string
     banner?: string | null
     status?: $Enums.ContestStatus
-    mode?: $Enums.ContestMode
-    maxUploads?: number
     isMoneyContest?: boolean
     maxPrize?: number | null
     minPrize?: number | null
-    level_requirements?: ContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
     startedAt?: Date | string | null
-    rules?: InputJsonValue | null
-    prizes?: InputJsonValue | null
+    endedAt?: Date | string | null
+    finalizedAt?: Date | string | null
+    configVersion?: number
+    scoringVersion?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     participants?: ContestParticipantCreateNestedManyWithoutContestInput
     teamParticipations?: TeamParticipationCreateNestedManyWithoutContestInput
     votes?: VoteCreateNestedManyWithoutContestInput
     contestRules?: ContestRuleCreateNestedManyWithoutContestInput
+    ruleConfigs?: ContestRuleConfigCreateNestedManyWithoutContestInput
     contestPrizes?: ContestPrizeCreateNestedManyWithoutContestInput
     contestAwards?: ContestAwardCreateNestedManyWithoutContestInput
     achievements?: ContestAchievementCreateNestedManyWithoutContestInput
@@ -61157,24 +72109,24 @@ export namespace Prisma {
     description: string
     banner?: string | null
     status?: $Enums.ContestStatus
-    mode?: $Enums.ContestMode
-    maxUploads?: number
     isMoneyContest?: boolean
     maxPrize?: number | null
     minPrize?: number | null
-    level_requirements?: ContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
     startedAt?: Date | string | null
+    endedAt?: Date | string | null
+    finalizedAt?: Date | string | null
     recurringContestId?: string | null
-    rules?: InputJsonValue | null
-    prizes?: InputJsonValue | null
+    configVersion?: number
+    scoringVersion?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     participants?: ContestParticipantUncheckedCreateNestedManyWithoutContestInput
     teamParticipations?: TeamParticipationUncheckedCreateNestedManyWithoutContestInput
     votes?: VoteUncheckedCreateNestedManyWithoutContestInput
     contestRules?: ContestRuleUncheckedCreateNestedManyWithoutContestInput
+    ruleConfigs?: ContestRuleConfigUncheckedCreateNestedManyWithoutContestInput
     contestPrizes?: ContestPrizeUncheckedCreateNestedManyWithoutContestInput
     contestAwards?: ContestAwardUncheckedCreateNestedManyWithoutContestInput
     achievements?: ContestAchievementUncheckedCreateNestedManyWithoutContestInput
@@ -61269,6 +72221,7 @@ export namespace Prisma {
     id?: string
     type: $Enums.VoteType
     power?: number
+    weight?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     photo: ContestPhotoCreateNestedOneWithoutVotesInput
@@ -61281,6 +72234,7 @@ export namespace Prisma {
     contestId: string
     type: $Enums.VoteType
     power?: number
+    weight?: number
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -61367,7 +72321,6 @@ export namespace Prisma {
     contest: ContestCreateNestedOneWithoutParticipantsInput
     member?: TeamMemberCreateNestedOneWithoutContestParticipantInput
     photos?: ContestPhotoCreateNestedManyWithoutParticipantInput
-    ContestWinner?: ContestWinnerCreateNestedManyWithoutParticipantInput
     contestAchievement?: ContestAchievementCreateNestedManyWithoutParticipantInput
   }
 
@@ -61382,7 +72335,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     photos?: ContestPhotoUncheckedCreateNestedManyWithoutParticipantInput
-    ContestWinner?: ContestWinnerUncheckedCreateNestedManyWithoutParticipantInput
     contestAchievement?: ContestAchievementUncheckedCreateNestedManyWithoutParticipantInput
   }
 
@@ -62174,7 +73126,6 @@ export namespace Prisma {
     votes?: VoteCreateNestedManyWithoutPhotoInput
     comments?: CommentCreateNestedManyWithoutPhotoInput
     achievements?: ContestAchievementCreateNestedManyWithoutPhotoInput
-    ContestWinner?: ContestWinnerCreateNestedManyWithoutPhotoInput
   }
 
   export type ContestPhotoUncheckedCreateWithoutPhotoInput = {
@@ -62191,7 +73142,6 @@ export namespace Prisma {
     votes?: VoteUncheckedCreateNestedManyWithoutPhotoInput
     comments?: CommentUncheckedCreateNestedManyWithoutPhotoInput
     achievements?: ContestAchievementUncheckedCreateNestedManyWithoutPhotoInput
-    ContestWinner?: ContestWinnerUncheckedCreateNestedManyWithoutPhotoInput
   }
 
   export type ContestPhotoCreateOrConnectWithoutPhotoInput = {
@@ -62885,7 +73835,6 @@ export namespace Prisma {
     votes?: VoteCreateNestedManyWithoutPhotoInput
     photo: UserPhotoCreateNestedOneWithoutContestUploadInput
     achievements?: ContestAchievementCreateNestedManyWithoutPhotoInput
-    ContestWinner?: ContestWinnerCreateNestedManyWithoutPhotoInput
   }
 
   export type ContestPhotoUncheckedCreateWithoutCommentsInput = {
@@ -62902,7 +73851,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     votes?: VoteUncheckedCreateNestedManyWithoutPhotoInput
     achievements?: ContestAchievementUncheckedCreateNestedManyWithoutPhotoInput
-    ContestWinner?: ContestWinnerUncheckedCreateNestedManyWithoutPhotoInput
   }
 
   export type ContestPhotoCreateOrConnectWithoutCommentsInput = {
@@ -63079,7 +74027,6 @@ export namespace Prisma {
     votes?: VoteUpdateManyWithoutPhotoNestedInput
     photo?: UserPhotoUpdateOneRequiredWithoutContestUploadNestedInput
     achievements?: ContestAchievementUpdateManyWithoutPhotoNestedInput
-    ContestWinner?: ContestWinnerUpdateManyWithoutPhotoNestedInput
   }
 
   export type ContestPhotoUncheckedUpdateWithoutCommentsInput = {
@@ -63095,7 +74042,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     votes?: VoteUncheckedUpdateManyWithoutPhotoNestedInput
     achievements?: ContestAchievementUncheckedUpdateManyWithoutPhotoNestedInput
-    ContestWinner?: ContestWinnerUncheckedUpdateManyWithoutPhotoNestedInput
   }
 
   export type CommentUpsertWithoutCommentRepliesInput = {
@@ -63600,7 +74546,6 @@ export namespace Prisma {
     photo: UserPhotoCreateNestedOneWithoutContestUploadInput
     comments?: CommentCreateNestedManyWithoutPhotoInput
     achievements?: ContestAchievementCreateNestedManyWithoutPhotoInput
-    ContestWinner?: ContestWinnerCreateNestedManyWithoutPhotoInput
   }
 
   export type ContestPhotoUncheckedCreateWithoutVotesInput = {
@@ -63617,7 +74562,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     comments?: CommentUncheckedCreateNestedManyWithoutPhotoInput
     achievements?: ContestAchievementUncheckedCreateNestedManyWithoutPhotoInput
-    ContestWinner?: ContestWinnerUncheckedCreateNestedManyWithoutPhotoInput
   }
 
   export type ContestPhotoCreateOrConnectWithoutVotesInput = {
@@ -63631,23 +74575,23 @@ export namespace Prisma {
     description: string
     banner?: string | null
     status?: $Enums.ContestStatus
-    mode?: $Enums.ContestMode
-    maxUploads?: number
     isMoneyContest?: boolean
     maxPrize?: number | null
     minPrize?: number | null
-    level_requirements?: ContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
     startedAt?: Date | string | null
-    rules?: InputJsonValue | null
-    prizes?: InputJsonValue | null
+    endedAt?: Date | string | null
+    finalizedAt?: Date | string | null
+    configVersion?: number
+    scoringVersion?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     creator: UserCreateNestedOneWithoutCreatedContestsInput
     participants?: ContestParticipantCreateNestedManyWithoutContestInput
     teamParticipations?: TeamParticipationCreateNestedManyWithoutContestInput
     contestRules?: ContestRuleCreateNestedManyWithoutContestInput
+    ruleConfigs?: ContestRuleConfigCreateNestedManyWithoutContestInput
     contestPrizes?: ContestPrizeCreateNestedManyWithoutContestInput
     contestAwards?: ContestAwardCreateNestedManyWithoutContestInput
     achievements?: ContestAchievementCreateNestedManyWithoutContestInput
@@ -63661,24 +74605,24 @@ export namespace Prisma {
     description: string
     banner?: string | null
     status?: $Enums.ContestStatus
-    mode?: $Enums.ContestMode
-    maxUploads?: number
     isMoneyContest?: boolean
     maxPrize?: number | null
     minPrize?: number | null
-    level_requirements?: ContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
     startedAt?: Date | string | null
+    endedAt?: Date | string | null
+    finalizedAt?: Date | string | null
     recurringContestId?: string | null
+    configVersion?: number
+    scoringVersion?: number
     creatorId: string
-    rules?: InputJsonValue | null
-    prizes?: InputJsonValue | null
     createdAt?: Date | string
     updatedAt?: Date | string
     participants?: ContestParticipantUncheckedCreateNestedManyWithoutContestInput
     teamParticipations?: TeamParticipationUncheckedCreateNestedManyWithoutContestInput
     contestRules?: ContestRuleUncheckedCreateNestedManyWithoutContestInput
+    ruleConfigs?: ContestRuleConfigUncheckedCreateNestedManyWithoutContestInput
     contestPrizes?: ContestPrizeUncheckedCreateNestedManyWithoutContestInput
     contestAwards?: ContestAwardUncheckedCreateNestedManyWithoutContestInput
     achievements?: ContestAchievementUncheckedCreateNestedManyWithoutContestInput
@@ -63805,7 +74749,6 @@ export namespace Prisma {
     photo?: UserPhotoUpdateOneRequiredWithoutContestUploadNestedInput
     comments?: CommentUpdateManyWithoutPhotoNestedInput
     achievements?: ContestAchievementUpdateManyWithoutPhotoNestedInput
-    ContestWinner?: ContestWinnerUpdateManyWithoutPhotoNestedInput
   }
 
   export type ContestPhotoUncheckedUpdateWithoutVotesInput = {
@@ -63821,7 +74764,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     comments?: CommentUncheckedUpdateManyWithoutPhotoNestedInput
     achievements?: ContestAchievementUncheckedUpdateManyWithoutPhotoNestedInput
-    ContestWinner?: ContestWinnerUncheckedUpdateManyWithoutPhotoNestedInput
   }
 
   export type ContestUpsertWithoutVotesInput = {
@@ -63840,23 +74782,23 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     banner?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumContestStatusFieldUpdateOperationsInput | $Enums.ContestStatus
-    mode?: EnumContestModeFieldUpdateOperationsInput | $Enums.ContestMode
-    maxUploads?: IntFieldUpdateOperationsInput | number
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
-    level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    rules?: InputJsonValue | InputJsonValue | null
-    prizes?: InputJsonValue | InputJsonValue | null
+    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    finalizedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    configVersion?: IntFieldUpdateOperationsInput | number
+    scoringVersion?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     creator?: UserUpdateOneRequiredWithoutCreatedContestsNestedInput
     participants?: ContestParticipantUpdateManyWithoutContestNestedInput
     teamParticipations?: TeamParticipationUpdateManyWithoutContestNestedInput
     contestRules?: ContestRuleUpdateManyWithoutContestNestedInput
+    ruleConfigs?: ContestRuleConfigUpdateManyWithoutContestNestedInput
     contestPrizes?: ContestPrizeUpdateManyWithoutContestNestedInput
     contestAwards?: ContestAwardUpdateManyWithoutContestNestedInput
     achievements?: ContestAchievementUpdateManyWithoutContestNestedInput
@@ -63869,24 +74811,24 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     banner?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumContestStatusFieldUpdateOperationsInput | $Enums.ContestStatus
-    mode?: EnumContestModeFieldUpdateOperationsInput | $Enums.ContestMode
-    maxUploads?: IntFieldUpdateOperationsInput | number
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
-    level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    finalizedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     recurringContestId?: NullableStringFieldUpdateOperationsInput | string | null
+    configVersion?: IntFieldUpdateOperationsInput | number
+    scoringVersion?: IntFieldUpdateOperationsInput | number
     creatorId?: StringFieldUpdateOperationsInput | string
-    rules?: InputJsonValue | InputJsonValue | null
-    prizes?: InputJsonValue | InputJsonValue | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     participants?: ContestParticipantUncheckedUpdateManyWithoutContestNestedInput
     teamParticipations?: TeamParticipationUncheckedUpdateManyWithoutContestNestedInput
     contestRules?: ContestRuleUncheckedUpdateManyWithoutContestNestedInput
+    ruleConfigs?: ContestRuleConfigUncheckedUpdateManyWithoutContestNestedInput
     contestPrizes?: ContestPrizeUncheckedUpdateManyWithoutContestNestedInput
     contestAwards?: ContestAwardUncheckedUpdateManyWithoutContestNestedInput
     achievements?: ContestAchievementUncheckedUpdateManyWithoutContestNestedInput
@@ -64204,6 +75146,7 @@ export namespace Prisma {
     photoId: string
     type: $Enums.VoteType
     power?: number
+    weight?: number
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -64217,9 +75160,22 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
+  export type ContestRuleConfigCreateManyContestInput = {
+    id?: string
+    key: string
+    value: InputJsonValue
+    enabled?: boolean
+    order?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
   export type ContestPrizeCreateManyContestInput = {
     id?: string
     category: $Enums.PrizeType
+    type?: $Enums.AwardType | null
+    target?: $Enums.AwardTarget | null
+    rankLimit?: number | null
     icon?: string | null
     boost?: number
     swap?: number
@@ -64232,6 +75188,12 @@ export namespace Prisma {
   export type ContestAwardCreateManyContestInput = {
     id?: string
     category: $Enums.PrizeType
+    type?: $Enums.AwardType | null
+    target?: $Enums.AwardTarget | null
+    rankLimit?: number | null
+    slotKey?: string | null
+    title?: string | null
+    description?: string | null
     icon?: string | null
     boost?: number
     swap?: number
@@ -64245,8 +75207,15 @@ export namespace Prisma {
   export type ContestAchievementCreateManyContestInput = {
     id?: string
     category: $Enums.PrizeType
+    kind?: $Enums.AchievementKind
+    type?: $Enums.AwardType | null
+    target?: $Enums.AwardTarget | null
+    rankLimit?: number | null
+    levelBadge?: $Enums.ContestLevelBadge | null
+    levelOrder?: number | null
     photoId?: string | null
     participantId?: string | null
+    grantKey?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -64272,7 +75241,6 @@ export namespace Prisma {
     user?: UserUpdateOneRequiredWithoutContestParticipantNestedInput
     member?: TeamMemberUpdateOneWithoutContestParticipantNestedInput
     photos?: ContestPhotoUpdateManyWithoutParticipantNestedInput
-    ContestWinner?: ContestWinnerUpdateManyWithoutParticipantNestedInput
     contestAchievement?: ContestAchievementUpdateManyWithoutParticipantNestedInput
   }
 
@@ -64286,7 +75254,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     photos?: ContestPhotoUncheckedUpdateManyWithoutParticipantNestedInput
-    ContestWinner?: ContestWinnerUncheckedUpdateManyWithoutParticipantNestedInput
     contestAchievement?: ContestAchievementUncheckedUpdateManyWithoutParticipantNestedInput
   }
 
@@ -64316,6 +75283,7 @@ export namespace Prisma {
   export type VoteUpdateWithoutContestInput = {
     type?: EnumVoteTypeFieldUpdateOperationsInput | $Enums.VoteType
     power?: IntFieldUpdateOperationsInput | number
+    weight?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     provider?: UserUpdateOneRequiredWithoutVotesNestedInput
@@ -64327,6 +75295,7 @@ export namespace Prisma {
     photoId?: StringFieldUpdateOperationsInput | string
     type?: EnumVoteTypeFieldUpdateOperationsInput | $Enums.VoteType
     power?: IntFieldUpdateOperationsInput | number
+    weight?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -64336,6 +75305,7 @@ export namespace Prisma {
     photoId?: StringFieldUpdateOperationsInput | string
     type?: EnumVoteTypeFieldUpdateOperationsInput | $Enums.VoteType
     power?: IntFieldUpdateOperationsInput | number
+    weight?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -64364,8 +75334,38 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type ContestRuleConfigUpdateWithoutContestInput = {
+    key?: StringFieldUpdateOperationsInput | string
+    value?: InputJsonValue | InputJsonValue
+    enabled?: BoolFieldUpdateOperationsInput | boolean
+    order?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ContestRuleConfigUncheckedUpdateWithoutContestInput = {
+    key?: StringFieldUpdateOperationsInput | string
+    value?: InputJsonValue | InputJsonValue
+    enabled?: BoolFieldUpdateOperationsInput | boolean
+    order?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ContestRuleConfigUncheckedUpdateManyWithoutContestInput = {
+    key?: StringFieldUpdateOperationsInput | string
+    value?: InputJsonValue | InputJsonValue
+    enabled?: BoolFieldUpdateOperationsInput | boolean
+    order?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type ContestPrizeUpdateWithoutContestInput = {
     category?: EnumPrizeTypeFieldUpdateOperationsInput | $Enums.PrizeType
+    type?: NullableEnumAwardTypeFieldUpdateOperationsInput | $Enums.AwardType | null
+    target?: NullableEnumAwardTargetFieldUpdateOperationsInput | $Enums.AwardTarget | null
+    rankLimit?: NullableIntFieldUpdateOperationsInput | number | null
     icon?: NullableStringFieldUpdateOperationsInput | string | null
     boost?: IntFieldUpdateOperationsInput | number
     swap?: IntFieldUpdateOperationsInput | number
@@ -64377,6 +75377,9 @@ export namespace Prisma {
 
   export type ContestPrizeUncheckedUpdateWithoutContestInput = {
     category?: EnumPrizeTypeFieldUpdateOperationsInput | $Enums.PrizeType
+    type?: NullableEnumAwardTypeFieldUpdateOperationsInput | $Enums.AwardType | null
+    target?: NullableEnumAwardTargetFieldUpdateOperationsInput | $Enums.AwardTarget | null
+    rankLimit?: NullableIntFieldUpdateOperationsInput | number | null
     icon?: NullableStringFieldUpdateOperationsInput | string | null
     boost?: IntFieldUpdateOperationsInput | number
     swap?: IntFieldUpdateOperationsInput | number
@@ -64388,6 +75391,9 @@ export namespace Prisma {
 
   export type ContestPrizeUncheckedUpdateManyWithoutContestInput = {
     category?: EnumPrizeTypeFieldUpdateOperationsInput | $Enums.PrizeType
+    type?: NullableEnumAwardTypeFieldUpdateOperationsInput | $Enums.AwardType | null
+    target?: NullableEnumAwardTargetFieldUpdateOperationsInput | $Enums.AwardTarget | null
+    rankLimit?: NullableIntFieldUpdateOperationsInput | number | null
     icon?: NullableStringFieldUpdateOperationsInput | string | null
     boost?: IntFieldUpdateOperationsInput | number
     swap?: IntFieldUpdateOperationsInput | number
@@ -64399,6 +75405,12 @@ export namespace Prisma {
 
   export type ContestAwardUpdateWithoutContestInput = {
     category?: EnumPrizeTypeFieldUpdateOperationsInput | $Enums.PrizeType
+    type?: NullableEnumAwardTypeFieldUpdateOperationsInput | $Enums.AwardType | null
+    target?: NullableEnumAwardTargetFieldUpdateOperationsInput | $Enums.AwardTarget | null
+    rankLimit?: NullableIntFieldUpdateOperationsInput | number | null
+    slotKey?: NullableStringFieldUpdateOperationsInput | string | null
+    title?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     icon?: NullableStringFieldUpdateOperationsInput | string | null
     boost?: IntFieldUpdateOperationsInput | number
     swap?: IntFieldUpdateOperationsInput | number
@@ -64411,6 +75423,12 @@ export namespace Prisma {
 
   export type ContestAwardUncheckedUpdateWithoutContestInput = {
     category?: EnumPrizeTypeFieldUpdateOperationsInput | $Enums.PrizeType
+    type?: NullableEnumAwardTypeFieldUpdateOperationsInput | $Enums.AwardType | null
+    target?: NullableEnumAwardTargetFieldUpdateOperationsInput | $Enums.AwardTarget | null
+    rankLimit?: NullableIntFieldUpdateOperationsInput | number | null
+    slotKey?: NullableStringFieldUpdateOperationsInput | string | null
+    title?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     icon?: NullableStringFieldUpdateOperationsInput | string | null
     boost?: IntFieldUpdateOperationsInput | number
     swap?: IntFieldUpdateOperationsInput | number
@@ -64423,6 +75441,12 @@ export namespace Prisma {
 
   export type ContestAwardUncheckedUpdateManyWithoutContestInput = {
     category?: EnumPrizeTypeFieldUpdateOperationsInput | $Enums.PrizeType
+    type?: NullableEnumAwardTypeFieldUpdateOperationsInput | $Enums.AwardType | null
+    target?: NullableEnumAwardTargetFieldUpdateOperationsInput | $Enums.AwardTarget | null
+    rankLimit?: NullableIntFieldUpdateOperationsInput | number | null
+    slotKey?: NullableStringFieldUpdateOperationsInput | string | null
+    title?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     icon?: NullableStringFieldUpdateOperationsInput | string | null
     boost?: IntFieldUpdateOperationsInput | number
     swap?: IntFieldUpdateOperationsInput | number
@@ -64435,6 +75459,13 @@ export namespace Prisma {
 
   export type ContestAchievementUpdateWithoutContestInput = {
     category?: EnumPrizeTypeFieldUpdateOperationsInput | $Enums.PrizeType
+    kind?: EnumAchievementKindFieldUpdateOperationsInput | $Enums.AchievementKind
+    type?: NullableEnumAwardTypeFieldUpdateOperationsInput | $Enums.AwardType | null
+    target?: NullableEnumAwardTargetFieldUpdateOperationsInput | $Enums.AwardTarget | null
+    rankLimit?: NullableIntFieldUpdateOperationsInput | number | null
+    levelBadge?: NullableEnumContestLevelBadgeFieldUpdateOperationsInput | $Enums.ContestLevelBadge | null
+    levelOrder?: NullableIntFieldUpdateOperationsInput | number | null
+    grantKey?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     photo?: ContestPhotoUpdateOneWithoutAchievementsNestedInput
@@ -64443,16 +75474,30 @@ export namespace Prisma {
 
   export type ContestAchievementUncheckedUpdateWithoutContestInput = {
     category?: EnumPrizeTypeFieldUpdateOperationsInput | $Enums.PrizeType
+    kind?: EnumAchievementKindFieldUpdateOperationsInput | $Enums.AchievementKind
+    type?: NullableEnumAwardTypeFieldUpdateOperationsInput | $Enums.AwardType | null
+    target?: NullableEnumAwardTargetFieldUpdateOperationsInput | $Enums.AwardTarget | null
+    rankLimit?: NullableIntFieldUpdateOperationsInput | number | null
+    levelBadge?: NullableEnumContestLevelBadgeFieldUpdateOperationsInput | $Enums.ContestLevelBadge | null
+    levelOrder?: NullableIntFieldUpdateOperationsInput | number | null
     photoId?: NullableStringFieldUpdateOperationsInput | string | null
     participantId?: NullableStringFieldUpdateOperationsInput | string | null
+    grantKey?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type ContestAchievementUncheckedUpdateManyWithoutContestInput = {
     category?: EnumPrizeTypeFieldUpdateOperationsInput | $Enums.PrizeType
+    kind?: EnumAchievementKindFieldUpdateOperationsInput | $Enums.AchievementKind
+    type?: NullableEnumAwardTypeFieldUpdateOperationsInput | $Enums.AwardType | null
+    target?: NullableEnumAwardTargetFieldUpdateOperationsInput | $Enums.AwardTarget | null
+    rankLimit?: NullableIntFieldUpdateOperationsInput | number | null
+    levelBadge?: NullableEnumContestLevelBadgeFieldUpdateOperationsInput | $Enums.ContestLevelBadge | null
+    levelOrder?: NullableIntFieldUpdateOperationsInput | number | null
     photoId?: NullableStringFieldUpdateOperationsInput | string | null
     participantId?: NullableStringFieldUpdateOperationsInput | string | null
+    grantKey?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -64490,6 +75535,12 @@ export namespace Prisma {
   export type RecurringContestAwardCreateManyRecurringContestInput = {
     id?: string
     category: $Enums.PrizeType
+    type?: $Enums.AwardType | null
+    target?: $Enums.AwardTarget | null
+    rankLimit?: number | null
+    slotKey?: string | null
+    title?: string | null
+    description?: string | null
     icon?: string | null
     boost?: number
     swap?: number
@@ -64506,18 +75557,17 @@ export namespace Prisma {
     description: string
     banner?: string | null
     status?: $Enums.ContestStatus
-    mode?: $Enums.ContestMode
-    maxUploads?: number
     isMoneyContest?: boolean
     maxPrize?: number | null
     minPrize?: number | null
-    level_requirements?: ContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
     startedAt?: Date | string | null
+    endedAt?: Date | string | null
+    finalizedAt?: Date | string | null
+    configVersion?: number
+    scoringVersion?: number
     creatorId: string
-    rules?: InputJsonValue | null
-    prizes?: InputJsonValue | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -64528,6 +75578,12 @@ export namespace Prisma {
 
   export type RecurringContestAwardUpdateWithoutRecurringContestInput = {
     category?: EnumPrizeTypeFieldUpdateOperationsInput | $Enums.PrizeType
+    type?: NullableEnumAwardTypeFieldUpdateOperationsInput | $Enums.AwardType | null
+    target?: NullableEnumAwardTargetFieldUpdateOperationsInput | $Enums.AwardTarget | null
+    rankLimit?: NullableIntFieldUpdateOperationsInput | number | null
+    slotKey?: NullableStringFieldUpdateOperationsInput | string | null
+    title?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     icon?: NullableStringFieldUpdateOperationsInput | string | null
     boost?: IntFieldUpdateOperationsInput | number
     swap?: IntFieldUpdateOperationsInput | number
@@ -64540,6 +75596,12 @@ export namespace Prisma {
 
   export type RecurringContestAwardUncheckedUpdateWithoutRecurringContestInput = {
     category?: EnumPrizeTypeFieldUpdateOperationsInput | $Enums.PrizeType
+    type?: NullableEnumAwardTypeFieldUpdateOperationsInput | $Enums.AwardType | null
+    target?: NullableEnumAwardTargetFieldUpdateOperationsInput | $Enums.AwardTarget | null
+    rankLimit?: NullableIntFieldUpdateOperationsInput | number | null
+    slotKey?: NullableStringFieldUpdateOperationsInput | string | null
+    title?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     icon?: NullableStringFieldUpdateOperationsInput | string | null
     boost?: IntFieldUpdateOperationsInput | number
     swap?: IntFieldUpdateOperationsInput | number
@@ -64552,6 +75614,12 @@ export namespace Prisma {
 
   export type RecurringContestAwardUncheckedUpdateManyWithoutRecurringContestInput = {
     category?: EnumPrizeTypeFieldUpdateOperationsInput | $Enums.PrizeType
+    type?: NullableEnumAwardTypeFieldUpdateOperationsInput | $Enums.AwardType | null
+    target?: NullableEnumAwardTargetFieldUpdateOperationsInput | $Enums.AwardTarget | null
+    rankLimit?: NullableIntFieldUpdateOperationsInput | number | null
+    slotKey?: NullableStringFieldUpdateOperationsInput | string | null
+    title?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     icon?: NullableStringFieldUpdateOperationsInput | string | null
     boost?: IntFieldUpdateOperationsInput | number
     swap?: IntFieldUpdateOperationsInput | number
@@ -64567,17 +75635,16 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     banner?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumContestStatusFieldUpdateOperationsInput | $Enums.ContestStatus
-    mode?: EnumContestModeFieldUpdateOperationsInput | $Enums.ContestMode
-    maxUploads?: IntFieldUpdateOperationsInput | number
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
-    level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    rules?: InputJsonValue | InputJsonValue | null
-    prizes?: InputJsonValue | InputJsonValue | null
+    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    finalizedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    configVersion?: IntFieldUpdateOperationsInput | number
+    scoringVersion?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     creator?: UserUpdateOneRequiredWithoutCreatedContestsNestedInput
@@ -64585,6 +75652,7 @@ export namespace Prisma {
     teamParticipations?: TeamParticipationUpdateManyWithoutContestNestedInput
     votes?: VoteUpdateManyWithoutContestNestedInput
     contestRules?: ContestRuleUpdateManyWithoutContestNestedInput
+    ruleConfigs?: ContestRuleConfigUpdateManyWithoutContestNestedInput
     contestPrizes?: ContestPrizeUpdateManyWithoutContestNestedInput
     contestAwards?: ContestAwardUpdateManyWithoutContestNestedInput
     achievements?: ContestAchievementUpdateManyWithoutContestNestedInput
@@ -64596,24 +75664,24 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     banner?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumContestStatusFieldUpdateOperationsInput | $Enums.ContestStatus
-    mode?: EnumContestModeFieldUpdateOperationsInput | $Enums.ContestMode
-    maxUploads?: IntFieldUpdateOperationsInput | number
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
-    level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    finalizedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    configVersion?: IntFieldUpdateOperationsInput | number
+    scoringVersion?: IntFieldUpdateOperationsInput | number
     creatorId?: StringFieldUpdateOperationsInput | string
-    rules?: InputJsonValue | InputJsonValue | null
-    prizes?: InputJsonValue | InputJsonValue | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     participants?: ContestParticipantUncheckedUpdateManyWithoutContestNestedInput
     teamParticipations?: TeamParticipationUncheckedUpdateManyWithoutContestNestedInput
     votes?: VoteUncheckedUpdateManyWithoutContestNestedInput
     contestRules?: ContestRuleUncheckedUpdateManyWithoutContestNestedInput
+    ruleConfigs?: ContestRuleConfigUncheckedUpdateManyWithoutContestNestedInput
     contestPrizes?: ContestPrizeUncheckedUpdateManyWithoutContestNestedInput
     contestAwards?: ContestAwardUncheckedUpdateManyWithoutContestNestedInput
     achievements?: ContestAchievementUncheckedUpdateManyWithoutContestNestedInput
@@ -64625,18 +75693,17 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     banner?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumContestStatusFieldUpdateOperationsInput | $Enums.ContestStatus
-    mode?: EnumContestModeFieldUpdateOperationsInput | $Enums.ContestMode
-    maxUploads?: IntFieldUpdateOperationsInput | number
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
-    level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    finalizedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    configVersion?: IntFieldUpdateOperationsInput | number
+    scoringVersion?: IntFieldUpdateOperationsInput | number
     creatorId?: StringFieldUpdateOperationsInput | string
-    rules?: InputJsonValue | InputJsonValue | null
-    prizes?: InputJsonValue | InputJsonValue | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -64644,6 +75711,12 @@ export namespace Prisma {
   export type ContestAwardCreateManyPrizeInput = {
     id?: string
     category: $Enums.PrizeType
+    type?: $Enums.AwardType | null
+    target?: $Enums.AwardTarget | null
+    rankLimit?: number | null
+    slotKey?: string | null
+    title?: string | null
+    description?: string | null
     icon?: string | null
     boost?: number
     swap?: number
@@ -64657,6 +75730,12 @@ export namespace Prisma {
   export type RecurringContestAwardCreateManyPrizeInput = {
     id?: string
     category: $Enums.PrizeType
+    type?: $Enums.AwardType | null
+    target?: $Enums.AwardTarget | null
+    rankLimit?: number | null
+    slotKey?: string | null
+    title?: string | null
+    description?: string | null
     icon?: string | null
     boost?: number
     swap?: number
@@ -64669,6 +75748,12 @@ export namespace Prisma {
 
   export type ContestAwardUpdateWithoutPrizeInput = {
     category?: EnumPrizeTypeFieldUpdateOperationsInput | $Enums.PrizeType
+    type?: NullableEnumAwardTypeFieldUpdateOperationsInput | $Enums.AwardType | null
+    target?: NullableEnumAwardTargetFieldUpdateOperationsInput | $Enums.AwardTarget | null
+    rankLimit?: NullableIntFieldUpdateOperationsInput | number | null
+    slotKey?: NullableStringFieldUpdateOperationsInput | string | null
+    title?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     icon?: NullableStringFieldUpdateOperationsInput | string | null
     boost?: IntFieldUpdateOperationsInput | number
     swap?: IntFieldUpdateOperationsInput | number
@@ -64681,6 +75766,12 @@ export namespace Prisma {
 
   export type ContestAwardUncheckedUpdateWithoutPrizeInput = {
     category?: EnumPrizeTypeFieldUpdateOperationsInput | $Enums.PrizeType
+    type?: NullableEnumAwardTypeFieldUpdateOperationsInput | $Enums.AwardType | null
+    target?: NullableEnumAwardTargetFieldUpdateOperationsInput | $Enums.AwardTarget | null
+    rankLimit?: NullableIntFieldUpdateOperationsInput | number | null
+    slotKey?: NullableStringFieldUpdateOperationsInput | string | null
+    title?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     icon?: NullableStringFieldUpdateOperationsInput | string | null
     boost?: IntFieldUpdateOperationsInput | number
     swap?: IntFieldUpdateOperationsInput | number
@@ -64693,6 +75784,12 @@ export namespace Prisma {
 
   export type ContestAwardUncheckedUpdateManyWithoutPrizeInput = {
     category?: EnumPrizeTypeFieldUpdateOperationsInput | $Enums.PrizeType
+    type?: NullableEnumAwardTypeFieldUpdateOperationsInput | $Enums.AwardType | null
+    target?: NullableEnumAwardTargetFieldUpdateOperationsInput | $Enums.AwardTarget | null
+    rankLimit?: NullableIntFieldUpdateOperationsInput | number | null
+    slotKey?: NullableStringFieldUpdateOperationsInput | string | null
+    title?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     icon?: NullableStringFieldUpdateOperationsInput | string | null
     boost?: IntFieldUpdateOperationsInput | number
     swap?: IntFieldUpdateOperationsInput | number
@@ -64705,6 +75802,12 @@ export namespace Prisma {
 
   export type RecurringContestAwardUpdateWithoutPrizeInput = {
     category?: EnumPrizeTypeFieldUpdateOperationsInput | $Enums.PrizeType
+    type?: NullableEnumAwardTypeFieldUpdateOperationsInput | $Enums.AwardType | null
+    target?: NullableEnumAwardTargetFieldUpdateOperationsInput | $Enums.AwardTarget | null
+    rankLimit?: NullableIntFieldUpdateOperationsInput | number | null
+    slotKey?: NullableStringFieldUpdateOperationsInput | string | null
+    title?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     icon?: NullableStringFieldUpdateOperationsInput | string | null
     boost?: IntFieldUpdateOperationsInput | number
     swap?: IntFieldUpdateOperationsInput | number
@@ -64717,6 +75820,12 @@ export namespace Prisma {
 
   export type RecurringContestAwardUncheckedUpdateWithoutPrizeInput = {
     category?: EnumPrizeTypeFieldUpdateOperationsInput | $Enums.PrizeType
+    type?: NullableEnumAwardTypeFieldUpdateOperationsInput | $Enums.AwardType | null
+    target?: NullableEnumAwardTargetFieldUpdateOperationsInput | $Enums.AwardTarget | null
+    rankLimit?: NullableIntFieldUpdateOperationsInput | number | null
+    slotKey?: NullableStringFieldUpdateOperationsInput | string | null
+    title?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     icon?: NullableStringFieldUpdateOperationsInput | string | null
     boost?: IntFieldUpdateOperationsInput | number
     swap?: IntFieldUpdateOperationsInput | number
@@ -64729,6 +75838,12 @@ export namespace Prisma {
 
   export type RecurringContestAwardUncheckedUpdateManyWithoutPrizeInput = {
     category?: EnumPrizeTypeFieldUpdateOperationsInput | $Enums.PrizeType
+    type?: NullableEnumAwardTypeFieldUpdateOperationsInput | $Enums.AwardType | null
+    target?: NullableEnumAwardTargetFieldUpdateOperationsInput | $Enums.AwardTarget | null
+    rankLimit?: NullableIntFieldUpdateOperationsInput | number | null
+    slotKey?: NullableStringFieldUpdateOperationsInput | string | null
+    title?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     icon?: NullableStringFieldUpdateOperationsInput | string | null
     boost?: IntFieldUpdateOperationsInput | number
     swap?: IntFieldUpdateOperationsInput | number
@@ -64745,6 +75860,7 @@ export namespace Prisma {
     contestId: string
     type: $Enums.VoteType
     power?: number
+    weight?: number
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -64761,16 +75877,15 @@ export namespace Prisma {
   export type ContestAchievementCreateManyPhotoInput = {
     id?: string
     category: $Enums.PrizeType
+    kind?: $Enums.AchievementKind
+    type?: $Enums.AwardType | null
+    target?: $Enums.AwardTarget | null
+    rankLimit?: number | null
+    levelBadge?: $Enums.ContestLevelBadge | null
+    levelOrder?: number | null
     participantId?: string | null
     contestId: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type ContestWinnerCreateManyPhotoInput = {
-    id?: string
-    participantId: string
-    contestId: string
+    grantKey?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -64778,6 +75893,7 @@ export namespace Prisma {
   export type VoteUpdateWithoutPhotoInput = {
     type?: EnumVoteTypeFieldUpdateOperationsInput | $Enums.VoteType
     power?: IntFieldUpdateOperationsInput | number
+    weight?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     provider?: UserUpdateOneRequiredWithoutVotesNestedInput
@@ -64789,6 +75905,7 @@ export namespace Prisma {
     contestId?: StringFieldUpdateOperationsInput | string
     type?: EnumVoteTypeFieldUpdateOperationsInput | $Enums.VoteType
     power?: IntFieldUpdateOperationsInput | number
+    weight?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -64798,6 +75915,7 @@ export namespace Prisma {
     contestId?: StringFieldUpdateOperationsInput | string
     type?: EnumVoteTypeFieldUpdateOperationsInput | $Enums.VoteType
     power?: IntFieldUpdateOperationsInput | number
+    weight?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -64830,6 +75948,13 @@ export namespace Prisma {
 
   export type ContestAchievementUpdateWithoutPhotoInput = {
     category?: EnumPrizeTypeFieldUpdateOperationsInput | $Enums.PrizeType
+    kind?: EnumAchievementKindFieldUpdateOperationsInput | $Enums.AchievementKind
+    type?: NullableEnumAwardTypeFieldUpdateOperationsInput | $Enums.AwardType | null
+    target?: NullableEnumAwardTargetFieldUpdateOperationsInput | $Enums.AwardTarget | null
+    rankLimit?: NullableIntFieldUpdateOperationsInput | number | null
+    levelBadge?: NullableEnumContestLevelBadgeFieldUpdateOperationsInput | $Enums.ContestLevelBadge | null
+    levelOrder?: NullableIntFieldUpdateOperationsInput | number | null
+    grantKey?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     contest?: ContestUpdateOneRequiredWithoutAchievementsNestedInput
@@ -64838,37 +75963,30 @@ export namespace Prisma {
 
   export type ContestAchievementUncheckedUpdateWithoutPhotoInput = {
     category?: EnumPrizeTypeFieldUpdateOperationsInput | $Enums.PrizeType
+    kind?: EnumAchievementKindFieldUpdateOperationsInput | $Enums.AchievementKind
+    type?: NullableEnumAwardTypeFieldUpdateOperationsInput | $Enums.AwardType | null
+    target?: NullableEnumAwardTargetFieldUpdateOperationsInput | $Enums.AwardTarget | null
+    rankLimit?: NullableIntFieldUpdateOperationsInput | number | null
+    levelBadge?: NullableEnumContestLevelBadgeFieldUpdateOperationsInput | $Enums.ContestLevelBadge | null
+    levelOrder?: NullableIntFieldUpdateOperationsInput | number | null
     participantId?: NullableStringFieldUpdateOperationsInput | string | null
     contestId?: StringFieldUpdateOperationsInput | string
+    grantKey?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type ContestAchievementUncheckedUpdateManyWithoutPhotoInput = {
     category?: EnumPrizeTypeFieldUpdateOperationsInput | $Enums.PrizeType
+    kind?: EnumAchievementKindFieldUpdateOperationsInput | $Enums.AchievementKind
+    type?: NullableEnumAwardTypeFieldUpdateOperationsInput | $Enums.AwardType | null
+    target?: NullableEnumAwardTargetFieldUpdateOperationsInput | $Enums.AwardTarget | null
+    rankLimit?: NullableIntFieldUpdateOperationsInput | number | null
+    levelBadge?: NullableEnumContestLevelBadgeFieldUpdateOperationsInput | $Enums.ContestLevelBadge | null
+    levelOrder?: NullableIntFieldUpdateOperationsInput | number | null
     participantId?: NullableStringFieldUpdateOperationsInput | string | null
     contestId?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type ContestWinnerUpdateWithoutPhotoInput = {
-    contestId?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    participant?: ContestParticipantUpdateOneRequiredWithoutContestWinnerNestedInput
-  }
-
-  export type ContestWinnerUncheckedUpdateWithoutPhotoInput = {
-    participantId?: StringFieldUpdateOperationsInput | string
-    contestId?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type ContestWinnerUncheckedUpdateManyWithoutPhotoInput = {
-    participantId?: StringFieldUpdateOperationsInput | string
-    contestId?: StringFieldUpdateOperationsInput | string
+    grantKey?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -64886,19 +76004,18 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
-  export type ContestWinnerCreateManyParticipantInput = {
-    id?: string
-    contestId: string
-    contestPhotoId: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
   export type ContestAchievementCreateManyParticipantInput = {
     id?: string
     category: $Enums.PrizeType
+    kind?: $Enums.AchievementKind
+    type?: $Enums.AwardType | null
+    target?: $Enums.AwardTarget | null
+    rankLimit?: number | null
+    levelBadge?: $Enums.ContestLevelBadge | null
+    levelOrder?: number | null
     photoId?: string | null
     contestId: string
+    grantKey?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -64916,7 +76033,6 @@ export namespace Prisma {
     photo?: UserPhotoUpdateOneRequiredWithoutContestUploadNestedInput
     comments?: CommentUpdateManyWithoutPhotoNestedInput
     achievements?: ContestAchievementUpdateManyWithoutPhotoNestedInput
-    ContestWinner?: ContestWinnerUpdateManyWithoutPhotoNestedInput
   }
 
   export type ContestPhotoUncheckedUpdateWithoutParticipantInput = {
@@ -64932,7 +76048,6 @@ export namespace Prisma {
     votes?: VoteUncheckedUpdateManyWithoutPhotoNestedInput
     comments?: CommentUncheckedUpdateManyWithoutPhotoNestedInput
     achievements?: ContestAchievementUncheckedUpdateManyWithoutPhotoNestedInput
-    ContestWinner?: ContestWinnerUncheckedUpdateManyWithoutPhotoNestedInput
   }
 
   export type ContestPhotoUncheckedUpdateManyWithoutParticipantInput = {
@@ -64947,29 +76062,15 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type ContestWinnerUpdateWithoutParticipantInput = {
-    contestId?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    photo?: ContestPhotoUpdateOneRequiredWithoutContestWinnerNestedInput
-  }
-
-  export type ContestWinnerUncheckedUpdateWithoutParticipantInput = {
-    contestId?: StringFieldUpdateOperationsInput | string
-    contestPhotoId?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type ContestWinnerUncheckedUpdateManyWithoutParticipantInput = {
-    contestId?: StringFieldUpdateOperationsInput | string
-    contestPhotoId?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
   export type ContestAchievementUpdateWithoutParticipantInput = {
     category?: EnumPrizeTypeFieldUpdateOperationsInput | $Enums.PrizeType
+    kind?: EnumAchievementKindFieldUpdateOperationsInput | $Enums.AchievementKind
+    type?: NullableEnumAwardTypeFieldUpdateOperationsInput | $Enums.AwardType | null
+    target?: NullableEnumAwardTargetFieldUpdateOperationsInput | $Enums.AwardTarget | null
+    rankLimit?: NullableIntFieldUpdateOperationsInput | number | null
+    levelBadge?: NullableEnumContestLevelBadgeFieldUpdateOperationsInput | $Enums.ContestLevelBadge | null
+    levelOrder?: NullableIntFieldUpdateOperationsInput | number | null
+    grantKey?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     photo?: ContestPhotoUpdateOneWithoutAchievementsNestedInput
@@ -64978,16 +76079,30 @@ export namespace Prisma {
 
   export type ContestAchievementUncheckedUpdateWithoutParticipantInput = {
     category?: EnumPrizeTypeFieldUpdateOperationsInput | $Enums.PrizeType
+    kind?: EnumAchievementKindFieldUpdateOperationsInput | $Enums.AchievementKind
+    type?: NullableEnumAwardTypeFieldUpdateOperationsInput | $Enums.AwardType | null
+    target?: NullableEnumAwardTargetFieldUpdateOperationsInput | $Enums.AwardTarget | null
+    rankLimit?: NullableIntFieldUpdateOperationsInput | number | null
+    levelBadge?: NullableEnumContestLevelBadgeFieldUpdateOperationsInput | $Enums.ContestLevelBadge | null
+    levelOrder?: NullableIntFieldUpdateOperationsInput | number | null
     photoId?: NullableStringFieldUpdateOperationsInput | string | null
     contestId?: StringFieldUpdateOperationsInput | string
+    grantKey?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type ContestAchievementUncheckedUpdateManyWithoutParticipantInput = {
     category?: EnumPrizeTypeFieldUpdateOperationsInput | $Enums.PrizeType
+    kind?: EnumAchievementKindFieldUpdateOperationsInput | $Enums.AchievementKind
+    type?: NullableEnumAwardTypeFieldUpdateOperationsInput | $Enums.AwardType | null
+    target?: NullableEnumAwardTargetFieldUpdateOperationsInput | $Enums.AwardTarget | null
+    rankLimit?: NullableIntFieldUpdateOperationsInput | number | null
+    levelBadge?: NullableEnumContestLevelBadgeFieldUpdateOperationsInput | $Enums.ContestLevelBadge | null
+    levelOrder?: NullableIntFieldUpdateOperationsInput | number | null
     photoId?: NullableStringFieldUpdateOperationsInput | string | null
     contestId?: StringFieldUpdateOperationsInput | string
+    grantKey?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -65177,7 +76292,6 @@ export namespace Prisma {
     contest?: ContestUpdateOneRequiredWithoutParticipantsNestedInput
     user?: UserUpdateOneRequiredWithoutContestParticipantNestedInput
     photos?: ContestPhotoUpdateManyWithoutParticipantNestedInput
-    ContestWinner?: ContestWinnerUpdateManyWithoutParticipantNestedInput
     contestAchievement?: ContestAchievementUpdateManyWithoutParticipantNestedInput
   }
 
@@ -65191,7 +76305,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     photos?: ContestPhotoUncheckedUpdateManyWithoutParticipantNestedInput
-    ContestWinner?: ContestWinnerUncheckedUpdateManyWithoutParticipantNestedInput
     contestAchievement?: ContestAchievementUncheckedUpdateManyWithoutParticipantNestedInput
   }
 
@@ -65231,18 +76344,17 @@ export namespace Prisma {
     description: string
     banner?: string | null
     status?: $Enums.ContestStatus
-    mode?: $Enums.ContestMode
-    maxUploads?: number
     isMoneyContest?: boolean
     maxPrize?: number | null
     minPrize?: number | null
-    level_requirements?: ContestCreatelevel_requirementsInput | number[]
     startDate: Date | string
     endDate: Date | string
     startedAt?: Date | string | null
+    endedAt?: Date | string | null
+    finalizedAt?: Date | string | null
     recurringContestId?: string | null
-    rules?: InputJsonValue | null
-    prizes?: InputJsonValue | null
+    configVersion?: number
+    scoringVersion?: number
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -65276,6 +76388,7 @@ export namespace Prisma {
     contestId: string
     type: $Enums.VoteType
     power?: number
+    weight?: number
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -65419,23 +76532,23 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     banner?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumContestStatusFieldUpdateOperationsInput | $Enums.ContestStatus
-    mode?: EnumContestModeFieldUpdateOperationsInput | $Enums.ContestMode
-    maxUploads?: IntFieldUpdateOperationsInput | number
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
-    level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    rules?: InputJsonValue | InputJsonValue | null
-    prizes?: InputJsonValue | InputJsonValue | null
+    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    finalizedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    configVersion?: IntFieldUpdateOperationsInput | number
+    scoringVersion?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     participants?: ContestParticipantUpdateManyWithoutContestNestedInput
     teamParticipations?: TeamParticipationUpdateManyWithoutContestNestedInput
     votes?: VoteUpdateManyWithoutContestNestedInput
     contestRules?: ContestRuleUpdateManyWithoutContestNestedInput
+    ruleConfigs?: ContestRuleConfigUpdateManyWithoutContestNestedInput
     contestPrizes?: ContestPrizeUpdateManyWithoutContestNestedInput
     contestAwards?: ContestAwardUpdateManyWithoutContestNestedInput
     achievements?: ContestAchievementUpdateManyWithoutContestNestedInput
@@ -65448,24 +76561,24 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     banner?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumContestStatusFieldUpdateOperationsInput | $Enums.ContestStatus
-    mode?: EnumContestModeFieldUpdateOperationsInput | $Enums.ContestMode
-    maxUploads?: IntFieldUpdateOperationsInput | number
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
-    level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    finalizedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     recurringContestId?: NullableStringFieldUpdateOperationsInput | string | null
-    rules?: InputJsonValue | InputJsonValue | null
-    prizes?: InputJsonValue | InputJsonValue | null
+    configVersion?: IntFieldUpdateOperationsInput | number
+    scoringVersion?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     participants?: ContestParticipantUncheckedUpdateManyWithoutContestNestedInput
     teamParticipations?: TeamParticipationUncheckedUpdateManyWithoutContestNestedInput
     votes?: VoteUncheckedUpdateManyWithoutContestNestedInput
     contestRules?: ContestRuleUncheckedUpdateManyWithoutContestNestedInput
+    ruleConfigs?: ContestRuleConfigUncheckedUpdateManyWithoutContestNestedInput
     contestPrizes?: ContestPrizeUncheckedUpdateManyWithoutContestNestedInput
     contestAwards?: ContestAwardUncheckedUpdateManyWithoutContestNestedInput
     achievements?: ContestAchievementUncheckedUpdateManyWithoutContestNestedInput
@@ -65477,18 +76590,17 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     banner?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumContestStatusFieldUpdateOperationsInput | $Enums.ContestStatus
-    mode?: EnumContestModeFieldUpdateOperationsInput | $Enums.ContestMode
-    maxUploads?: IntFieldUpdateOperationsInput | number
     isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
     maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
     minPrize?: NullableIntFieldUpdateOperationsInput | number | null
-    level_requirements?: ContestUpdatelevel_requirementsInput | number[]
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    finalizedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     recurringContestId?: NullableStringFieldUpdateOperationsInput | string | null
-    rules?: InputJsonValue | InputJsonValue | null
-    prizes?: InputJsonValue | InputJsonValue | null
+    configVersion?: IntFieldUpdateOperationsInput | number
+    scoringVersion?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -65558,6 +76670,7 @@ export namespace Prisma {
   export type VoteUpdateWithoutProviderInput = {
     type?: EnumVoteTypeFieldUpdateOperationsInput | $Enums.VoteType
     power?: IntFieldUpdateOperationsInput | number
+    weight?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     photo?: ContestPhotoUpdateOneRequiredWithoutVotesNestedInput
@@ -65569,6 +76682,7 @@ export namespace Prisma {
     contestId?: StringFieldUpdateOperationsInput | string
     type?: EnumVoteTypeFieldUpdateOperationsInput | $Enums.VoteType
     power?: IntFieldUpdateOperationsInput | number
+    weight?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -65578,6 +76692,7 @@ export namespace Prisma {
     contestId?: StringFieldUpdateOperationsInput | string
     type?: EnumVoteTypeFieldUpdateOperationsInput | $Enums.VoteType
     power?: IntFieldUpdateOperationsInput | number
+    weight?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -65650,7 +76765,6 @@ export namespace Prisma {
     contest?: ContestUpdateOneRequiredWithoutParticipantsNestedInput
     member?: TeamMemberUpdateOneWithoutContestParticipantNestedInput
     photos?: ContestPhotoUpdateManyWithoutParticipantNestedInput
-    ContestWinner?: ContestWinnerUpdateManyWithoutParticipantNestedInput
     contestAchievement?: ContestAchievementUpdateManyWithoutParticipantNestedInput
   }
 
@@ -65664,7 +76778,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     photos?: ContestPhotoUncheckedUpdateManyWithoutParticipantNestedInput
-    ContestWinner?: ContestWinnerUncheckedUpdateManyWithoutParticipantNestedInput
     contestAchievement?: ContestAchievementUncheckedUpdateManyWithoutParticipantNestedInput
   }
 
@@ -65824,7 +76937,6 @@ export namespace Prisma {
     votes?: VoteUpdateManyWithoutPhotoNestedInput
     comments?: CommentUpdateManyWithoutPhotoNestedInput
     achievements?: ContestAchievementUpdateManyWithoutPhotoNestedInput
-    ContestWinner?: ContestWinnerUpdateManyWithoutPhotoNestedInput
   }
 
   export type ContestPhotoUncheckedUpdateWithoutPhotoInput = {
@@ -65840,7 +76952,6 @@ export namespace Prisma {
     votes?: VoteUncheckedUpdateManyWithoutPhotoNestedInput
     comments?: CommentUncheckedUpdateManyWithoutPhotoNestedInput
     achievements?: ContestAchievementUncheckedUpdateManyWithoutPhotoNestedInput
-    ContestWinner?: ContestWinnerUncheckedUpdateManyWithoutPhotoNestedInput
   }
 
   export type ContestPhotoUncheckedUpdateManyWithoutPhotoInput = {
