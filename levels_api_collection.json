@@ -1,0 +1,258 @@
+{
+	"info": {
+		"_postman_id": "775e53cc-49bb-4c28-bdad-cc0b7b134d1b",
+		"name": "Your Capture Award - Levels API",
+		"description": "Endpoints related to Levels and User Level Progress",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Levels Management",
+			"item": [
+				{
+					"name": "Get All Levels",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/levels?page=1&limit=10",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"levels"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						},
+						"description": "Retrieve all configured levels ordered by order ascending."
+					},
+					"response": [
+						{
+							"name": "Success Response",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "{{authToken}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/api/v1/levels?page=1&limit=10",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"levels"
+									],
+									"query": [
+										{
+											"key": "page",
+											"value": "1"
+										},
+										{
+											"key": "limit",
+											"value": "10"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n  \"success\": true,\n  \"statusCode\": 200,\n  \"message\": \"levels fetched successfully\",\n  \"data\": {\n    \"data\": [\n      {\n        \"id\": \"6488d08c5c70281b3c8f1e2a\",\n        \"level\": 1,\n        \"levelName\": \"APPRENTICE\",\n        \"order\": 1,\n        \"requirements\": [\n          {\n            \"title\": \"votes\",\n            \"required\": 0\n          }\n        ],\n        \"createdAt\": \"2026-06-29T02:18:26.123Z\",\n        \"updatedAt\": \"2026-06-29T02:18:26.123Z\"\n      },\n      {\n        \"id\": \"6488d08c5c70281b3c8f1e2b\",\n        \"level\": 2,\n        \"levelName\": \"STUDENT\",\n        \"order\": 2,\n        \"requirements\": [\n          {\n            \"title\": \"votes\",\n            \"required\": 50\n          }\n        ],\n        \"createdAt\": \"2026-06-29T02:18:26.123Z\",\n        \"updatedAt\": \"2026-06-29T02:18:26.123Z\"\n      }\n    ],\n    \"meta\": {\n      \"page\": 1,\n      \"limit\": 10,\n      \"total\": 9\n    }\n  }\n}"
+						}
+					]
+				},
+				{
+					"name": "Add Level",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"order\": 10,\n  \"name\": \"PRO\",\n  \"requirements\": [\n    {\n      \"title\": \"votes\",\n      \"required\": 5000\n    }\n  ]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/levels",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"levels"
+							]
+						},
+						"description": "Create a new level configuration with requirements."
+					},
+					"response": [
+						{
+							"name": "Created Response",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "{{authToken}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"order\": 10,\n  \"name\": \"PRO\",\n  \"requirements\": [\n    {\n      \"title\": \"votes\",\n      \"required\": 5000\n    }\n  ]\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/v1/levels",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"levels"
+									]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n  \"success\": true,\n  \"statusCode\": 201,\n  \"message\": \"level created successfully\",\n  \"data\": {\n    \"id\": \"6488d08c5c70281b3c8f1e2c\",\n    \"level\": 10,\n    \"order\": 10,\n    \"levelName\": \"PRO\",\n    \"requirements\": [\n      {\n        \"title\": \"votes\",\n        \"required\": 5000\n      }\n    ],\n    \"createdAt\": \"2026-06-29T04:02:45.000Z\",\n    \"updatedAt\": \"2026-06-29T04:02:45.000Z\"\n  }\n}"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "User Level Progress",
+			"item": [
+				{
+					"name": "Get User Progress",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/users/progress",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"progress"
+							]
+						},
+						"description": "Retrieve currently authenticated user's level, next level, and progress percentages."
+					},
+					"response": [
+						{
+							"name": "Success Response",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "{{authToken}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/api/v1/users/progress",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"users",
+										"progress"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n  \"success\": true,\n  \"statusCode\": 200,\n  \"message\": \"user progress fetched successfully\",\n  \"data\": {\n    \"totalVotes\": 120,\n    \"currentLevel\": {\n      \"name\": \"TRAINED\",\n      \"order\": 3\n    },\n    \"nextLevel\": {\n      \"name\": \"TALENTED\",\n      \"order\": 4,\n      \"requirements\": [\n        {\n          \"title\": \"votes\",\n          \"required\": 350,\n          \"current\": 120,\n          \"progressPercentage\": 34.29\n        }\n      ]\n    },\n    \"progressPercentage\": 34.29\n  }\n}"
+						}
+					]
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:5003",
+			"type": "string"
+		},
+		{
+			"key": "authToken",
+			"value": "Bearer <YOUR_JWT_TOKEN>",
+			"type": "string"
+		}
+	]
+}

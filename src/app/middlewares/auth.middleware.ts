@@ -41,7 +41,7 @@ const auth = (...roles: string[]) => {
         },
       });
       
-      if (!user) {
+      if (!user || user.isDeleted) {
         throw new ApiError(httpStatus.NOT_FOUND, "User not found!");
       }
 

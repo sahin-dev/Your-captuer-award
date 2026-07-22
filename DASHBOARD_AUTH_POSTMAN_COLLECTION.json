@@ -1,0 +1,548 @@
+{
+  "info": {
+    "name": "Dashboard + Auth Changes",
+    "_postman_id": "c9594de2-5d6e-4d11-8cf5-b0ee6001512a",
+    "description": "Postman collection documenting the changed auth and dashboard list endpoints.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth - Sign In",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"password123\",\n  \"remember_me\": true\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/auth/signin",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "auth",
+            "signin"
+          ]
+        }
+      },
+      "response": [
+        {
+          "name": "Sign In Success",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"password123\",\n  \"remember_me\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/signin",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "signin"
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "body": "{\n  \"success\": true,\n  \"statusCode\": 200,\n  \"message\": \"User sign in successfully\",\n  \"data\": {\n    \"token\": \"<jwt-token>\"\n  }\n}",
+          "header": []
+        }
+      ]
+    },
+    {
+      "name": "Auth - Admin Sign In",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"adminpass\",\n  \"remember_me\": false\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/auth/admin/signin",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "auth",
+            "admin",
+            "signin"
+          ]
+        }
+      },
+      "response": [
+        {
+          "name": "Admin Sign In Success",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"adminpass\",\n  \"remember_me\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/admin/signin",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "admin",
+                "signin"
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "body": "{\n  \"success\": true,\n  \"statusCode\": 200,\n  \"message\": \"User sign in successfully\",\n  \"data\": {\n    \"token\": \"<jwt-token>\"\n  }\n}",
+          "header": []
+        }
+      ]
+    },
+    {
+      "name": "Dashboard - Payments List",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{authToken}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/dashboard/payments?page=1&limit=20&search=invoice&status=SUCCEEDED&method=SUBSCRIPTION&planName=PRO",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "dashboard",
+            "payments"
+          ],
+          "query": [
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "limit",
+              "value": "20"
+            },
+            {
+              "key": "search",
+              "value": "invoice"
+            },
+            {
+              "key": "status",
+              "value": "SUCCEEDED"
+            },
+            {
+              "key": "method",
+              "value": "SUBSCRIPTION"
+            },
+            {
+              "key": "planName",
+              "value": "PRO"
+            }
+          ]
+        }
+      },
+      "response": [
+        {
+          "name": "Payments List Success",
+          "originalRequest": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/dashboard/payments?page=1&limit=20&search=invoice&status=SUCCEEDED&method=SUBSCRIPTION&planName=PRO",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "dashboard",
+                "payments"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "search",
+                  "value": "invoice"
+                },
+                {
+                  "key": "status",
+                  "value": "SUCCEEDED"
+                },
+                {
+                  "key": "method",
+                  "value": "SUBSCRIPTION"
+                },
+                {
+                  "key": "planName",
+                  "value": "PRO"
+                }
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "body": "{\n  \"success\": true,\n  \"statusCode\": 200,\n  \"message\": \"payments fetched successfully\",\n  \"data\": [\n    {\n      \"id\": \"payment123\",\n      \"amount\": 49.99,\n      \"status\": \"SUCCEEDED\",\n      \"method\": \"SUBSCRIPTION\",\n      \"planName\": \"PRO\",\n      \"createdAt\": \"2026-07-01T12:00:00.000Z\"\n    }\n  ],\n  \"meta\": {\n    \"page\": 1,\n    \"limit\": 20,\n    \"total\": 1,\n    \"totalPages\": 1\n  }\n}",
+          "header": []
+        }
+      ]
+    },
+    {
+      "name": "Dashboard - Users List",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{authToken}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/dashboard/all-users?page=1&limit=20&search=alice&status=active&role=USER",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "dashboard",
+            "all-users"
+          ],
+          "query": [
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "limit",
+              "value": "20"
+            },
+            {
+              "key": "search",
+              "value": "alice"
+            },
+            {
+              "key": "status",
+              "value": "active"
+            },
+            {
+              "key": "role",
+              "value": "USER"
+            }
+          ]
+        }
+      },
+      "response": [
+        {
+          "name": "Users List Success",
+          "originalRequest": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/dashboard/all-users?page=1&limit=20&search=alice&status=active&role=USER",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "dashboard",
+                "all-users"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "search",
+                  "value": "alice"
+                },
+                {
+                  "key": "status",
+                  "value": "active"
+                },
+                {
+                  "key": "role",
+                  "value": "USER"
+                }
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "body": "{\n  \"success\": true,\n  \"statusCode\": 200,\n  \"message\": \"users fetched successfully\",\n  \"data\": [\n    {\n      \"id\": \"user123\",\n      \"name\": \"Alice\",\n      \"email\": \"alice@example.com\",\n      \"status\": \"active\",\n      \"role\": \"USER\"\n    }\n  ],\n  \"meta\": {\n    \"page\": 1,\n    \"limit\": 20,\n    \"total\": 1,\n    \"totalPages\": 1\n  }\n}",
+          "header": []
+        }
+      ]
+    },
+    {
+      "name": "Dashboard - Transactions List",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{authToken}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/dashboard/transactions?page=1&limit=20&search=order123&status=SUCCEEDED&method=STORE&planName=PREMIUM",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "dashboard",
+            "transactions"
+          ],
+          "query": [
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "limit",
+              "value": "20"
+            },
+            {
+              "key": "search",
+              "value": "order123"
+            },
+            {
+              "key": "status",
+              "value": "SUCCEEDED"
+            },
+            {
+              "key": "method",
+              "value": "STORE"
+            },
+            {
+              "key": "planName",
+              "value": "PREMIUM"
+            }
+          ]
+        }
+      },
+      "response": [
+        {
+          "name": "Transactions List Success",
+          "originalRequest": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/dashboard/transactions?page=1&limit=20&search=order123&status=SUCCEEDED&method=STORE&planName=PREMIUM",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "dashboard",
+                "transactions"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "search",
+                  "value": "order123"
+                },
+                {
+                  "key": "status",
+                  "value": "SUCCEEDED"
+                },
+                {
+                  "key": "method",
+                  "value": "STORE"
+                },
+                {
+                  "key": "planName",
+                  "value": "PREMIUM"
+                }
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "body": "{\n  \"success\": true,\n  \"statusCode\": 200,\n  \"message\": \"transactions fetched successfully\",\n  \"data\": [\n    {\n      \"id\": \"txn123\",\n      \"amount\": 120.0,\n      \"status\": \"SUCCEEDED\",\n      \"method\": \"STORE\",\n      \"planName\": \"PREMIUM\",\n      \"createdAt\": \"2026-07-01T12:00:00.000Z\"\n    }\n  ],\n  \"meta\": {\n    \"page\": 1,\n    \"limit\": 20,\n    \"total\": 1,\n    \"totalPages\": 1\n  }\n}",
+          "header": []
+        }
+      ]
+    },
+    {
+      "name": "Dashboard - Plans List",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{authToken}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/dashboard/plans?status=ACTIVE&search=PREMIUM",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "dashboard",
+            "plans"
+          ],
+          "query": [
+            {
+              "key": "status",
+              "value": "ACTIVE"
+            },
+            {
+              "key": "search",
+              "value": "PREMIUM"
+            }
+          ]
+        }
+      },
+      "response": [
+        {
+          "name": "Plans List Success",
+          "originalRequest": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/dashboard/plans?status=ACTIVE&search=PREMIUM",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "dashboard",
+                "plans"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "ACTIVE"
+                },
+                {
+                  "key": "search",
+                  "value": "PREMIUM"
+                }
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "body": "{\n  \"success\": true,\n  \"statusCode\": 200,\n  \"message\": \"plans fetched successfully\",\n  \"data\": [\n    {\n      \"id\": \"plan123\",\n      \"name\": \"PREMIUM\",\n      \"status\": \"ACTIVE\",\n      \"price\": 29.99\n    }\n  ]\n}",
+          "header": []
+        }
+      ]
+    }
+  ]
+}

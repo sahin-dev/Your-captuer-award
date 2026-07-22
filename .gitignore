@@ -6,7 +6,7 @@ yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
 .pnpm-debug.log*
-
+src/prismaClient/
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
@@ -99,7 +99,7 @@ dist
 
 # vuepress build output
 .vuepress/dist
-
+postman/
 # vuepress v2.x temp and cache directory
 .temp
 .cache
@@ -135,3 +135,7 @@ dist
 .yarn/install-state.gz
 .pnp.*
 .vercel
+uploads/
+branch_structure.json
+temp_auto_push.bat
+temp_interactive_push.bat

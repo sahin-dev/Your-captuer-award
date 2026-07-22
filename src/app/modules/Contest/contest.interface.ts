@@ -4,6 +4,7 @@ export interface IContest {
     title: string;    
     description: string;
     recurring: boolean;
+    recurring_status?: boolean;
     recurringType?: RecurringType;
     startDate: string; // ISO date string
     endDate: string; // ISO date string 

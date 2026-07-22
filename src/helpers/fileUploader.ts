@@ -1,5 +1,7 @@
 import multer from "multer";
 import { v4 as uuidv4 } from "uuid";
+import path from "path";
+import fs from "fs";
 import {
   S3Client,
   PutObjectCommand,
@@ -7,7 +9,7 @@ import {
 } from "@aws-sdk/client-s3";
 import { v2 as cloudinary } from "cloudinary";
 import { CloudinaryStorage } from "multer-storage-cloudinary";
-import streamifier from "streamifier"; 
+import streamifier from "streamifier";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -22,15 +24,35 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+// ========== FILESYSTEM STORAGE CONFIGURATION ==========
+// Create uploads directory if it doesn't exist
+const uploadsDir = path.join(process.cwd(), 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+// Filesystem storage configuration
+const filesystemStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadsDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueName = `${Date.now()}_${uuidv4()}_${file.originalname}`;
+    cb(null, uniqueName);
+  }
+});
+
 // Multer configuration using memoryStorage (for DigitalOcean & Cloudinary)
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
+
+const filesystemUpload = multer({ storage });
 
 // ✅ Fixed Cloudinary Storage
 const cloudinaryStorage = new CloudinaryStorage({
   cloudinary,
   params: {
-  
+
     public_id: (req, file) => `${Date.now()}_${file.originalname}`,
   },
 });
@@ -50,6 +72,25 @@ const tradePhoto = upload.single("tradePhoto")
 
 // Upload multiple images
 const uploadMultipleImage = upload.fields([{ name: "images", maxCount: 15 }]);
+
+// Upload team match photos (multiple files, limit validated in service)
+const uploadTeamMatchPhotos = upload.array('files', 4);
+
+// ========== FILESYSTEM MIDDLEWARE VERSIONS ==========
+// Filesystem storage single file uploads
+const filesystemUploadBadge = filesystemUpload.single("badge");
+const filesystemUploadContestBanner = filesystemUpload.single("banner");
+const filesystemUploadUserPhoto = filesystemUpload.single('photo');
+const filesystemUploadTradePhoto = filesystemUpload.single("file");
+const filesystemUploadAvatar = filesystemUpload.single("avatar");
+const filesystemUploadCover = filesystemUpload.single("cover");
+const fileSystemUploaderProductImage = filesystemUpload.single("image")
+
+// Filesystem storage multiple file uploads
+const filesystemUploadMultipleImage = filesystemUpload.fields([{ name: "images", maxCount: 15 }]);
+
+// Filesystem storage team match photos
+const filesystemUploadTeamMatchPhotos = filesystemUpload.array('files', 4);
 
 // Upload profile and banner images
 const updateProfile = upload.fields([
@@ -97,16 +138,16 @@ const uploadToDigitalOcean = async (file: Express.Multer.File) => {
     throw new Error("File is required for uploading.");
   }
   const s3Client = new S3Client({
-      region: "us-east-1",
-      endpoint: process.env.DO_SPACE_ENDPOINT,
-      credentials: {
-        accessKeyId: process.env.DO_SPACE_ACCESS_KEY || "",
-        secretAccessKey: process.env.DO_SPACE_SECRET_KEY || "",
-      },
-    });
+    region: "us-east-1",
+    endpoint: process.env.DO_SPACE_ENDPOINT,
+    credentials: {
+      accessKeyId: process.env.DO_SPACE_ACCESS_KEY || "",
+      secretAccessKey: process.env.DO_SPACE_SECRET_KEY || "",
+    },
+  });
 
   try {
-    
+
     const Key = `captureaward/${Date.now()}_${uuidv4()}_${file.originalname}`;
     const uploadParams = {
       Bucket: process.env.DO_SPACE_BUCKET || "",
@@ -118,10 +159,12 @@ const uploadToDigitalOcean = async (file: Express.Multer.File) => {
 
     // Upload file to DigitalOcean Spaces
     await s3Client.send(new PutObjectCommand(uploadParams));
-  
 
-    // Format the URL
-    const fileURL = `${process.env.DO_SPACE_ENDPOINT}/${process.env.DO_SPACE_BUCKET}/${Key}`;
+
+    // Format the URL using origin endpoint if configured (e.g. for custom domain/CDN or virtual hosting)
+    const fileURL = process.env.DO_SPACE_ORIGIN_ENDPOINT
+      ? `${process.env.DO_SPACE_ORIGIN_ENDPOINT}/${Key}`
+      : `${process.env.DO_SPACE_ENDPOINT}/${process.env.DO_SPACE_BUCKET}/${Key}`;
     return {
       Location: fileURL,
       Bucket: process.env.DO_SPACE_BUCKET || "",
@@ -130,11 +173,30 @@ const uploadToDigitalOcean = async (file: Express.Multer.File) => {
   } catch (error) {
     console.error("Error uploading file to DigitalOcean:", error);
     throw error;
-  }finally {
+  } finally {
     s3Client.destroy()
   }
-  
-  
+
+
+};
+
+// ✅ Redirected to DigitalOcean Upload
+const uploadToFilesystem = async (file: Express.Multer.File): Promise<{ Location: string; filename: string }> => {
+  if (!file) {
+    throw new Error("File is required for uploading.");
+  }
+
+  try {
+    // Forward directly to DigitalOcean Spaces
+    const result = await uploadToDigitalOcean(file);
+    return {
+      Location: result.Location,
+      filename: result.Key,
+    };
+  } catch (error) {
+    console.error("Error uploading file to DigitalOcean via uploadToFilesystem:", error);
+    throw error;
+  }
 };
 
 // ✅ No Name Changes, Just Fixes
@@ -147,10 +209,21 @@ export const fileUploader = {
   cloudinaryUpload,
   uploadToDigitalOcean,
   uploadToCloudinary,
+  uploadToFilesystem,
+  filesystemUpload,
   uploadAvatar,
-  uploadBadge, 
+  uploadBadge,
+  filesystemUploadBadge,
   contestBanner,
+  filesystemUploadContestBanner,
   uploadCover,
+  filesystemUploadCover,
   userPhoto,
-  tradePhoto
+  filesystemUploadUserPhoto,
+  tradePhoto,
+  filesystemUploadTradePhoto,
+  filesystemUploadAvatar,
+  uploadTeamMatchPhotos,
+  filesystemUploadTeamMatchPhotos,
+  filesystemUploadMultipleImage
 };

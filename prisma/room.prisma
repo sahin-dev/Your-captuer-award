@@ -10,6 +10,8 @@ model Chat {
     teamId    String      @db.ObjectId
     senderId  String      @db.ObjectId
     message   String
+    messageType String    @default("text")
+    fileUrl     String?
 
     team      Team          @relation(fields: [teamId], references: [id])
     sender    User          @relation(fields: [senderId], references: [id])

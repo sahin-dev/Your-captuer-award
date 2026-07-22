@@ -1,6 +1,7 @@
 import ApiError from '../../../errors/ApiError';
 import prisma from '../../../shared/prisma';
 import httpStatus from 'http-status'
+import { paginationHelper } from '../../../helpers/paginationHelper';
 
 export const handlePostComment = async (providerId: string,  text: string,photoId?: string, replyTo?:string ) => {
     
@@ -32,16 +33,22 @@ export const handlePostComment = async (providerId: string,  text: string,photoI
     return comment;
 };
 
-export const handleGetUserComments = async (photoId: string) => {
+export const handleGetUserComments = async (photoId: string, page: number = 1, limit: number = 10) => {
+    const { skip, limit: paginationLimit } = paginationHelper.calculatePagination({ page, limit });
+
     const comments = await prisma.comment.findMany({
         where: { photoId },
+        skip,
+        take: paginationLimit,
         include: { provider: {select:{avatar:true, fullName:true, firstName:true, lastName:true}} ,commentReplies:
     {include:{commentReplies:{include:{provider:{select:{avatar:true, firstName:true,lastName:true, fullName:true}}}}, provider:{select:{avatar:true, fullName:true, firstName:true, lastName:true}}},}},
         orderBy:{createdAt:"desc"}
     });
     
+    const total = await prisma.comment.count({where: { photoId }});
+    const meta = paginationHelper.getPaginationMetaData(page, paginationLimit, total);
 
-    return comments;
+    return { data: comments, meta };
 };
 
 

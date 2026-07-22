@@ -3,7 +3,8 @@ import z from 'zod'
 export const SignInSchema = z.object({
     
     email: z.string({required_error:"email or username is required"}).email({message:"email is not valid"}),
-    password: z.string({required_error:"password is required"})
+    password: z.string({required_error:"password is required"}),
+    remember_me: z.boolean().optional().default(false)
 })
 
 

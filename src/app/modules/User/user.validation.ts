@@ -41,6 +41,10 @@ const verifyOtpSchema = z.object({
     code:z.string({required_error:"code is required"})
 })
 
+const  deleteAccountSchema = z.object({
+    password: z.string({required_error:"Password is required"})
+})
+
 export const userSchema = {
 
     resetPasswordSchema,
@@ -48,5 +52,6 @@ export const userSchema = {
     updateUserAdminSchema,
     forgetPasswordSchema,
     changePasswordSchema,
-    verifyOtpSchema
+    verifyOtpSchema,
+    deleteAccountSchema
 }

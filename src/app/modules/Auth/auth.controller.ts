@@ -26,14 +26,15 @@ export const registerUser = catchAsync(async (req:Request, res:Response)=>{
 
 export const SignIn = catchAsync(async (req:Request,res:Response)=>{
     const body = req.body
-    console.log(body)
 
     const data = await handleSignIn(body)
 
-      res.cookie("token", data.token, {
+    const maxAge = body.remember_me ? 7 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000
+
+    res.cookie("token", data.token, {
       httpOnly: true,
       secure: true,
-      maxAge: 365 * 24 * 60 * 60 * 1000,
+      maxAge,
     });
 
     sendResponse(res, {
@@ -49,13 +50,14 @@ export const SignIn = catchAsync(async (req:Request,res:Response)=>{
 export const AdminSignIn = catchAsync(async (req:Request,res:Response)=>{
     const body = req.body
 
-
     const data = await handleAdminSignIn(body)
 
-      res.cookie("token", data.token, {
+    const maxAge = body.remember_me ? 7 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000
+
+    res.cookie("token", data.token, {
       httpOnly: true,
       secure: true,
-      maxAge: 365 * 24 * 60 * 60 * 1000,
+      maxAge,
     });
 
     sendResponse(res, {

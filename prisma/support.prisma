@@ -1,0 +1,21 @@
+model Support {
+    id        String        @id @default(auto()) @map("_id") @db.ObjectId
+    ticket_no String        @unique
+    name      String
+    email     String
+    subject   String
+    message   String
+    status    SupportStatus @default(PENDING)
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@map("supports")
+}
+
+enum SupportStatus {
+    PENDING
+    IN_PROGRESS
+    RESOLVED
+    CLOSED
+}

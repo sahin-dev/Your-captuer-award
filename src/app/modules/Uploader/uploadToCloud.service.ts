@@ -38,7 +38,7 @@ export class CloudUploader {
     }
 
     init(providerConfiguration:IProviderConfiguration){
-        let client = undefined
+        let client: any = undefined
         let configuration = providerConfiguration.getConfiguration()
         if (providerConfiguration instanceof DigitalOceanConfiguration){
             client = this.initDigitalOceanClient(configuration)

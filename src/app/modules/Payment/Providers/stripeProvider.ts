@@ -19,7 +19,7 @@ export class StripeProvider implements PaymentProvider {
 
     async initializePaymentSession(userId:string,amount: number, currency: string, success_url:string, cancel_url:string, data?:any){
       const customer = await this.createCustomer(userId)
-      console.log(data)
+      
 
         const session = await this.stripe.checkout.sessions.create({
           customer:customer.id,
@@ -44,7 +44,7 @@ export class StripeProvider implements PaymentProvider {
     
       const intent = await this.stripe.paymentIntents.create({amount, currency,metadata:{}})
 
-      await prisma.payment.update({where:{id:paymentId}, data:{stripe_sessino_id:intent.id}})
+      await prisma.payment.update({where:{id:paymentId}, data:{stripe_payment_id:intent.id}})
 
       return intent.client_secret as string;
   }
@@ -56,6 +56,8 @@ export class StripeProvider implements PaymentProvider {
     return await this.stripe.checkout.sessions.create({
       customer:customer.id,
       mode,
+      success_url,
+      cancel_url,
       line_items:[{price:priceId, quantity:1}],
       metadata:data
     

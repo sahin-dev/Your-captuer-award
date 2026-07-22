@@ -1,0 +1,809 @@
+{
+  "info": {
+    "name": "Team Module API",
+    "description": "Postman collection for Team Module endpoints including team management, member operations, join requests, leaderboard, and auto-match system",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Team Management",
+      "item": [
+        {
+          "name": "Create Team",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "level",
+                  "value": "Beginner",
+                  "type": "text"
+                },
+                {
+                  "key": "language",
+                  "value": "English",
+                  "type": "text"
+                },
+                {
+                  "key": "country",
+                  "value": "USA",
+                  "type": "text"
+                },
+                {
+                  "key": "description",
+                  "value": "A team of skilled players",
+                  "type": "text"
+                },
+                {
+                  "key": "accessibility",
+                  "value": "PUBLIC",
+                  "type": "text"
+                },
+                {
+                  "key": "min_requirement",
+                  "value": "5 members",
+                  "type": "text"
+                },
+                {
+                  "key": "badge",
+                  "type": "file"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/teams",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "teams"
+              ]
+            },
+            "description": "Create a new team (Admin only). Includes badge file upload."
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Teams",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/teams",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "teams"
+              ]
+            },
+            "description": "Retrieve all teams"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Team Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/teams/:teamId",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "teams",
+                ":teamId"
+              ],
+              "variable": [
+                {
+                  "key": "teamId",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Get details of a specific team (Admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Team",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"level\": \"Intermediate\",\n  \"language\": \"English\",\n  \"country\": \"USA\",\n  \"description\": \"Updated team description\",\n  \"accessibility\": \"PRIVATE\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/teams/:teamId",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "teams",
+                ":teamId"
+              ],
+              "variable": [
+                {
+                  "key": "teamId",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Update team details (Admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Team",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/teams/:teamId",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "teams",
+                ":teamId"
+              ],
+              "variable": [
+                {
+                  "key": "teamId",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Delete a team (Admin only)"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Member Management",
+      "item": [
+        {
+          "name": "Get My Team Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/teams/my-team",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "teams",
+                "my-team"
+              ]
+            },
+            "description": "Get details of the current user's team"
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Team Members",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/teams/members/:teamId",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "teams",
+                "members",
+                ":teamId"
+              ],
+              "variable": [
+                {
+                  "key": "teamId",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Get all members of a specific team"
+          },
+          "response": []
+        },
+        {
+          "name": "Invite User to Team",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"user_id_here\",\n  \"teamId\": \"team_id_here\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/teams/invite",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "teams",
+                "invite"
+              ]
+            },
+            "description": "Invite a user to join a team"
+          },
+          "response": []
+        },
+        {
+          "name": "Join Team by Invitation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"invitationId\": \"invitation_id_here\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/teams/join-by-invitation",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "teams",
+                "join-by-invitation"
+              ]
+            },
+            "description": "Join a team via invitation link/code"
+          },
+          "response": []
+        },
+        {
+          "name": "Join Team",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/teams/join/:teamId",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "teams",
+                "join",
+                ":teamId"
+              ],
+              "variable": [
+                {
+                  "key": "teamId",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Join a public team directly"
+          },
+          "response": []
+        },
+        {
+          "name": "Leave Team",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/teams/leave",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "teams",
+                "leave"
+              ]
+            },
+            "description": "Leave the current team"
+          },
+          "response": []
+        },
+        {
+          "name": "Remove Member from Team",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"user_id_to_remove\",\n  \"teamId\": \"team_id_here\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/teams/remove",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "teams",
+                "remove"
+              ]
+            },
+            "description": "Remove a member from a team (Team admin only)"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Team Discovery",
+      "item": [
+        {
+          "name": "Get Suggested Teams",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/teams/suggests",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "teams",
+                "suggests"
+              ]
+            },
+            "description": "Get suggested teams based on user profile and preferences"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Join Request System",
+      "item": [
+        {
+          "name": "Send Join Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/teams/request/send/:teamId",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "teams",
+                "request",
+                "send",
+                ":teamId"
+              ],
+              "variable": [
+                {
+                  "key": "teamId",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Send a join request to a team (for private teams)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Pending Join Requests",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/teams/request/pending/:teamId",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "teams",
+                "request",
+                "pending",
+                ":teamId"
+              ],
+              "variable": [
+                {
+                  "key": "teamId",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Get all pending join requests for a team (Team admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Approve Join Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/teams/request/approve/:joinRequestId",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "teams",
+                "request",
+                "approve",
+                ":joinRequestId"
+              ],
+              "variable": [
+                {
+                  "key": "joinRequestId",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Approve a join request (Team admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Reject Join Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/teams/request/reject/:joinRequestId",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "teams",
+                "request",
+                "reject",
+                ":joinRequestId"
+              ],
+              "variable": [
+                {
+                  "key": "joinRequestId",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Reject a join request (Team admin only)"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Leaderboard & Match History",
+      "item": [
+        {
+          "name": "Get Team Leaderboard",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/teams/leaderboard/all",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "teams",
+                "leaderboard",
+                "all"
+              ]
+            },
+            "description": "Get the team leaderboard with rankings and stats"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Team History",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/teams/history/:teamId",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "teams",
+                "history",
+                ":teamId"
+              ],
+              "variable": [
+                {
+                  "key": "teamId",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Get match history for a specific team"
+          },
+          "response": []
+        },
+        {
+          "name": "Record Match Result",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"matchId\": \"match_id_here\",\n  \"winnerTeamId\": \"winning_team_id\",\n  \"loserTeamId\": \"losing_team_id\",\n  \"score\": \"3-2\",\n  \"status\": \"COMPLETED\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/teams/match/record-result",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "teams",
+                "match",
+                "record-result"
+              ]
+            },
+            "description": "Record match results (Admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Active Match",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/teams/active-match/:teamId",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "teams",
+                "active-match",
+                ":teamId"
+              ],
+              "variable": [
+                {
+                  "key": "teamId",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Get the active/ongoing match for a team"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Auto Match System",
+      "item": [
+        {
+          "name": "Get Available Team Contests",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/teams/:teamId/available-contests",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "teams",
+                ":teamId",
+                "available-contests"
+              ],
+              "variable": [
+                {
+                  "key": "teamId",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Get list of available TEAM contests for team admin to choose from for auto-match"
+          },
+          "response": []
+        },
+        {
+          "name": "Start Match with Auto Rival",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"contestId\": \"contest_id_here\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/teams/:teamId/start-match-auto",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "teams",
+                ":teamId",
+                "start-match-auto"
+              ],
+              "variable": [
+                {
+                  "key": "teamId",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Team admin selects a contest, system automatically finds rival team and starts match"
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}

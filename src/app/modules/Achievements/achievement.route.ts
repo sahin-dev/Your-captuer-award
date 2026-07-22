@@ -11,5 +11,6 @@ router.get("/users/:userId",achieveController.getAchievementByUser)
 router.get("/photos/:photoId", auth(), achieveController.getUserPhotoAchievements)
 
 router.get("/contests/:contestId", achieveController.getAchievementsByContest)
+router.get("/photos", achieveController.getAllPhotosAchievements)
 
 export const achievementRoutes = router

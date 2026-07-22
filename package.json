@@ -7,13 +7,17 @@
     "start": "nodemon src/server.ts",
     "prod": "node dist/server.js",
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
-    "build": "tsc",
+    "build": "npx prisma generate --schema=./prisma && tsc && node -e \"require('fs').cpSync('src/prismaClient', 'dist/prismaClient', { recursive: true })\"",
     "generate": "ts-node src/generate-module.js",
     "postinstall": "prisma generate --schema=./prisma",
     "db:push": "prisma db push --schema=./prisma",
     "prisma:validate": "prisma validate --schema=./prisma",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "seed": "ts-node-dev src/seeder.ts"
+    "seed": "ts-node-dev src/seeder.ts",
+    "seed:bots": "ts-node-dev src/seeder.ts seed:bots",
+    "delete:bots": "ts-node-dev src/seeder.ts delete:bots",
+    "seed:levels": "ts-node-dev src/seeder.ts seed:levels",
+    "delete:levels": "ts-node-dev src/seeder.ts delete:levels"
   },
   "repository": {
     "type": "git",

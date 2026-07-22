@@ -1,8 +1,8 @@
 
 model User {
   id                 String               @id @default(auto()) @map("_id") @db.ObjectId
-  cover              String?              @default("https://images.unsplash.com/photo-1689539137236-b68e436248de?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D")
-  avatar             String?              @default("https://plus.unsplash.com/premium_photo-1689539137236-b68e436248de?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D")
+  cover              String?              
+  avatar             String?              
   socialId           String?
   socialProvider     String?
   firstName          String?
@@ -17,15 +17,19 @@ model User {
   customerId         String?
   role               UserRole             @default(USER)         
   accessToken        String?
-  isActive          Boolean              @default(false) 
+  isActive          Boolean              @default(true) 
+  isBlocked         Boolean               @default(false)
+  isDeleted         Boolean               @default(false)
   currentLevel       Int @default(-1)
   voting_power       Int @default(1)
+  totalVotes         Int @default(0)
   purchased_plan    SubscriptionPlanEnum?
   level              UserLevel?
   otps               Otp?
   store              UserStore?
   createdTeam        Team[]
   joinedTeam         TeamMember?
+  sentJoinRequests   TeamJoinRequest[] @relation("sentJoinRequests")
   createdContests    Contest[]
   commentProvides    Comment[]            @relation("provider")
   followers          Follow[]             @relation(name: "follower")
@@ -35,8 +39,8 @@ model User {
   userPhotos         UserPhoto[]
   ContestParticipant ContestParticipant[]
   chat               Chat[]
-  subscriptions     Subscription[]
-  payments          Payment[] 
+  subscriptions      Subscription[]
+  payments           Payment[] @relation("UserPayments")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -47,13 +51,14 @@ model User {
 
 model UserStore {
   id      String    @id  @default(auto())  @map("_id") @db.ObjectId
-  userId    String  @db.ObjectId @unique 
+  userId    String  @db.ObjectId @unique
+  coins     Int     @default(0) 
   key      Int     @default(0)
   boost    Int     @default(0)
   swap   Int     @default(0)
   coin   Int     @default(0)
 
-  user    User?      @relation(fields: [userId], references: [id])
+  user    User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
@@ -72,7 +77,7 @@ model UserPhoto {
   description   String?
   adult         Boolean   @default(false)
 
-  user          User           @relation(fields: [userId], references: [id])
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   contestUpload ContestPhoto[]
   likes         Like[]
 
@@ -84,16 +89,15 @@ model UserPhoto {
 
 model Like {
   id         String @id @default(auto()) @map("_id") @db.ObjectId
-  providerId String @db.ObjectId
+  providerId String? @db.ObjectId
   photoId    String @db.ObjectId
-
-  provider User      @relation(fields: [providerId], references: [id])
+ 
+  provider User?     @relation(fields: [providerId], references: [id], onDelete: SetNull)
   photo    UserPhoto @relation(fields: [photoId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([photoId, providerId])
   @@map("likes")
 }
 
@@ -148,15 +152,15 @@ model Follow {
 
 model Vote {
   id         String @id @default(auto()) @map("_id") @db.ObjectId
-  providerId String @db.ObjectId
+  providerId String? @db.ObjectId
   photoId    String @db.ObjectId
   contestId  String @db.ObjectId
   type       VoteType
   power      Int @default(1)
   weight     Int @default(1)
 
-  provider User         @relation(fields: [providerId], references: [id])
-  photo    ContestPhoto @relation(fields: [photoId], references: [id], onDelete: Cascade)
+  provider User?         @relation(fields: [providerId], references: [id], onDelete: SetNull)
+  photo    ContestPhoto @relation(fields: [photoId], references: [id])
   contest  Contest      @relation(fields: [contestId], references: [id])
 
   createdAt DateTime @default(now())
@@ -174,7 +178,7 @@ model UserLevel {
   levelId   String @db.ObjectId
 
   level     Level     @relation(references: [id], fields: [levelId])
-  user      User?     @relation(references: [id], fields: [userId])
+  user      User?     @relation(references: [id], fields: [userId], onDelete: Cascade)
   @@map("user_levels")
 }
 
@@ -184,6 +188,7 @@ model Level {
   id         String @id @default(auto()) @map("_id") @db.ObjectId
   level       Int
   levelName   LevelName
+  order       Int @default(0)
   requirements    LevelRequirement[]
   userLevel UserLevel[]
 
@@ -209,13 +214,18 @@ model Level {
 
 
 type LevelRequirement {
-  title    String
+  title    LevelRequirementTitle
   required    Int
 }
 
 type Badge {
   type       String
   param      String
+}
+
+enum LevelRequirementTitle {
+  votes
+  top_photographer
 }
 
 enum LevelName {

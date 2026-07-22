@@ -38,13 +38,15 @@ export const getLikedPhotos = catchAsync(async (req: Request, res: Response) => 
 
 export const getMyLikedPhotos = catchAsync(async (req: Request, res: Response) => {
     const userId = req.user.id
+    const { page, limit } = req.query;
 
-    const likes = await handleGetLikedPhotos(userId)
+    const result = await handleGetLikedPhotos(userId, page ? Number(page) : undefined, limit ? Number(limit) : undefined)
     
     sendResponse(res, {
         statusCode: 200,
         success: true,
         message: "My liked photos fetched successfully",
-        data: likes
+        data: result.data,
+        meta: result.meta
     })
 })

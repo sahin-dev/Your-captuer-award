@@ -1,0 +1,376 @@
+{
+  "info": {
+    "name": "Profile Module API",
+    "description": "Postman collection for Profile module endpoints including own uploads, photo details, stats, public profiles, and target user information.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Own Profile & Photos",
+      "item": [
+        {
+          "name": "Get My Uploads",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{local_url}}/api/v1/profiles/photos?page=1&limit=10",
+              "host": [
+                "{{local_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "profiles",
+                "photos"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number for pagination"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "Number of items per page"
+                }
+              ]
+            },
+            "description": "Retrieve photos uploaded by the authenticated user."
+          },
+          "response": []
+        },
+        {
+          "name": "Upload User Photo",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user_token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "photo",
+                  "type": "file",
+                  "description": "The image file to upload"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{local_url}}/api/v1/profiles/photos/upload",
+              "host": [
+                "{{local_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "profiles",
+                "photos",
+                "upload"
+              ]
+            },
+            "description": "Upload a new photo to the authenticated user's profile. Key name for the file is 'photo'."
+          },
+          "response": []
+        },
+        {
+          "name": "Get My Photo Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{local_url}}/api/v1/profiles/photos/:photoId",
+              "host": [
+                "{{local_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "profiles",
+                "photos",
+                ":photoId"
+              ],
+              "variable": [
+                {
+                  "key": "photoId",
+                  "value": "{{photo_id}}",
+                  "description": "ID of the user photo"
+                }
+              ]
+            },
+            "description": "Get detailed information about a specific photo uploaded by the authenticated user."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete User Photo",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{local_url}}/api/v1/profiles/photos/:photoId",
+              "host": [
+                "{{local_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "profiles",
+                "photos",
+                ":photoId"
+              ],
+              "variable": [
+                {
+                  "key": "photoId",
+                  "value": "{{photo_id}}",
+                  "description": "ID of the user photo to delete"
+                }
+              ]
+            },
+            "description": "Delete a photo uploaded by the authenticated user."
+          },
+          "response": []
+        },
+        {
+          "name": "Get My Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{local_url}}/api/v1/profiles/stats",
+              "host": [
+                "{{local_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "profiles",
+                "stats"
+              ]
+            },
+            "description": "Get statistics of the authenticated user's profile (uploads, likes, levels, badges, etc.)."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Public Profiles & Photos",
+      "item": [
+        {
+          "name": "Get Other User Photos",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{local_url}}/api/v1/profiles/users/:id?page=1&limit=10",
+              "host": [
+                "{{local_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "profiles",
+                "users",
+                ":id"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number for pagination"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "Number of items per page"
+                }
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{target_user_id}}",
+                  "description": "The ID of the target user"
+                }
+              ]
+            },
+            "description": "Fetch public uploads of another user. Includes check if the viewer has liked the photos."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Other User Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{local_url}}/api/v1/profiles/users/:id/stats",
+              "host": [
+                "{{local_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "profiles",
+                "users",
+                ":id",
+                "stats"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{target_user_id}}",
+                  "description": "The ID of the target user"
+                }
+              ]
+            },
+            "description": "Get statistics of another user's profile."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Other User Public Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{local_url}}/api/v1/profiles/users/:id/profile",
+              "host": [
+                "{{local_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "profiles",
+                "users",
+                ":id",
+                "profile"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{target_user_id}}",
+                  "description": "The ID of the target user"
+                }
+              ]
+            },
+            "description": "Retrieve the public profile details of another user, including whether the current user is following them."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Public Photo Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{local_url}}/api/v1/profiles/users/:id/photos/:photoId",
+              "host": [
+                "{{local_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "profiles",
+                "users",
+                ":id",
+                "photos",
+                ":photoId"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{target_user_id}}",
+                  "description": "The ID of the target user"
+                },
+                {
+                  "key": "photoId",
+                  "value": "{{photo_id}}",
+                  "description": "The ID of the photo"
+                }
+              ]
+            },
+            "description": "Fetch details of a public photo uploaded by another user, including follow/like status and comments."
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "local_url",
+      "value": "http://localhost:5003",
+      "type": "string"
+    },
+    {
+      "key": "user_token",
+      "value": "your_user_jwt_token_here",
+      "type": "string"
+    },
+    {
+      "key": "photo_id",
+      "value": "photo_id_here",
+      "type": "string"
+    },
+    {
+      "key": "target_user_id",
+      "value": "target_user_id_here",
+      "type": "string"
+    }
+  ]
+}

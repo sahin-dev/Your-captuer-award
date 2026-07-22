@@ -5,6 +5,10 @@ declare global {
   namespace Express {
     interface Request {
       user: JwtPayload;
+      userSubscription?: {
+        plan: string;
+        verified: boolean;
+      };
     }
   }
 }

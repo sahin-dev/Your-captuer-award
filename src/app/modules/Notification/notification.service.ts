@@ -1,5 +1,6 @@
 import ApiError from "../../../errors/ApiError"
-import { userSockets } from "../../../helpers/websocketSetUp"
+import { getIO } from "../../../helpers/websocketSetUp"
+import { paginationHelper } from "../../../helpers/paginationHelper"
 import { NotificationType, UserRole } from "../../../prismaClient"
 import prisma from "../../../shared/prisma"
 import httpStatus from 'http-status'
@@ -15,18 +16,30 @@ const postNotificationWithPayload = async (title:string, message:string, receive
 
     const notification = await prisma.notification.create({data:{title, message, receiverId, data:payload, ...(type && { type })}})
 
-    const userSocket = userSockets.get(receiverId)
-    if(userSocket && (userSocket.readyState === WebSocket.OPEN)){
-        userSocket.send(JSON.stringify({type:"notification", data:notification}))
+    // Send through Socket.IO if available
+    const io = getIO()
+    if(io){
+        io.to(receiverId).emit("notification", {
+            event: payload.event || "notification",
+            title,
+            message,
+            data: notification,
+            timestamp: new Date()
+        })
     }
 
     return notification
 }
 
-const getUserNotifications = async (receiverId:string)=>{
-    const notifications = await prisma.notification.findMany({where:{receiverId}})
+const getUserNotifications = async (receiverId:string, page: number = 1, limit: number = 10)=>{
+    const { skip, limit: paginationLimit } = paginationHelper.calculatePagination({ page, limit });
+    
+    const notifications = await prisma.notification.findMany({where:{receiverId}, skip, take: paginationLimit, orderBy: { createdAt: 'desc' }})
 
-    return notifications
+    const total = await prisma.notification.count({where:{receiverId}});
+    const paginationMetaData = paginationHelper.getPaginationMetaData(page, paginationLimit, total);
+    
+    return { data: notifications, meta: paginationMetaData };
 }
 
 const getNotificationDetails = async (notificationId:string)=>{
@@ -50,10 +63,15 @@ const getUnSentNotification = async ()=>{
 }
 
 
-const getAdminNotification = async () => {
-    const adminNotifications = await prisma.notification.findMany({where:{type:NotificationType.PAYMENT}})
+const getAdminNotification = async (page: number = 1, limit: number = 10) => {
+    const { skip, limit: paginationLimit } = paginationHelper.calculatePagination({ page, limit });
+    
+    const adminNotifications = await prisma.notification.findMany({where:{type:NotificationType.PAYMENT}, skip, take: paginationLimit, orderBy: { createdAt: 'desc' }})
 
-    return adminNotifications
+    const total = await prisma.notification.count({where:{type:NotificationType.PAYMENT}});
+    const paginationMetaData = paginationHelper.getPaginationMetaData(page, paginationLimit, total);
+
+    return { data: adminNotifications, meta: paginationMetaData };
 }
 
 const markAllRead = async (userId:string) => {
@@ -66,7 +84,24 @@ const markAllRead = async (userId:string) => {
         return await prisma.notification.updateMany({where:{receiverId:userId}, data:{isRead:true}})
     }
 
-    return await prisma.notification.updateMany({where:{receiverId:'admin'}, data:{isRead:true}})
+    return await prisma.notification.updateMany({where:{OR:[{receiverId:userId}, {receiverId: 'admin'}]}, data:{isRead:true}})
+}
+
+/**
+ * Get all team members by team ID
+ * Used for broadcasting notifications to entire teams
+ */
+const getTeamMembers = async (teamId: string) => {
+    const teamMembers = await prisma.teamMember.findMany({
+        where: { teamId },
+        select: { memberId: true, member: { select: { id: true, firstName: true, lastName: true } } }
+    })
+    
+    return teamMembers.map(tm => ({
+        memberId: tm.memberId,
+        memberName: `${tm.member.firstName} ${tm.member.lastName}`,
+        userId: tm.member.id
+    }))
 }
 
 export const notificationService = {
@@ -77,6 +112,7 @@ export const notificationService = {
     updateNotificationStatus,
     postNotificationWithPayload,
     getAdminNotification,
-    markAllRead
+    markAllRead,
+    getTeamMembers
     
 }

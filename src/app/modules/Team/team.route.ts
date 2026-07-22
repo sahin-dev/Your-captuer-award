@@ -9,7 +9,8 @@ import { UserRole } from '../../../prismaClient';
 
 const router = express.Router();
 
-router.post('/',auth(UserRole.ADMIN),fileUploader.uploadBadge, validateRequest(createTeamValidationSchema), teamController.createTeam);
+router.post('/',auth(),fileUploader.filesystemUploadBadge, validateRequest(createTeamValidationSchema), teamController.createTeam);
+
 router.post("/invite", auth(), teamController.inviteUser)
 router.post("/leave", auth(), teamController.leaveTeam)
 router.post("/remove", auth(), teamController.removeMemberFromTeam)
@@ -17,11 +18,55 @@ router.get("/my-team", auth(), teamController.getMyTeamDetails)
 router.get("/suggests", auth(), teamController.getSuggestedTeams)
 router.post("/join-by-invitation", auth(), teamController.joinByInvitation)
 router.post("/join/:teamId", auth(), teamController.joinTeam)
+
+// NEW: Role Management Routes
+/**
+ * POST /api/teams/:teamId/members/:memberId/assign-role
+ * Leader can assign MODERATOR or LEADER role to a member
+ * Body: { role: 'MODERATOR' | 'LEADER' }
+ */
+router.post('/:teamId/members/:memberId/assign-role', auth(), teamController.assignMemberRole)
+
+/**
+ * POST /api/teams/:teamId/members/:memberId/revoke-role
+ * Leader can revoke roles and downgrade member back to MEMBER level
+ */
+router.post('/:teamId/members/:memberId/revoke-role', auth(), teamController.revokeMemberRole)
+
 router.get('/', auth(),teamController.getTeams);
-router.get('/:teamId',auth(UserRole.ADMIN), teamController.getTeamDetails);
+router.get('/search/by-name', auth(), teamController.searchTeamsByName);
+router.get('/:teamId',auth(), teamController.getTeamDetails);
 
 router.get("/members/:teamId", auth(), teamController.getAllTeamMembers)
-router.put('/:teamId',auth(UserRole.ADMIN), validateRequest(updateTeamValidationSchema), teamController.updateTeam);
-router.delete('/:teamId', auth(UserRole.ADMIN),teamController.deleteTeam);
+router.put('/:teamId',auth(),fileUploader.filesystemUploadBadge, validateRequest(updateTeamValidationSchema), teamController.updateTeam);
+router.delete('/:teamId', auth(UserRole.USER),teamController.deleteTeam);
+
+// NEW: Join Request System Routes
+router.post('/request/send/:teamId', auth(), teamController.sendJoinRequest);
+router.get('/request/pending/:teamId', auth(), teamController.getJoinRequests);
+router.post('/request/approve/:joinRequestId', auth(), teamController.approveJoinRequest);
+router.post('/request/reject/:joinRequestId', auth(), teamController.rejectJoinRequest);
+
+// NEW: Leaderboard & Match History Routes
+router.get('/leaderboard/all', auth(), teamController.getTeamLeaderboard);
+router.get('/history/:teamId', auth(), teamController.getTeamHistory);
+router.post('/match/record-result', auth(UserRole.USER), teamController.recordMatchResult);
+router.get('/active-match/:teamId', auth(), teamController.getActiveMatch);
+
+// NEW: Auto Match System Routes (Team Admin selects contest, system finds rival)
+/**
+ * GET /api/teams/:teamId/available-contests
+ * Get list of available TEAM contests for team admin to choose from
+ */
+router.get('/:teamId/available-contests', auth(), teamController.getAvailableTeamContests);
+
+/**
+ * POST /api/teams/:teamId/start-match-auto
+ * Team admin selects a contest, system automatically finds rival team and starts match
+ * Requires multiple photo files (minimum 1, maximum = contest.maxUploads)
+ * Body: { contestId: string }
+ * Files: Upload via 'files' field (array)
+ */
+router.post('/:teamId/start-match-auto', auth(), fileUploader.filesystemUploadTeamMatchPhotos, teamController.startTeamMatchWithAutoRival);
 
 export const teamRoutes = router;

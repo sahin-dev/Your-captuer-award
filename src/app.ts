@@ -1,4 +1,5 @@
 import express, { Application, NextFunction, Request, Response } from "express";
+import path from "path";
 
 import httpStatus from "http-status";
 import cors from "cors";
@@ -10,14 +11,16 @@ import router from "./app/routes";
 import ErrorHandler from "./app/middlewares/error.middleware";
 import { User } from "./prismaClient/client";
 import './app/event'
+import './app/passportStrategies'
 import stripeWebhook from "./helpers/stripeWebhook";
+import v2Router from "./app/routes/v2";
 
 const app: Application = express();
 
 app.use(session({
-  secret:"secret123#ABC",
-  resave:false,
-  saveUninitialized:false
+  secret: "secret123#ABC",
+  resave: false,
+  saveUninitialized: false
 }))
 
 app.use(passport.initialize())
@@ -37,20 +40,20 @@ export const corsOptions = {
 };
 
 
-app.post("/webhook",express.raw({type:"application/json"}), stripeWebhook)
+app.post("/webhook", express.raw({ type: "application/json" }), stripeWebhook)
 
 // Middleware setup
 app.use(cors(corsOptions));
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static("public"));
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 // Route handler for root endpoint
 
 
 app.get("/", (req: Request, res: Response) => {
-  
+
   res.status(httpStatus.OK).json({
     success: true,
     message: "Welcome to Your Capture Awards API",
@@ -62,6 +65,8 @@ app.get("/", (req: Request, res: Response) => {
 
 // Router setup
 app.use("/api/v1", router);
+
+app.use("/api/v2", v2Router)
 
 // Error handling middleware
 app.use(ErrorHandler);

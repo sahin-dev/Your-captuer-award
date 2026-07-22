@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import catchAsync from "../../../shared/catchAsync";
-import { handleFollowUnfollow, handleGetMyFollowers, handleGetMyFollowings } from "./followe.service";
+import { handleFollowUnfollow, handleGetMyFollowers, handleGetMyFollowings, handleGetOtherUserFollowers, handleGetOtherUserFollowings } from "./followe.service";
 import sendResponse from "../../../shared/ApiResponse";
 import httpStatus from 'http-status'
 
@@ -23,27 +23,63 @@ export const toggoleFollow = catchAsync(async ( req:Request, res:Response)=>{
 
 export const getFollowers = catchAsync(async (req:Request, res:Response)=>{
     const userId = req.user.id
+    const { page, limit } = req.query;
     
-    const followers = await handleGetMyFollowers(userId)
+    const result = await handleGetMyFollowers(userId, page ? Number(page) : undefined, limit ? Number(limit) : undefined)
 
     sendResponse(res, {
         success:true,
         statusCode:httpStatus.OK,
         message:"Followers fetched successfully",
-        data:followers
+        data:result.data,
+        meta:result.meta
     })
 })
 
 
 export const getFollowings = catchAsync(async (req:Request, res:Response)=>{
     const userId = req.user.id
+    const { page, limit } = req.query;
     
-    const followings = await handleGetMyFollowings(userId)
+    const result = await handleGetMyFollowings(userId, page ? Number(page) : undefined, limit ? Number(limit) : undefined)
 
     sendResponse(res, {
         success:true,
         statusCode:httpStatus.OK,
         message:"Followings fetched successfully",
-        data:followings
+        data:result.data,
+        meta:result.meta
     })
 })
+
+export const getOtherUserFollowers = catchAsync(async (req: Request, res: Response) => {
+    const myId = req.user.id;
+    const { userId } = req.params;
+    const { page, limit } = req.query;
+
+    const result = await handleGetOtherUserFollowers(myId, userId, page ? Number(page) : undefined, limit ? Number(limit) : undefined);
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: "Followers fetched successfully",
+        data: result.data,
+        meta: result.meta
+    });
+});
+
+export const getOtherUserFollowings = catchAsync(async (req: Request, res: Response) => {
+    const myId = req.user.id;
+    const { userId } = req.params;
+    const { page, limit } = req.query;
+
+    const result = await handleGetOtherUserFollowings(myId, userId, page ? Number(page) : undefined, limit ? Number(limit) : undefined);
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: "Followings fetched successfully",
+        data: result.data,
+        meta: result.meta
+    });
+});

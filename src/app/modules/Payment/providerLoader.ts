@@ -9,8 +9,11 @@ export async function loadProviders() {
 
   const files = fs.readdirSync(providersDir).filter(f => f.endsWith(".js") || f.endsWith(".ts"));
 
+
+
   for (const file of files) {
     const modulePath = path.join(providersDir, file);
-    await import(modulePath); // just importing triggers self-registration
+    console.log(`Loading payment provider from ${modulePath}`);
+    await import(`file:${modulePath}`); // just importing triggers self-registration
   }
 }

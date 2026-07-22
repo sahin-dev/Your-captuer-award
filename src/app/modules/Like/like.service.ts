@@ -1,6 +1,7 @@
 import prisma from "../../../shared/prisma"
 import globalEventHandler from "../../event/eventEmitter";
 import Events from "../../event/events.constant";
+import { paginationHelper } from "../../../helpers/paginationHelper";
 
 
 //user can toggole like on a photo
@@ -89,13 +90,23 @@ export const getLikes = async (photoId:string)=>{
 
 //user can get all photos liked by a user
 
-export const handleGetLikedPhotos = async (userId:string)=>{
-    return await prisma.like.findMany({
+export const handleGetLikedPhotos = async (userId:string, page: number = 1, limit: number = 10)=>{
+    const { skip, limit: paginationLimit } = paginationHelper.calculatePagination({ page, limit });
+
+    const likes = await prisma.like.findMany({
         where:{
             providerId:userId
         },
+        skip,
+        take: paginationLimit,
         include:{
             photo:true
-        }
-    })
+        },
+        orderBy: { createdAt: 'desc' }
+    });
+
+    const total = await prisma.like.count({where:{providerId:userId}});
+    const meta = paginationHelper.getPaginationMetaData(page, paginationLimit, total);
+
+    return { data: likes, meta };
 }

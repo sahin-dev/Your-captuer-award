@@ -13,6 +13,8 @@ const config =  {
     db:process.env.DATABASE_URL,
     bcrypt_salt_rounds:process.env.BCRYPT_SALT_ROUNDS,
     webhook_secret:process.env.STRIPE_WEBHOOK_KEY,
+    success_url:process.env.STRIPE_SUCCESS_URL,
+    cancel_url:process.env.STRIPE_CANCEL_URL,
     jwt: {
         jwt_secret: process.env.JWT_SECRET,
         expires_in: process.env.EXPIRES_IN,
@@ -31,6 +33,8 @@ const config =  {
         client_secret: process.env.FACEBOOK_CLIENT_SECRET,
         callbackUrl: process.env.FACEBOOK_CALLBACK_URL
     },
+    web_redirect_success: process.env.SUCCESS_URL_WEB_USER,
+    web_redirect_failure: process.env.FAILURE_URL_WEB,
     reset_pass_link: process.env.RESET_PASS_LINK,
     emailSender: {
         email: process.env.EMAIL,
