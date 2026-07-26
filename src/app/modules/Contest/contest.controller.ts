@@ -26,6 +26,17 @@ const createContest = catchAsync( async (req: any, res: Response) => {
     });
 })
 
+const getCreateOptions = catchAsync(async (_req:Request, res:Response) => {
+    const options = await contestService.getContestCreateOptions()
+
+    sendResponse(res, {
+        statusCode:httpStatus.OK,
+        success:true,
+        message:"Contest creation options fetched successfully",
+        data:options
+    })
+})
+
 
 const getAllContests = catchAsync(async (req:any, res:Response)=>{
 
@@ -262,8 +273,8 @@ const chargePhoto = catchAsync(async (req:Request, res:Response) => {
 const getContestPhotosSortedByVote = catchAsync(async (req:Request, res:Response)=> {
 
     const {contestId} = req.params
-    const {page = "1", limit = "20", level} = req.query as {page:string, limit:string, level?:string}
-    const photos = await contestService.getContestPhotosSortedByVote(contestId, Number(page), Number(limit), level)
+    const {page = "1", limit = "20"} = req.query as {page:string, limit:string}
+    const photos = await contestService.getContestPhotosSortedByVote(contestId, Number(page), Number(limit))
 
     sendResponse(res, {
         statusCode:200,
@@ -321,8 +332,8 @@ const getAwardSelections = catchAsync(async (req:Request, res:Response) => {
 const getContestYCTopPicks = catchAsync(async (req:Request, res:Response)=> {
 
     const {contestId} = req.params
-    const {page = "1", limit = "20", level} = req.query as {page:string, limit:string, level?:string}
-    const photos = await contestService.getContestYCTopPicks(contestId, Number(page), Number(limit), level)
+    const {page = "1", limit = "20"} = req.query as {page:string, limit:string}
+    const photos = await contestService.getContestYCTopPicks(contestId, Number(page), Number(limit))
 
     sendResponse(res, {
         statusCode:200,
@@ -333,6 +344,7 @@ const getContestYCTopPicks = catchAsync(async (req:Request, res:Response)=> {
 })
 export const contestController = {
     createContest,
+    getCreateOptions,
     uploadPhoto,
     getUploadedPhotos,
     deleteContest,

@@ -11,8 +11,6 @@ const addContestVote = catchAsync(async (req:any, res:Response)=>{
 
     const user = req.user
     
-    const votes = null
-
     if(Array.isArray(photoIds)){
         const votes = await addVotes(user.id,contestId,photoIds)
 

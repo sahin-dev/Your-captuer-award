@@ -4,9 +4,8 @@ import prisma from '../../../shared/prisma';
 import {contestService } from '../Contest/contest.service';
 import { calculateNextOccurance } from '../../../helpers/nextOccurance';
 import { ContestRuleConfigInput } from '../Contest/ContestRules/contestRules.type';
-import { ContestPrize } from '../Contest/ContestPrizes/contestPrize.type';
 import { contestRuleService } from '../Contest/ContestRules/contestRules.service';
-import { getAwardSlotKey, normalizeAwardIdentity } from '../Awards/award.definitions';
+import { getAwardSlotKey } from '../Awards/award.definitions';
 
 
 
@@ -115,6 +114,17 @@ agenda.define("contest:checkRecurring", async ()=>{
 async function scheduleContest(rContest:RecurringContest){
     const previousOccurrence = rContest.recurring.previousOccurrence || rContest.createdAt;
     const nextOccurrence = rContest.recurring.nextOccurrence;
+    const generatedOccurrences = rContest.recurring.generatedOccurrences || 0
+    if(
+        (rContest.recurring.endsAt && nextOccurrence > rContest.recurring.endsAt) ||
+        (rContest.recurring.maxOccurrences && generatedOccurrences >= rContest.recurring.maxOccurrences)
+    ){
+        await prisma.recurringContest.update({
+            where:{id:rContest.id},
+            data:{status:RecurringContestStatus.ENDED}
+        })
+        return
+    }
     const totalTimeSpan = nextOccurrence.getTime() - previousOccurrence.getTime();
     const generationLeadTime = Math.min(Math.max(totalTimeSpan * 0.2, 0), 24 * 60 * 60 * 1000)
     const generationAt = nextOccurrence.getTime() - generationLeadTime
@@ -158,9 +168,6 @@ async function scheduleContest(rContest:RecurringContest){
             : rContest.rules as ContestRuleConfigInput[]
         const rules = contestRuleService.normalizeContestRules(rawRules)
         const awards = await prisma.recurringContestAward.findMany({where:{recurringContestId:rContest.id}})
-        const legacyPrizes = rContest.prizes
-            ? (typeof rContest.prizes === "string" ? JSON.parse(rContest.prizes) : rContest.prizes) as ContestPrize[]
-            : []
         const next = calculateNextOccurance(nextOccurrence, rContest.recurring.recurringType)
 
         const newContest = await prisma.$transaction(async tx => {
@@ -171,6 +178,9 @@ async function scheduleContest(rContest:RecurringContest){
                     isMoneyContest:rContest.isMoneyContest,
                     maxPrize:rContest.maxPrize,
                     minPrize:rContest.minPrize,
+                    currency:rContest.currency,
+                    entryFeeCoins:rContest.entryFeeCoins,
+                    categoryId:rContest.categoryId,
                     description:rContest.description,
                     creatorId:rContest.creatorId,
                     recurringContestId:rContest.id,
@@ -207,27 +217,10 @@ async function scheduleContest(rContest:RecurringContest){
                         key:award.key,
                         boost:award.boost,
                         swap:award.swap,
-                        coin:award.coin
+                        coin:award.coin,
+                        enabled:award.enabled,
+                        order:award.order
                     }))
-                })
-            }
-
-            if(legacyPrizes.length > 0){
-                await tx.contestPrize.createMany({
-                    data:legacyPrizes.map(prize => {
-                        const identity = normalizeAwardIdentity(prize)
-                        return {
-                            contestId:contest.id,
-                            category:identity.category,
-                            type:identity.type,
-                            target:identity.target,
-                            rankLimit:identity.rankLimit,
-                            key:prize.key,
-                            boost:prize.boost,
-                            swap:prize.swap,
-                            coin:prize.coin || 0
-                        }
-                    })
                 })
             }
 
@@ -239,7 +232,16 @@ async function scheduleContest(rContest:RecurringContest){
                 where:{id:rContest.id},
                 data:{
                     lastGeneratedContestId:contest.id,
-                    recurring:{set:{...rContest.recurring, previousOccurrence:nextOccurrence, nextOccurrence:next}}
+                    status:(
+                        (rContest.recurring.endsAt && next > rContest.recurring.endsAt) ||
+                        (rContest.recurring.maxOccurrences && generatedOccurrences + 1 >= rContest.recurring.maxOccurrences)
+                    ) ? RecurringContestStatus.ENDED : RecurringContestStatus.ACTIVE,
+                    recurring:{set:{
+                        ...rContest.recurring,
+                        previousOccurrence:nextOccurrence,
+                        nextOccurrence:next,
+                        generatedOccurrences:generatedOccurrences + 1
+                    }}
                 }
             })
 

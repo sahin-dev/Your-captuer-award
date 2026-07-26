@@ -16,7 +16,7 @@ const getAchievementsByContest = catchAsync(async (req:Request, res:Response)=>{
         message:"Contest achievement fetched successfully",
         success:true,
         data:result.data,
-    
+        meta:result.meta
     })
 })
 
@@ -39,8 +39,7 @@ const getAchievementByUser  = catchAsync(async (req:Request, res:Response)=>{
 const getMyAchievements = catchAsync(async (req:Request, res:Response) => {
 
     const userId = req.user.id
-    const {type} = req.body
-    const { page, limit } = req.query;
+    const {type, page, limit} = req.query;
     
     const result = await achievementService.getContestAchievementsByUser(userId, type as any, page ? Number(page) : undefined, limit ? Number(limit) : undefined)
    

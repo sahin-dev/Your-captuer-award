@@ -1,75 +1,210 @@
+import { checkObjectId } from "../../../helpers/checkObjectId";
+import { AwardTarget, PrizeType, RecurringType } from "../../../prismaClient";
+import { z } from "zod";
+import { contestRuleInputArraySchema } from "./ContestRules/contestRule.validation";
+import { contestAwardInputArraySchema } from "../Prize/prize.validation";
+import { isContestPrizeCategory } from "../Awards/award.definitions";
+import { getRichTextLength, sanitizeContestRichText } from "./contestContent";
 
-import { checkObjectId } from '../../../helpers/checkObjectId';
-import { AwardTarget, PrizeType, RecurringType } from '../../../prismaClient';
-import { z } from 'zod';
-import { contestRuleInputArraySchema } from './ContestRules/contestRule.validation';
-import { contestAwardInputArraySchema } from '../Prize/prize.validation';
-import { isContestPrizeCategory } from '../Awards/award.definitions';
-
-const parseJsonValue = (val: unknown) => {
-    if (typeof val === "string") {
-        return JSON.parse(val);
+const parseJsonValue = (value: unknown) => {
+    if (typeof value !== "string") {
+        return value;
     }
-    return val;
-}
 
-const parseNumberField = (val: unknown) => {
-    if (typeof val === "string" && val.trim() !== "") {
-        return Number(val);
+    try {
+        return JSON.parse(value);
+    } catch {
+        return value;
     }
-    return val;
-}
+};
 
-const parseOptionalNumberField = (val: unknown) => {
-    if (val === undefined || val === null || val === "") {
+const parseNumberField = (value: unknown) => {
+    if (typeof value === "string" && value.trim() !== "") {
+        return Number(value);
+    }
+    return value;
+};
+
+const parseOptionalNumberField = (value: unknown) => {
+    if (value === undefined || value === null || value === "") {
         return undefined;
     }
+    return Number(value);
+};
 
-    return Number(val);
-}
+const parseBooleanField = (value: unknown) => {
+    if (typeof value === "boolean") {
+        return value;
+    }
+    if (value === "true") {
+        return true;
+    }
+    if (value === "false") {
+        return false;
+    }
+    return value;
+};
 
+const richTextField = (label: string, maxLength: number) =>
+    z.string()
+        .trim()
+        .min(1, `${label} must not be empty`)
+        .refine((value) => getRichTextLength(value) <= maxLength, {
+            message: `${label} must contain at most ${maxLength} characters`,
+        })
+        .transform(sanitizeContestRichText);
 
-export const createContestSchema = z.object({
+const optionalIsoDate = z.string().datetime({ offset: true }).optional();
 
-    title: z.string().nonempty("title must not be empty"),
-    description: z.string().nonempty('description must not be empty'),
-    recurring: z.enum(['true', 'false'],{invalid_type_error: "'recurring' must be true or false"}).optional().transform( v => v && v === 'true'),
-    recurringType: z.nativeEnum(RecurringType, {invalid_type_error:"Invalid recurring type"}).optional(),
-    awardPrizeIds: z.preprocess(parseJsonValue, z.array(z.string()).default([])).optional(),
-    awards: z.preprocess(parseJsonValue, contestAwardInputArraySchema).optional(),
-    prizes: z.preprocess(parseJsonValue,
-        z.array(
-            z.object({
-                category: z.nativeEnum(PrizeType).refine(isContestPrizeCategory, {
-                    message: "Contest level badges cannot be configured as prizes",
-                }),
-                target: z.nativeEnum(AwardTarget).optional(),
-                rankLimit: z.preprocess(parseOptionalNumberField, z.number().int().positive().optional()),
-                boost: z.preprocess(parseNumberField, z.number()).default(0),
-                key: z.preprocess(parseNumberField, z.number()).default(0),
-                swap: z.preprocess(parseNumberField, z.number()).default(0),
-                coin: z.preprocess(parseNumberField, z.number()).default(0),
-            })
-        )
-    ).optional(),
-
-    // ⬇️ PARSE JSON STRING → VALIDATE AS ARRAY
-    rules: z.preprocess(parseJsonValue, contestRuleInputArraySchema).optional(),
-    startDate: z.string().nonempty("start date must not be empty"),
-    endDate: z.string().nonempty('End Date is required'),
-    isMoneyContest:z.enum(['true', 'false']).transform((val) => val === 'true'),
-    maxPrize:z.preprocess(parseOptionalNumberField, z.number().optional()),
-    minPrize:z.preprocess(parseOptionalNumberField, z.number().optional()),
+const recurrenceSchema = z.object({
+    type: z.nativeEnum(RecurringType).optional(),
+    timezone: z.string().trim().min(1).max(100).default("UTC"),
+    endsAt: optionalIsoDate,
+    maxOccurrences: z.preprocess(
+        parseOptionalNumberField,
+        z.number().int().positive().max(10000).optional()
+    ),
 });
 
- 
+export const createContestSchema = z.object({
+    title: z.string().trim().min(1, "Title must not be empty").max(160),
+    description: richTextField("Description", 5000),
+    categoryId: z.string().refine(checkObjectId, { message: "Invalid category ID" }).optional(),
+    category: z.string().trim().min(1).max(100).optional(),
 
+    recurring: z.preprocess(parseBooleanField, z.boolean()).optional().default(false),
+    recurringType: z.nativeEnum(RecurringType, { invalid_type_error: "Invalid recurring type" }).optional(),
+    recurrence: z.preprocess(parseJsonValue, recurrenceSchema).optional(),
+    recurrenceTimezone: z.string().trim().min(1).max(100).optional(),
+    recurrenceEndsAt: optionalIsoDate,
+    maxOccurrences: z.preprocess(
+        parseOptionalNumberField,
+        z.number().int().positive().max(10000).optional()
+    ),
 
+    awardPrizeIds: z.preprocess(parseJsonValue, z.array(z.string())).optional(),
+    awards: z.preprocess(parseJsonValue, contestAwardInputArraySchema).optional(),
+    prizes: z.preprocess(
+        parseJsonValue,
+        z.array(z.object({
+            category: z.nativeEnum(PrizeType).refine(isContestPrizeCategory, {
+                message: "Contest level badges cannot be configured as prizes",
+            }),
+            target: z.nativeEnum(AwardTarget).optional(),
+            rankLimit: z.preprocess(parseOptionalNumberField, z.number().int().positive().optional()),
+            boost: z.preprocess(parseNumberField, z.number().int().nonnegative()).default(0),
+            key: z.preprocess(parseNumberField, z.number().int().nonnegative()).default(0),
+            swap: z.preprocess(parseNumberField, z.number().int().nonnegative()).default(0),
+            coin: z.preprocess(parseNumberField, z.number().int().nonnegative()).default(0),
+        }))
+    ).optional(),
+
+    rules: z.preprocess(parseJsonValue, contestRuleInputArraySchema).optional(),
+    startDate: z.string().datetime({
+        offset: true,
+        message: "Start date must be a valid ISO timestamp with timezone",
+    }),
+    endDate: z.string().datetime({
+        offset: true,
+        message: "End date must be a valid ISO timestamp with timezone",
+    }),
+
+    isMoneyContest: z.preprocess(parseBooleanField, z.boolean()).optional().default(false),
+    currency: z.string().trim().toUpperCase()
+        .regex(/^[A-Z]{3}$/, "Currency must be a 3-letter ISO code")
+        .optional(),
+    maxPrize: z.preprocess(parseOptionalNumberField, z.number().int().nonnegative().optional()),
+    minPrize: z.preprocess(parseOptionalNumberField, z.number().int().nonnegative().optional()),
+    coinRequirement: z.preprocess(parseBooleanField, z.boolean()).optional(),
+    entryFeeCoins: z.preprocess(
+        parseOptionalNumberField,
+        z.number().int().nonnegative().max(100000000).optional()
+    ),
+}).superRefine((contest, ctx) => {
+    const startDate = new Date(contest.startDate);
+    const endDate = new Date(contest.endDate);
+
+    if (startDate <= new Date()) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ["startDate"],
+            message: "Start date must be in the future",
+        });
+    }
+    if (endDate <= startDate) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ["endDate"],
+            message: "End date must be after start date",
+        });
+    }
+    if (contest.categoryId && contest.category) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ["category"],
+            message: "Provide categoryId or category, not both",
+        });
+    }
+    if (contest.isMoneyContest) {
+        if (contest.minPrize === undefined || contest.maxPrize === undefined || !contest.currency) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                path: ["isMoneyContest"],
+                message: "Money contests require currency, minPrize, and maxPrize",
+            });
+        } else if (contest.minPrize > contest.maxPrize) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                path: ["maxPrize"],
+                message: "maxPrize must be at least minPrize",
+            });
+        }
+    }
+    if (contest.coinRequirement && !contest.entryFeeCoins) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ["entryFeeCoins"],
+            message: "A positive entryFeeCoins value is required when coinRequirement is enabled",
+        });
+    }
+
+    const recurrenceEndsAt = contest.recurrence?.endsAt || contest.recurrenceEndsAt;
+    if (recurrenceEndsAt && new Date(recurrenceEndsAt) <= startDate) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ["recurrenceEndsAt"],
+            message: "Recurrence end must be after the first occurrence",
+        });
+    }
+});
+
+export const updateContestSchema = z.object({
+    title: z.string().trim().min(1).max(160).optional(),
+    description: richTextField("Description", 5000).optional(),
+    categoryId: z.union([
+        z.string().refine(checkObjectId, { message: "Invalid category ID" }),
+        z.null(),
+    ]).optional(),
+    startDate: optionalIsoDate,
+    endDate: optionalIsoDate,
+    isMoneyContest: z.preprocess(parseBooleanField, z.boolean()).optional(),
+    currency: z.union([
+        z.string().trim().toUpperCase().regex(/^[A-Z]{3}$/, "Currency must be a 3-letter ISO code"),
+        z.null(),
+    ]).optional(),
+    maxPrize: z.preprocess(parseOptionalNumberField, z.number().int().nonnegative().optional()),
+    minPrize: z.preprocess(parseOptionalNumberField, z.number().int().nonnegative().optional()),
+    entryFeeCoins: z.preprocess(
+        parseOptionalNumberField,
+        z.number().int().nonnegative().max(100000000).optional()
+    ),
+}).strict();
 
 export const joinContestSchema = z.object({
     body: z.object({
-        contestId: z.string().min(1, 'Contest ID is required').refine(checkObjectId, { message: 'Invalid Contest ID' }),
-    })
+        contestId: z.string().min(1, "Contest ID is required")
+            .refine(checkObjectId, { message: "Invalid Contest ID" }),
+    }),
 });
 
 export const contestAwardSelectionSchema = z.object({

@@ -4,7 +4,7 @@ import { contestController } from './contest.controller'
 import auth from '../../middlewares/auth.middleware'
 import { UserRole } from '../../../prismaClient'
 import validateRequest from '../../middlewares/validation.middleware'
-import { contestAwardSelectionSchema, createContestSchema } from './contest.validation'
+import { contestAwardSelectionSchema, createContestSchema, updateContestSchema } from './contest.validation'
 import { contestRuleController } from './ContestRules/contestRules.controller'
 import { contestPrizeController } from './ContestPrizes/contestPrize.controller'
 
@@ -12,13 +12,14 @@ import { contestPrizeController } from './ContestPrizes/contestPrize.controller'
 
 const router = Router()
 
-router.route("/").post(fileUploader.contestBanner,validateRequest(createContestSchema), auth(UserRole.ADMIN),  contestController.createContest).get(auth(), contestController.getContestsByStatus)
+router.route("/").post(auth(UserRole.ADMIN), fileUploader.contestBanner, validateRequest(createContestSchema), contestController.createContest).get(auth(), contestController.getContestsByStatus)
 router.get("/all", auth(UserRole.ADMIN), contestController.getAllContests)
+router.get("/create-options", auth(UserRole.ADMIN), contestController.getCreateOptions)
 
 router.get("/my-active-contests", auth(), contestController.getMyActiveContests)
 router.get("/rules/definitions", auth(UserRole.ADMIN), contestRuleController.getContestRuleDefinitions)
 router.post("/photos/promote", auth(), contestController.promotePhoto)
-router.post("/trade",fileUploader.tradePhoto, auth(), contestController.tradePhoto)
+router.post("/trade", auth(), fileUploader.tradePhoto, contestController.tradePhoto)
 router.post("/charge", auth(), contestController.chargePhoto)
 
 router.get("/:contestId/photos", auth(), contestController.getUploadedPhotos)
@@ -40,8 +41,11 @@ router.get("/:contestId/rank-yc-picks", auth(), contestController.getContestYCTo
 
 router.delete("/:contestId/photos/:photoId", auth(), contestController.deleteContestPhoto)
 
-router.post("/:contestId/upload",fileUploader.userPhoto, auth(), contestController.uploadPhoto)
-router.route("/:contestId").get(auth(), contestController.getContestById).put(auth(UserRole.ADMIN), contestController.updateContestDetails).delete(auth(UserRole.ADMIN), contestController.deleteContest)
+router.post("/:contestId/upload", auth(), fileUploader.userPhoto, contestController.uploadPhoto)
+router.route("/:contestId")
+    .get(auth(), contestController.getContestById)
+    .put(auth(UserRole.ADMIN), validateRequest(updateContestSchema), contestController.updateContestDetails)
+    .delete(auth(UserRole.ADMIN), contestController.deleteContest)
 router.route("/:contestId/join").post(auth(),contestController.joinContest)
 
 export const contestRoutes = router

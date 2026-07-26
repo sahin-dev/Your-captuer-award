@@ -122,6 +122,8 @@ exports.Prisma.ContestScalarFieldEnum = {
   isMoneyContest: 'isMoneyContest',
   maxPrize: 'maxPrize',
   minPrize: 'minPrize',
+  currency: 'currency',
+  entryFeeCoins: 'entryFeeCoins',
   startDate: 'startDate',
   endDate: 'endDate',
   startedAt: 'startedAt',
@@ -131,6 +133,7 @@ exports.Prisma.ContestScalarFieldEnum = {
   configVersion: 'configVersion',
   scoringVersion: 'scoringVersion',
   creatorId: 'creatorId',
+  categoryId: 'categoryId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -143,13 +146,27 @@ exports.Prisma.RecurringContestScalarFieldEnum = {
   isMoneyContest: 'isMoneyContest',
   maxPrize: 'maxPrize',
   minPrize: 'minPrize',
+  currency: 'currency',
+  entryFeeCoins: 'entryFeeCoins',
   startDate: 'startDate',
   endDate: 'endDate',
   creatorId: 'creatorId',
+  categoryId: 'categoryId',
   status: 'status',
   lastGeneratedContestId: 'lastGeneratedContestId',
   rules: 'rules',
   prizes: 'prizes',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.ContestCategoryScalarFieldEnum = {
+  id: 'id',
+  slug: 'slug',
+  name: 'name',
+  description: 'description',
+  isActive: 'isActive',
+  order: 'order',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -181,6 +198,8 @@ exports.Prisma.PrizeScalarFieldEnum = {
   key: 'key',
   coin: 'coin',
   isActive: 'isActive',
+  isDefault: 'isDefault',
+  order: 'order',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -233,6 +252,16 @@ exports.Prisma.ContestParticipantScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.ContestEntryFeeTransactionScalarFieldEnum = {
+  id: 'id',
+  contestId: 'contestId',
+  userId: 'userId',
+  amount: 'amount',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.ContestPrizeScalarFieldEnum = {
   id: 'id',
   category: 'category',
@@ -272,6 +301,8 @@ exports.Prisma.ContestAwardScalarFieldEnum = {
   swap: 'swap',
   key: 'key',
   coin: 'coin',
+  enabled: 'enabled',
+  order: 'order',
   contestId: 'contestId',
   prizeId: 'prizeId',
   createdAt: 'createdAt',
@@ -292,6 +323,8 @@ exports.Prisma.RecurringContestAwardScalarFieldEnum = {
   swap: 'swap',
   key: 'key',
   coin: 'coin',
+  enabled: 'enabled',
+  order: 'order',
   recurringContestId: 'recurringContestId',
   prizeId: 'prizeId',
   createdAt: 'createdAt',
@@ -617,6 +650,7 @@ exports.Prisma.UserScalarFieldEnum = {
   username: 'username',
   phone: 'phone',
   email: 'email',
+  dateOfBirth: 'dateOfBirth',
   location: 'location',
   country: 'country',
   password: 'password',
@@ -797,6 +831,11 @@ exports.YCLevel = exports.$Enums.YCLevel = {
   SUPREME: 'SUPREME',
   SUPERIOR: 'SUPERIOR',
   TOP_NOTCH: 'TOP_NOTCH'
+};
+
+exports.ContestEntryPaymentStatus = exports.$Enums.ContestEntryPaymentStatus = {
+  CHARGED: 'CHARGED',
+  REFUNDED: 'REFUNDED'
 };
 
 exports.AchievementKind = exports.$Enums.AchievementKind = {
@@ -994,12 +1033,14 @@ exports.LevelRequirementTitle = exports.$Enums.LevelRequirementTitle = {
 exports.Prisma.ModelName = {
   Contest: 'Contest',
   RecurringContest: 'RecurringContest',
+  ContestCategory: 'ContestCategory',
   RecurringContestOccurrence: 'RecurringContestOccurrence',
   Prize: 'Prize',
   ContestRule: 'ContestRule',
   ContestRuleConfig: 'ContestRuleConfig',
   ContestPhoto: 'ContestPhoto',
   ContestParticipant: 'ContestParticipant',
+  ContestEntryFeeTransaction: 'ContestEntryFeeTransaction',
   ContestPrize: 'ContestPrize',
   ContestRuleAcceptance: 'ContestRuleAcceptance',
   ContestAward: 'ContestAward',

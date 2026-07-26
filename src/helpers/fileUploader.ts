@@ -11,6 +11,9 @@ import { v2 as cloudinary } from "cloudinary";
 import { CloudinaryStorage } from "multer-storage-cloudinary";
 import streamifier from "streamifier";
 import dotenv from "dotenv";
+import { supportedContestImageMimeTypes } from "../app/modules/Contest/ContestRules/contestRule.definitions";
+import ApiError from "../errors/ApiError";
+import httpStatus from "http-status";
 
 dotenv.config();
 
@@ -45,6 +48,40 @@ const filesystemStorage = multer.diskStorage({
 // Multer configuration using memoryStorage (for DigitalOcean & Cloudinary)
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
+const contestImageUpload = multer({
+  storage,
+  limits: {
+    files: 1,
+    fileSize: 100 * 1024 * 1024,
+  },
+  fileFilter: (_req, file, callback) => {
+    const allowed = supportedContestImageMimeTypes.includes(
+      file.mimetype.toLowerCase() as typeof supportedContestImageMimeTypes[number]
+    );
+    if (allowed) {
+      callback(null, true);
+      return;
+    }
+    callback(new ApiError(httpStatus.UNSUPPORTED_MEDIA_TYPE, "Unsupported contest image format"));
+  },
+});
+const contestBannerUpload = multer({
+  storage,
+  limits: {
+    files: 1,
+    fileSize: 10 * 1024 * 1024,
+  },
+  fileFilter: (_req, file, callback) => {
+    if (["image/jpeg", "image/png", "image/webp"].includes(file.mimetype.toLowerCase())) {
+      callback(null, true);
+      return;
+    }
+    callback(new ApiError(
+      httpStatus.UNSUPPORTED_MEDIA_TYPE,
+      "Banner must be a JPEG, PNG, or WEBP image"
+    ));
+  },
+});
 
 const filesystemUpload = multer({ storage });
 
@@ -66,8 +103,8 @@ const uploadFile = upload.single("file");
 const uploadAvatar = upload.single("avatar")
 const uploadCover = upload.single("cover")
 const uploadBadge = upload.single("badge")
-const contestBanner = upload.single("banner");
-const userPhoto = upload.single('photo')
+const contestBanner = contestBannerUpload.single("banner");
+const userPhoto = contestImageUpload.single('photo')
 const tradePhoto = upload.single("tradePhoto")
 
 // Upload multiple images

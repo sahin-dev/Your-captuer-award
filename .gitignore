@@ -99,7 +99,9 @@ dist
 
 # vuepress build output
 .vuepress/dist
-postman/
+postman/*
+!postman/Contest-System.postman_collection.json
+!postman/generate-contest-system-collection.cjs
 # vuepress v2.x temp and cache directory
 .temp
 .cache

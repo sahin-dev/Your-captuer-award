@@ -6,6 +6,7 @@ const updateUserSchema = z.object({
     firstName:z.string().optional(),
     lastName:z.string().optional(),
     location: z.string().optional(),
+    dateOfBirth:z.coerce.date().optional(),
 })
 // .transform(data => {
 //     return Object.fromEntries( Object.entries(data).filter( ([_, v])=> v!== null))
@@ -15,6 +16,7 @@ const updateUserAdminSchema = z.object({
     firstName:z.string().optional(),
     lastName:z.string().optional(),
     location: z.string().optional(),
+    dateOfBirth:z.coerce.date().optional(),
     level:z.nativeEnum(LevelName).optional()
 })
 const forgetPasswordSchema = z.object({

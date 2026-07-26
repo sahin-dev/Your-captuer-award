@@ -2,13 +2,12 @@ import prisma from '../../../shared/prisma';
 import ApiError from '../../../errors/ApiError';
 import httpstatus from 'http-status';
 import { fileUploader } from '../../../helpers/fileUploader';
-import { AchievementKind, ContestParticipant, ContestPhoto, ContestStatus, PrizeType, RecurringType, YCLevel } from '../../../prismaClient';
+import { AchievementKind, ContestParticipant, ContestPhoto, ContestStatus, Prisma, PrizeType, RecurringType, YCLevel } from '../../../prismaClient';
 import { IContest } from './contest.interface';
 import { contestData } from './contest.type';
 import { contestRuleService } from './ContestRules/contestRules.service';
 import { getContestPrizes } from './ContestPrizes/contestPrize.service';
 import { ContestRuleConfigInput } from './ContestRules/contestRules.type';
-import { ContestPrize } from './ContestPrizes/contestPrize.type';
 import { profileService } from '../Profile/profile.service';
 import agenda from '../Agenda';
 import { validateContestDate } from '../../../helpers/validateDate';
@@ -18,11 +17,84 @@ import { achievementService } from '../Achievements/achievement.service';
 import { prizeService } from '../Prize/prize.service';
 import { contestRuleEngine } from './ContestRules/contestRule.engine';
 import { contestFinalizationService } from './ContestFinalization/contestFinalization.service';
-import { getAwardSlotKey, normalizeAwardIdentity } from '../Awards/award.definitions';
+import { normalizeAwardIdentity } from '../Awards/award.definitions';
 import { contestRankingService } from './ContestRanking/contestRanking.service';
+import { supportedContestImageMimeTypes } from './ContestRules/contestRule.definitions';
 
 const completedContestStatuses:ContestStatus[] = [ContestStatus.COMPLETED, ContestStatus.CLOSED]
 const isCompletedContest = (status:ContestStatus) => completedContestStatuses.includes(status)
+
+const resolveContestCategoryId = async (categoryId?:string, category?:string) => {
+    if(!categoryId && !category){
+        return undefined
+    }
+
+    const slug = category?.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")
+    const contestCategory = await prisma.contestCategory.findFirst({
+        where:{
+            isActive:true,
+            OR:[
+                ...(categoryId ? [{id:categoryId}] : []),
+                ...(category ? [{name:{equals:category, mode:"insensitive" as const}}, {slug}] : [])
+            ]
+        }
+    })
+
+    if(!contestCategory){
+        throw new ApiError(httpstatus.BAD_REQUEST, "Contest category is invalid or inactive")
+    }
+
+    return contestCategory.id
+}
+
+const shouldUseDefaultAwards = (body:contestData) =>
+    body.awardPrizeIds === undefined && body.awards === undefined && body.prizes === undefined
+
+const chargeContestEntryFee = async (
+    tx:Prisma.TransactionClient,
+    contest:{id:string; entryFeeCoins:number},
+    userId:string
+) => {
+    if(contest.entryFeeCoins <= 0){
+        return
+    }
+
+    const existingCharge = await tx.contestEntryFeeTransaction.findUnique({
+        where:{contestId_userId:{contestId:contest.id, userId}}
+    })
+    if(existingCharge){
+        return
+    }
+
+    const charged = await tx.userStore.updateMany({
+        where:{userId, coin:{gte:contest.entryFeeCoins}},
+        data:{coin:{decrement:contest.entryFeeCoins}}
+    })
+    if(charged.count !== 1){
+        throw new ApiError(httpstatus.PAYMENT_REQUIRED, "Insufficient coins to enter this contest")
+    }
+
+    await tx.contestEntryFeeTransaction.create({
+        data:{contestId:contest.id, userId, amount:contest.entryFeeCoins}
+    })
+}
+
+const getContestCreateOptions = async () => {
+    const [categories, prizes] = await Promise.all([
+        prisma.contestCategory.findMany({
+            where:{isActive:true},
+            orderBy:[{order:"asc"}, {name:"asc"}]
+        }),
+        prizeService.getPrizes()
+    ])
+
+    return {
+        categories,
+        rules:contestRuleService.getContestRuleDefinitions(),
+        prizes,
+        supportedImageMimeTypes:supportedContestImageMimeTypes
+    }
+}
 
 
 
@@ -73,7 +145,7 @@ const createContestBuilderApproach = async (creatorId:string, body:contestData, 
 //Create a new contest
 const createContest = async (creatorId: string, body: contestData, banner:Express.Multer.File) => {
     if(!validateContestDate(body.startDate, body.endDate)){
-        throw new ApiError(httpstatus.BAD_REQUEST, "Start date cannot be after end date");
+        throw new ApiError(httpstatus.BAD_REQUEST, "Contest dates are invalid; start must be in the future and end must be after start");
     }
 
     //If contest is recurring , save recurring data separately
@@ -82,43 +154,42 @@ const createContest = async (creatorId: string, body: contestData, banner:Expres
     }
 
 
-    const bannerUrl = banner? (await fileUploader.uploadToDigitalOcean(banner)).Location: null
+    const [bannerUrl, categoryId] = await Promise.all([
+        banner ? fileUploader.uploadToDigitalOcean(banner).then(upload => upload.Location) : Promise.resolve(null),
+        resolveContestCategoryId(body.categoryId, body.category)
+    ])
 
     const normalizedRules = contestRuleService.normalizeContestRules(body.rules)
-    const awardRows = await prizeService.resolveAwardRows(body.awardPrizeIds || [], body.awards || [])
-    const legacyPrizes = (body.prizes || []).map((prize:ContestPrize) => ({
-        ...prize,
-        ...normalizeAwardIdentity(prize)
+    const legacyAwardOverrides = (body.prizes || []).map(prize => ({
+        ...normalizeAwardIdentity(prize),
+        key:prize.key,
+        boost:prize.boost,
+        swap:prize.swap,
+        coin:prize.coin
     }))
-    const legacySlots = legacyPrizes.map(prize => getAwardSlotKey(prize))
-    if(new Set(legacySlots).size !== legacySlots.length){
-        throw new ApiError(httpstatus.BAD_REQUEST, "Only one award threshold can be selected per award type and target")
-    }
+    const awardRows = await prizeService.resolveAwardRows(
+        body.awardPrizeIds || [],
+        [...(body.awards || []), ...legacyAwardOverrides],
+        shouldUseDefaultAwards(body)
+    )
   
     const contestData:any = {
         creatorId,
         title: body.title,
         description: body.description,
         status: ContestStatus.UPCOMING,
+        categoryId,
+        isMoneyContest:body.isMoneyContest,
+        currency:body.isMoneyContest ? body.currency : null,
+        minPrize:body.isMoneyContest ? body.minPrize : 0,
+        maxPrize:body.isMoneyContest ? body.maxPrize : 0,
+        entryFeeCoins:body.coinRequirement === false ? 0 : (body.entryFeeCoins || 0),
         ...(bannerUrl && {banner:bannerUrl})
     }
     // If contest is money contest, add money contest data like max prize and min prize for the paerticipants
     // If isMoneyContest is not provided, it will default to false
 
-     if (body.isMoneyContest) {
-
-        if( (Number(body.minPrize) > Number(body.maxPrize))){
-            throw new ApiError(httpstatus.BAD_REQUEST, "Maximum price must be greater than minimum price.")
-        } 
-
-        contestData.isMoneyContest = true; 
-        contestData.maxPrize = Number(body.maxPrize) || 0;
-        contestData.minPrize = Number(body.minPrize) || 0;
-    }
-
-    //If contest is recurring, Add recurring data to the contest object
-    // By default every object is recurring false, so if conetest is not recurring, it will not have recurring data
-    contestData.startDate = new Date(body.startDate) < new Date(Date.now()) ? new Date(Date.now()) : new Date(body.startDate)
+    contestData.startDate = new Date(body.startDate)
     contestData.endDate = new Date(body.endDate)
 
     return prisma.$transaction(async tx => {
@@ -133,27 +204,11 @@ const createContest = async (creatorId: string, body: contestData, banner:Expres
             }))
         })
 
-        if(awardRows.length > 0){
-            await tx.contestAward.createMany({
-                data:awardRows.map(award => ({contestId:contest.id, ...award}))
-            })
-        }else if(legacyPrizes.length > 0){
-            await tx.contestPrize.createMany({
-                data:legacyPrizes.map(prize => ({
-                    contestId:contest.id,
-                    category:prize.category,
-                    type:prize.type,
-                    target:prize.target,
-                    rankLimit:prize.rankLimit,
-                    boost:prize.boost,
-                    swap:prize.swap,
-                    key:prize.key,
-                    coin:prize.coin || 0
-                }))
-            })
-        }
+        await tx.contestAward.createMany({
+            data:awardRows.map(award => ({contestId:contest.id, ...award}))
+        })
 
-        return {...contest, rules:normalizedRules, awards:awardRows, prizes:awardRows.length > 0 ? awardRows : legacyPrizes}
+        return {...contest, rules:normalizedRules, awards:awardRows, prizes:awardRows.filter(award => award.enabled)}
     })
 };
 
@@ -168,7 +223,7 @@ const createRecurringContest  =  async (creatorId: string, body: contestData, ba
     const isDateValid = validateContestDate(body.startDate, body.endDate);
 
     if(!isDateValid){
-        throw new ApiError(httpstatus.BAD_REQUEST, "Start date cannot be after end date");
+        throw new ApiError(httpstatus.BAD_REQUEST, "Contest dates are invalid; start must be in the future and end must be after start");
     }
     
 
@@ -176,52 +231,59 @@ const createRecurringContest  =  async (creatorId: string, body: contestData, ba
     const endDate = new Date(body.endDate)
 
     const normalizedRules = contestRuleService.normalizeContestRules(body.rules)
-    const awardRows = await prizeService.resolveAwardRows(body.awardPrizeIds || [], body.awards || [])
+    const legacyAwardOverrides = (body.prizes || []).map(prize => ({
+        ...normalizeAwardIdentity(prize),
+        key:prize.key,
+        boost:prize.boost,
+        swap:prize.swap,
+        coin:prize.coin
+    }))
+    const awardRows = await prizeService.resolveAwardRows(
+        body.awardPrizeIds || [],
+        [...(body.awards || []), ...legacyAwardOverrides],
+        shouldUseDefaultAwards(body)
+    )
+    const categoryId = await resolveContestCategoryId(body.categoryId, body.category)
 
     const contestData:any = {
         creatorId,
         title: body.title,
         description: body.description,
         startDate,
-        endDate
+        endDate,
+        categoryId,
+        isMoneyContest:body.isMoneyContest,
+        currency:body.isMoneyContest ? body.currency : null,
+        minPrize:body.isMoneyContest ? body.minPrize : 0,
+        maxPrize:body.isMoneyContest ? body.maxPrize : 0,
+        entryFeeCoins:body.coinRequirement === false ? 0 : (body.entryFeeCoins || 0)
 
     }
 
     contestData.rules = normalizedRules
-    if(body.prizes){
-        contestData.prizes = JSON.stringify(body.prizes)
-    }
-   
     let bannerUrl:string
     if (banner){
         bannerUrl = (await fileUploader.uploadToDigitalOcean(banner)).Location;
         contestData.banner = bannerUrl
     }
 
-    if (body.isMoneyContest) {
-        if(!body.minPrize || !body.maxPrize || (body.minPrize > body.maxPrize)){
-            throw new ApiError(httpstatus.BAD_REQUEST, "Contest prize data is invalid")
-        }  
-        contestData.isMoneyContest = true; 
-        contestData.maxPrize = body.maxPrize || 0;
-        contestData.minPrize = body.minPrize || 0;
-    }
-
     contestData.recurring ={set: {
-        recurringType:body.recurringType || RecurringType.DAILY,
+        recurringType:body.recurrence?.type || body.recurringType || RecurringType.DAILY,
         previousOccurrence:null,
         nextOccurrence:startDate,
-        duration:new Date(body.endDate).getTime() - new Date(body.startDate).getTime()
+        duration:new Date(body.endDate).getTime() - new Date(body.startDate).getTime(),
+        timezone:body.recurrence?.timezone || body.recurrenceTimezone || "UTC",
+        endsAt:body.recurrence?.endsAt ? new Date(body.recurrence.endsAt) : body.recurrenceEndsAt ? new Date(body.recurrenceEndsAt) : null,
+        maxOccurrences:body.recurrence?.maxOccurrences || body.maxOccurrences || null,
+        generatedOccurrences:0
     }
     }
 
     return prisma.$transaction(async tx => {
         const recurringContest = await tx.recurringContest.create({data:contestData})
-        if(awardRows.length > 0){
-            await tx.recurringContestAward.createMany({
-                data:awardRows.map(award => ({recurringContestId:recurringContest.id, ...award}))
-            })
-        }
+        await tx.recurringContestAward.createMany({
+            data:awardRows.map(award => ({recurringContestId:recurringContest.id, ...award}))
+        })
         return {...recurringContest, awards:awardRows}
     })
 }
@@ -244,7 +306,39 @@ const updateContest = async (contestId:string, contestData:Partial<IContest>)=>{
     }
 
     if(contest?.status === ContestStatus.UPCOMING || contest?.status === ContestStatus.NEW){
-        const updatedContest = await prisma.contest.update({where:{id:contestId}, data:contestData})
+        const startDate = contestData.startDate ? new Date(contestData.startDate) : contest.startDate
+        const endDate = contestData.endDate ? new Date(contestData.endDate) : contest.endDate
+        if(!validateContestDate(startDate.toISOString(), endDate.toISOString())){
+            throw new ApiError(
+                httpstatus.BAD_REQUEST,
+                "Contest dates are invalid; start must be in the future and end must be after start"
+            )
+        }
+
+        const isMoneyContest = contestData.isMoneyContest ?? contest.isMoneyContest
+        const minPrize = contestData.minPrize ?? contest.minPrize ?? 0
+        const maxPrize = contestData.maxPrize ?? contest.maxPrize ?? 0
+        const currency = contestData.currency === undefined ? contest.currency : contestData.currency
+        if(isMoneyContest && (!currency || minPrize > maxPrize)){
+            throw new ApiError(httpstatus.BAD_REQUEST, "Money contests require valid currency and prize bounds")
+        }
+
+        if(contestData.categoryId){
+            await resolveContestCategoryId(contestData.categoryId)
+        }
+
+        const updatedContest = await prisma.contest.update({
+            where:{id:contestId},
+            data:{
+                ...contestData,
+                startDate,
+                endDate,
+                isMoneyContest,
+                currency:isMoneyContest ? currency : null,
+                minPrize:isMoneyContest ? minPrize : 0,
+                maxPrize:isMoneyContest ? maxPrize : 0,
+            }
+        })
 
         return updatedContest
     }
@@ -273,19 +367,33 @@ const joinContest = async (userId:string,contestId:string, acceptedRuleKeys?:unk
         throw new ApiError(httpstatus.NOT_FOUND, "Contest is not available to participate")
     }
 
-    let participant = await prisma.contestParticipant.findUnique({where:{contestId_userId:{contestId,userId}}})
+    const existingParticipant = await prisma.contestParticipant.findUnique({where:{contestId_userId:{contestId,userId}}})
 
-    if(participant){
-        return {contest_id:contestId, participant_id:participant.id}
+    if(existingParticipant){
+        return {contest_id:contestId, participant_id:existingParticipant.id}
     }
 
     await contestRuleEngine.validateJoinRules(contestId, userId, acceptedRuleKeys)
 
-    participant = await prisma.contestParticipant.create({data:{contestId,userId}})
-    
-    if (participant){
-        console.log("User has joined the contest")
-    }
+    const participant = await prisma.$transaction(async tx => {
+        const participant = await tx.contestParticipant.findUnique({
+            where:{contestId_userId:{contestId,userId}}
+        })
+        if(participant){
+            return participant
+        }
+
+        const activeContest = await tx.contest.findFirst({
+            where:{id:contestId, status:ContestStatus.ACTIVE},
+            select:{id:true, entryFeeCoins:true}
+        })
+        if(!activeContest){
+            throw new ApiError(httpstatus.BAD_REQUEST, "Contest is no longer accepting participants")
+        }
+
+        await chargeContestEntryFee(tx, activeContest, userId)
+        return tx.contestParticipant.create({data:{contestId,userId}})
+    })
 
     return {contest_id:contestId, participant_id:participant.id}
 
@@ -295,7 +403,10 @@ const joinContest = async (userId:string,contestId:string, acceptedRuleKeys?:unk
 const getContestByUserId = async ( userId:string, contestId: string) => {
     const contest = await prisma.contest.findUnique({
         where: { id: contestId },
-        include: { creator: {omit:{password:true, accessToken:true}}}
+        include: {
+            creator: {omit:{password:true, accessToken:true}},
+            category:true
+        }
     });
     if(!contest){
         throw new ApiError(httpstatus.NOT_FOUND, "contest not found")
@@ -331,7 +442,10 @@ const getContestByUserId = async ( userId:string, contestId: string) => {
 const getContestById = async ( contestId: string) => {
     const contest = await prisma.contest.findUnique({
         where: { id: contestId },
-        include: { creator: {omit:{password:true, accessToken:true}}}
+        include: {
+            creator: {omit:{password:true, accessToken:true}},
+            category:true
+        }
     });
     if(!contest){
         throw new ApiError(httpstatus.NOT_FOUND, "contest not found")
@@ -630,19 +744,6 @@ const getContestAwardSelections = async (contestId:string) => {
     return contestFinalizationService.getContestAwardSelections(contestId)
 }
 
-const getContestBadgeLevel = (totalVotes:number, levelRequirements:number[]) => {
-    let currentLevel:YCLevel | null = null
-    const ycLevels = getYCLevelByOrder()
-
-    levelRequirements.forEach((requiredVotes, idx) => {
-        if(totalVotes >= requiredVotes && ycLevels[idx]){
-            currentLevel = ycLevels[idx]
-        }
-    })
-
-    return currentLevel
-}
-
 const getRemainingPhotos = async (userId:string, contestId:string)=>{
 
     const contest = await prisma.contest.findUnique({where:{id:contestId}})
@@ -810,6 +911,16 @@ const uploadPhotoToContest = async (contestId:string,userId:string, photoIds:str
         isJoiningThroughUpload
     })
 
+    if(isJoiningThroughUpload && contest.entryFeeCoins > 0){
+        const store = await prisma.userStore.findUnique({
+            where:{userId},
+            select:{coin:true}
+        })
+        if(!store || store.coin < contest.entryFeeCoins){
+            throw new ApiError(httpstatus.PAYMENT_REQUIRED, "Insufficient coins to enter this contest")
+        }
+    }
+
     let selectedPhotoIds:string[] = []
     if(file){
         const uploadedPhoto = await profileService.uploadUserPhoto(userId, file)
@@ -833,11 +944,16 @@ const uploadPhotoToContest = async (contestId:string,userId:string, photoIds:str
             throw new ApiError(httpstatus.BAD_REQUEST, "Contest is no longer accepting submissions")
         }
 
-        const participant = await tx.contestParticipant.upsert({
-            where:{contestId_userId:{contestId,userId}},
-            update:{},
-            create:{contestId,userId}
+        let participant = await tx.contestParticipant.findUnique({
+            where:{contestId_userId:{contestId,userId}}
         })
+        if(!participant){
+            await chargeContestEntryFee(tx, {
+                id:activeContest.id,
+                entryFeeCoins:activeContest.entryFeeCoins
+            }, userId)
+            participant = await tx.contestParticipant.create({data:{contestId,userId}})
+        }
         if(submissionLimit !== null){
             const existingUploadCount = await tx.contestPhoto.count({where:{contestId,participantId:participant.id}})
             if(existingUploadCount + selectedPhotoIds.length > submissionLimit){
@@ -939,11 +1055,6 @@ const getContestLevelRequirements = async (contestId:string)=>{
     let levels = configuredLevels.map((level, idx) => ({levelName:ycLevels[idx], point: level.votes, displayLevel: level.level}))
 
     return levels
-}
-
-const getContestLevelPointValues = async (contestId:string) => {
-    const configuredLevels = await contestRuleEngine.getLevelRequirements(contestId)
-    return configuredLevels.map(level => level.votes)
 }
 
 const getParticipantLevelData = async (contestId:string,userId:string)=>{
@@ -1071,11 +1182,17 @@ const identifyContestTopPhoto = async (contestId:string)=>{
 
 
 const tradePhoto = async (userId:string,contestId:string, contestPhotoId:string, photoId:string, file:Express.Multer.File) => {
-    const contestPhoto = await prisma.contestPhoto.findUnique({where:{id:contestPhotoId, contestId}, include:{photo:true}})
+    const contestPhoto = await prisma.contestPhoto.findUnique({
+        where:{id:contestPhotoId, contestId},
+        include:{photo:true, participant:true}
+    })
     
 
     if(!contestPhoto){
         throw new ApiError(httpstatus.NOT_FOUND, "contest photo not found")
+    }
+    if(contestPhoto.participant.userId !== userId){
+        throw new ApiError(httpstatus.FORBIDDEN, "You are not allowed to trade this contest photo")
     }
 
     const userStore = await userStoreService.getStoreData(userId)
@@ -1098,6 +1215,9 @@ const chargePhoto = async (userId:string, contestId:string, contestPhotoId:strin
 
     if(!contestPhoto){
         throw new ApiError(httpstatus.NOT_FOUND, "contest photo not found")
+    }
+    if(contestPhoto.participant.userId !== userId){
+        throw new ApiError(httpstatus.FORBIDDEN, "You are not allowed to charge this contest photo")
     }
 
     const userStore = await userStoreService.getStoreData(userId)
@@ -1138,11 +1258,6 @@ const getDesignLevelFromYCLevel = (level?: YCLevel | null): RankLevelTab => {
     }
 
     return level ? levelMap[level] : 'POPULAR'
-}
-
-const getParticipantDesignLevel = (totalVotes:number, levelRequirements:number[]): RankLevelTab => {
-    const ycLevel = getContestBadgeLevel(totalVotes, levelRequirements)
-    return getDesignLevelFromYCLevel(ycLevel)
 }
 
 const getPagination = (page?:number, limit?:number) => {
@@ -1188,14 +1303,13 @@ const getFollowedUserIds = async (currentUserId:string, followingIds:string[]) =
     return new Set(follows.map(follow => follow.followingId))
 }
 
-const getContestPhotosSortedByVote = async (contestId:string, page?:number, limit?:number, level?:string) => {
+const getContestPhotosSortedByVote = async (contestId:string, page?:number, limit?:number) => {
 
     const contest = await prisma.contest.findUnique({where:{id:contestId}})
 
     if(!contest){
         throw new ApiError(httpstatus.NOT_FOUND, 'Contest not found')
     }
-    const activeLevel = normalizeRankLevel(level)
     const ranking = await contestRankingService.buildContestRanking(contestId)
     const contestUploads = await prisma.contestPhoto.findMany({
         where:{id:{in:ranking.photos.map(photo => photo.photoId)}},
@@ -1209,12 +1323,10 @@ const getContestPhotosSortedByVote = async (contestId:string, page?:number, limi
         }
     })
     const uploadById = new Map(contestUploads.map(upload => [upload.id,upload]))
-    const photographerByParticipant = new Map(ranking.photographers.map(photographer => [photographer.participantId,photographer]))
     const sortedUploads = ranking.photos
         .map(photo => {
             const upload = uploadById.get(photo.photoId)
-            const photographerRanking = photographerByParticipant.get(photo.participantId)
-            if(!upload || !photographerRanking){
+            if(!upload){
                 return null
             }
             return {
@@ -1224,18 +1336,13 @@ const getContestPhotosSortedByVote = async (contestId:string, page?:number, limi
                 title:upload.photo.title,
                 voteCount:photo.score,
                 rank:photo.rank,
-                level:getDesignLevelFromYCLevel(photographerRanking.level),
                 photographer:upload.participant.user
             }
         })
         .filter((upload): upload is NonNullable<typeof upload> => Boolean(upload))
-        .filter(upload => upload.level === activeLevel)
-        .map((upload, index) => ({...upload, levelRank:index + 1}))
 
     const paginatedPhotos = paginateRankedData(sortedUploads, page, limit)
     return {
-        levelTabs:rankLevelTabs,
-        activeLevel,
         photos:paginatedPhotos.data,
         meta:paginatedPhotos.meta
     }
@@ -1306,29 +1413,27 @@ const getContestTopPhotographers =  async (contestId:string, currentUserId:strin
 
 }
 
-const getContestYCTopPicks = async (contestId:string, page?:number, limit?:number, level?:string) => {
+const getContestYCTopPicks = async (contestId:string, page?:number, limit?:number) => {
     const contest = await prisma.contest.findUnique({where:{id:contestId}})
 
     if(!contest){
         throw new ApiError(httpstatus.NOT_FOUND, "contest not found")
     }
 
-    const activeLevel = normalizeRankLevel(level)
-    const contestLevelPoints = await getContestLevelPointValues(contestId)
     const ycPickAchievements = await prisma.contestAchievement.findMany({
         where:{contestId, category:PrizeType.YC_PICK, photoId:{not:null}},
         include:{
             photo:{
                 include:{
                     photo:{select:{id:true, url:true, title:true}},
-                    participant:{include:{user:{select:{id:true, avatar:true, country:true, fullName:true}}, photos:{select:{id:true, initialVotes:true}}}}
+                    participant:{include:{user:{select:{id:true, avatar:true, country:true, fullName:true}}}}
                 }
             }
         }
     })
 
     if(ycPickAchievements.length <= 0){
-        const rankedPhotos = await getContestPhotosSortedByVote(contestId, page, limit, activeLevel)
+        const rankedPhotos = await getContestPhotosSortedByVote(contestId, page, limit)
         return {
             ...rankedPhotos,
             selectionType:'VOTE_RANKED_FALLBACK'
@@ -1341,9 +1446,6 @@ const getContestYCTopPicks = async (contestId:string, page?:number, limit?:numbe
         }
 
         const voteCount = await getContestPhotoVoteScore(achievement.photo)
-        const participantPhotoScores = await Promise.all(achievement.photo.participant.photos.map(photo => getContestPhotoVoteScore(photo)))
-        const participantTotalVotes = participantPhotoScores.reduce((prev, curr) => prev + curr, 0)
-        const designLevel = getParticipantDesignLevel(participantTotalVotes, contestLevelPoints)
 
         return {
             contestPhotoId:achievement.photo.id,
@@ -1351,7 +1453,6 @@ const getContestYCTopPicks = async (contestId:string, page?:number, limit?:numbe
             url:achievement.photo.photo.url,
             title:achievement.photo.photo.title,
             voteCount,
-            level:designLevel,
             photographer:achievement.photo.participant.user,
             pickedAt:achievement.createdAt
         }
@@ -1359,15 +1460,12 @@ const getContestYCTopPicks = async (contestId:string, page?:number, limit?:numbe
 
     const sortedPicks = ycPicks
         .filter((pick): pick is NonNullable<typeof pick> => Boolean(pick))
-        .filter(pick => pick.level === activeLevel)
         .sort((a,b) => b.voteCount - a.voteCount)
         .map((pick, idx) => ({rank:idx + 1, ...pick}))
 
     const paginatedPicks = paginateRankedData(sortedPicks, page, limit)
 
     return {
-        levelTabs:rankLevelTabs,
-        activeLevel,
         selectionType:'YC_PICK',
         photos:paginatedPicks.data,
         meta:paginatedPicks.meta
@@ -1413,6 +1511,7 @@ export const contestService = {
     getContestYCTopPicks,
     getContestByUserId,
     getContestUploadsToVote,
-    getContestPhotoCount
+    getContestPhotoCount,
+    getContestCreateOptions
 
 }

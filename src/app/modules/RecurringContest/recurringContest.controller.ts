@@ -76,7 +76,12 @@ const updateRecurringInterval = catchAsync(async (req: Request, res: Response) =
   const result = await recurringContestService.updateRecurringInterval(
     req.params.recurringContestId,
     req.body.recurringType,
-    req.body.nextOccurrence
+    req.body.nextOccurrence,
+    {
+      timezone:req.body.timezone,
+      endsAt:req.body.endsAt,
+      maxOccurrences:req.body.maxOccurrences,
+    }
   );
 
   sendResponse(res, {
@@ -114,7 +119,8 @@ const getRecurringAwards = catchAsync(async (req: Request, res: Response) => {
 const replaceRecurringAwards = catchAsync(async (req: Request, res: Response) => {
   const result = await recurringContestService.replaceRecurringAwards(
     req.params.recurringContestId,
-    req.body.awardPrizeIds
+    req.body.awardPrizeIds,
+    req.body.awards
   );
 
   sendResponse(res, {

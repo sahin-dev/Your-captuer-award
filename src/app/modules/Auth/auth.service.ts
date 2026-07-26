@@ -36,7 +36,15 @@ export const handleRegister = async (body:UserRegistrationData)=>{
     const createdUser = await prisma.$transaction( async tx =>{
         let fullName = `${body.firstName} ${body.lastName}`
         
-        const user  = await tx.user.create({data:{firstName:body.firstName, lastName:body.lastName,fullName,email:body.email as string, password:hashedPassword,phone:body.phone}})
+        const user  = await tx.user.create({data:{
+            firstName:body.firstName,
+            lastName:body.lastName,
+            fullName,
+            email:body.email as string,
+            password:hashedPassword,
+            phone:body.phone,
+            dateOfBirth:body.dateOfBirth
+        }})
         
 
         // const userData = {

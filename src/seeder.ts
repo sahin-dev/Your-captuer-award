@@ -5,6 +5,7 @@ import {
     ContestPhoto,
     ContestStatus,
     LevelName,
+    Prize,
     PrismaClient,
     PrizeType,
     UserRole,
@@ -13,6 +14,7 @@ import {
 import { LEVEL_RULES, LevelRule } from "./app/modules/Level/level.config"
 import { contestRuleDefinitions } from "./app/modules/Contest/ContestRules/contestRule.definitions"
 import { normalizeAwardIdentity } from "./app/modules/Awards/award.definitions"
+import { defaultPrizeDefinitions } from "./app/modules/Prize/prize.definitions"
 
 type SeedUserDefinition = {
     email:string;
@@ -56,6 +58,17 @@ const seedUsers:SeedUserDefinition[] = [
         username:"seed_voter",
         fullName:"Seed Voter"
     }
+]
+
+const contestCategories = [
+    {slug:"street-photography", name:"Street photography", order:10},
+    {slug:"portrait", name:"Portrait", order:20},
+    {slug:"landscape", name:"Landscape", order:30},
+    {slug:"nature-wildlife", name:"Nature and wildlife", order:40},
+    {slug:"architecture", name:"Architecture", order:50},
+    {slug:"travel", name:"Travel", order:60},
+    {slug:"documentary", name:"Documentary", order:70},
+    {slug:"fine-art", name:"Fine art", order:80},
 ]
 
 class DatabaseSeeder {
@@ -439,7 +452,7 @@ class DatabaseSeeder {
         ]
     }
 
-    private async upsertPrizeDefinition(category:PrizeType, title:string, description:string, icon:string, values:{boost?:number; key?:number; swap?:number; coin?:number}, options:{target?:AwardTarget; rankLimit?:number} = {}){
+    private async upsertPrizeDefinition(category:PrizeType, title:string, description:string, icon:string, values:{boost?:number; key?:number; swap?:number; coin?:number}, options:{target?:AwardTarget; rankLimit?:number; isDefault?:boolean; order?:number} = {}){
         const identity = normalizeAwardIdentity({category, ...options})
         const existingPrize = await this.db.prize.findFirst({
             where:{
@@ -460,7 +473,9 @@ class DatabaseSeeder {
             key:values.key || 0,
             swap:values.swap || 0,
             coin:values.coin || 0,
-            isActive:true
+            isActive:true,
+            isDefault:options.isDefault || false,
+            order:options.order || 0
         }
 
         if(existingPrize){
@@ -473,6 +488,56 @@ class DatabaseSeeder {
         return this.db.prize.create({data})
     }
 
+    async seedContestCategories(){
+        for(const category of contestCategories){
+            await this.db.contestCategory.upsert({
+                where:{slug:category.slug},
+                update:{...category, isActive:true},
+                create:{...category, isActive:true}
+            })
+        }
+
+        console.log(`Seeded ${contestCategories.length} contest categories`)
+    }
+
+    async seedPrizeDefinitions(){
+        const prizes:Prize[] = []
+
+        for(const definition of defaultPrizeDefinitions){
+            prizes.push(await this.upsertPrizeDefinition(
+                definition.category,
+                definition.title,
+                definition.description,
+                definition.icon,
+                {
+                    boost:definition.boost,
+                    key:definition.key,
+                    swap:definition.swap,
+                    coin:definition.coin
+                },
+                {
+                    target:definition.target,
+                    rankLimit:definition.rankLimit || undefined,
+                    isDefault:definition.isDefault,
+                    order:definition.order
+                }
+            ))
+        }
+
+        await this.db.prize.updateMany({
+            where:{id:{notIn:prizes.map(prize => prize.id)}},
+            data:{isActive:false, isDefault:false}
+        })
+
+        const [activeCount, defaultCount] = await Promise.all([
+            this.db.prize.count({where:{isActive:true}}),
+            this.db.prize.count({where:{isActive:true, isDefault:true}})
+        ])
+
+        console.log(`Seeded ${prizes.length} prize definitions (${activeCount} active, ${defaultCount} contest defaults)`)
+        return prizes
+    }
+
     async seedContestConfigDemo(){
         const adminEmail = process.env.ADMIN_EMAIL || "admin@email.com"
         const adminPassword = process.env.ADMIN_PASSWORD || "admin1122"
@@ -483,52 +548,7 @@ class DatabaseSeeder {
             throw new Error("Admin user was not created")
         }
 
-        const prizes = await Promise.all([
-            this.upsertPrizeDefinition(
-                PrizeType.TOP_PHOTO,
-                "Top Photo",
-                "Awarded to the strongest single photo in the contest.",
-                "trophy",
-                {boost:10, key:1, swap:1, coin:500}
-            ),
-            this.upsertPrizeDefinition(
-                PrizeType.TOP_PHOTOGRAPHER,
-                "Top Photographer",
-                "Awarded to the photographer with the highest total contest performance.",
-                "camera",
-                {boost:20, key:2, swap:2, coin:1000}
-            ),
-            this.upsertPrizeDefinition(
-                PrizeType.YC_PICK,
-                "YC Pick",
-                "Editorial pick selected by Your Capture Award.",
-                "star",
-                {boost:5, key:1, swap:0, coin:250}
-            ),
-            this.upsertPrizeDefinition(
-                PrizeType.WINNER,
-                "Winner",
-                "Grand winner badge for the contest.",
-                "medal",
-                {boost:30, key:3, swap:3, coin:1500}
-            ),
-            this.upsertPrizeDefinition(
-                PrizeType.TOP_10,
-                "Top 10 Photos",
-                "Awarded to each photo ranked in the contest top 10.",
-                "image",
-                {boost:5, key:1, swap:0, coin:500},
-                {target:AwardTarget.PHOTO, rankLimit:10}
-            ),
-            this.upsertPrizeDefinition(
-                PrizeType.TOP_10,
-                "Top 10 Photographers",
-                "Awarded to each photographer ranked in the contest top 10.",
-                "users",
-                {boost:10, key:2, swap:1, coin:1000},
-                {target:AwardTarget.PHOTOGRAPHER, rankLimit:10}
-            )
-        ])
+        const prizes = (await this.seedPrizeDefinitions()).filter(prize => prize.isDefault)
 
         const title = "Seed Configurable Rules Contest"
         const rules = this.getSeedContestRules()
@@ -565,13 +585,19 @@ class DatabaseSeeder {
                 contestId:contest.id,
                 prizeId:prize.id,
                 category:prize.category,
+                type:prize.type,
+                target:prize.target,
+                rankLimit:prize.rankLimit,
+                slotKey:`${prize.type}:${prize.target}`,
                 title:`Seed ${prize.title}`,
                 description:`Contest-specific ${prize.description}`,
                 icon:prize.icon,
                 boost:prize.boost,
                 key:prize.key,
                 swap:prize.swap,
-                coin:prize.coin
+                coin:prize.coin,
+                enabled:true,
+                order:prize.order
             }))
         })
 
@@ -683,8 +709,14 @@ async function SeederCLI (){
             case "seed:contest-config":
                 await seeder.seedContestConfigDemo()
                 break
+            case "seed:prizes":
+                await seeder.seedPrizeDefinitions()
+                break
+            case "seed:contest-categories":
+                await seeder.seedContestCategories()
+                break
             default:
-                console.log("Available commands: create:admin, seed:levels-demo, seed:contest-config, -reset")
+                console.log("Available commands: create:admin, seed:levels-demo, seed:contest-config, seed:prizes, seed:contest-categories, -reset")
         }
     }finally{
         await seeder.destroyClient()

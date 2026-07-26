@@ -12,7 +12,7 @@ const getContestRules = catchAsync(async (req:Request, res:Response) => {
     sendResponse(res, {
         success:true,
         statusCode:httpStatus.OK,
-        message:"Contest dules fetched successfully",
+        message:"Contest rules fetched successfully",
         data:rules
     })
 })

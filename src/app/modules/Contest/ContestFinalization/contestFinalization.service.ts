@@ -10,6 +10,8 @@ import {
   YCLevel,
 } from "../../../../prismaClient";
 import prisma from "../../../../shared/prisma";
+import ApiError from "../../../../errors/ApiError";
+import httpStatus from "http-status";
 import {
   getAwardSlotKey,
   getContestLevelOrder,
@@ -102,7 +104,7 @@ const claimFinalization = async (contestId: string) => {
 };
 
 const loadAwardConfigs = async (contestId: string): Promise<AwardConfig[]> => {
-  const awards = await prisma.contestAward.findMany({ where: { contestId } });
+  const awards = await prisma.contestAward.findMany({ where: { contestId, enabled: true } });
   const configs = awards.length > 0
     ? awards
     : await prisma.contestPrize.findMany({ where: { contestId } });
@@ -448,24 +450,26 @@ const selectAwardPhoto = async (
 ) => {
   const contest = await prisma.contest.findUnique({ where: { id: contestId } });
   if (!contest) {
-    throw new Error("Contest not found");
+    throw new ApiError(httpStatus.NOT_FOUND, "Contest not found");
   }
   if (contest.status === ContestStatus.COMPLETED || contest.status === ContestStatus.FINALIZING) {
-    throw new Error("Award selections cannot be changed after finalization has started");
+    throw new ApiError(httpStatus.BAD_REQUEST, "Award selections cannot be changed after finalization has started");
   }
 
-  const configuredAward = await prisma.contestAward.findFirst({ where: { id: contestAwardId, contestId } });
+  const configuredAward = await prisma.contestAward.findFirst({
+    where: { id: contestAwardId, contestId, enabled: true },
+  });
   const legacyAward = configuredAward
     ? null
     : await prisma.contestPrize.findFirst({ where: { id: contestAwardId, contestId } });
   const award = configuredAward || legacyAward;
   if (!award) {
-    throw new Error("Contest award not found");
+    throw new ApiError(httpStatus.NOT_FOUND, "Contest award not found");
   }
 
   const identity = normalizeAwardIdentity(award);
   if (identity.type !== AwardType.YC_PICK) {
-    throw new Error("Only YC_PICK awards support manual photo selection");
+    throw new ApiError(httpStatus.BAD_REQUEST, "Only YC_PICK awards support manual photo selection");
   }
 
   const photo = await prisma.contestPhoto.findFirst({
@@ -473,7 +477,7 @@ const selectAwardPhoto = async (
     select: { id: true, participantId: true },
   });
   if (!photo) {
-    throw new Error("An active contest photo is required for this award");
+    throw new ApiError(httpStatus.BAD_REQUEST, "An active contest photo is required for this award");
   }
 
   const slotKey = configuredAward?.slotKey || getAwardSlotKey(identity);

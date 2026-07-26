@@ -7,7 +7,7 @@ const numberField = z.preprocess((value) => {
     return Number(value);
   }
   return value;
-}, z.number().int().min(0).default(0));
+}, z.number().int().min(0).max(100000000).default(0));
 
 const optionalNumberField = z.preprocess((value) => {
   if (value === undefined || value === null || value === "") {
@@ -19,7 +19,19 @@ const optionalNumberField = z.preprocess((value) => {
   }
 
   return value;
-}, z.number().int().min(0).optional());
+}, z.number().int().min(0).max(100000000).optional());
+
+const optionalBooleanField = z.preprocess((value) => {
+  if (value === undefined || value === null || value === "") {
+    return undefined;
+  }
+
+  if (typeof value === "string") {
+    return value === "true";
+  }
+
+  return value;
+}, z.boolean().optional());
 
 const contestPrizeCategorySchema = z.nativeEnum(PrizeType).refine(isContestPrizeCategory, {
   message: "Contest level badges cannot be configured as prizes",
@@ -49,6 +61,8 @@ export const createPrizeSchema = z.object({
   boost: numberField,
   swap: numberField,
   coin: numberField,
+  isDefault: z.boolean().default(false),
+  order: numberField,
 }).superRefine((award, ctx) => {
   try {
     normalizeAwardIdentity(award);
@@ -76,6 +90,8 @@ export const updatePrizeSchema = z.object({
   boost: optionalNumberField,
   swap: optionalNumberField,
   coin: optionalNumberField,
+  isDefault: optionalBooleanField,
+  order: optionalNumberField,
 });
 
 export const contestAwardConfigSchema = z.object({
@@ -87,13 +103,20 @@ export const contestAwardConfigSchema = z.object({
   boost: optionalNumberField,
   swap: optionalNumberField,
   coin: optionalNumberField,
+  enabled: optionalBooleanField,
+  order: optionalNumberField,
 });
 
 const contestAwardValueSchema = z.object({
+  title: z.string().optional(),
+  description: z.string().optional(),
+  icon: z.string().optional(),
   boost: optionalNumberField,
   key: optionalNumberField,
   swap: optionalNumberField,
   coin: optionalNumberField,
+  enabled: optionalBooleanField,
+  order: optionalNumberField,
 }).default({});
 
 const contestAwardByIdentitySchema = z.object({

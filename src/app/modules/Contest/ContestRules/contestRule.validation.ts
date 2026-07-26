@@ -1,5 +1,6 @@
 import z from "zod";
-import { contestRuleKeys } from "./contestRule.definitions";
+import { contestRuleKeys, supportedContestImageMimeTypes } from "./contestRule.definitions";
+import { getRichTextLength, sanitizeContestRichText } from "../contestContent";
 
 export const contestRuleSchema = z.object({
     icon:z.string().optional(),
@@ -8,6 +9,13 @@ export const contestRuleSchema = z.object({
 })
 
 const optionalString = z.string().optional().nullable();
+const ruleRichText = z.string()
+    .trim()
+    .min(1)
+    .refine((value) => getRichTextLength(value) <= 800, {
+        message: "Rule text must contain at most 800 characters",
+    })
+    .transform(sanitizeContestRichText);
 
 const baseRuleSchema = z.object({
     enabled: z.boolean().optional().default(true),
@@ -22,9 +30,9 @@ export const submissionLimitRuleSchema = baseRuleSchema.extend({
 export const submissionRulesRuleSchema = baseRuleSchema.extend({
     key: z.literal("SUBMISSION_RULES"),
     value: z.object({
-        intro: z.string().optional(),
-        disallowed: z.array(z.string().min(1)).default([]),
-        removalNotice: z.string().optional(),
+        intro: z.string().trim().max(200).optional(),
+        disallowed: z.array(z.string().trim().min(1).max(500)).max(20).default([]),
+        removalNotice: z.string().trim().max(500).optional(),
         allowAiImages: z.boolean().optional().default(false),
         duplicatePolicy: z.enum(["ALLOW", "DISALLOW_SAME_PHOTO"]).optional().default("DISALLOW_SAME_PHOTO"),
     }),
@@ -72,7 +80,7 @@ export const levelRequirementsRuleSchema = baseRuleSchema.extend({
 export const submissionFormatRuleSchema = baseRuleSchema.extend({
     key: z.literal("SUBMISSION_FORMAT"),
     value: z.object({
-        mimeTypes: z.array(z.string().min(1)).min(1),
+        mimeTypes: z.array(z.enum(supportedContestImageMimeTypes)).min(1),
         minWidth: z.coerce.number().int().min(1),
         minHeight: z.coerce.number().int().min(1),
         maxSizeMB: z.coerce.number().positive().max(100),
@@ -83,7 +91,7 @@ export const eligibilityRuleSchema = baseRuleSchema.extend({
     key: z.literal("ELIGIBILITY"),
     value: z.object({
         minAge: z.coerce.number().int().min(0).optional(),
-        text: z.string().min(1),
+        text: ruleRichText,
         requiresAcceptance: z.boolean().optional().default(true),
     }),
 });
@@ -91,7 +99,7 @@ export const eligibilityRuleSchema = baseRuleSchema.extend({
 export const copyrightRuleSchema = baseRuleSchema.extend({
     key: z.literal("COPYRIGHT"),
     value: z.object({
-        text: z.string().min(1),
+        text: ruleRichText,
         requiresOwnership: z.boolean().optional().default(true),
         requiresAcceptance: z.boolean().optional().default(true),
     }),
@@ -100,7 +108,7 @@ export const copyrightRuleSchema = baseRuleSchema.extend({
 export const votingRuleSchema = baseRuleSchema.extend({
     key: z.literal("VOTING"),
     value: z.object({
-        text: z.string().min(1),
+        text: ruleRichText,
         membersOnly: z.boolean().optional().default(true),
         requireContestParticipant: z.boolean().optional().default(true),
         disallowSelfVote: z.boolean().optional().default(true),
@@ -111,7 +119,7 @@ export const votingRuleSchema = baseRuleSchema.extend({
 export const participationRuleSchema = baseRuleSchema.extend({
     key: z.literal("PARTICIPATION"),
     value: z.object({
-        text: z.string().min(1),
+        text: ruleRichText,
         requiresTermsAcceptance: z.boolean().optional().default(true),
         termsUrl: optionalString,
     }),

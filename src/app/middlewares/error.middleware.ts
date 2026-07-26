@@ -5,6 +5,7 @@ import { ZodError } from "zod";
 import handleZodError from "../../errors/handleZodError";
 import parsePrismaValidationError from "../../errors/parsePrismaValidationError";
 import ApiError from "../../errors/ApiError";
+import multer from "multer";
 
 
 // TODO Replace `config.NODE_ENV` with your actual environment configuration
@@ -37,6 +38,13 @@ const ErrorHandler = (
     statusCode = err.statusCode;
     message = err.message;
     errorSources = [{ type: "ApiError", details: err.message }];
+  }
+  else if (err instanceof multer.MulterError) {
+    statusCode = err.code === "LIMIT_FILE_SIZE" ? 413 : httpStatus.BAD_REQUEST;
+    message = err.code === "LIMIT_FILE_SIZE"
+      ? "Uploaded file exceeds the allowed size"
+      : err.message;
+    errorSources = [{ type: "UploadError", details: message }];
   }
   // handle prisma client validation errors
   else if (err instanceof Prisma.PrismaClientValidationError) {

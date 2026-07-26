@@ -9,6 +9,7 @@ import {
   SubmissionFormatValue,
 } from "./contestRule.definitions";
 import { contestRuleService } from "./contestRules.service";
+import { imageSize } from "image-size";
 
 type SubmissionRulesValue = {
   allowAiImages?: boolean;
@@ -103,40 +104,14 @@ const getUserBirthDate = (user: Record<string, unknown>) => {
   return Number.isNaN(date.getTime()) ? null : date;
 };
 
-const getJpegDimensions = (buffer: Buffer) => {
-  let offset = 2;
-
-  while (offset < buffer.length) {
-    if (buffer[offset] !== 0xff) {
-      return null;
-    }
-
-    const marker = buffer[offset + 1];
-    const length = buffer.readUInt16BE(offset + 2);
-
-    if (marker >= 0xc0 && marker <= 0xc3) {
-      return {
-        height: buffer.readUInt16BE(offset + 5),
-        width: buffer.readUInt16BE(offset + 7),
-      };
-    }
-
-    offset += 2 + length;
-  }
-
-  return null;
-};
-
 const getImageDimensions = (file: Express.Multer.File) => {
-  if (file.mimetype === "image/png" && file.buffer.length >= 24) {
-    return {
-      width: file.buffer.readUInt32BE(16),
-      height: file.buffer.readUInt32BE(20),
-    };
-  }
-
-  if ((file.mimetype === "image/jpeg" || file.mimetype === "image/jpg") && file.buffer.length >= 4) {
-    return getJpegDimensions(file.buffer);
+  try {
+    const dimensions = imageSize(file.buffer);
+    if (dimensions.width && dimensions.height) {
+      return { width: dimensions.width, height: dimensions.height };
+    }
+  } catch {
+    return null;
   }
 
   return null;
@@ -248,7 +223,10 @@ const validateSubmissionFormat = async (contestId: string, file?: Express.Multer
   }
 
   const dimensions = getImageDimensions(file);
-  if (dimensions && (dimensions.width < format.minWidth || dimensions.height < format.minHeight)) {
+  if (!dimensions) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Unable to read photo dimensions");
+  }
+  if (dimensions.width < format.minWidth || dimensions.height < format.minHeight) {
     throw new ApiError(
       httpStatus.BAD_REQUEST,
       `Photo resolution must be at least ${format.minWidth}px x ${format.minHeight}px`

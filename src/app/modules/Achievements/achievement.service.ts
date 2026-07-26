@@ -52,6 +52,17 @@ const collapseLevelAchievements = <T extends AchievementRecord>(achievements:T[]
     return [...results, ...levelByParticipantContest.values()]
 }
 
+const paginateAchievements = <T>(records:T[], page = 1, limit = 20) => {
+    const safePage = Number.isFinite(page) && page > 0 ? Math.floor(page) : 1
+    const safeLimit = Number.isFinite(limit) && limit > 0 ? Math.floor(limit) : 20
+    const start = (safePage - 1) * safeLimit
+
+    return {
+        data:records.slice(start, start + safeLimit),
+        meta:{page:safePage, limit:safeLimit, total:records.length}
+    }
+}
+
 
 //Add achievements to the user
 const addAchievement = async (userId:string,contestId:string, category:PrizeType, photoId:string)=>{
@@ -161,18 +172,18 @@ const upsertContestLevelAchievement = async (participantId:string, contestId:str
 }
 
 //get the contest achievements for a specific user
-const getContestAchievementsByUser = async (userId:string,type?:PrizeType)=>{
+const getContestAchievementsByUser = async (userId:string,type?:PrizeType, page = 1, limit = 20)=>{
     
     const participantCount = await prisma.contestParticipant.count({where:{userId}})
     if (participantCount <= 0){
         throw new ApiError(httpStatus.NOT_FOUND, "participant not found")
     }
-    if(type){
-        const achievements = await prisma.contestAchievement.findMany({where:{participant:{userId}, category:type}, include:{contest:{select:{id:true,title:true, banner:true}}}})
-        return collapseLevelAchievements(achievements)
-    }
-    const achievements = await prisma.contestAchievement.findMany({where:{participant:{userId}}, include:{contest:{select:{id:true, title:true, banner:true}}}})
-    return collapseLevelAchievements(achievements)
+    const achievements = await prisma.contestAchievement.findMany({
+        where:{participant:{userId}, ...(type && {category:type})},
+        include:{contest:{select:{id:true, title:true, banner:true}}},
+        orderBy:{createdAt:"desc"}
+    })
+    return paginateAchievements(collapseLevelAchievements(achievements), page, limit)
 }
 
 
@@ -195,10 +206,14 @@ const getContestAchievements = async (contestId:string)=>{
 }
 
 
-const getAchievements = async (contestId:string)=>{
-    const achievements = await prisma.contestAchievement.findMany({where:{contestId}, include:{photo:{select:{photo:{select:{id:true, url:true}}}}, participant:{select:{user:true}}}})
+const getAchievements = async (contestId:string, page = 1, limit = 20)=>{
+    const achievements = await prisma.contestAchievement.findMany({
+        where:{contestId},
+        include:{photo:{select:{photo:{select:{id:true, url:true}}}}, participant:{select:{user:true}}},
+        orderBy:{createdAt:"desc"}
+    })
 
-    return collapseLevelAchievements(achievements)
+    return paginateAchievements(collapseLevelAchievements(achievements), page, limit)
 }
 
 const getAchievementCount = async (userId:string)=>{
@@ -209,14 +224,18 @@ const getAchievementCount = async (userId:string)=>{
     return {top_photo:top_photo_award_count,top_photographer:top_photographer_count}
 }
 
-const getContestByAchievementsType = async (userId:string,type:PrizeType)=>{
-    const contestParticipant = await prisma.contestParticipant.findFirst({where:{userId}})
-    if(!contestParticipant){
+const getContestByAchievementsType = async (userId:string,type:PrizeType, page = 1, limit = 20)=>{
+    const participantCount = await prisma.contestParticipant.count({where:{userId}})
+    if(participantCount <= 0){
         throw new ApiError(httpStatus.NOT_FOUND, "participant not found")
     }
-    const achievements = await prisma.contestAchievement.findMany({where:{participantId:contestParticipant.id,category:type}, include:{contest:{select:{banner:true, title:true}}}})
+    const achievements = await prisma.contestAchievement.findMany({
+        where:{participant:{userId}, category:type},
+        include:{contest:{select:{banner:true, title:true}}},
+        orderBy:{createdAt:"desc"}
+    })
 
-    return collapseLevelAchievements(achievements)
+    return paginateAchievements(collapseLevelAchievements(achievements), page, limit)
 }
 
 const getUserPhotoAchievements = async (userId:string, photoId:string) => {
@@ -226,17 +245,28 @@ const getUserPhotoAchievements = async (userId:string, photoId:string) => {
     return collapseLevelAchievements(achievements)
 }
 
-const getMyAchievementsByContest = async (userId:string, contestId:string) => {
-    const achievements = await getAchievements(contestId)
-    const myAchievements:Array<any> = []
-
-    achievements.forEach(achievement => {
-        if(achievement.participant?.user.id === userId){
-            myAchievements.push(achievement)
-        }
+const getAllPhotosAchievements = async (page = 1, limit = 20) => {
+    const achievements = await prisma.contestAchievement.findMany({
+        where:{photoId:{not:null}},
+        include:{
+            contest:{select:{id:true, title:true, banner:true}},
+            photo:{select:{id:true, photo:{select:{id:true, url:true, title:true}}}},
+            participant:{select:{user:{select:{id:true, fullName:true, avatar:true}}}}
+        },
+        orderBy:{createdAt:"desc"}
     })
 
-    return myAchievements
+    return paginateAchievements(collapseLevelAchievements(achievements), page, limit)
+}
+
+const getMyAchievementsByContest = async (userId:string, contestId:string) => {
+    const achievements = await prisma.contestAchievement.findMany({
+        where:{contestId, participant:{userId}},
+        include:{photo:{select:{photo:{select:{id:true, url:true}}}}, participant:{select:{user:true}}},
+        orderBy:{createdAt:"desc"}
+    })
+
+    return collapseLevelAchievements(achievements)
     
 }
 
@@ -253,5 +283,6 @@ export const achievementService = {
     getPhotoAchievements,
     getContestByAchievementsType,
     getUserPhotoAchievements,
+    getAllPhotosAchievements,
     getMyAchievementsByContest
 }

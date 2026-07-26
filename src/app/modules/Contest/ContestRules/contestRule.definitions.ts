@@ -26,6 +26,15 @@ export type SubmissionFormatValue = {
   maxSizeMB: number;
 };
 
+export const supportedContestImageMimeTypes = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/heic",
+  "image/heif",
+  "image/tiff",
+] as const;
+
 export type ContestRuleDefinition<TValue = unknown> = {
   key: ContestRuleKey;
   label: string;

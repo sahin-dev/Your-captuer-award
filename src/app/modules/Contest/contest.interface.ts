@@ -3,6 +3,7 @@ import { RecurringType } from "../../../prismaClient";
 export interface IContest {
     title: string;    
     description: string;
+    categoryId?: string | null;
     recurring: boolean;
     recurring_status?: boolean;
     recurringType?: RecurringType;
@@ -12,5 +13,7 @@ export interface IContest {
     isMoneyContest?: boolean; // Optional, default to false
     maxPrize?: number; // Optional, default to 0
     minPrize?: number; // Optional, default to 0
+    currency?: string | null;
+    entryFeeCoins?: number;
     
 }

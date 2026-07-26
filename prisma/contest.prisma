@@ -10,6 +10,8 @@ model Contest {
   isMoneyContest Boolean       @default(false)
   maxPrize       Int?          @default(0)
   minPrize       Int?          @default(0)
+  currency       String?
+  entryFeeCoins  Int           @default(0)
   
   startDate DateTime
   endDate   DateTime
@@ -21,8 +23,10 @@ model Contest {
   scoringVersion Int @default(1)
 
   creatorId String @db.ObjectId
+  categoryId String? @db.ObjectId
 
   creator      User                 @relation(fields: [creatorId], references: [id])
+  category     ContestCategory?     @relation(fields: [categoryId], references: [id])
   participants ContestParticipant[]
   teamParticipations    TeamParticipation[]
   votes        Vote[]
@@ -31,6 +35,7 @@ model Contest {
   contestPrizes ContestPrize[]
   contestAwards ContestAward[]
   achievements ContestAchievement[]
+  entryFeeTransactions ContestEntryFeeTransaction[]
   teamMatch    TeamMatch[]
   teamMatchHistory TeamMatchHistory[]
   recurringContest RecurringContest? @relation(fields: [recurringContestId], references: [id])
@@ -40,6 +45,7 @@ model Contest {
   @@index([status, startDate])
   @@index([status, endDate])
   @@index([recurringContestId, startDate])
+  @@index([categoryId, status, startDate])
   @@map("contests")
 
 }
@@ -53,11 +59,15 @@ model RecurringContest {
   isMoneyContest Boolean       @default(false)
   maxPrize       Int?          @default(0)
   minPrize       Int?          @default(0)
+  currency       String?
+  entryFeeCoins  Int           @default(0)
   
   startDate DateTime
   endDate   DateTime
 
   creatorId String @db.ObjectId
+  categoryId String? @db.ObjectId
+  category ContestCategory? @relation(fields: [categoryId], references: [id])
   status RecurringContestStatus @default(ACTIVE)
   recurring RecurringData
   lastGeneratedContestId String? @db.ObjectId
@@ -70,7 +80,26 @@ model RecurringContest {
   updatedAt    DateTime             @updatedAt
 
   @@index([status])
+  @@index([categoryId, status])
   @@map("recurring_contests")
+}
+
+model ContestCategory {
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
+  slug        String  @unique
+  name        String  @unique
+  description String?
+  isActive    Boolean @default(true)
+  order       Int     @default(0)
+
+  contests          Contest[]
+  recurringContests RecurringContest[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isActive, order])
+  @@map("contest_categories")
 }
 
 model RecurringContestOccurrence {
@@ -103,6 +132,8 @@ model Prize {
   key         Int       @default(0)
   coin        Int       @default(0)
   isActive    Boolean   @default(true)
+  isDefault   Boolean   @default(false)
+  order       Int       @default(0)
 
   contestAwards          ContestAward[]
   recurringContestAwards RecurringContestAward[]
@@ -110,7 +141,8 @@ model Prize {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([type, target, rankLimit])
+  @@index([type, target, rankLimit])
+  @@index([isActive, isDefault, order])
   @@map("prizes")
 }
 
@@ -198,6 +230,23 @@ model ContestParticipant {
   @@unique([contestId, userId])
 }
 
+model ContestEntryFeeTransaction {
+  id        String                    @id @default(auto()) @map("_id") @db.ObjectId
+  contestId String                    @db.ObjectId
+  userId    String                    @db.ObjectId
+  amount    Int
+  status    ContestEntryPaymentStatus @default(CHARGED)
+
+  contest Contest @relation(fields: [contestId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([contestId, userId])
+  @@index([userId, createdAt])
+  @@map("contest_entry_fee_transactions")
+}
+
 model ContestPrize {
   id      String      @id @default(auto()) @map("_id") @db.ObjectId
   category   PrizeType
@@ -216,7 +265,7 @@ model ContestPrize {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([contestId, type, target, rankLimit])
+  @@index([contestId, type, target, rankLimit])
   @@map("contest_prizes")
 }
 
@@ -247,6 +296,8 @@ model ContestAward {
   swap      Int       @default(0)
   key       Int       @default(0)
   coin      Int       @default(0)
+  enabled   Boolean   @default(true)
+  order     Int       @default(0)
 
   contestId String @db.ObjectId
   prizeId   String @db.ObjectId
@@ -256,7 +307,8 @@ model ContestAward {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([contestId, type, target, rankLimit])
+  @@index([contestId, type, target, rankLimit])
+  @@index([contestId, enabled, order])
   @@map("contest_awards")
 }
 
@@ -274,6 +326,8 @@ model RecurringContestAward {
   swap      Int       @default(0)
   key       Int       @default(0)
   coin      Int       @default(0)
+  enabled   Boolean   @default(true)
+  order     Int       @default(0)
 
   recurringContestId String @db.ObjectId
   prizeId            String @db.ObjectId
@@ -283,7 +337,8 @@ model RecurringContestAward {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([recurringContestId, type, target, rankLimit])
+  @@index([recurringContestId, type, target, rankLimit])
+  @@index([recurringContestId, enabled, order])
   @@map("recurring_contest_awards")
 }
 
@@ -424,6 +479,10 @@ type RecurringData {
   previousOccurrence DateTime?
   nextOccurrence     DateTime
   duration           Int           @default(0)
+  timezone           String?
+  endsAt             DateTime?
+  maxOccurrences     Int?
+  generatedOccurrences Int?
 }
 
 enum PrizeType {
@@ -521,6 +580,11 @@ enum RecurringContestStatus {
   ACTIVE
   PAUSED
   ENDED
+}
+
+enum ContestEntryPaymentStatus {
+  CHARGED
+  REFUNDED
 }
 
 enum YCLevel {

@@ -83,6 +83,7 @@ const updateUser = async (adminId:string,userId:string,userData:userAdminUpdateD
 
         lastName: userData.lastName as string,
         location: userData.location as string,
+        dateOfBirth:userData.dateOfBirth,
     }})
 
     return UserDto(updatedUser)
@@ -103,6 +104,7 @@ const updateProfile = async (userId:string,userData:userUpdateData)=>{
         firstName:userData.firstName,
         lastName:userData.lastName,
         location:userData.location,
+        dateOfBirth:userData.dateOfBirth,
     }})
 
     return UserDto(updatedUser)

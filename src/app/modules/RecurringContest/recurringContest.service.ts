@@ -10,11 +10,14 @@ import { contestRuleService } from "../Contest/ContestRules/contestRules.service
 type RecurringUpdateData = {
   title?: string;
   description?: string;
+  categoryId?: string | null;
   startDate?: string;
   endDate?: string;
   isMoneyContest?: boolean;
   maxPrize?: number;
   minPrize?: number;
+  currency?: string | null;
+  entryFeeCoins?: number;
   rules?: ContestRuleConfigInput[];
 };
 
@@ -36,7 +39,7 @@ const getRecurringContests = async (page = 1, limit = 20) => {
 const getRecurringContestById = async (recurringContestId: string) => {
   const recurringContest = await prisma.recurringContest.findUnique({
     where: { id: recurringContestId },
-    include: { contestAwards: true },
+    include: { contestAwards: true, category:true },
   });
 
   if (!recurringContest) {
@@ -57,6 +60,21 @@ const updateRecurringContest = async (recurringContestId: string, data: Recurrin
 
   const duration = endDate.getTime() - startDate.getTime();
   const rules = data.rules ? contestRuleService.normalizeContestRules(data.rules) : undefined;
+  const isMoneyContest = data.isMoneyContest ?? recurringContest.isMoneyContest;
+  const minPrize = data.minPrize ?? recurringContest.minPrize ?? 0;
+  const maxPrize = data.maxPrize ?? recurringContest.maxPrize ?? 0;
+  const currency = data.currency === undefined ? recurringContest.currency : data.currency;
+  if(isMoneyContest && (!currency || minPrize > maxPrize)){
+    throw new ApiError(httpStatus.BAD_REQUEST, "Money contests require valid currency and prize bounds");
+  }
+  if(data.categoryId){
+    const category = await prisma.contestCategory.findFirst({
+      where:{id:data.categoryId, isActive:true}
+    });
+    if(!category){
+      throw new ApiError(httpStatus.BAD_REQUEST, "Contest category is invalid or inactive");
+    }
+  }
   const recurring = data.startDate || data.endDate
     ? {
         set: {
@@ -75,11 +93,14 @@ const updateRecurringContest = async (recurringContestId: string, data: Recurrin
     data: {
       title: data.title,
       description: data.description,
+      categoryId: data.categoryId,
       startDate: data.startDate ? startDate : undefined,
       endDate: data.endDate ? endDate : undefined,
-      isMoneyContest: data.isMoneyContest,
-      maxPrize: data.maxPrize,
-      minPrize: data.minPrize,
+      isMoneyContest,
+      maxPrize: isMoneyContest ? maxPrize : 0,
+      minPrize: isMoneyContest ? minPrize : 0,
+      currency: isMoneyContest ? currency : null,
+      entryFeeCoins: data.entryFeeCoins,
       rules,
       recurring,
     },
@@ -127,7 +148,8 @@ const endRecurringContest = async (recurringContestId: string) => {
 const updateRecurringInterval = async (
   recurringContestId: string,
   recurringType: RecurringType,
-  nextOccurrence?: string
+  nextOccurrence?: string,
+  options:{timezone?:string; endsAt?:string | null; maxOccurrences?:number | null} = {}
 ) => {
   const recurringContest = await getRecurringContestById(recurringContestId);
   const previousOccurrence = new Date();
@@ -137,6 +159,9 @@ const updateRecurringInterval = async (
 
   if (recalculatedNextOccurrence <= previousOccurrence) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Next occurrence must be in the future");
+  }
+  if(options.endsAt && new Date(options.endsAt) <= recalculatedNextOccurrence){
+    throw new ApiError(httpStatus.BAD_REQUEST, "Recurrence end must be after the next occurrence");
   }
 
   return prisma.recurringContest.update({
@@ -148,6 +173,15 @@ const updateRecurringInterval = async (
           recurringType,
           previousOccurrence,
           nextOccurrence: recalculatedNextOccurrence,
+          timezone: options.timezone ?? recurringContest.recurring.timezone,
+          endsAt: options.endsAt === null
+            ? null
+            : options.endsAt
+              ? new Date(options.endsAt)
+              : recurringContest.recurring.endsAt,
+          maxOccurrences: options.maxOccurrences === null
+            ? null
+            : options.maxOccurrences ?? recurringContest.recurring.maxOccurrences,
         },
       },
     },
@@ -176,9 +210,13 @@ const getRecurringAwards = async (recurringContestId: string) => {
   return prizeService.getRecurringContestAwards(recurringContestId);
 };
 
-const replaceRecurringAwards = async (recurringContestId: string, awardPrizeIds: string[]) => {
+const replaceRecurringAwards = async (
+  recurringContestId: string,
+  awardPrizeIds: string[] = [],
+  awards: Parameters<typeof prizeService.replaceRecurringContestAwards>[2] = []
+) => {
   await getRecurringContestById(recurringContestId);
-  return prizeService.replaceRecurringContestAwards(recurringContestId, awardPrizeIds);
+  return prizeService.replaceRecurringContestAwards(recurringContestId, awardPrizeIds, awards);
 };
 
 export const recurringContestService = {
