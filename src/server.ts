@@ -27,7 +27,13 @@ const logDatabaseConnectionHint = (error:unknown) => {
 }
 
 async function startServer() {
-  await prisma.$connect();
+  try{
+      await prisma.$connect();
+  }catch(err){
+    // console.log(err)
+    throw new Error("Failed to connect to the database. Please check your DATABASE_URL and ensure the database is running.");
+  }
+
 
   server = app.listen(PORT, () => {
     console.log("Server is listiening on port ", PORT);

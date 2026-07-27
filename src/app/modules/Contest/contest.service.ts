@@ -153,7 +153,6 @@ const createContest = async (creatorId: string, body: contestData, banner:Expres
        return createRecurringContest(creatorId, body, banner)
     }
 
-
     const [bannerUrl, categoryId] = await Promise.all([
         banner ? fileUploader.uploadToDigitalOcean(banner).then(upload => upload.Location) : Promise.resolve(null),
         resolveContestCategoryId(body.categoryId, body.category)
