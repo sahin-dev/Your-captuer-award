@@ -481,7 +481,8 @@ export const PaymentStatus: {
   SUCCEEDED: 'SUCCEEDED',
   VALID: 'VALID',
   EXPIRED: 'EXPIRED',
-  FAILED: 'FAILED'
+  FAILED: 'FAILED',
+  CANCELLED: 'CANCELLED'
 };
 
 export type PaymentStatus = (typeof PaymentStatus)[keyof typeof PaymentStatus]
@@ -28721,6 +28722,7 @@ export namespace Prisma {
     recurring: $Enums.PlanRecurringType | null
     userId: string | null
     stripe_sessino_id: string | null
+    stripe_payment_id: string | null
     amount: number | null
     currency: string | null
     method: string | null
@@ -28739,6 +28741,7 @@ export namespace Prisma {
     recurring: $Enums.PlanRecurringType | null
     userId: string | null
     stripe_sessino_id: string | null
+    stripe_payment_id: string | null
     amount: number | null
     currency: string | null
     method: string | null
@@ -28757,6 +28760,7 @@ export namespace Prisma {
     recurring: number
     userId: number
     stripe_sessino_id: number
+    stripe_payment_id: number
     amount: number
     currency: number
     method: number
@@ -28785,6 +28789,7 @@ export namespace Prisma {
     recurring?: true
     userId?: true
     stripe_sessino_id?: true
+    stripe_payment_id?: true
     amount?: true
     currency?: true
     method?: true
@@ -28803,6 +28808,7 @@ export namespace Prisma {
     recurring?: true
     userId?: true
     stripe_sessino_id?: true
+    stripe_payment_id?: true
     amount?: true
     currency?: true
     method?: true
@@ -28821,6 +28827,7 @@ export namespace Prisma {
     recurring?: true
     userId?: true
     stripe_sessino_id?: true
+    stripe_payment_id?: true
     amount?: true
     currency?: true
     method?: true
@@ -28926,6 +28933,7 @@ export namespace Prisma {
     recurring: $Enums.PlanRecurringType | null
     userId: string
     stripe_sessino_id: string | null
+    stripe_payment_id: string | null
     amount: number
     currency: string
     method: string
@@ -28963,6 +28971,7 @@ export namespace Prisma {
     recurring?: boolean
     userId?: boolean
     stripe_sessino_id?: boolean
+    stripe_payment_id?: boolean
     amount?: boolean
     currency?: boolean
     method?: boolean
@@ -28984,6 +28993,7 @@ export namespace Prisma {
     recurring?: boolean
     userId?: boolean
     stripe_sessino_id?: boolean
+    stripe_payment_id?: boolean
     amount?: boolean
     currency?: boolean
     method?: boolean
@@ -28992,7 +29002,7 @@ export namespace Prisma {
     updatedAt?: boolean
   }
 
-  export type PaymentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "status" | "productId" | "planId" | "subscriptionId" | "planName" | "recurring" | "userId" | "stripe_sessino_id" | "amount" | "currency" | "method" | "type" | "createdAt" | "updatedAt", ExtArgs["result"]["payment"]>
+  export type PaymentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "status" | "productId" | "planId" | "subscriptionId" | "planName" | "recurring" | "userId" | "stripe_sessino_id" | "stripe_payment_id" | "amount" | "currency" | "method" | "type" | "createdAt" | "updatedAt", ExtArgs["result"]["payment"]>
   export type PaymentInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
   }
@@ -29012,6 +29022,7 @@ export namespace Prisma {
       recurring: $Enums.PlanRecurringType | null
       userId: string
       stripe_sessino_id: string | null
+      stripe_payment_id: string | null
       amount: number
       currency: string
       method: string
@@ -29420,6 +29431,7 @@ export namespace Prisma {
     readonly recurring: FieldRef<"Payment", 'PlanRecurringType'>
     readonly userId: FieldRef<"Payment", 'String'>
     readonly stripe_sessino_id: FieldRef<"Payment", 'String'>
+    readonly stripe_payment_id: FieldRef<"Payment", 'String'>
     readonly amount: FieldRef<"Payment", 'Float'>
     readonly currency: FieldRef<"Payment", 'String'>
     readonly method: FieldRef<"Payment", 'String'>
@@ -56912,6 +56924,7 @@ export namespace Prisma {
     recurring: 'recurring',
     userId: 'userId',
     stripe_sessino_id: 'stripe_sessino_id',
+    stripe_payment_id: 'stripe_payment_id',
     amount: 'amount',
     currency: 'currency',
     method: 'method',
@@ -59910,6 +59923,7 @@ export namespace Prisma {
     recurring?: EnumPlanRecurringTypeNullableFilter<"Payment"> | $Enums.PlanRecurringType | null
     userId?: StringFilter<"Payment"> | string
     stripe_sessino_id?: StringNullableFilter<"Payment"> | string | null
+    stripe_payment_id?: StringNullableFilter<"Payment"> | string | null
     amount?: FloatFilter<"Payment"> | number
     currency?: StringFilter<"Payment"> | string
     method?: StringFilter<"Payment"> | string
@@ -59929,6 +59943,7 @@ export namespace Prisma {
     recurring?: SortOrder
     userId?: SortOrder
     stripe_sessino_id?: SortOrder
+    stripe_payment_id?: SortOrder
     amount?: SortOrder
     currency?: SortOrder
     method?: SortOrder
@@ -59951,6 +59966,7 @@ export namespace Prisma {
     recurring?: EnumPlanRecurringTypeNullableFilter<"Payment"> | $Enums.PlanRecurringType | null
     userId?: StringFilter<"Payment"> | string
     stripe_sessino_id?: StringNullableFilter<"Payment"> | string | null
+    stripe_payment_id?: StringNullableFilter<"Payment"> | string | null
     amount?: FloatFilter<"Payment"> | number
     currency?: StringFilter<"Payment"> | string
     method?: StringFilter<"Payment"> | string
@@ -59970,6 +59986,7 @@ export namespace Prisma {
     recurring?: SortOrder
     userId?: SortOrder
     stripe_sessino_id?: SortOrder
+    stripe_payment_id?: SortOrder
     amount?: SortOrder
     currency?: SortOrder
     method?: SortOrder
@@ -59996,6 +60013,7 @@ export namespace Prisma {
     recurring?: EnumPlanRecurringTypeNullableWithAggregatesFilter<"Payment"> | $Enums.PlanRecurringType | null
     userId?: StringWithAggregatesFilter<"Payment"> | string
     stripe_sessino_id?: StringNullableWithAggregatesFilter<"Payment"> | string | null
+    stripe_payment_id?: StringNullableWithAggregatesFilter<"Payment"> | string | null
     amount?: FloatWithAggregatesFilter<"Payment"> | number
     currency?: StringWithAggregatesFilter<"Payment"> | string
     method?: StringWithAggregatesFilter<"Payment"> | string
@@ -64194,6 +64212,7 @@ export namespace Prisma {
     planName?: $Enums.SubscriptionPlanEnum | null
     recurring?: $Enums.PlanRecurringType | null
     stripe_sessino_id?: string | null
+    stripe_payment_id?: string | null
     amount: number
     currency: string
     method: string
@@ -64213,6 +64232,7 @@ export namespace Prisma {
     recurring?: $Enums.PlanRecurringType | null
     userId: string
     stripe_sessino_id?: string | null
+    stripe_payment_id?: string | null
     amount: number
     currency: string
     method: string
@@ -64229,6 +64249,7 @@ export namespace Prisma {
     planName?: NullableEnumSubscriptionPlanEnumFieldUpdateOperationsInput | $Enums.SubscriptionPlanEnum | null
     recurring?: NullableEnumPlanRecurringTypeFieldUpdateOperationsInput | $Enums.PlanRecurringType | null
     stripe_sessino_id?: NullableStringFieldUpdateOperationsInput | string | null
+    stripe_payment_id?: NullableStringFieldUpdateOperationsInput | string | null
     amount?: FloatFieldUpdateOperationsInput | number
     currency?: StringFieldUpdateOperationsInput | string
     method?: StringFieldUpdateOperationsInput | string
@@ -64247,6 +64268,7 @@ export namespace Prisma {
     recurring?: NullableEnumPlanRecurringTypeFieldUpdateOperationsInput | $Enums.PlanRecurringType | null
     userId?: StringFieldUpdateOperationsInput | string
     stripe_sessino_id?: NullableStringFieldUpdateOperationsInput | string | null
+    stripe_payment_id?: NullableStringFieldUpdateOperationsInput | string | null
     amount?: FloatFieldUpdateOperationsInput | number
     currency?: StringFieldUpdateOperationsInput | string
     method?: StringFieldUpdateOperationsInput | string
@@ -64265,6 +64287,7 @@ export namespace Prisma {
     recurring?: $Enums.PlanRecurringType | null
     userId: string
     stripe_sessino_id?: string | null
+    stripe_payment_id?: string | null
     amount: number
     currency: string
     method: string
@@ -64281,6 +64304,7 @@ export namespace Prisma {
     planName?: NullableEnumSubscriptionPlanEnumFieldUpdateOperationsInput | $Enums.SubscriptionPlanEnum | null
     recurring?: NullableEnumPlanRecurringTypeFieldUpdateOperationsInput | $Enums.PlanRecurringType | null
     stripe_sessino_id?: NullableStringFieldUpdateOperationsInput | string | null
+    stripe_payment_id?: NullableStringFieldUpdateOperationsInput | string | null
     amount?: FloatFieldUpdateOperationsInput | number
     currency?: StringFieldUpdateOperationsInput | string
     method?: StringFieldUpdateOperationsInput | string
@@ -64298,6 +64322,7 @@ export namespace Prisma {
     recurring?: NullableEnumPlanRecurringTypeFieldUpdateOperationsInput | $Enums.PlanRecurringType | null
     userId?: StringFieldUpdateOperationsInput | string
     stripe_sessino_id?: NullableStringFieldUpdateOperationsInput | string | null
+    stripe_payment_id?: NullableStringFieldUpdateOperationsInput | string | null
     amount?: FloatFieldUpdateOperationsInput | number
     currency?: StringFieldUpdateOperationsInput | string
     method?: StringFieldUpdateOperationsInput | string
@@ -68362,6 +68387,7 @@ export namespace Prisma {
     recurring?: SortOrder
     userId?: SortOrder
     stripe_sessino_id?: SortOrder
+    stripe_payment_id?: SortOrder
     amount?: SortOrder
     currency?: SortOrder
     method?: SortOrder
@@ -68384,6 +68410,7 @@ export namespace Prisma {
     recurring?: SortOrder
     userId?: SortOrder
     stripe_sessino_id?: SortOrder
+    stripe_payment_id?: SortOrder
     amount?: SortOrder
     currency?: SortOrder
     method?: SortOrder
@@ -68402,6 +68429,7 @@ export namespace Prisma {
     recurring?: SortOrder
     userId?: SortOrder
     stripe_sessino_id?: SortOrder
+    stripe_payment_id?: SortOrder
     amount?: SortOrder
     currency?: SortOrder
     method?: SortOrder
@@ -81642,6 +81670,7 @@ export namespace Prisma {
     planName?: $Enums.SubscriptionPlanEnum | null
     recurring?: $Enums.PlanRecurringType | null
     stripe_sessino_id?: string | null
+    stripe_payment_id?: string | null
     amount: number
     currency: string
     method: string
@@ -81659,6 +81688,7 @@ export namespace Prisma {
     planName?: $Enums.SubscriptionPlanEnum | null
     recurring?: $Enums.PlanRecurringType | null
     stripe_sessino_id?: string | null
+    stripe_payment_id?: string | null
     amount: number
     currency: string
     method: string
@@ -82089,6 +82119,7 @@ export namespace Prisma {
     recurring?: EnumPlanRecurringTypeNullableFilter<"Payment"> | $Enums.PlanRecurringType | null
     userId?: StringFilter<"Payment"> | string
     stripe_sessino_id?: StringNullableFilter<"Payment"> | string | null
+    stripe_payment_id?: StringNullableFilter<"Payment"> | string | null
     amount?: FloatFilter<"Payment"> | number
     currency?: StringFilter<"Payment"> | string
     method?: StringFilter<"Payment"> | string
@@ -86387,6 +86418,7 @@ export namespace Prisma {
     planName?: $Enums.SubscriptionPlanEnum | null
     recurring?: $Enums.PlanRecurringType | null
     stripe_sessino_id?: string | null
+    stripe_payment_id?: string | null
     amount: number
     currency: string
     method: string
@@ -86851,6 +86883,7 @@ export namespace Prisma {
     planName?: NullableEnumSubscriptionPlanEnumFieldUpdateOperationsInput | $Enums.SubscriptionPlanEnum | null
     recurring?: NullableEnumPlanRecurringTypeFieldUpdateOperationsInput | $Enums.PlanRecurringType | null
     stripe_sessino_id?: NullableStringFieldUpdateOperationsInput | string | null
+    stripe_payment_id?: NullableStringFieldUpdateOperationsInput | string | null
     amount?: FloatFieldUpdateOperationsInput | number
     currency?: StringFieldUpdateOperationsInput | string
     method?: StringFieldUpdateOperationsInput | string
@@ -86867,6 +86900,7 @@ export namespace Prisma {
     planName?: NullableEnumSubscriptionPlanEnumFieldUpdateOperationsInput | $Enums.SubscriptionPlanEnum | null
     recurring?: NullableEnumPlanRecurringTypeFieldUpdateOperationsInput | $Enums.PlanRecurringType | null
     stripe_sessino_id?: NullableStringFieldUpdateOperationsInput | string | null
+    stripe_payment_id?: NullableStringFieldUpdateOperationsInput | string | null
     amount?: FloatFieldUpdateOperationsInput | number
     currency?: StringFieldUpdateOperationsInput | string
     method?: StringFieldUpdateOperationsInput | string
@@ -86883,6 +86917,7 @@ export namespace Prisma {
     planName?: NullableEnumSubscriptionPlanEnumFieldUpdateOperationsInput | $Enums.SubscriptionPlanEnum | null
     recurring?: NullableEnumPlanRecurringTypeFieldUpdateOperationsInput | $Enums.PlanRecurringType | null
     stripe_sessino_id?: NullableStringFieldUpdateOperationsInput | string | null
+    stripe_payment_id?: NullableStringFieldUpdateOperationsInput | string | null
     amount?: FloatFieldUpdateOperationsInput | number
     currency?: StringFieldUpdateOperationsInput | string
     method?: StringFieldUpdateOperationsInput | string

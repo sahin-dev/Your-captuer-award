@@ -34,7 +34,7 @@ const stripeWebhook =  async (req: Request, res: Response) => {
             const userId = session.metadata?.userId;
             const productId = session.metadata?.product_id;
             
-            const payment = await prisma.payment.findFirst({where:{stripe_session_id:session.id}})
+            const payment = await prisma.payment.findFirst({where:{stripe_sessino_id:session.id}})
             
             if(!payment){
               console.log("Payment not found")
@@ -55,7 +55,7 @@ const stripeWebhook =  async (req: Request, res: Response) => {
             if(session.mode === 'payment'){
               const store = await prisma.userStore.findUnique({where:{userId:payment.userId}})
               const product = await prisma.product.findUnique({where:{id:productId}})
-              if(!product || product.category !== 'COINS'){
+              if(!product || product.productType !== 'COIN'){
                 console.log("Product not found")
                 break
               }

@@ -5,6 +5,7 @@ import {
     ContestPhoto,
     ContestStatus,
     LevelName,
+    LevelRequirementTitle,
     Prize,
     PrismaClient,
     PrizeType,
@@ -121,13 +122,10 @@ class DatabaseSeeder {
 
     private async seedLevels(){
         for(const levelRule of LEVEL_RULES){
+            const topBadgeRequirement = levelRule.badges.reduce((max, badge) => Math.max(max, badge.required), 0)
             const requirements = [
-                {title:"received_votes", required:levelRule.receivedVotes},
-                {title:"promoted_votes", required:levelRule.promotedVotes},
-                ...levelRule.badges.map(badge => ({
-                    title:`badge:${badge.category}`,
-                    required:badge.required
-                }))
+                {title:LevelRequirementTitle.votes, required:levelRule.receivedVotes},
+                {title:LevelRequirementTitle.top_photographer, required:topBadgeRequirement}
             ]
 
             const existingLevel = await this.db.level.findFirst({

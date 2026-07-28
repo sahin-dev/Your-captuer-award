@@ -435,6 +435,7 @@ exports.Prisma.PaymentScalarFieldEnum = {
   recurring: 'recurring',
   userId: 'userId',
   stripe_sessino_id: 'stripe_sessino_id',
+  stripe_payment_id: 'stripe_payment_id',
   amount: 'amount',
   currency: 'currency',
   method: 'method',
@@ -871,7 +872,8 @@ exports.PaymentStatus = exports.$Enums.PaymentStatus = {
   SUCCEEDED: 'SUCCEEDED',
   VALID: 'VALID',
   EXPIRED: 'EXPIRED',
-  FAILED: 'FAILED'
+  FAILED: 'FAILED',
+  CANCELLED: 'CANCELLED'
 };
 
 exports.SubscriptionPlanEnum = exports.$Enums.SubscriptionPlanEnum = {

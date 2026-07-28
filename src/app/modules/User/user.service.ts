@@ -12,19 +12,44 @@ import { userAdminUpdateData, userUpdateData } from "./user.types"
 import bcrypt from 'bcryptjs'
 import { userStoreService } from "./UserStore/userStore.service"
 import { levelService } from "../Level/level.service"
+import { paginationHelper } from "../../../helpers/paginationHelper"
 
 
 
-const getUsers = async (page: number = 1, limit: number = 20)=>{
+const getUsers = async (filters:{page?:string, limit?:string, search?:string, status?:string, role?:string})=>{
+    const page = filters.page ? Number(filters.page) : 1
+    const limit = filters.limit ? Number(filters.limit) : 20
     const skip = (page - 1) * limit
-    const totalUsers = await prisma.user.count()
-    const users = await prisma.user.findMany({omit:{password:true, createdAt:true, updatedAt:true,accessToken:true}, take:limit, skip})
 
-    // const mappedUsers = users.map((user)=>{
-    //     return UserDto(user)
-    // })
+    const where: Record<string, unknown> = {}
 
-    return {page, limit,total:totalUsers,users}
+    if(filters.search){
+        where.OR = [
+            {fullName:{contains:filters.search, mode:'insensitive'}},
+            {email:{contains:filters.search, mode:'insensitive'}},
+            {username:{contains:filters.search, mode:'insensitive'}}
+        ]
+    }
+
+    if(filters.role){
+        where.role = filters.role as UserRole
+    }
+
+    if(filters.status === 'blocked'){
+        where.isBlocked = true
+    }else if(filters.status === 'active'){
+        where.isBlocked = false
+        where.isDeleted = false
+    }else if(filters.status === 'deleted'){
+        where.isDeleted = true
+    }
+
+    const [users, totalUsers] = await Promise.all([
+        prisma.user.findMany({where, omit:{password:true, createdAt:true, updatedAt:true,accessToken:true}, take:limit, skip}),
+        prisma.user.count({where})
+    ])
+
+    return {data:users, meta:paginationHelper.getPaginationMetaData(page, limit, totalUsers)}
 }
 
 
@@ -278,10 +303,37 @@ const attachStoreToUser = async (userId:string)=>{
 
 }
 
-const searchUserByUserName = async (queryString:string) => {
-    const user = await prisma.user.findMany({where:{OR:[{username:{contains:queryString}}, {fullName:{contains:queryString}}]}, select:{id:true, avatar:true, firstName:true, username:true, lastName:true, fullName:true}})
+const searchUserByUserName = async (queryString:string, page:number = 1, limit:number = 10, currentUserId?:string) => {
+    const { skip, limit:take } = paginationHelper.calculatePagination({page, limit})
+
+    const user = await prisma.user.findMany({
+        where:{
+            AND:[
+                {OR:[{username:{contains:queryString, mode:'insensitive'}}, {fullName:{contains:queryString, mode:'insensitive'}}]},
+                currentUserId ? {id:{not:currentUserId}} : {}
+            ]
+        },
+        select:{id:true, avatar:true, firstName:true, username:true, lastName:true, fullName:true},
+        skip, take
+    })
 
     return user
+}
+
+const deleteAccount = async (userId:string, password:string) => {
+    const user = await prisma.user.findUnique({where:{id:userId}})
+    if(!user){
+        throw new ApiError(httpstatus.NOT_FOUND, "User not found")
+    }
+
+    const passwordMatched = await bcrypt.compare(password, user.password as string)
+    if(!passwordMatched){
+        throw new ApiError(httpstatus.BAD_REQUEST, "Password is incorrect")
+    }
+
+    await prisma.user.update({where:{id:userId}, data:{isDeleted:true, isActive:false}})
+
+    return "Account deleted successfully"
 }
 
 const checkLevelRequirement = async ()=>{
@@ -314,6 +366,7 @@ export const userService = {
     getUserCurrentLevel,
     attachStoreToUser,
     searchUserByUserName,
-    getPhototAchievements
-    
+    getPhototAchievements,
+    deleteAccount
+
 }

@@ -8,6 +8,7 @@ import { PaymentMethod } from "./payment.interface";
 import { PaymentRegistry } from "./paymentRegistry";
 import { loadProviders } from "./providerLoader";
 import httpStatus from 'http-status'
+import { paginationHelper } from "../../../helpers/paginationHelper";
 
 export class PaymentService {
 
@@ -90,12 +91,41 @@ export class PaymentService {
   async refund(providerName: "STRIPE", paymentId: string, amount: number) {
     if(!this.providersLoaded)
       await this.loadProviders()
-    
+
     const provider = PaymentRegistry.getProvider(providerName);
     return await provider.refundPayment(paymentId, amount);
   }
 
+  async getUserPayments(userId:string, page:number = 1, limit:number = 10) {
+    const { skip, limit:take } = paginationHelper.calculatePagination({page, limit})
 
+    const [payments, total] = await Promise.all([
+      prisma.payment.findMany({where:{userId}, orderBy:{createdAt:'desc'}, skip, take}),
+      prisma.payment.count({where:{userId}})
+    ])
+
+    return {data:payments, meta:paginationHelper.getPaginationMetaData(page, take, total)}
+  }
+
+  async getPaymentDetails(paymentId:string) {
+    const payment = await prisma.payment.findUnique({where:{id:paymentId}})
+    if(!payment){
+      throw new ApiError(httpStatus.NOT_FOUND, "payment not found")
+    }
+    return payment
+  }
+
+  async cancelPayment(paymentId:string) {
+    const payment = await prisma.payment.findUnique({where:{id:paymentId}})
+    if(!payment){
+      throw new ApiError(httpStatus.NOT_FOUND, "payment not found")
+    }
+    if(payment.status !== PaymentStatus.PENDING){
+      throw new ApiError(httpStatus.BAD_REQUEST, "Only pending payments can be cancelled")
+    }
+
+    return await prisma.payment.update({where:{id:paymentId}, data:{status:PaymentStatus.CANCELLED}})
+  }
 
 }
 
@@ -106,4 +136,4 @@ export class PaymentService {
 
 
 
-export const paymentSrevice =  new PaymentService()
+export const paymentService =  new PaymentService()

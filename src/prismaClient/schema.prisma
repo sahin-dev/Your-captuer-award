@@ -604,6 +604,7 @@ model Payment {
   recurring         PlanRecurringType?
   userId            String                @db.ObjectId
   stripe_sessino_id String?
+  stripe_payment_id String?
   amount            Float
   currency          String
   method            String
@@ -679,6 +680,7 @@ enum PaymentStatus {
   VALID
   EXPIRED
   FAILED
+  CANCELLED
 }
 
 enum PaymentType {
