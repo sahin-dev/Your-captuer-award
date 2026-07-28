@@ -1,4 +1,5 @@
 import { LevelName, PrizeType } from "../../../prismaClient";
+import { prizeTypes } from "../Awards/award.definitions";
 
 export type BadgeRequirement = {
     category: PrizeType;
@@ -21,7 +22,7 @@ export const LEVEL_RULES: LevelRule[] = [
         votePower: 2,
         receivedVotes: 2500,
         promotedVotes: 100,
-        badges: [{ category: PrizeType.AMATEUR, required: 5 }],
+        badges: [{ category: prizeTypes.AMATEUR, required: 5 }],
     },
     {
         order: 2,
@@ -29,7 +30,7 @@ export const LEVEL_RULES: LevelRule[] = [
         votePower: 4,
         receivedVotes: 5000,
         promotedVotes: 250,
-        badges: [{ category: PrizeType.TALENTED, required: 5 }],
+        badges: [{ category: prizeTypes.TALENTED, required: 5 }],
     },
     {
         order: 3,
@@ -37,7 +38,7 @@ export const LEVEL_RULES: LevelRule[] = [
         votePower: 6,
         receivedVotes: 7500,
         promotedVotes: 500,
-        badges: [{ category: PrizeType.SUPREME, required: 10 }],
+        badges: [{ category: prizeTypes.SUPREME, required: 10 }],
     },
     {
         order: 4,
@@ -45,7 +46,7 @@ export const LEVEL_RULES: LevelRule[] = [
         votePower: 8,
         receivedVotes: 10000,
         promotedVotes: 1000,
-        badges: [{ category: PrizeType.SUPERIOR, required: 20 }],
+        badges: [{ category: prizeTypes.SUPERIOR, required: 20 }],
     },
     {
         order: 5,

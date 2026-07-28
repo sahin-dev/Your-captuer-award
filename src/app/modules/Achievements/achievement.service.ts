@@ -7,6 +7,7 @@ import {
     getContestLevelBadge,
     getContestLevelOrder,
     isContestLevelPrizeType,
+    prizeTypes,
 } from "../Awards/award.definitions";
 
 type AchievementMetadata = {
@@ -130,7 +131,7 @@ const upsertContestLevelAchievement = async (participantId:string, contestId:str
             contestId,
             OR:[
                 {kind:AchievementKind.CONTEST_LEVEL},
-                {category:{in:[PrizeType.AMATEUR, PrizeType.TALENTED, PrizeType.SUPREME, PrizeType.SUPERIOR, PrizeType.TOP_NOTCH]}}
+                {category:{in:[prizeTypes.AMATEUR, prizeTypes.TALENTED, prizeTypes.SUPREME, prizeTypes.SUPERIOR, prizeTypes.TOP_NOTCH]}}
             ]
         }
     })
@@ -154,7 +155,7 @@ const upsertContestLevelAchievement = async (participantId:string, contestId:str
                 contestId,
                 OR:[
                     {kind:AchievementKind.CONTEST_LEVEL},
-                    {category:{in:[PrizeType.AMATEUR, PrizeType.TALENTED, PrizeType.SUPREME, PrizeType.SUPERIOR, PrizeType.TOP_NOTCH]}}
+                    {category:{in:[prizeTypes.AMATEUR, prizeTypes.TALENTED, prizeTypes.SUPREME, prizeTypes.SUPERIOR, prizeTypes.TOP_NOTCH]}}
                 ]
             }
         })
