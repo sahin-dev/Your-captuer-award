@@ -1,8 +1,9 @@
 import ApiError from "../../../errors/ApiError";
-import { AchievementKind, AwardTarget, AwardType, ContestLevelBadge, PrizeType } from "../../../prismaClient";
+import { AchievementKind, AwardTarget, AwardType, PrizeType } from "../../../prismaClient";
 import prisma from "../../../shared/prisma";
 import httpStatus from 'http-status'
 import {
+    ContestLevelBadgeValue,
     getContestLevelBadge,
     getContestLevelOrder,
     isContestLevelPrizeType,
@@ -13,7 +14,7 @@ type AchievementMetadata = {
     type?: AwardType | null;
     target?: AwardTarget | null;
     rankLimit?: number | null;
-    levelBadge?: ContestLevelBadge | null;
+    levelBadge?: ContestLevelBadgeValue | null;
     levelOrder?: number | null;
 }
 

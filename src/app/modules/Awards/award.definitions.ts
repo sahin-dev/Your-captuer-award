@@ -1,7 +1,6 @@
 import {
   AwardTarget,
   AwardType,
-  ContestLevelBadge,
   PrizeType,
 } from "../../../prismaClient";
 
@@ -33,20 +32,30 @@ const topRankLimitByCategory: Partial<Record<PrizeType, number>> = {
   [PrizeType.TOP_100]: 100,
 };
 
-const levelBadgeByPrizeType: Partial<Record<PrizeType, ContestLevelBadge>> = {
-  [PrizeType.AMATEUR]: ContestLevelBadge.AMATEUR,
-  [PrizeType.TALENTED]: ContestLevelBadge.TALENTED,
-  [PrizeType.SUPREME]: ContestLevelBadge.SUPREME,
-  [PrizeType.SUPERIOR]: ContestLevelBadge.SUPERIOR,
-  [PrizeType.TOP_NOTCH]: ContestLevelBadge.TOP_NOTCH,
+export const contestLevelBadges = {
+  AMATEUR: "AMATEUR",
+  TALENTED: "TALENTED",
+  SUPREME: "SUPREME",
+  SUPERIOR: "SUPERIOR",
+  TOP_NOTCH: "TOP_NOTCH",
+} as const;
+
+export type ContestLevelBadgeValue = (typeof contestLevelBadges)[keyof typeof contestLevelBadges];
+
+const levelBadgeByPrizeType: Partial<Record<PrizeType, ContestLevelBadgeValue>> = {
+  [PrizeType.AMATEUR]: contestLevelBadges.AMATEUR,
+  [PrizeType.TALENTED]: contestLevelBadges.TALENTED,
+  [PrizeType.SUPREME]: contestLevelBadges.SUPREME,
+  [PrizeType.SUPERIOR]: contestLevelBadges.SUPERIOR,
+  [PrizeType.TOP_NOTCH]: contestLevelBadges.TOP_NOTCH,
 };
 
-export const contestLevelBadgeOrder: Record<ContestLevelBadge, number> = {
-  [ContestLevelBadge.AMATEUR]: 1,
-  [ContestLevelBadge.TALENTED]: 2,
-  [ContestLevelBadge.SUPREME]: 3,
-  [ContestLevelBadge.SUPERIOR]: 4,
-  [ContestLevelBadge.TOP_NOTCH]: 5,
+export const contestLevelBadgeOrder: Record<ContestLevelBadgeValue, number> = {
+  [contestLevelBadges.AMATEUR]: 1,
+  [contestLevelBadges.TALENTED]: 2,
+  [contestLevelBadges.SUPREME]: 3,
+  [contestLevelBadges.SUPERIOR]: 4,
+  [contestLevelBadges.TOP_NOTCH]: 5,
 };
 
 export const contestLevelPrizeTypes = Object.keys(levelBadgeByPrizeType) as PrizeType[];

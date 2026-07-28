@@ -4,7 +4,6 @@ import {
   AwardType,
   ContestFinalizationStatus,
   ContestGrantStatus,
-  ContestLevelBadge,
   ContestStatus,
   PrizeType,
   YCLevel,
@@ -13,6 +12,8 @@ import prisma from "../../../../shared/prisma";
 import ApiError from "../../../../errors/ApiError";
 import httpStatus from "http-status";
 import {
+  ContestLevelBadgeValue,
+  contestLevelBadges,
   getAwardSlotKey,
   getContestLevelOrder,
   normalizeAwardIdentity,
@@ -45,7 +46,7 @@ type GrantCandidate = {
   type?: AwardType;
   target?: AwardTarget;
   rankLimit?: number;
-  levelBadge?: ContestLevelBadge;
+  levelBadge?: ContestLevelBadgeValue;
   levelOrder?: number;
   rank?: number;
   keyReward: number;
@@ -61,12 +62,12 @@ type AwardSelection = {
 
 const FINALIZATION_LEASE_MS = 15 * 60 * 1000;
 
-const levelAchievementByYCLevel: Partial<Record<YCLevel, {category: PrizeType; badge: ContestLevelBadge}>> = {
-  [YCLevel.AMATEUR]: { category: PrizeType.AMATEUR, badge: ContestLevelBadge.AMATEUR },
-  [YCLevel.TALENTED]: { category: PrizeType.TALENTED, badge: ContestLevelBadge.TALENTED },
-  [YCLevel.SUPREME]: { category: PrizeType.SUPREME, badge: ContestLevelBadge.SUPREME },
-  [YCLevel.SUPERIOR]: { category: PrizeType.SUPERIOR, badge: ContestLevelBadge.SUPERIOR },
-  [YCLevel.TOP_NOTCH]: { category: PrizeType.TOP_NOTCH, badge: ContestLevelBadge.TOP_NOTCH },
+const levelAchievementByYCLevel: Partial<Record<YCLevel, {category: PrizeType; badge: ContestLevelBadgeValue}>> = {
+  [YCLevel.AMATEUR]: { category: PrizeType.AMATEUR, badge: contestLevelBadges.AMATEUR },
+  [YCLevel.TALENTED]: { category: PrizeType.TALENTED, badge: contestLevelBadges.TALENTED },
+  [YCLevel.SUPREME]: { category: PrizeType.SUPREME, badge: contestLevelBadges.SUPREME },
+  [YCLevel.SUPERIOR]: { category: PrizeType.SUPERIOR, badge: contestLevelBadges.SUPERIOR },
+  [YCLevel.TOP_NOTCH]: { category: PrizeType.TOP_NOTCH, badge: contestLevelBadges.TOP_NOTCH },
 };
 
 const getErrorMessage = (error: unknown) => error instanceof Error ? error.message : String(error);
