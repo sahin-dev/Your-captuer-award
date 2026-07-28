@@ -1,4 +1,5 @@
-import { AwardTarget, AwardType, PrizeType } from "../../../prismaClient";
+import type { AwardTarget, AwardType, PrizeType } from "../../../prismaClient";
+import { awardTargets, awardTypes, prizeTypes } from "../Awards/award.definitions";
 
 export type PrizeDefinition = {
   category: PrizeType;
@@ -24,17 +25,17 @@ const topRankDefinition = (
   order: number
 ): PrizeDefinition => ({
   category: {
-    10: PrizeType.TOP_10,
-    20: PrizeType.TOP_20,
-    50: PrizeType.TOP_50,
-    100: PrizeType.TOP_100,
+    10: prizeTypes.TOP_10,
+    20: prizeTypes.TOP_20,
+    50: prizeTypes.TOP_50,
+    100: prizeTypes.TOP_100,
   }[rankLimit],
-  type: AwardType.TOP_RANK,
+  type: awardTypes.TOP_RANK,
   target,
   rankLimit,
-  title: `Top ${rankLimit} ${target === AwardTarget.PHOTO ? "Photos" : "Photographers"}`,
-  description: `Awarded to the ${rankLimit} highest-ranked ${target === AwardTarget.PHOTO ? "photos" : "photographers"}.`,
-  icon: target === AwardTarget.PHOTO ? "image" : "users",
+  title: `Top ${rankLimit} ${target === awardTargets.PHOTO ? "Photos" : "Photographers"}`,
+  description: `Awarded to the ${rankLimit} highest-ranked ${target === awardTargets.PHOTO ? "photos" : "photographers"}.`,
+  icon: target === awardTargets.PHOTO ? "image" : "users",
   ...rewards,
   isDefault,
   order,
@@ -42,9 +43,9 @@ const topRankDefinition = (
 
 export const defaultPrizeDefinitions: PrizeDefinition[] = [
   {
-    category: PrizeType.TOP_PHOTO,
-    type: AwardType.TOP_PHOTO,
-    target: AwardTarget.PHOTO,
+    category: prizeTypes.TOP_PHOTO,
+    type: awardTypes.TOP_PHOTO,
+    target: awardTargets.PHOTO,
     rankLimit: null,
     title: "Top Photo",
     description: "Awarded to the highest-ranked photo in the contest.",
@@ -57,9 +58,9 @@ export const defaultPrizeDefinitions: PrizeDefinition[] = [
     order: 10,
   },
   {
-    category: PrizeType.TOP_PHOTOGRAPHER,
-    type: AwardType.TOP_PHOTOGRAPHER,
-    target: AwardTarget.PHOTOGRAPHER,
+    category: prizeTypes.TOP_PHOTOGRAPHER,
+    type: awardTypes.TOP_PHOTOGRAPHER,
+    target: awardTargets.PHOTOGRAPHER,
     rankLimit: null,
     title: "Top Photographer",
     description: "Awarded to the photographer with the highest total contest score.",
@@ -72,9 +73,9 @@ export const defaultPrizeDefinitions: PrizeDefinition[] = [
     order: 20,
   },
   {
-    category: PrizeType.WINNER,
-    type: AwardType.WINNER,
-    target: AwardTarget.PHOTOGRAPHER,
+    category: prizeTypes.WINNER,
+    type: awardTypes.WINNER,
+    target: awardTargets.PHOTOGRAPHER,
     rankLimit: null,
     title: "Winner",
     description: "Grand winner award for the contest's highest-ranked photographer.",
@@ -87,9 +88,9 @@ export const defaultPrizeDefinitions: PrizeDefinition[] = [
     order: 30,
   },
   {
-    category: PrizeType.YC_PICK,
-    type: AwardType.YC_PICK,
-    target: AwardTarget.PHOTO,
+    category: prizeTypes.YC_PICK,
+    type: awardTypes.YC_PICK,
+    target: awardTargets.PHOTO,
     rankLimit: null,
     title: "YC Pick",
     description: "Editorial photo selected by Your Capture Award.",
@@ -101,12 +102,12 @@ export const defaultPrizeDefinitions: PrizeDefinition[] = [
     isDefault: false,
     order: 40,
   },
-  topRankDefinition(10, AwardTarget.PHOTO, { boost: 5, swap: 0, key: 1, coin: 500 }, false, 50),
-  topRankDefinition(10, AwardTarget.PHOTOGRAPHER, { boost: 10, swap: 1, key: 2, coin: 1000 }, false, 60),
-  topRankDefinition(20, AwardTarget.PHOTO, { boost: 4, swap: 0, key: 1, coin: 300 }, false, 70),
-  topRankDefinition(20, AwardTarget.PHOTOGRAPHER, { boost: 8, swap: 1, key: 1, coin: 600 }, false, 80),
-  topRankDefinition(50, AwardTarget.PHOTO, { boost: 3, swap: 0, key: 1, coin: 150 }, false, 90),
-  topRankDefinition(50, AwardTarget.PHOTOGRAPHER, { boost: 6, swap: 0, key: 1, coin: 300 }, false, 100),
-  topRankDefinition(100, AwardTarget.PHOTO, { boost: 2, swap: 0, key: 0, coin: 75 }, false, 110),
-  topRankDefinition(100, AwardTarget.PHOTOGRAPHER, { boost: 4, swap: 0, key: 1, coin: 150 }, false, 120),
+  topRankDefinition(10, awardTargets.PHOTO, { boost: 5, swap: 0, key: 1, coin: 500 }, false, 50),
+  topRankDefinition(10, awardTargets.PHOTOGRAPHER, { boost: 10, swap: 1, key: 2, coin: 1000 }, false, 60),
+  topRankDefinition(20, awardTargets.PHOTO, { boost: 4, swap: 0, key: 1, coin: 300 }, false, 70),
+  topRankDefinition(20, awardTargets.PHOTOGRAPHER, { boost: 8, swap: 1, key: 1, coin: 600 }, false, 80),
+  topRankDefinition(50, awardTargets.PHOTO, { boost: 3, swap: 0, key: 1, coin: 150 }, false, 90),
+  topRankDefinition(50, awardTargets.PHOTOGRAPHER, { boost: 6, swap: 0, key: 1, coin: 300 }, false, 100),
+  topRankDefinition(100, awardTargets.PHOTO, { boost: 2, swap: 0, key: 0, coin: 75 }, false, 110),
+  topRankDefinition(100, awardTargets.PHOTOGRAPHER, { boost: 4, swap: 0, key: 1, coin: 150 }, false, 120),
 ];

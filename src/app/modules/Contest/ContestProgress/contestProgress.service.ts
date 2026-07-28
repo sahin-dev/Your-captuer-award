@@ -1,25 +1,26 @@
-import { PrizeType, YCLevel } from "../../../../prismaClient";
+import type { PrizeType, YCLevel } from "../../../../prismaClient";
 import prisma from "../../../../shared/prisma";
 import { achievementService } from "../../Achievements/achievement.service";
+import { prizeTypes, ycLevels } from "../../Awards/award.definitions";
 import { getVoteWeight } from "../../Vote/voteWeight.service";
 import { contestRuleEngine } from "../ContestRules/contestRule.engine";
 import { getContestLevelForScore } from "../ContestRanking/contestRanking.service";
 
 const achievementByLevel: Partial<Record<YCLevel, PrizeType>> = {
-  [YCLevel.AMATEUR]: PrizeType.AMATEUR,
-  [YCLevel.TALENTED]: PrizeType.TALENTED,
-  [YCLevel.SUPREME]: PrizeType.SUPREME,
-  [YCLevel.SUPERIOR]: PrizeType.SUPERIOR,
-  [YCLevel.TOP_NOTCH]: PrizeType.TOP_NOTCH,
+  [ycLevels.AMATEUR]: prizeTypes.AMATEUR,
+  [ycLevels.TALENTED]: prizeTypes.TALENTED,
+  [ycLevels.SUPREME]: prizeTypes.SUPREME,
+  [ycLevels.SUPERIOR]: prizeTypes.SUPERIOR,
+  [ycLevels.TOP_NOTCH]: prizeTypes.TOP_NOTCH,
 };
 
 const levelOrder: Record<YCLevel, number> = {
-  [YCLevel.NEW]: 0,
-  [YCLevel.AMATEUR]: 1,
-  [YCLevel.TALENTED]: 2,
-  [YCLevel.SUPREME]: 3,
-  [YCLevel.SUPERIOR]: 4,
-  [YCLevel.TOP_NOTCH]: 5,
+  [ycLevels.NEW]: 0,
+  [ycLevels.AMATEUR]: 1,
+  [ycLevels.TALENTED]: 2,
+  [ycLevels.SUPREME]: 3,
+  [ycLevels.SUPERIOR]: 4,
+  [ycLevels.TOP_NOTCH]: 5,
 };
 
 const evaluateParticipantLevel = async (contestId: string, participantId: string) => {

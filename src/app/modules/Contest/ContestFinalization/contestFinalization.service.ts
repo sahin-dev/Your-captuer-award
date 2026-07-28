@@ -5,15 +5,16 @@ import {
   ContestFinalizationStatus,
   ContestGrantStatus,
   ContestStatus,
-  PrizeType,
-  YCLevel,
 } from "../../../../prismaClient";
+import type { PrizeType, YCLevel } from "../../../../prismaClient";
 import prisma from "../../../../shared/prisma";
 import ApiError from "../../../../errors/ApiError";
 import httpStatus from "http-status";
 import {
   ContestLevelBadgeValue,
+  prizeTypes,
   contestLevelBadges,
+  ycLevels,
   getAwardSlotKey,
   getContestLevelOrder,
   normalizeAwardIdentity,
@@ -63,11 +64,11 @@ type AwardSelection = {
 const FINALIZATION_LEASE_MS = 15 * 60 * 1000;
 
 const levelAchievementByYCLevel: Partial<Record<YCLevel, {category: PrizeType; badge: ContestLevelBadgeValue}>> = {
-  [YCLevel.AMATEUR]: { category: PrizeType.AMATEUR, badge: contestLevelBadges.AMATEUR },
-  [YCLevel.TALENTED]: { category: PrizeType.TALENTED, badge: contestLevelBadges.TALENTED },
-  [YCLevel.SUPREME]: { category: PrizeType.SUPREME, badge: contestLevelBadges.SUPREME },
-  [YCLevel.SUPERIOR]: { category: PrizeType.SUPERIOR, badge: contestLevelBadges.SUPERIOR },
-  [YCLevel.TOP_NOTCH]: { category: PrizeType.TOP_NOTCH, badge: contestLevelBadges.TOP_NOTCH },
+  [ycLevels.AMATEUR]: { category: prizeTypes.AMATEUR, badge: contestLevelBadges.AMATEUR },
+  [ycLevels.TALENTED]: { category: prizeTypes.TALENTED, badge: contestLevelBadges.TALENTED },
+  [ycLevels.SUPREME]: { category: prizeTypes.SUPREME, badge: contestLevelBadges.SUPREME },
+  [ycLevels.SUPERIOR]: { category: prizeTypes.SUPERIOR, badge: contestLevelBadges.SUPERIOR },
+  [ycLevels.TOP_NOTCH]: { category: prizeTypes.TOP_NOTCH, badge: contestLevelBadges.TOP_NOTCH },
 };
 
 const getErrorMessage = (error: unknown) => error instanceof Error ? error.message : String(error);
@@ -260,7 +261,7 @@ const processGrant = async (grantId: string) => {
             contestId: grant.contestId,
             OR: [
               { kind: AchievementKind.CONTEST_LEVEL },
-              { category: { in: [PrizeType.AMATEUR, PrizeType.TALENTED, PrizeType.SUPREME, PrizeType.SUPERIOR, PrizeType.TOP_NOTCH] } },
+              { category: { in: [prizeTypes.AMATEUR, prizeTypes.TALENTED, prizeTypes.SUPREME, prizeTypes.SUPERIOR, prizeTypes.TOP_NOTCH] } },
             ],
           },
         });

@@ -1,5 +1,7 @@
-import { ContestParticipantStatus, ContestRankingScope, Prisma, YCLevel } from "../../../../prismaClient";
+import { ContestParticipantStatus, ContestRankingScope } from "../../../../prismaClient";
+import type { Prisma, YCLevel } from "../../../../prismaClient";
 import prisma from "../../../../shared/prisma";
+import { ycLevels } from "../../Awards/award.definitions";
 import { getVoteWeight } from "../../Vote/voteWeight.service";
 import { contestRuleEngine } from "../ContestRules/contestRule.engine";
 import { LevelRequirementValue } from "../ContestRules/contestRule.definitions";
@@ -35,15 +37,15 @@ export type ContestRanking = {
 };
 
 const ycLevelByRuleLevel: Record<LevelRequirementValue["level"], YCLevel> = {
-  POPULAR: YCLevel.AMATEUR,
-  SKILLED: YCLevel.TALENTED,
-  PREMIER: YCLevel.SUPREME,
-  ELITE: YCLevel.SUPERIOR,
-  ALL_STAR: YCLevel.TOP_NOTCH,
+  POPULAR: ycLevels.AMATEUR,
+  SKILLED: ycLevels.TALENTED,
+  PREMIER: ycLevels.SUPREME,
+  ELITE: ycLevels.SUPERIOR,
+  ALL_STAR: ycLevels.TOP_NOTCH,
 };
 
 export const getContestLevelForScore = (score: number, requirements: LevelRequirementValue[]) => {
-  let level: YCLevel = YCLevel.NEW;
+  let level: YCLevel = ycLevels.NEW;
 
   [...requirements]
     .sort((left, right) => left.votes - right.votes)

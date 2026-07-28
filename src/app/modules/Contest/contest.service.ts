@@ -18,6 +18,7 @@ import { contestRuleEngine } from './ContestRules/contestRule.engine';
 import { contestFinalizationService } from './ContestFinalization/contestFinalization.service';
 import { contestRankingService } from './ContestRanking/contestRanking.service';
 import { supportedContestImageMimeTypes } from './ContestRules/contestRule.definitions';
+import { prizeTypes, ycLevels } from '../Awards/award.definitions';
 
 const completedContestStatuses:ContestStatus[] = [ContestStatus.COMPLETED, ContestStatus.CLOSED]
 const isCompletedContest = (status:ContestStatus) => completedContestStatuses.includes(status)
@@ -1020,11 +1021,11 @@ const getYCLevelByOrder = ()=>{
 
     return [
        
-        YCLevel.AMATEUR,
-        YCLevel.TALENTED,
-        YCLevel.SUPREME,
-        YCLevel.SUPERIOR,
-        YCLevel.TOP_NOTCH
+        ycLevels.AMATEUR,
+        ycLevels.TALENTED,
+        ycLevels.SUPREME,
+        ycLevels.SUPERIOR,
+        ycLevels.TOP_NOTCH
     ]
     
 }
@@ -1052,7 +1053,7 @@ const getParticipantLevelData = async (contestId:string,userId:string)=>{
 
     const totalVotes = await getParticipantTotalVotes(contestId, participant.id)
     const contestLevelRequirement = await getContestLevelRequirements(contestId)
-    let currentLevel = YCLevel.NEW.toString()
+    let currentLevel = ycLevels.NEW.toString()
     let currentIdx = -1
     
     contestLevelRequirement.forEach( (contestLevel,idx) => {
@@ -1234,12 +1235,12 @@ const normalizeRankLevel = (level?: string): RankLevelTab => {
 
 const getDesignLevelFromYCLevel = (level?: YCLevel | null): RankLevelTab => {
     const levelMap:Record<YCLevel, RankLevelTab> = {
-        [YCLevel.NEW]:'POPULAR',
-        [YCLevel.AMATEUR]:'POPULAR',
-        [YCLevel.TALENTED]:'SKILLED',
-        [YCLevel.SUPREME]:'PREMIER',
-        [YCLevel.SUPERIOR]:'ELITE',
-        [YCLevel.TOP_NOTCH]:'ALL_STAR'
+        [ycLevels.NEW]:'POPULAR',
+        [ycLevels.AMATEUR]:'POPULAR',
+        [ycLevels.TALENTED]:'SKILLED',
+        [ycLevels.SUPREME]:'PREMIER',
+        [ycLevels.SUPERIOR]:'ELITE',
+        [ycLevels.TOP_NOTCH]:'ALL_STAR'
     }
 
     return level ? levelMap[level] : 'POPULAR'
@@ -1406,7 +1407,7 @@ const getContestYCTopPicks = async (contestId:string, page?:number, limit?:numbe
     }
 
     const ycPickAchievements = await prisma.contestAchievement.findMany({
-        where:{contestId, category:PrizeType.YC_PICK, photoId:{not:null}},
+        where:{contestId, category:prizeTypes.YC_PICK, photoId:{not:null}},
         include:{
             photo:{
                 include:{
