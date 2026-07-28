@@ -50,10 +50,20 @@ const deleteLevl  =async (levelId:string)=> {
     return level
 }
 
-const getLevels = async ()=>{
-    const levels = await prisma.level.findMany({orderBy:{level:"asc"}})
+const getLevels = async (page = 1, limit = 20)=>{
+    const safePage = Number.isFinite(page) && page > 0 ? Math.floor(page) : 1
+    const safeLimit = Number.isFinite(limit) && limit > 0 ? Math.floor(limit) : 20
+    const skip = (safePage - 1) * safeLimit
 
-    return levels
+    const [levels, total] = await Promise.all([
+        prisma.level.findMany({orderBy:{level:"asc"}, skip, take:safeLimit}),
+        prisma.level.count()
+    ])
+
+    return {
+        data:levels,
+        meta:{page:safePage, limit:safeLimit, total}
+    }
 }
 
 
