@@ -6,7 +6,6 @@ import { AchievementKind, ContestParticipant, ContestPhoto, ContestStatus, Prism
 import { IContest } from './contest.interface';
 import { contestData } from './contest.type';
 import { contestRuleService } from './ContestRules/contestRules.service';
-import { getContestPrizes } from './ContestPrizes/contestPrize.service';
 import { ContestRuleConfigInput } from './ContestRules/contestRules.type';
 import { profileService } from '../Profile/profile.service';
 import agenda from '../Agenda';
@@ -17,7 +16,6 @@ import { achievementService } from '../Achievements/achievement.service';
 import { prizeService } from '../Prize/prize.service';
 import { contestRuleEngine } from './ContestRules/contestRule.engine';
 import { contestFinalizationService } from './ContestFinalization/contestFinalization.service';
-import { normalizeAwardIdentity } from '../Awards/award.definitions';
 import { contestRankingService } from './ContestRanking/contestRanking.service';
 import { supportedContestImageMimeTypes } from './ContestRules/contestRule.definitions';
 
@@ -48,7 +46,7 @@ const resolveContestCategoryId = async (categoryId?:string, category?:string) =>
 }
 
 const shouldUseDefaultAwards = (body:contestData) =>
-    body.awardPrizeIds === undefined && body.awards === undefined && body.prizes === undefined
+    body.awardPrizeIds === undefined && body.awards === undefined
 
 const chargeContestEntryFee = async (
     tx:Prisma.TransactionClient,
@@ -159,19 +157,12 @@ const createContest = async (creatorId: string, body: contestData, banner:Expres
     ])
 
     const normalizedRules = contestRuleService.normalizeContestRules(body.rules)
-    const legacyAwardOverrides = (body.prizes || []).map(prize => ({
-        ...normalizeAwardIdentity(prize),
-        key:prize.key,
-        boost:prize.boost,
-        swap:prize.swap,
-        coin:prize.coin
-    }))
     const awardRows = await prizeService.resolveAwardRows(
         body.awardPrizeIds || [],
-        [...(body.awards || []), ...legacyAwardOverrides],
+        body.awards || [],
         shouldUseDefaultAwards(body)
     )
-  
+
     const contestData:any = {
         creatorId,
         title: body.title,
@@ -230,16 +221,9 @@ const createRecurringContest  =  async (creatorId: string, body: contestData, ba
     const endDate = new Date(body.endDate)
 
     const normalizedRules = contestRuleService.normalizeContestRules(body.rules)
-    const legacyAwardOverrides = (body.prizes || []).map(prize => ({
-        ...normalizeAwardIdentity(prize),
-        key:prize.key,
-        boost:prize.boost,
-        swap:prize.swap,
-        coin:prize.coin
-    }))
     const awardRows = await prizeService.resolveAwardRows(
         body.awardPrizeIds || [],
-        [...(body.awards || []), ...legacyAwardOverrides],
+        body.awards || [],
         shouldUseDefaultAwards(body)
     )
     const categoryId = await resolveContestCategoryId(body.categoryId, body.category)
@@ -267,13 +251,13 @@ const createRecurringContest  =  async (creatorId: string, body: contestData, ba
     }
 
     contestData.recurring ={set: {
-        recurringType:body.recurrence?.type || body.recurringType || RecurringType.DAILY,
+        recurringType:body.recurrence?.type || RecurringType.DAILY,
         previousOccurrence:null,
         nextOccurrence:startDate,
         duration:new Date(body.endDate).getTime() - new Date(body.startDate).getTime(),
-        timezone:body.recurrence?.timezone || body.recurrenceTimezone || "UTC",
-        endsAt:body.recurrence?.endsAt ? new Date(body.recurrence.endsAt) : body.recurrenceEndsAt ? new Date(body.recurrenceEndsAt) : null,
-        maxOccurrences:body.recurrence?.maxOccurrences || body.maxOccurrences || null,
+        timezone:body.recurrence?.timezone || "UTC",
+        endsAt:body.recurrence?.endsAt ? new Date(body.recurrence.endsAt) : null,
+        maxOccurrences:body.recurrence?.maxOccurrences || null,
         generatedOccurrences:0
     }
     }
@@ -413,7 +397,7 @@ const getContestByUserId = async ( userId:string, contestId: string) => {
 
     const [rules, prizes, totalVotes, finalization, awardSelections] = await Promise.all([
         contestRuleService.getContestRules(contestId),
-        getContestPrizes(contestId),
+        prizeService.getContestAwards(contestId),
         voteService.getContestTotalVotes(contestId),
         prisma.contestFinalization.findUnique({where:{contestId}}),
         contestFinalizationService.getContestAwardSelections(contestId)
@@ -452,7 +436,7 @@ const getContestById = async ( contestId: string) => {
 
     const [rules, prizes, totalVotes, finalization, awardSelections] = await Promise.all([
         contestRuleService.getContestRules(contestId),
-        getContestPrizes(contestId),
+        prizeService.getContestAwards(contestId),
         voteService.getContestTotalVotes(contestId),
         prisma.contestFinalization.findUnique({where:{contestId}}),
         contestFinalizationService.getContestAwardSelections(contestId)
@@ -669,6 +653,8 @@ const getMyCompletedContest = async (userId:string) => {
 }
 
 
+
+const getContestPrizes = async (contestId:string) => prizeService.getContestAwards(contestId)
 
 const getContestWinners = async (contestId:string) => {
     const contest = await prisma.contest.findFirst({where:{id:contestId, status:{in:completedContestStatuses}}})
@@ -1511,6 +1497,7 @@ export const contestService = {
     getContestByUserId,
     getContestUploadsToVote,
     getContestPhotoCount,
-    getContestCreateOptions
+    getContestCreateOptions,
+    getContestPrizes
 
 }

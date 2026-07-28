@@ -10,7 +10,7 @@ const achievementByLevel: Partial<Record<YCLevel, PrizeType>> = {
   [YCLevel.TALENTED]: PrizeType.TALENTED,
   [YCLevel.SUPREME]: PrizeType.SUPREME,
   [YCLevel.SUPERIOR]: PrizeType.SUPERIOR,
-  [YCLevel.TOP_NOTCH]: PrizeType.SUPERIOR,
+  [YCLevel.TOP_NOTCH]: PrizeType.TOP_NOTCH,
 };
 
 const levelOrder: Record<YCLevel, number> = {

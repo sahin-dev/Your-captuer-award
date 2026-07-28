@@ -6,7 +6,6 @@ import { UserRole } from '../../../prismaClient'
 import validateRequest from '../../middlewares/validation.middleware'
 import { contestAwardSelectionSchema, createContestSchema, updateContestSchema } from './contest.validation'
 import { contestRuleController } from './ContestRules/contestRules.controller'
-import { contestPrizeController } from './ContestPrizes/contestPrize.controller'
 
 
 
@@ -25,7 +24,7 @@ router.post("/charge", auth(), contestController.chargePhoto)
 router.get("/:contestId/photos", auth(), contestController.getUploadedPhotos)
 router.get("/:contestId/photos/vote", auth(), contestController.getUploadedPhotosToVote)
 router.get("/:contestId/rules", auth(), contestRuleController.getContestRules)
-router.get("/:contestId/prizes", auth(), contestPrizeController.getContestPrize)
+router.get("/:contestId/prizes", auth(), contestController.getContestPrizes)
 router.get("/:contestId/winners", auth(), contestController.getWinners)
 router.get("/:contestId/award-selections", auth(UserRole.ADMIN), contestController.getAwardSelections)
 router.put(

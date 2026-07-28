@@ -674,9 +674,7 @@ const contestCreateForm = (recurring) => formBody([
   ["endDate", recurring ? "{{recurringEndDate}}" : "{{contestEndDate}}"],
   ["recurring", String(recurring)],
   ...(recurring ? [
-    ["recurringType", "WEEKLY"],
-    ["recurrenceTimezone", "Asia/Dhaka"],
-    ["maxOccurrences", "12"],
+    ["recurrence", JSON.stringify({ type: "WEEKLY", timezone: "Asia/Dhaka", maxOccurrences: 12 })],
   ] : []),
   ["isMoneyContest", "false"],
   ["coinRequirement", "false"],

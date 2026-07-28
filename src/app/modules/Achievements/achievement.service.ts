@@ -129,7 +129,7 @@ const upsertContestLevelAchievement = async (participantId:string, contestId:str
             contestId,
             OR:[
                 {kind:AchievementKind.CONTEST_LEVEL},
-                {category:{in:[PrizeType.AMATEUR, PrizeType.TALENTED, PrizeType.SUPREME, PrizeType.SUPERIOR]}}
+                {category:{in:[PrizeType.AMATEUR, PrizeType.TALENTED, PrizeType.SUPREME, PrizeType.SUPERIOR, PrizeType.TOP_NOTCH]}}
             ]
         }
     })
@@ -153,7 +153,7 @@ const upsertContestLevelAchievement = async (participantId:string, contestId:str
                 contestId,
                 OR:[
                     {kind:AchievementKind.CONTEST_LEVEL},
-                    {category:{in:[PrizeType.AMATEUR, PrizeType.TALENTED, PrizeType.SUPREME, PrizeType.SUPERIOR]}}
+                    {category:{in:[PrizeType.AMATEUR, PrizeType.TALENTED, PrizeType.SUPREME, PrizeType.SUPERIOR, PrizeType.TOP_NOTCH]}}
                 ]
             }
         })

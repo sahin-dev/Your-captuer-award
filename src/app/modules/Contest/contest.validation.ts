@@ -1,9 +1,8 @@
 import { checkObjectId } from "../../../helpers/checkObjectId";
-import { AwardTarget, PrizeType, RecurringType } from "../../../prismaClient";
+import { RecurringType } from "../../../prismaClient";
 import { z } from "zod";
 import { contestRuleInputArraySchema } from "./ContestRules/contestRule.validation";
 import { contestAwardInputArraySchema } from "../Prize/prize.validation";
-import { isContestPrizeCategory } from "../Awards/award.definitions";
 import { getRichTextLength, sanitizeContestRichText } from "./contestContent";
 
 const parseJsonValue = (value: unknown) => {
@@ -16,13 +15,6 @@ const parseJsonValue = (value: unknown) => {
     } catch {
         return value;
     }
-};
-
-const parseNumberField = (value: unknown) => {
-    if (typeof value === "string" && value.trim() !== "") {
-        return Number(value);
-    }
-    return value;
 };
 
 const parseOptionalNumberField = (value: unknown) => {
@@ -73,31 +65,10 @@ export const createContestSchema = z.object({
     category: z.string().trim().min(1).max(100).optional(),
 
     recurring: z.preprocess(parseBooleanField, z.boolean()).optional().default(false),
-    recurringType: z.nativeEnum(RecurringType, { invalid_type_error: "Invalid recurring type" }).optional(),
     recurrence: z.preprocess(parseJsonValue, recurrenceSchema).optional(),
-    recurrenceTimezone: z.string().trim().min(1).max(100).optional(),
-    recurrenceEndsAt: optionalIsoDate,
-    maxOccurrences: z.preprocess(
-        parseOptionalNumberField,
-        z.number().int().positive().max(10000).optional()
-    ),
 
     awardPrizeIds: z.preprocess(parseJsonValue, z.array(z.string())).optional(),
     awards: z.preprocess(parseJsonValue, contestAwardInputArraySchema).optional(),
-    prizes: z.preprocess(
-        parseJsonValue,
-        z.array(z.object({
-            category: z.nativeEnum(PrizeType).refine(isContestPrizeCategory, {
-                message: "Contest level badges cannot be configured as prizes",
-            }),
-            target: z.nativeEnum(AwardTarget).optional(),
-            rankLimit: z.preprocess(parseOptionalNumberField, z.number().int().positive().optional()),
-            boost: z.preprocess(parseNumberField, z.number().int().nonnegative()).default(0),
-            key: z.preprocess(parseNumberField, z.number().int().nonnegative()).default(0),
-            swap: z.preprocess(parseNumberField, z.number().int().nonnegative()).default(0),
-            coin: z.preprocess(parseNumberField, z.number().int().nonnegative()).default(0),
-        }))
-    ).optional(),
 
     rules: z.preprocess(parseJsonValue, contestRuleInputArraySchema).optional(),
     startDate: z.string().datetime({
@@ -168,11 +139,11 @@ export const createContestSchema = z.object({
         });
     }
 
-    const recurrenceEndsAt = contest.recurrence?.endsAt || contest.recurrenceEndsAt;
+    const recurrenceEndsAt = contest.recurrence?.endsAt;
     if (recurrenceEndsAt && new Date(recurrenceEndsAt) <= startDate) {
         ctx.addIssue({
             code: z.ZodIssueCode.custom,
-            path: ["recurrenceEndsAt"],
+            path: ["recurrence", "endsAt"],
             message: "Recurrence end must be after the first occurrence",
         });
     }

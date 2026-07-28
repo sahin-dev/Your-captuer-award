@@ -31,7 +31,6 @@ model Contest {
   votes                Vote[]
   contestRules         ContestRule[]
   ruleConfigs          ContestRuleConfig[]
-  contestPrizes        ContestPrize[]
   contestAwards        ContestAward[]
   achievements         ContestAchievement[]
   entryFeeTransactions ContestEntryFeeTransaction[]
@@ -237,28 +236,6 @@ model ContestEntryFeeTransaction {
   @@unique([contestId, userId])
   @@index([userId, createdAt])
   @@map("contest_entry_fee_transactions")
-}
-
-model ContestPrize {
-  id        String       @id @default(auto()) @map("_id") @db.ObjectId
-  category  PrizeType
-  type      AwardType?
-  target    AwardTarget?
-  rankLimit Int?
-  icon      String?
-  boost     Int          @default(0)
-  swap      Int          @default(0)
-  key       Int          @default(0)
-  coin      Int          @default(0)
-
-  contestId String  @db.ObjectId
-  contest   Contest @relation(fields: [contestId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([contestId, type, target, rankLimit])
-  @@map("contest_prizes")
 }
 
 model ContestRuleAcceptance {
@@ -488,6 +465,7 @@ enum PrizeType {
   TOP_20
   TOP_10
   WINNER
+  TOP_NOTCH
 }
 
 enum AwardType {
@@ -513,6 +491,7 @@ enum ContestLevelBadge {
   TALENTED
   SUPREME
   SUPERIOR
+  TOP_NOTCH
 }
 
 enum ContestStatus {

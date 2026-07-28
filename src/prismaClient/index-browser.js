@@ -262,22 +262,6 @@ exports.Prisma.ContestEntryFeeTransactionScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
-exports.Prisma.ContestPrizeScalarFieldEnum = {
-  id: 'id',
-  category: 'category',
-  type: 'type',
-  target: 'target',
-  rankLimit: 'rankLimit',
-  icon: 'icon',
-  boost: 'boost',
-  swap: 'swap',
-  key: 'key',
-  coin: 'coin',
-  contestId: 'contestId',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-};
-
 exports.Prisma.ContestRuleAcceptanceScalarFieldEnum = {
   id: 'id',
   contestId: 'contestId',
@@ -803,7 +787,8 @@ exports.PrizeType = exports.$Enums.PrizeType = {
   TOP_50: 'TOP_50',
   TOP_20: 'TOP_20',
   TOP_10: 'TOP_10',
-  WINNER: 'WINNER'
+  WINNER: 'WINNER',
+  TOP_NOTCH: 'TOP_NOTCH'
 };
 
 exports.AwardType = exports.$Enums.AwardType = {
@@ -847,7 +832,8 @@ exports.ContestLevelBadge = exports.$Enums.ContestLevelBadge = {
   AMATEUR: 'AMATEUR',
   TALENTED: 'TALENTED',
   SUPREME: 'SUPREME',
-  SUPERIOR: 'SUPERIOR'
+  SUPERIOR: 'SUPERIOR',
+  TOP_NOTCH: 'TOP_NOTCH'
 };
 
 exports.ContestFinalizationStatus = exports.$Enums.ContestFinalizationStatus = {
@@ -1041,7 +1027,6 @@ exports.Prisma.ModelName = {
   ContestPhoto: 'ContestPhoto',
   ContestParticipant: 'ContestParticipant',
   ContestEntryFeeTransaction: 'ContestEntryFeeTransaction',
-  ContestPrize: 'ContestPrize',
   ContestRuleAcceptance: 'ContestRuleAcceptance',
   ContestAward: 'ContestAward',
   RecurringContestAward: 'RecurringContestAward',

@@ -66,7 +66,7 @@ const levelAchievementByYCLevel: Partial<Record<YCLevel, {category: PrizeType; b
   [YCLevel.TALENTED]: { category: PrizeType.TALENTED, badge: ContestLevelBadge.TALENTED },
   [YCLevel.SUPREME]: { category: PrizeType.SUPREME, badge: ContestLevelBadge.SUPREME },
   [YCLevel.SUPERIOR]: { category: PrizeType.SUPERIOR, badge: ContestLevelBadge.SUPERIOR },
-  [YCLevel.TOP_NOTCH]: { category: PrizeType.SUPERIOR, badge: ContestLevelBadge.SUPERIOR },
+  [YCLevel.TOP_NOTCH]: { category: PrizeType.TOP_NOTCH, badge: ContestLevelBadge.TOP_NOTCH },
 };
 
 const getErrorMessage = (error: unknown) => error instanceof Error ? error.message : String(error);
@@ -104,10 +104,7 @@ const claimFinalization = async (contestId: string) => {
 };
 
 const loadAwardConfigs = async (contestId: string): Promise<AwardConfig[]> => {
-  const awards = await prisma.contestAward.findMany({ where: { contestId, enabled: true } });
-  const configs = awards.length > 0
-    ? awards
-    : await prisma.contestPrize.findMany({ where: { contestId } });
+  const configs = await prisma.contestAward.findMany({ where: { contestId, enabled: true } });
 
   const normalized = configs.map((config) => {
     const identity = normalizeAwardIdentity(config);
@@ -262,7 +259,7 @@ const processGrant = async (grantId: string) => {
             contestId: grant.contestId,
             OR: [
               { kind: AchievementKind.CONTEST_LEVEL },
-              { category: { in: [PrizeType.AMATEUR, PrizeType.TALENTED, PrizeType.SUPREME, PrizeType.SUPERIOR] } },
+              { category: { in: [PrizeType.AMATEUR, PrizeType.TALENTED, PrizeType.SUPREME, PrizeType.SUPERIOR, PrizeType.TOP_NOTCH] } },
             ],
           },
         });
@@ -456,13 +453,9 @@ const selectAwardPhoto = async (
     throw new ApiError(httpStatus.BAD_REQUEST, "Award selections cannot be changed after finalization has started");
   }
 
-  const configuredAward = await prisma.contestAward.findFirst({
+  const award = await prisma.contestAward.findFirst({
     where: { id: contestAwardId, contestId, enabled: true },
   });
-  const legacyAward = configuredAward
-    ? null
-    : await prisma.contestPrize.findFirst({ where: { id: contestAwardId, contestId } });
-  const award = configuredAward || legacyAward;
   if (!award) {
     throw new ApiError(httpStatus.NOT_FOUND, "Contest award not found");
   }
@@ -480,7 +473,7 @@ const selectAwardPhoto = async (
     throw new ApiError(httpStatus.BAD_REQUEST, "An active contest photo is required for this award");
   }
 
-  const slotKey = configuredAward?.slotKey || getAwardSlotKey(identity);
+  const slotKey = award.slotKey || getAwardSlotKey(identity);
   const selectionKey = `${contestId}:${slotKey}`;
   return prisma.contestAwardSelection.upsert({
     where: { selectionKey },

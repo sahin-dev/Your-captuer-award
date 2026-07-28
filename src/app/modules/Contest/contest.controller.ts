@@ -329,6 +329,18 @@ const getAwardSelections = catchAsync(async (req:Request, res:Response) => {
     })
 })
 
+const getContestPrizes = catchAsync(async (req:Request, res:Response) => {
+    const {contestId} = req.params
+    const prizes = await contestService.getContestPrizes(contestId)
+
+    sendResponse(res, {
+        success:true,
+        statusCode:httpStatus.OK,
+        message:"contest prizes fetched successfully",
+        data:prizes
+    })
+})
+
 const getContestYCTopPicks = catchAsync(async (req:Request, res:Response)=> {
 
     const {contestId} = req.params
@@ -365,6 +377,7 @@ export const contestController = {
     getContestYCTopPicks,
     selectAwardPhoto,
     getAwardSelections,
-    getUploadedPhotosToVote
+    getUploadedPhotosToVote,
+    getContestPrizes
 
 }

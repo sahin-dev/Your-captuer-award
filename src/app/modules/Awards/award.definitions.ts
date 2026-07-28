@@ -38,6 +38,7 @@ const levelBadgeByPrizeType: Partial<Record<PrizeType, ContestLevelBadge>> = {
   [PrizeType.TALENTED]: ContestLevelBadge.TALENTED,
   [PrizeType.SUPREME]: ContestLevelBadge.SUPREME,
   [PrizeType.SUPERIOR]: ContestLevelBadge.SUPERIOR,
+  [PrizeType.TOP_NOTCH]: ContestLevelBadge.TOP_NOTCH,
 };
 
 export const contestLevelBadgeOrder: Record<ContestLevelBadge, number> = {
@@ -45,6 +46,7 @@ export const contestLevelBadgeOrder: Record<ContestLevelBadge, number> = {
   [ContestLevelBadge.TALENTED]: 2,
   [ContestLevelBadge.SUPREME]: 3,
   [ContestLevelBadge.SUPERIOR]: 4,
+  [ContestLevelBadge.TOP_NOTCH]: 5,
 };
 
 export const contestLevelPrizeTypes = Object.keys(levelBadgeByPrizeType) as PrizeType[];

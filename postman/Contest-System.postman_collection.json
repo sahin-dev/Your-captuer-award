@@ -3632,19 +3632,9 @@
                   "value": "true"
                 },
                 {
-                  "key": "recurringType",
+                  "key": "recurrence",
                   "type": "text",
-                  "value": "WEEKLY"
-                },
-                {
-                  "key": "recurrenceTimezone",
-                  "type": "text",
-                  "value": "Asia/Dhaka"
-                },
-                {
-                  "key": "maxOccurrences",
-                  "type": "text",
-                  "value": "12"
+                  "value": "{\"type\":\"WEEKLY\",\"timezone\":\"Asia/Dhaka\",\"maxOccurrences\":12}"
                 },
                 {
                   "key": "isMoneyContest",
@@ -3739,19 +3729,9 @@
                       "value": "true"
                     },
                     {
-                      "key": "recurringType",
+                      "key": "recurrence",
                       "type": "text",
-                      "value": "WEEKLY"
-                    },
-                    {
-                      "key": "recurrenceTimezone",
-                      "type": "text",
-                      "value": "Asia/Dhaka"
-                    },
-                    {
-                      "key": "maxOccurrences",
-                      "type": "text",
-                      "value": "12"
+                      "value": "{\"type\":\"WEEKLY\",\"timezone\":\"Asia/Dhaka\",\"maxOccurrences\":12}"
                     },
                     {
                       "key": "isMoneyContest",
