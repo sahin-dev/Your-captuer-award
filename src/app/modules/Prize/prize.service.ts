@@ -4,6 +4,7 @@ import prisma from "../../../shared/prisma";
 import { AwardIdentity, contestLevelPrizeTypes, getAwardKey, getAwardSlotKey, normalizeAwardIdentity } from "../Awards/award.definitions";
 import { z } from "zod";
 import { contestAwardInputSchema, createPrizeSchema, updatePrizeSchema } from "./prize.validation";
+import { contestAwardRewardFields } from "./prize.definitions";
 
 type PrizeCreateData = z.infer<typeof createPrizeSchema>;
 type PrizeUpdateData = z.infer<typeof updatePrizeSchema>;
@@ -20,7 +21,7 @@ const ensurePrizeDefinitionAvailable = async (identity: AwardIdentity, ignoredPr
   });
 
   if (existingPrize) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "A prize definition already exists for this award");
+    throw new ApiError(httpStatus.BAD_REQUEST, "A prize definition already exists for this prize");
   }
 };
 
@@ -47,7 +48,7 @@ const createPrize = async (data: PrizeCreateData) => {
   });
 
   if (existingPrize?.isActive) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "A prize definition already exists for this award");
+    throw new ApiError(httpStatus.BAD_REQUEST, "A prize definition already exists for this prize");
   }
 
   if (data.isDefault) {
@@ -76,7 +77,7 @@ const createPrize = async (data: PrizeCreateData) => {
 const ensureUniqueAwardSlots = (prizes: Array<{category: any; type?: any; target?: any; rankLimit?: any}>) => {
   const slots = prizes.map((prize) => getAwardSlotKey(prize));
   if (new Set(slots).size !== slots.length) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "Only one award threshold can be selected per award type and target");
+    throw new ApiError(httpStatus.BAD_REQUEST, "Only one prize threshold can be selected per prize type and target");
   }
 };
 
@@ -89,6 +90,34 @@ const getPrizes = async (includeInactive = false) => {
     orderBy: [{ order: "asc" }, { createdAt: "asc" }],
   });
 };
+
+const getContestPrizeDefinitions = async () => {
+  const prizes = await getPrizes();
+
+  return prizes.map((prize) => {
+    const identity = normalizeAwardIdentity(prize);
+    const rewards = Object.fromEntries(
+      contestAwardRewardFields.map((field) => [field, prize[field]])
+    );
+
+    return {
+      prizeId: prize.id,
+      title: prize.title,
+      description: prize.description,
+      type: identity.type,
+      target: identity.target,
+      rankLimit: identity.rankLimit,
+      rewards,
+      isDefault: prize.isDefault,
+      payload: {
+        prizeId: prize.id,
+        ...rewards,
+      },
+    };
+  });
+};
+
+const getContestAwardDefinitions = getContestPrizeDefinitions;
 
 const getPrizeById = async (prizeId: string) => {
   const prize = await prisma.prize.findUnique({ where: { id: prizeId } });
@@ -436,6 +465,8 @@ const getRecurringContestAwards = async (recurringContestId: string) => {
 export const prizeService = {
   createPrize,
   getPrizes,
+  getContestPrizeDefinitions,
+  getContestAwardDefinitions,
   getPrizeById,
   updatePrize,
   deletePrize,

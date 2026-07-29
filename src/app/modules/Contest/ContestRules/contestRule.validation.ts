@@ -1,5 +1,5 @@
 import z from "zod";
-import { contestRuleKeys, supportedContestImageMimeTypes } from "./contestRule.definitions";
+import { contestRuleDefinitions, contestRuleKeys, supportedContestImageMimeTypes } from "./contestRule.definitions";
 import { getRichTextLength, sanitizeContestRichText } from "../contestContent";
 
 export const contestRuleSchema = z.object({
@@ -22,6 +22,107 @@ const baseRuleSchema = z.object({
     order: z.coerce.number().int().nonnegative().optional(),
 });
 
+const ruleConfigKeys = ["key", "type", "value", "enabled", "order"] as const;
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+    Boolean(value && typeof value === "object" && !Array.isArray(value));
+
+const hasOwn = (value: Record<string, unknown>, key: string) =>
+    Object.prototype.hasOwnProperty.call(value, key);
+
+const valueFromSimplifiedRule = (key: string, rule: Record<string, unknown>) => {
+    if (hasOwn(rule, "value")) {
+        return rule.value;
+    }
+
+    const ruleValue = Object.fromEntries(
+        Object.entries(rule).filter(([field]) => !ruleConfigKeys.includes(field as typeof ruleConfigKeys[number]))
+    );
+
+    if (Object.keys(ruleValue).length > 0) {
+        return key === "SUBMISSION_LIMIT" && hasOwn(ruleValue, "limit")
+            ? ruleValue.limit
+            : ruleValue;
+    }
+
+    return contestRuleDefinitions[key as keyof typeof contestRuleDefinitions]?.defaultValue;
+};
+
+const normalizeSubmissionRulesValue = (value: unknown) => {
+    if (Array.isArray(value)) {
+        return value;
+    }
+
+    if (!isRecord(value)) {
+        return value;
+    }
+
+    const lines = [
+        value.intro,
+        ...(Array.isArray(value.disallowed) ? value.disallowed : []),
+        value.removalNotice,
+    ].filter((line) => typeof line === "string" && line.trim());
+
+    return lines.length > 0 ? lines : value;
+};
+
+const normalizeRuleInput = (value: unknown) => {
+    if (!isRecord(value)) {
+        return value;
+    }
+
+    const directRuleKeys = Object.keys(value).filter((key) => contestRuleKeys.includes(key as any));
+    if (directRuleKeys.length === 1 && !hasOwn(value, "key") && !hasOwn(value, "type")) {
+        const key = directRuleKeys[0];
+        return {
+            key,
+            value: value[key],
+        };
+    }
+
+    const key = value.key || value.type;
+    if (typeof key !== "string") {
+        return value;
+    }
+
+    return {
+        ...value,
+        key,
+        value: valueFromSimplifiedRule(key, value),
+        order: value.order ?? contestRuleDefinitions[key as keyof typeof contestRuleDefinitions]?.order,
+    };
+};
+
+const normalizeRuleArrayInput = (value: unknown) => {
+    if (Array.isArray(value)) {
+        return value.map(normalizeRuleInput);
+    }
+
+    if (!isRecord(value)) {
+        return value;
+    }
+
+    if (hasOwn(value, "key") || hasOwn(value, "type")) {
+        return [normalizeRuleInput(value)];
+    }
+
+    return Object.entries(value)
+        .map(([key, ruleValue]) => {
+            if (isRecord(ruleValue)) {
+                return normalizeRuleInput({
+                    key,
+                    ...ruleValue,
+                });
+            }
+
+            return {
+                key,
+                value: ruleValue,
+                order: contestRuleDefinitions[key as keyof typeof contestRuleDefinitions]?.order,
+            };
+        });
+};
+
 export const submissionLimitRuleSchema = baseRuleSchema.extend({
     key: z.literal("SUBMISSION_LIMIT"),
     value: z.coerce.number().int().min(1).max(100),
@@ -29,24 +130,21 @@ export const submissionLimitRuleSchema = baseRuleSchema.extend({
 
 export const submissionRulesRuleSchema = baseRuleSchema.extend({
     key: z.literal("SUBMISSION_RULES"),
-    value: z.object({
-        intro: z.string().trim().max(200).optional(),
-        disallowed: z.array(z.string().trim().min(1).max(500)).max(20).default([]),
-        removalNotice: z.string().trim().max(500).optional(),
-        allowAiImages: z.boolean().optional().default(false),
-        duplicatePolicy: z.enum(["ALLOW", "DISALLOW_SAME_PHOTO"]).optional().default("DISALLOW_SAME_PHOTO"),
-    }),
+    value: z.preprocess(
+        normalizeSubmissionRulesValue,
+        z.array(z.string().trim().min(1).max(500)).min(1).max(20)
+    ),
 });
 
 export const levelRequirementsRuleSchema = baseRuleSchema.extend({
     key: z.literal("LEVEL_REQUIREMENTS"),
     value: z.array(
         z.object({
-            level: z.enum(["POPULAR", "SKILLED", "PREMIER", "ELITE", "ALL_STAR"]),
+            level: z.enum(["AMATEUR", "TALENTED", "SUPREME", "SUPERIOR", "TOP_NOTCH"]),
             votes: z.coerce.number().int().min(0),
         })
     ).min(1).superRefine((requirements, ctx) => {
-        const levelOrder = ["POPULAR", "SKILLED", "PREMIER", "ELITE", "ALL_STAR"];
+        const levelOrder = ["AMATEUR", "TALENTED", "SUPREME", "SUPERIOR", "TOP_NOTCH"];
         const seen = new Set<string>();
 
         requirements.forEach((requirement, index) => {
@@ -136,18 +234,7 @@ export const contestRuleConfigSchema = z.discriminatedUnion("key", [
     participationRuleSchema,
 ]);
 
-export const contestRuleInputSchema = z.preprocess((value) => {
-    if (!value || typeof value !== "object" || Array.isArray(value)) {
-        return value;
-    }
-
-    const rule = value as Record<string, unknown>;
-
-    return {
-        ...rule,
-        key: rule.key || rule.type,
-    };
-}, contestRuleConfigSchema);
+export const contestRuleInputSchema = z.preprocess(normalizeRuleInput, contestRuleConfigSchema);
 
 export const contestRuleConfigArraySchema = z.array(contestRuleConfigSchema).superRefine((rules, ctx) => {
     const seen = new Set<string>();
@@ -170,7 +257,10 @@ export const contestRuleConfigArraySchema = z.array(contestRuleConfigSchema).sup
     });
 });
 
-export const contestRuleInputArraySchema = z.array(contestRuleInputSchema).superRefine((rules, ctx) => {
+export const contestRuleInputArraySchema = z.preprocess(
+    normalizeRuleArrayInput,
+    z.array(contestRuleInputSchema)
+).superRefine((rules, ctx) => {
     const seen = new Set<string>();
     rules.forEach((rule, index) => {
         if (!contestRuleKeys.includes(rule.key)) {
@@ -192,4 +282,3 @@ export const contestRuleInputArraySchema = z.array(contestRuleInputSchema).super
 });
 
 export const acceptedRuleKeysSchema = z.array(z.enum(contestRuleKeys)).default([]);
-

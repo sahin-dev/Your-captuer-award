@@ -37,11 +37,11 @@ export type ContestRanking = {
 };
 
 const ycLevelByRuleLevel: Record<LevelRequirementValue["level"], YCLevel> = {
-  POPULAR: ycLevels.AMATEUR,
-  SKILLED: ycLevels.TALENTED,
-  PREMIER: ycLevels.SUPREME,
-  ELITE: ycLevels.SUPERIOR,
-  ALL_STAR: ycLevels.TOP_NOTCH,
+  AMATEUR: ycLevels.AMATEUR,
+  TALENTED: ycLevels.TALENTED,
+  SUPREME: ycLevels.SUPREME,
+  SUPERIOR: ycLevels.SUPERIOR,
+  TOP_NOTCH: ycLevels.TOP_NOTCH,
 };
 
 export const getContestLevelForScore = (score: number, requirements: LevelRequirementValue[]) => {

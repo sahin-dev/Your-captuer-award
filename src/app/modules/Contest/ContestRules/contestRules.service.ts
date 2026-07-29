@@ -5,7 +5,8 @@ import {
   ContestRuleDefinition,
   ContestRuleKey,
   contestRuleDefinitions,
-  getContestRuleDefinitions,
+  getContestRuleDefinitions as getContestRuleDefinitionConfigs,
+  getContestRuleDefinitionViews,
   isContestRuleKey,
   LevelRequirementValue,
 } from "./contestRule.definitions";
@@ -24,7 +25,7 @@ type RuleConfigRecord = {
 const clone = <T>(value: T): T => JSON.parse(JSON.stringify(value));
 
 const buildDefaultContestRules = (): ContestRuleConfigInput[] => {
-  const defaults = getContestRuleDefinitions().map((definition) => ({
+  const defaults = getContestRuleDefinitionConfigs().map((definition) => ({
     key: definition.key,
     value: clone(definition.defaultValue),
     enabled: true,
@@ -152,10 +153,14 @@ const formatRuleSummary = (definition: ContestRuleDefinition, value: any) => {
     case "SUBMISSION_LIMIT":
       return `${value} photo submits per participant`;
     case "SUBMISSION_RULES": {
+      if (Array.isArray(value)) {
+        return value.map((item: string) => `- ${item}`).join("\n");
+      }
+
       const lines = [
-        value.intro,
-        ...(value.disallowed || []).map((item: string) => `- ${item}`),
-        value.removalNotice,
+        value?.intro,
+        ...(value?.disallowed || []).map((item: string) => `- ${item}`),
+        value?.removalNotice,
       ].filter(Boolean);
       return lines.join("\n");
     }
@@ -208,6 +213,6 @@ export const contestRuleService = {
   getRuleConfigMap,
   getRuleValue,
   getEnabledRuleValue,
-  getContestRuleDefinitions,
+  getContestRuleDefinitions: getContestRuleDefinitionViews,
   normalizeContestRules,
 };

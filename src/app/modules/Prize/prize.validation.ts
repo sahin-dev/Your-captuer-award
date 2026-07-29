@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { AwardTarget, AwardType, PrizeType } from "../../../prismaClient";
 import { getAwardSlotKey, isContestPrizeCategory, normalizeAwardIdentity } from "../Awards/award.definitions";
+import { contestAwardOverrideFields } from "./prize.definitions";
 
 const numberField = z.preprocess((value) => {
   if (typeof value === "string" && value.trim() !== "") {
@@ -70,7 +71,7 @@ export const createPrizeSchema = z.object({
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
       path: ["type"],
-      message: error instanceof Error ? error.message : "Invalid award identity",
+      message: error instanceof Error ? error.message.replace(/award/gi, "prize") : "Invalid prize identity",
     });
   }
 }).transform((award) => ({
@@ -132,7 +133,7 @@ const contestAwardByIdentitySchema = z.object({
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
       path: ["type"],
-      message: error instanceof Error ? error.message : "Invalid award identity",
+      message: error instanceof Error ? error.message.replace(/award/gi, "prize") : "Invalid prize identity",
     });
   }
 }).transform((award) => ({
@@ -140,10 +141,36 @@ const contestAwardByIdentitySchema = z.object({
   ...award.value,
 }));
 
-export const contestAwardInputSchema = z.union([
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  Boolean(value && typeof value === "object" && !Array.isArray(value));
+
+const normalizeContestAwardInput = (value: unknown) => {
+  if (!isRecord(value) || "prizeId" in value || "value" in value) {
+    return value;
+  }
+
+  const overrides = Object.fromEntries(
+    contestAwardOverrideFields
+      .filter((field) => Object.prototype.hasOwnProperty.call(value, field))
+      .map((field) => [field, value[field]])
+  );
+
+  if (Object.keys(overrides).length === 0) {
+    return value;
+  }
+
+  return {
+    ...value,
+    value: overrides,
+  };
+};
+
+export const contestAwardInputSchema = z.preprocess(normalizeContestAwardInput, z.union([
   contestAwardByIdentitySchema,
   contestAwardConfigSchema,
-]);
+]));
+
+export const contestPrizeInputSchema = contestAwardInputSchema;
 
 export const contestAwardConfigArraySchema = z.array(contestAwardConfigSchema).superRefine((awards, ctx) => {
   const seenPrizeIds = new Set<string>();
@@ -171,11 +198,13 @@ export const contestAwardInputArraySchema = z.array(contestAwardInputSchema).sup
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: [index, "type"],
-        message: "Duplicate award",
+        message: "Duplicate prize",
       });
     }
 
     seen.add(identifier);
   });
 });
+
+export const contestPrizeInputArraySchema = contestAwardInputArraySchema;
 

@@ -27,13 +27,13 @@ const getPrizes = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-const getAwardDefinitions = catchAsync(async (req: Request, res: Response) => {
-  const prizes = await prizeService.getPrizes(false);
+const getPrizeDefinitions = catchAsync(async (req: Request, res: Response) => {
+  const prizes = await prizeService.getContestPrizeDefinitions();
 
   sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,
-    message: "Award definitions fetched successfully",
+    message: "Prize definitions fetched successfully",
     data: prizes,
   });
 });
@@ -74,7 +74,7 @@ const deletePrize = catchAsync(async (req: Request, res: Response) => {
 export const prizeController = {
   createPrize,
   getPrizes,
-  getAwardDefinitions,
+  getPrizeDefinitions,
   getPrizeById,
   updatePrize,
   deletePrize,

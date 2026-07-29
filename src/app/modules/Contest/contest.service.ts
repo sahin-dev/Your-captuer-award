@@ -17,7 +17,7 @@ import { prizeService } from '../Prize/prize.service';
 import { contestRuleEngine } from './ContestRules/contestRule.engine';
 import { contestFinalizationService } from './ContestFinalization/contestFinalization.service';
 import { contestRankingService } from './ContestRanking/contestRanking.service';
-import { supportedContestImageMimeTypes } from './ContestRules/contestRule.definitions';
+import { getContestRuleDefinitionViews, supportedContestImageMimeTypes } from './ContestRules/contestRule.definitions';
 import { prizeTypes, ycLevels } from '../Awards/award.definitions';
 
 const completedContestStatuses:ContestStatus[] = [ContestStatus.COMPLETED, ContestStatus.CLOSED]
@@ -47,7 +47,7 @@ const resolveContestCategoryId = async (categoryId?:string, category?:string) =>
 }
 
 const shouldUseDefaultAwards = (body:contestData) =>
-    body.awardPrizeIds === undefined && body.awards === undefined
+    body.prizeIds === undefined && body.prizes === undefined
 
 const chargeContestEntryFee = async (
     tx:Prisma.TransactionClient,
@@ -79,18 +79,21 @@ const chargeContestEntryFee = async (
 }
 
 const getContestCreateOptions = async () => {
-    const [categories, prizes] = await Promise.all([
+    const [categories, prizeDefinitions] = await Promise.all([
         prisma.contestCategory.findMany({
             where:{isActive:true},
             orderBy:[{order:"asc"}, {name:"asc"}]
         }),
-        prizeService.getPrizes()
+        prizeService.getContestPrizeDefinitions()
     ])
+    const ruleDefinitions = getContestRuleDefinitionViews()
 
     return {
         categories,
-        rules:contestRuleService.getContestRuleDefinitions(),
-        prizes,
+        ruleDefinitions,
+        prizeDefinitions,
+        rules:ruleDefinitions,
+        prizes:prizeDefinitions,
         supportedImageMimeTypes:supportedContestImageMimeTypes
     }
 }
@@ -159,8 +162,8 @@ const createContest = async (creatorId: string, body: contestData, banner:Expres
 
     const normalizedRules = contestRuleService.normalizeContestRules(body.rules)
     const awardRows = await prizeService.resolveAwardRows(
-        body.awardPrizeIds || [],
-        body.awards || [],
+        body.prizeIds || [],
+        body.prizes || [],
         shouldUseDefaultAwards(body)
     )
 
@@ -199,7 +202,7 @@ const createContest = async (creatorId: string, body: contestData, banner:Expres
             data:awardRows.map(award => ({contestId:contest.id, ...award}))
         })
 
-        return {...contest, rules:normalizedRules, awards:awardRows, prizes:awardRows.filter(award => award.enabled)}
+        return {...contest, rules:normalizedRules, prizes:awardRows.filter(prize => prize.enabled)}
     })
 };
 
@@ -223,8 +226,8 @@ const createRecurringContest  =  async (creatorId: string, body: contestData, ba
 
     const normalizedRules = contestRuleService.normalizeContestRules(body.rules)
     const awardRows = await prizeService.resolveAwardRows(
-        body.awardPrizeIds || [],
-        body.awards || [],
+        body.prizeIds || [],
+        body.prizes || [],
         shouldUseDefaultAwards(body)
     )
     const categoryId = await resolveContestCategoryId(body.categoryId, body.category)
@@ -268,7 +271,7 @@ const createRecurringContest  =  async (creatorId: string, body: contestData, ba
         await tx.recurringContestAward.createMany({
             data:awardRows.map(award => ({recurringContestId:recurringContest.id, ...award}))
         })
-        return {...recurringContest, awards:awardRows}
+        return {...recurringContest, prizes:awardRows}
     })
 }
 
@@ -403,7 +406,7 @@ const getContestByUserId = async ( userId:string, contestId: string) => {
         prisma.contestFinalization.findUnique({where:{contestId}}),
         contestFinalizationService.getContestAwardSelections(contestId)
     ])
-    const baseContestDetails = {...contest, rules, prizes, awards:prizes, totalVotes, finalization, awardSelections}
+    const baseContestDetails = {...contest, rules, prizes, totalVotes, finalization, awardSelections}
 
     if(isCompletedContest(contest.status)){
         const winners = await getContestWinners(contestId)
@@ -442,7 +445,7 @@ const getContestById = async ( contestId: string) => {
         prisma.contestFinalization.findUnique({where:{contestId}}),
         contestFinalizationService.getContestAwardSelections(contestId)
     ])
-    const baseContestDetails = {...contest, rules, prizes, awards:prizes, totalVotes, finalization, awardSelections}
+    const baseContestDetails = {...contest, rules, prizes, totalVotes, finalization, awardSelections}
 
     if(isCompletedContest(contest.status)){
         const winners = await getContestWinners(contestId)
@@ -1225,25 +1228,25 @@ const chargePhoto = async (userId:string, contestId:string, contestPhotoId:strin
     return newContestPhoto
 }
 
-const rankLevelTabs = ['POPULAR', 'SKILLED', 'PREMIER', 'ELITE', 'ALL_STAR'] as const
+const rankLevelTabs = ['AMATEUR', 'TALENTED', 'SUPREME', 'SUPERIOR', 'TOP_NOTCH'] as const
 type RankLevelTab = typeof rankLevelTabs[number]
 
 const normalizeRankLevel = (level?: string): RankLevelTab => {
     const normalizedLevel = level?.toUpperCase().replace(/-/g, '_') as RankLevelTab
-    return rankLevelTabs.includes(normalizedLevel) ? normalizedLevel : 'POPULAR'
+    return rankLevelTabs.includes(normalizedLevel) ? normalizedLevel : 'AMATEUR'
 }
 
 const getDesignLevelFromYCLevel = (level?: YCLevel | null): RankLevelTab => {
     const levelMap:Record<YCLevel, RankLevelTab> = {
-        [ycLevels.NEW]:'POPULAR',
-        [ycLevels.AMATEUR]:'POPULAR',
-        [ycLevels.TALENTED]:'SKILLED',
-        [ycLevels.SUPREME]:'PREMIER',
-        [ycLevels.SUPERIOR]:'ELITE',
-        [ycLevels.TOP_NOTCH]:'ALL_STAR'
+        [ycLevels.NEW]:'AMATEUR',
+        [ycLevels.AMATEUR]:'AMATEUR',
+        [ycLevels.TALENTED]:'TALENTED',
+        [ycLevels.SUPREME]:'SUPREME',
+        [ycLevels.SUPERIOR]:'SUPERIOR',
+        [ycLevels.TOP_NOTCH]:'TOP_NOTCH'
     }
 
-    return level ? levelMap[level] : 'POPULAR'
+    return level ? levelMap[level] : 'AMATEUR'
 }
 
 const getPagination = (page?:number, limit?:number) => {

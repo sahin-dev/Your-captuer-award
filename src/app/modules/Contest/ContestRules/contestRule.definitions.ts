@@ -13,9 +13,16 @@ export type ContestRuleKey = (typeof contestRuleKeys)[number];
 
 export type ContestRuleApplyPoint = "JOIN" | "PHOTO_UPLOAD" | "VOTING" | "RANKING" | "DISPLAY";
 export type ContestRuleInputType = "number" | "list" | "object";
+export type ContestRuleFieldDefinition = {
+  path: string;
+  label: string;
+  inputType: "text" | "textarea" | "number" | "boolean" | "select" | "multi-select" | "list";
+  required?: boolean;
+  options?: readonly string[];
+};
 
 export type LevelRequirementValue = {
-  level: "POPULAR" | "SKILLED" | "PREMIER" | "ELITE" | "ALL_STAR";
+  level: "AMATEUR" | "TALENTED" | "SUPREME" | "SUPERIOR" | "TOP_NOTCH";
   votes: number;
 };
 
@@ -47,10 +54,20 @@ export type ContestRuleDefinition<TValue = unknown> = {
   order: number;
 };
 
+export type ContestRuleDefinitionView = {
+  key: ContestRuleKey;
+  label: string;
+  description?: string;
+  inputType: ContestRuleInputType;
+  value: unknown;
+  payload: Record<ContestRuleKey, unknown>;
+};
+
 export const contestRuleDefinitions: Record<ContestRuleKey, ContestRuleDefinition> = {
   SUBMISSION_LIMIT: {
     key: "SUBMISSION_LIMIT",
     label: "Submission Limit",
+    description: "Maximum number of photos a participant can submit to the contest.",
     icon: "number-circle",
     inputType: "number",
     defaultValue: 4,
@@ -61,20 +78,16 @@ export const contestRuleDefinitions: Record<ContestRuleKey, ContestRuleDefinitio
   SUBMISSION_RULES: {
     key: "SUBMISSION_RULES",
     label: "Submission Rules",
+    description: "Content rules enforced when a participant uploads contest photos.",
     icon: "image-upload",
-    inputType: "object",
-    defaultValue: {
-      intro: "Do not post:",
-      disallowed: [
-        "Non-relevant images",
-        "Similar images: Images with the same combination of subject, background, foreground and location are not allowed. Images must be distinct",
-        "Same image multiple times (cropped, angle change or tone changes)",
-        "AI images",
-      ],
-      removalNotice: "Images that don't comply may be removed from the challenge.",
-      allowAiImages: false,
-      duplicatePolicy: "DISALLOW_SAME_PHOTO",
-    },
+    inputType: "list",
+    defaultValue: [
+      "Non-relevant images are not allowed.",
+      "Similar images with the same subject, background, foreground, and location are not allowed.",
+      "The same image cannot be submitted multiple times, including cropped, angle, or tone changes.",
+      "AI-generated images are not allowed.",
+      "Images that do not comply may be removed from the challenge.",
+    ],
     appliesTo: ["PHOTO_UPLOAD", "DISPLAY"],
     displayOnly: false,
     order: 20,
@@ -82,14 +95,15 @@ export const contestRuleDefinitions: Record<ContestRuleKey, ContestRuleDefinitio
   LEVEL_REQUIREMENTS: {
     key: "LEVEL_REQUIREMENTS",
     label: "Level Requirements",
+    description: "Vote thresholds used to award contest level badges during ranking.",
     icon: "level-stars",
     inputType: "list",
     defaultValue: [
-      { level: "POPULAR", votes: 50 },
-      { level: "SKILLED", votes: 250 },
-      { level: "PREMIER", votes: 900 },
-      { level: "ELITE", votes: 1900 },
-      { level: "ALL_STAR", votes: 5000 },
+      { level: "AMATEUR", votes: 50 },
+      { level: "TALENTED", votes: 250 },
+      { level: "SUPREME", votes: 900 },
+      { level: "SUPERIOR", votes: 1900 },
+      { level: "TOP_NOTCH", votes: 5000 },
     ],
     appliesTo: ["RANKING", "DISPLAY"],
     displayOnly: false,
@@ -98,6 +112,7 @@ export const contestRuleDefinitions: Record<ContestRuleKey, ContestRuleDefinitio
   SUBMISSION_FORMAT: {
     key: "SUBMISSION_FORMAT",
     label: "Submission Format",
+    description: "Allowed image formats, dimensions, and upload size limits.",
     icon: "image-plus",
     inputType: "object",
     defaultValue: {
@@ -113,6 +128,7 @@ export const contestRuleDefinitions: Record<ContestRuleKey, ContestRuleDefinitio
   ELIGIBILITY: {
     key: "ELIGIBILITY",
     label: "Eligibility",
+    description: "Eligibility text and acceptance requirement shown before joining.",
     icon: "file-check",
     inputType: "object",
     defaultValue: {
@@ -127,6 +143,7 @@ export const contestRuleDefinitions: Record<ContestRuleKey, ContestRuleDefinitio
   COPYRIGHT: {
     key: "COPYRIGHT",
     label: "Copyright",
+    description: "Ownership and copyright acceptance rules for submitted photos.",
     icon: "copyright",
     inputType: "object",
     defaultValue: {
@@ -141,6 +158,7 @@ export const contestRuleDefinitions: Record<ContestRuleKey, ContestRuleDefinitio
   VOTING: {
     key: "VOTING",
     label: "Voting",
+    description: "Voting permissions and fairness rules for the contest.",
     icon: "vote",
     inputType: "object",
     defaultValue: {
@@ -157,6 +175,7 @@ export const contestRuleDefinitions: Record<ContestRuleKey, ContestRuleDefinitio
   PARTICIPATION: {
     key: "PARTICIPATION",
     label: "Participation",
+    description: "General participation terms accepted by contest entrants.",
     icon: "user",
     inputType: "object",
     defaultValue: {
@@ -170,8 +189,80 @@ export const contestRuleDefinitions: Record<ContestRuleKey, ContestRuleDefinitio
   },
 };
 
+export const getContestRuleFields = (key: ContestRuleKey): ContestRuleFieldDefinition[] => {
+  switch (key) {
+    case "SUBMISSION_LIMIT":
+      return [{ path: "value", label: "Submission limit", inputType: "number", required: true }];
+    case "SUBMISSION_RULES":
+      return [
+        { path: "value", label: "Submission rules", inputType: "list", required: true },
+      ];
+    case "LEVEL_REQUIREMENTS":
+      return [
+        {
+          path: "value",
+          label: "Level vote thresholds",
+          inputType: "list",
+          required: true,
+          options: ["AMATEUR", "TALENTED", "SUPREME", "SUPERIOR", "TOP_NOTCH"],
+        },
+      ];
+    case "SUBMISSION_FORMAT":
+      return [
+        {
+          path: "mimeTypes",
+          label: "Allowed MIME types",
+          inputType: "multi-select",
+          required: true,
+          options: supportedContestImageMimeTypes,
+        },
+        { path: "minWidth", label: "Minimum width", inputType: "number", required: true },
+        { path: "minHeight", label: "Minimum height", inputType: "number", required: true },
+        { path: "maxSizeMB", label: "Maximum size MB", inputType: "number", required: true },
+      ];
+    case "ELIGIBILITY":
+      return [
+        { path: "minAge", label: "Minimum age", inputType: "number" },
+        { path: "text", label: "Eligibility text", inputType: "textarea", required: true },
+        { path: "requiresAcceptance", label: "Requires acceptance", inputType: "boolean" },
+      ];
+    case "COPYRIGHT":
+      return [
+        { path: "text", label: "Copyright text", inputType: "textarea", required: true },
+        { path: "requiresOwnership", label: "Requires ownership", inputType: "boolean" },
+        { path: "requiresAcceptance", label: "Requires acceptance", inputType: "boolean" },
+      ];
+    case "VOTING":
+      return [
+        { path: "text", label: "Voting text", inputType: "textarea", required: true },
+        { path: "membersOnly", label: "Members only", inputType: "boolean" },
+        { path: "requireContestParticipant", label: "Participant required", inputType: "boolean" },
+        { path: "disallowSelfVote", label: "Disallow self vote", inputType: "boolean" },
+        { path: "blindVoting", label: "Blind voting", inputType: "boolean" },
+      ];
+    case "PARTICIPATION":
+      return [
+        { path: "text", label: "Participation text", inputType: "textarea", required: true },
+        { path: "requiresTermsAcceptance", label: "Requires terms acceptance", inputType: "boolean" },
+        { path: "termsUrl", label: "Terms URL", inputType: "text" },
+      ];
+  }
+};
+
 export const getContestRuleDefinitions = () =>
   contestRuleKeys.map((key) => contestRuleDefinitions[key]).sort((a, b) => a.order - b.order);
+
+export const getContestRuleDefinitionViews = (): ContestRuleDefinitionView[] =>
+  getContestRuleDefinitions().map((definition) => ({
+    key: definition.key,
+    label: definition.label,
+    description: definition.description,
+    inputType: definition.inputType,
+    value: definition.defaultValue,
+    payload: {
+      [definition.key]: definition.defaultValue,
+    } as Record<ContestRuleKey, unknown>,
+  }));
 
 export const isContestRuleKey = (key: string): key is ContestRuleKey =>
   contestRuleKeys.includes(key as ContestRuleKey);

@@ -367,29 +367,24 @@ class DatabaseSeeder {
             },
             {
                 key:"SUBMISSION_RULES",
-                value:{
-                    intro:"Do not post:",
-                    disallowed:[
-                        "Non-relevant images",
-                        "Similar images: Images with the same combination of subject, background, foreground and location are not allowed. Images must be distinct",
-                        "Same image multiple times (cropped, angle change or tone changes)",
-                        "AI images"
-                    ],
-                    removalNotice:"Images that don't comply may be removed from the challenge.",
-                    allowAiImages:false,
-                    duplicatePolicy:"DISALLOW_SAME_PHOTO"
-                },
+                value:[
+                    "Non-relevant images are not allowed.",
+                    "Similar images with the same subject, background, foreground, and location are not allowed.",
+                    "The same image cannot be submitted multiple times, including cropped, angle, or tone changes.",
+                    "AI-generated images are not allowed.",
+                    "Images that do not comply may be removed from the challenge."
+                ],
                 enabled:true,
                 order:contestRuleDefinitions.SUBMISSION_RULES.order
             },
             {
                 key:"LEVEL_REQUIREMENTS",
                 value:[
-                    {level:"POPULAR", votes:50},
-                    {level:"SKILLED", votes:250},
-                    {level:"PREMIER", votes:900},
-                    {level:"ELITE", votes:1900},
-                    {level:"ALL_STAR", votes:5000}
+                    {level:"AMATEUR", votes:50},
+                    {level:"TALENTED", votes:250},
+                    {level:"SUPREME", votes:900},
+                    {level:"SUPERIOR", votes:1900},
+                    {level:"TOP_NOTCH", votes:5000}
                 ],
                 enabled:true,
                 order:contestRuleDefinitions.LEVEL_REQUIREMENTS.order

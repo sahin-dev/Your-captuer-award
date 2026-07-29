@@ -2,7 +2,7 @@ import { checkObjectId } from "../../../helpers/checkObjectId";
 import { RecurringType } from "../../../prismaClient";
 import { z } from "zod";
 import { contestRuleInputArraySchema } from "./ContestRules/contestRule.validation";
-import { contestAwardInputArraySchema } from "../Prize/prize.validation";
+import { contestPrizeInputArraySchema } from "../Prize/prize.validation";
 import { getRichTextLength, sanitizeContestRichText } from "./contestContent";
 
 const parseJsonValue = (value: unknown) => {
@@ -58,7 +58,21 @@ const recurrenceSchema = z.object({
     ),
 });
 
-export const createContestSchema = z.object({
+const normalizeCreateContestInput = (value: unknown) => {
+    if (!value || typeof value !== "object" || Array.isArray(value)) {
+        return value;
+    }
+
+    const contest = value as Record<string, unknown>;
+
+    return {
+        ...contest,
+        prizeIds: contest.prizeIds ?? contest.awardPrizeIds,
+        prizes: contest.prizes ?? contest.awards,
+    };
+};
+
+const createContestObjectSchema = z.object({
     title: z.string().trim().min(1, "Title must not be empty").max(160),
     description: richTextField("Description", 5000),
     categoryId: z.string().refine(checkObjectId, { message: "Invalid category ID" }).optional(),
@@ -67,8 +81,8 @@ export const createContestSchema = z.object({
     recurring: z.preprocess(parseBooleanField, z.boolean()).optional().default(false),
     recurrence: z.preprocess(parseJsonValue, recurrenceSchema).optional(),
 
-    awardPrizeIds: z.preprocess(parseJsonValue, z.array(z.string())).optional(),
-    awards: z.preprocess(parseJsonValue, contestAwardInputArraySchema).optional(),
+    prizeIds: z.preprocess(parseJsonValue, z.array(z.string())).optional(),
+    prizes: z.preprocess(parseJsonValue, contestPrizeInputArraySchema).optional(),
 
     rules: z.preprocess(parseJsonValue, contestRuleInputArraySchema).optional(),
     startDate: z.string().datetime({
@@ -148,6 +162,8 @@ export const createContestSchema = z.object({
         });
     }
 });
+
+export const createContestSchema = z.preprocess(normalizeCreateContestInput, createContestObjectSchema);
 
 export const updateContestSchema = z.object({
     title: z.string().trim().min(1).max(160).optional(),

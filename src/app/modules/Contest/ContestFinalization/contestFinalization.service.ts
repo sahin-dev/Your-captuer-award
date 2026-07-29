@@ -464,7 +464,7 @@ const selectAwardPhoto = async (
 
   const identity = normalizeAwardIdentity(award);
   if (identity.type !== AwardType.YC_PICK) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "Only YC_PICK awards support manual photo selection");
+    throw new ApiError(httpStatus.BAD_REQUEST, "Only YC_PICK prizes support manual photo selection");
   }
 
   const photo = await prisma.contestPhoto.findFirst({

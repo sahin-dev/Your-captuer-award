@@ -313,7 +313,7 @@ const selectAwardPhoto = catchAsync(async (req:Request, res:Response) => {
     sendResponse(res, {
         success:true,
         statusCode:httpStatus.OK,
-        message:"award photo selected successfully",
+        message:"prize photo selected successfully",
         data:selection
     })
 })
@@ -324,7 +324,7 @@ const getAwardSelections = catchAsync(async (req:Request, res:Response) => {
     sendResponse(res, {
         success:true,
         statusCode:httpStatus.OK,
-        message:"contest award selections fetched successfully",
+        message:"contest prize selections fetched successfully",
         data:selections
     })
 })

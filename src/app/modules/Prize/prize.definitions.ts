@@ -17,6 +17,16 @@ export type PrizeDefinition = {
   order: number;
 };
 
+export const contestAwardRewardFields = ["boost", "swap", "key", "coin"] as const;
+export const contestAwardOverrideFields = [
+  "title",
+  "description",
+  "icon",
+  ...contestAwardRewardFields,
+  "enabled",
+  "order",
+] as const;
+
 const topRankDefinition = (
   rankLimit: 10 | 20 | 50 | 100,
   target: AwardTarget,

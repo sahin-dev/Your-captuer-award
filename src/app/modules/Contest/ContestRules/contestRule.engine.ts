@@ -11,7 +11,7 @@ import {
 import { contestRuleService } from "./contestRules.service";
 import { imageSize } from "image-size";
 
-type SubmissionRulesValue = {
+type LegacySubmissionRulesValue = {
   allowAiImages?: boolean;
   duplicatePolicy?: "ALLOW" | "DISALLOW_SAME_PHOTO";
 };
@@ -235,12 +235,16 @@ const validateSubmissionFormat = async (contestId: string, file?: Express.Multer
 };
 
 const validateSubmissionRules = async (contestId: string, photoIds?: string[]) => {
-  const submissionRules = await contestRuleService.getEnabledRuleValue<SubmissionRulesValue>(
+  const submissionRules = await contestRuleService.getEnabledRuleValue<string[] | LegacySubmissionRulesValue>(
     contestId,
     "SUBMISSION_RULES"
   );
 
-  if (submissionRules?.duplicatePolicy === "DISALLOW_SAME_PHOTO" && photoIds && photoIds.length > 0) {
+  const duplicatePolicy = Array.isArray(submissionRules)
+    ? "DISALLOW_SAME_PHOTO"
+    : submissionRules?.duplicatePolicy;
+
+  if (duplicatePolicy === "DISALLOW_SAME_PHOTO" && photoIds && photoIds.length > 0) {
     const alreadySubmitted = await prisma.contestPhoto.findFirst({
       where: { contestId, photoId: { in: photoIds } },
     });

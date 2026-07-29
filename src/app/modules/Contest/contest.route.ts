@@ -25,8 +25,15 @@ router.get("/:contestId/photos", auth(), contestController.getUploadedPhotos)
 router.get("/:contestId/photos/vote", auth(), contestController.getUploadedPhotosToVote)
 router.get("/:contestId/rules", auth(), contestRuleController.getContestRules)
 router.get("/:contestId/prizes", auth(), contestController.getContestPrizes)
+router.get("/:contestId/prize-selections", auth(UserRole.ADMIN), contestController.getAwardSelections)
 router.get("/:contestId/winners", auth(), contestController.getWinners)
 router.get("/:contestId/award-selections", auth(UserRole.ADMIN), contestController.getAwardSelections)
+router.put(
+    "/:contestId/prizes/:awardId/selection",
+    auth(UserRole.ADMIN),
+    validateRequest(contestAwardSelectionSchema),
+    contestController.selectAwardPhoto
+)
 router.put(
     "/:contestId/awards/:awardId/selection",
     auth(UserRole.ADMIN),
