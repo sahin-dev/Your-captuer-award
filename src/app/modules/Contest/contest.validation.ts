@@ -75,7 +75,6 @@ const normalizeCreateContestInput = (value: unknown) => {
 const createContestObjectSchema = z.object({
     title: z.string().trim().min(1, "Title must not be empty").max(160),
     description: richTextField("Description", 5000),
-    categoryId: z.string().refine(checkObjectId, { message: "Invalid category ID" }).optional(),
     category: z.string().trim().min(1).max(100).optional(),
 
     recurring: z.preprocess(parseBooleanField, z.boolean()).optional().default(false),
@@ -123,13 +122,6 @@ const createContestObjectSchema = z.object({
             message: "End date must be after start date",
         });
     }
-    if (contest.categoryId && contest.category) {
-        ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            path: ["category"],
-            message: "Provide categoryId or category, not both",
-        });
-    }
     if (contest.isMoneyContest) {
         if (contest.minPrize === undefined || contest.maxPrize === undefined || !contest.currency) {
             ctx.addIssue({
@@ -168,10 +160,7 @@ export const createContestSchema = z.preprocess(normalizeCreateContestInput, cre
 export const updateContestSchema = z.object({
     title: z.string().trim().min(1).max(160).optional(),
     description: richTextField("Description", 5000).optional(),
-    categoryId: z.union([
-        z.string().refine(checkObjectId, { message: "Invalid category ID" }),
-        z.null(),
-    ]).optional(),
+    category: z.string().trim().min(1).max(100).optional(),
     startDate: optionalIsoDate,
     endDate: optionalIsoDate,
     isMoneyContest: z.preprocess(parseBooleanField, z.boolean()).optional(),

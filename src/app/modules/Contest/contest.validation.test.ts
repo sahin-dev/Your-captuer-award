@@ -11,6 +11,7 @@ const futureDate = (hours:number) => new Date(Date.now() + hours * 60 * 60 * 100
 const baseContest = () => ({
     title:"Urban Stories",
     description:"<p onclick=\"alert(1)\">Street <strong>photography</strong><script>alert(1)</script></p>",
+    category:"Street photography",
     startDate:futureDate(2),
     endDate:futureDate(4),
     isMoneyContest:false,
@@ -280,10 +281,15 @@ test("contest updates cannot bypass the writable-field contract", () => {
     const parsed = updateContestSchema.parse({
         title:" Updated title ",
         description:"<p onmouseover=\"alert(1)\">Updated</p>",
+        category:"Nature",
     });
     assert.equal(parsed.title, "Updated title");
+    assert.equal(parsed.category, "Nature");
     assert.doesNotMatch(parsed.description || "", /onmouseover/);
 
     const statusUpdate = updateContestSchema.safeParse({status:"ACTIVE"});
     assert.equal(statusUpdate.success, false);
+
+    const categoryIdUpdate = updateContestSchema.safeParse({categoryId:"674b00000000000000000001"});
+    assert.equal(categoryIdUpdate.success, false);
 });

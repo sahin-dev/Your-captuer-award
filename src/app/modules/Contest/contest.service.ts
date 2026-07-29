@@ -157,7 +157,7 @@ const createContest = async (creatorId: string, body: contestData, banner:Expres
 
     const [bannerUrl, categoryId] = await Promise.all([
         banner ? fileUploader.uploadToDigitalOcean(banner).then(upload => upload.Location) : Promise.resolve(null),
-        resolveContestCategoryId(body.categoryId, body.category)
+        resolveContestCategoryId(undefined, body.category)
     ])
 
     const normalizedRules = contestRuleService.normalizeContestRules(body.rules)
@@ -230,7 +230,7 @@ const createRecurringContest  =  async (creatorId: string, body: contestData, ba
         body.prizes || [],
         shouldUseDefaultAwards(body)
     )
-    const categoryId = await resolveContestCategoryId(body.categoryId, body.category)
+    const categoryId = await resolveContestCategoryId(undefined, body.category)
 
     const contestData:any = {
         creatorId,
@@ -310,14 +310,16 @@ const updateContest = async (contestId:string, contestData:Partial<IContest>)=>{
             throw new ApiError(httpstatus.BAD_REQUEST, "Money contests require valid currency and prize bounds")
         }
 
-        if(contestData.categoryId){
-            await resolveContestCategoryId(contestData.categoryId)
+        const updatePayload = {...contestData} as any
+        if(updatePayload.category){
+            updatePayload.categoryId = await resolveContestCategoryId(undefined, updatePayload.category)
+            delete updatePayload.category
         }
 
         const updatedContest = await prisma.contest.update({
             where:{id:contestId},
             data:{
-                ...contestData,
+                ...updatePayload,
                 startDate,
                 endDate,
                 isMoneyContest,
