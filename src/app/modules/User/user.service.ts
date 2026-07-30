@@ -299,7 +299,7 @@ const getUserCurrentLevel = async (userId:string)=>{
 
 
 const attachStoreToUser = async (userId:string)=>{
-    const store = await userStoreService.addStoreData(userId, {key:0, boost:0, swap:0, coin:0})
+    const store = await userStoreService.addStoreData(userId, {key:0, boost:0, swap:0})
 
 }
 
