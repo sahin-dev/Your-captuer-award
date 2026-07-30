@@ -434,12 +434,13 @@ exports.Prisma.PaymentScalarFieldEnum = {
   planName: 'planName',
   recurring: 'recurring',
   userId: 'userId',
-  stripe_sessino_id: 'stripe_sessino_id',
+  stripe_session_id: 'stripe_session_id',
   stripe_payment_id: 'stripe_payment_id',
   amount: 'amount',
   currency: 'currency',
   method: 'method',
   type: 'type',
+  description: 'description',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -449,7 +450,9 @@ exports.Prisma.SubscriptionPlanScalarFieldEnum = {
   planName: 'planName',
   stripe_price_id: 'stripe_price_id',
   stripe_product_id: 'stripe_product_id',
+  features: 'features',
   amount: 'amount',
+  description: 'description',
   recurring: 'recurring',
   currency: 'currency',
   status: 'status',
@@ -467,6 +470,16 @@ exports.Prisma.SubscriptionScalarFieldEnum = {
   subscription_id: 'subscription_id',
   startDate: 'startDate',
   endDate: 'endDate',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.PurchaseRecordsScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  productId: 'productId',
+  type: 'type',
+  amount: 'amount',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -874,14 +887,14 @@ exports.PaymentStatus = exports.$Enums.PaymentStatus = {
   SUCCEEDED: 'SUCCEEDED',
   VALID: 'VALID',
   EXPIRED: 'EXPIRED',
-  FAILED: 'FAILED',
-  CANCELLED: 'CANCELLED'
+  FAILED: 'FAILED'
 };
 
 exports.SubscriptionPlanEnum = exports.$Enums.SubscriptionPlanEnum = {
   PREMIUM: 'PREMIUM',
   PRO: 'PRO',
-  FREE: 'FREE'
+  FREE: 'FREE',
+  OPEN: 'OPEN'
 };
 
 exports.PlanRecurringType = exports.$Enums.PlanRecurringType = {
@@ -905,6 +918,11 @@ exports.SubscriptionStatus = exports.$Enums.SubscriptionStatus = {
   PENDING: 'PENDING',
   VALID: 'VALID',
   EXPIRED: 'EXPIRED'
+};
+
+exports.PurchaseType = exports.$Enums.PurchaseType = {
+  COINS: 'COINS',
+  BUNDLES: 'BUNDLES'
 };
 
 exports.SitePolicyType = exports.$Enums.SitePolicyType = {
@@ -1049,6 +1067,7 @@ exports.Prisma.ModelName = {
   Payment: 'Payment',
   SubscriptionPlan: 'SubscriptionPlan',
   Subscription: 'Subscription',
+  PurchaseRecords: 'PurchaseRecords',
   SitePolicy: 'SitePolicy',
   Room: 'Room',
   Chat: 'Chat',

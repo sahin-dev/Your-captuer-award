@@ -603,14 +603,15 @@ model Payment {
   planName          SubscriptionPlanEnum?
   recurring         PlanRecurringType?
   userId            String                @db.ObjectId
-  stripe_sessino_id String?
+  stripe_session_id String?
   stripe_payment_id String?
   amount            Float
   currency          String
   method            String
   type              PaymentType
+  description       String?
 
-  user      User     @relation("UserPayments", references: [id], fields: [userId])
+  user      User     @relation("UserPayments", fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -620,9 +621,11 @@ model Payment {
 model SubscriptionPlan {
   id                String                 @id @default(auto()) @map("_id") @db.ObjectId
   planName          SubscriptionPlanEnum
-  stripe_price_id   String
-  stripe_product_id String
+  stripe_price_id   String?
+  stripe_product_id String?
+  features          String[]
   amount            Float
+  description       String
   recurring         PlanRecurringType
   currency          String                 @default("USD")
   status            SubscriptionPlanStatus @default(ACTIVE)
@@ -651,6 +654,24 @@ model Subscription {
   @@map("subscriptions")
 }
 
+model PurchaseRecords {
+  id        String       @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String       @db.ObjectId
+  productId String       @db.ObjectId
+  type      PurchaseType
+  amount    Float
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("purchase_records")
+}
+
+enum PurchaseType {
+  COINS
+  BUNDLES
+}
+
 enum SubscriptionPlanStatus {
   ACTIVE
   INACTIVE
@@ -672,6 +693,7 @@ enum SubscriptionPlanEnum {
   PREMIUM
   PRO
   FREE
+  OPEN
 }
 
 enum PaymentStatus {
@@ -680,7 +702,6 @@ enum PaymentStatus {
   VALID
   EXPIRED
   FAILED
-  CANCELLED
 }
 
 enum PaymentType {
