@@ -741,18 +741,26 @@ datasource db {
 
 model Product {
   id          String        @id @default(auto()) @map("_id") @db.ObjectId
-  productType ProductType
   title       String
-  quantity    Int
+  category    Category
+  items       items[]
+  quantity    Int?
   amount      Float
-  currency    String        @default("USD")
+  currency    String
   icon        String?
   description String?
   image       String?
   status      ProductStatus @default(ACTIVE)
 
-  @@index([id, productType])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@map("products")
+}
+
+type items {
+  type     ProductType
+  quantity Int
 }
 
 model Price {
@@ -770,6 +778,11 @@ model Price {
   @@map("prices")
 }
 
+enum Category {
+  COINS
+  BUNDLES
+}
+
 enum ProductStatus {
   ACTIVE
   INACTIVE
@@ -777,10 +790,10 @@ enum ProductStatus {
 }
 
 enum ProductType {
+  COIN
   KEY
   BOOST
   SWAP
-  COIN
 }
 
 model Support {

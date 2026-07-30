@@ -497,15 +497,17 @@ exports.Prisma.ChatScalarFieldEnum = {
 
 exports.Prisma.ProductScalarFieldEnum = {
   id: 'id',
-  productType: 'productType',
   title: 'title',
+  category: 'category',
   quantity: 'quantity',
   amount: 'amount',
   currency: 'currency',
   icon: 'icon',
   description: 'description',
   image: 'image',
-  status: 'status'
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.PriceScalarFieldEnum = {
@@ -911,11 +913,9 @@ exports.SitePolicyType = exports.$Enums.SitePolicyType = {
   ABOUT: 'ABOUT'
 };
 
-exports.ProductType = exports.$Enums.ProductType = {
-  KEY: 'KEY',
-  BOOST: 'BOOST',
-  SWAP: 'SWAP',
-  COIN: 'COIN'
+exports.Category = exports.$Enums.Category = {
+  COINS: 'COINS',
+  BUNDLES: 'BUNDLES'
 };
 
 exports.ProductStatus = exports.$Enums.ProductStatus = {
@@ -1011,6 +1011,13 @@ exports.RecurringType = exports.$Enums.RecurringType = {
   DAILY: 'DAILY',
   WEEKLY: 'WEEKLY',
   MONTHLY: 'MONTHLY'
+};
+
+exports.ProductType = exports.$Enums.ProductType = {
+  COIN: 'COIN',
+  KEY: 'KEY',
+  BOOST: 'BOOST',
+  SWAP: 'SWAP'
 };
 
 exports.LevelRequirementTitle = exports.$Enums.LevelRequirementTitle = {
