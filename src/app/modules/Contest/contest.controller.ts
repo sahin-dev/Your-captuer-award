@@ -1,9 +1,8 @@
 import { Request, Response } from "express";
 import sendResponse from "../../../shared/ApiResponse";
 import {contestService} from "./contest.service";
-import { IContest } from "./contest.interface";
 import catchAsync from "../../../shared/catchAsync";
-import { contestData } from "./contest.type";
+import { contestData, updateContestData } from "./contest.type";
 import { ContestStatus } from "../../../prismaClient";
 import httpStatus from 'http-status'
 
@@ -71,9 +70,10 @@ const getContestById = catchAsync(async (req:any, res:Response)=>{
 
 const updateContestDetails = catchAsync(async (req:any, res:Response)=>{
     const {contestId} = req.params
-    const contestData:Partial<IContest> = req.body
+    const body:updateContestData = req.body
+    const banner = req.file
 
-    const contest = await contestService.updateContest(contestId, contestData)
+    const contest = await contestService.updateContest(contestId, body, banner)
 
     sendResponse(res, {
         statusCode:200,

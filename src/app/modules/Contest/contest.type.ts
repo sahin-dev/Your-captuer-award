@@ -1,6 +1,6 @@
 import z from "zod";
 import { RecurringType } from "../../../prismaClient";
-import {createContestSchema} from './contest.validation'
+import {createContestSchema, updateContestSchema} from './contest.validation'
 
 export type RecurringData =
 
@@ -15,3 +15,5 @@ export type RecurringData =
 export type contestData = z.infer<typeof createContestSchema>
 
 export type createContestData = z.infer<typeof createContestSchema>
+
+export type updateContestData = z.infer<typeof updateContestSchema>

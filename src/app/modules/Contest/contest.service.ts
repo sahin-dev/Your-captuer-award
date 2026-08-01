@@ -3,8 +3,7 @@ import ApiError from '../../../errors/ApiError';
 import httpstatus from 'http-status';
 import { fileUploader } from '../../../helpers/fileUploader';
 import { AchievementKind, ContestParticipant, ContestPhoto, ContestStatus, Prisma, PrizeType, RecurringType, YCLevel } from '../../../prismaClient';
-import { IContest } from './contest.interface';
-import { contestData } from './contest.type';
+import { contestData, updateContestData } from './contest.type';
 import { contestRuleService } from './ContestRules/contestRules.service';
 import { ContestRuleConfigInput } from './ContestRules/contestRules.type';
 import { profileService } from '../Profile/profile.service';
@@ -276,7 +275,7 @@ const createRecurringContest  =  async (creatorId: string, body: contestData, ba
 }
 
 
-const updateContest = async (contestId:string, contestData:Partial<IContest>)=>{
+const updateContest = async (contestId:string, contestData:updateContestData, banner?:Express.Multer.File)=>{
     const contest = await prisma.contest.findUnique({where:{id:contestId}})
     if(!contest){
         throw new ApiError(httpstatus.NOT_FOUND, "contest not found")
@@ -285,53 +284,79 @@ const updateContest = async (contestId:string, contestData:Partial<IContest>)=>{
     const lockedStatuses:ContestStatus[] = [
         ContestStatus.ACTIVE,
         ContestStatus.FINALIZING,
+        ContestStatus.FINALIZATION_FAILED,
         ContestStatus.COMPLETED,
         ContestStatus.CLOSED
     ]
-    if(lockedStatuses.includes(contest.status)){
+    if(lockedStatuses.includes(contest.status) || (contest.status !== ContestStatus.UPCOMING && contest.status !== ContestStatus.NEW)){
         throw new ApiError(httpstatus.BAD_REQUEST, "Editing contest not allowed")
     }
 
-    if(contest?.status === ContestStatus.UPCOMING || contest?.status === ContestStatus.NEW){
-        const startDate = contestData.startDate ? new Date(contestData.startDate) : contest.startDate
-        const endDate = contestData.endDate ? new Date(contestData.endDate) : contest.endDate
-        if(!validateContestDate(startDate.toISOString(), endDate.toISOString())){
-            throw new ApiError(
-                httpstatus.BAD_REQUEST,
-                "Contest dates are invalid; start must be in the future and end must be after start"
-            )
-        }
-
-        const isMoneyContest = contestData.isMoneyContest ?? contest.isMoneyContest
-        const minPrize = contestData.minPrize ?? contest.minPrize ?? 0
-        const maxPrize = contestData.maxPrize ?? contest.maxPrize ?? 0
-        const currency = contestData.currency === undefined ? contest.currency : contestData.currency
-        if(isMoneyContest && (!currency || minPrize > maxPrize)){
-            throw new ApiError(httpstatus.BAD_REQUEST, "Money contests require valid currency and prize bounds")
-        }
-
-        const updatePayload = {...contestData} as any
-        if(updatePayload.category){
-            updatePayload.categoryId = await resolveContestCategoryId(undefined, updatePayload.category)
-            delete updatePayload.category
-        }
-
-        const updatedContest = await prisma.contest.update({
-            where:{id:contestId},
-            data:{
-                ...updatePayload,
-                startDate,
-                endDate,
-                isMoneyContest,
-                currency:isMoneyContest ? currency : null,
-                minPrize:isMoneyContest ? minPrize : 0,
-                maxPrize:isMoneyContest ? maxPrize : 0,
-            }
-        })
-
-        return updatedContest
+    const startDate = contestData.startDate ? new Date(contestData.startDate) : contest.startDate
+    const endDate = contestData.endDate ? new Date(contestData.endDate) : contest.endDate
+    if(!validateContestDate(startDate.toISOString(), endDate.toISOString())){
+        throw new ApiError(
+            httpstatus.BAD_REQUEST,
+            "Contest dates are invalid; start must be in the future and end must be after start"
+        )
     }
 
+    const isMoneyContest = contestData.isMoneyContest ?? contest.isMoneyContest
+    const minPrize = contestData.minPrize ?? contest.minPrize ?? 0
+    const maxPrize = contestData.maxPrize ?? contest.maxPrize ?? 0
+    const currency = contestData.currency === undefined ? contest.currency : contestData.currency
+    if(isMoneyContest && (!currency || minPrize > maxPrize)){
+        throw new ApiError(httpstatus.BAD_REQUEST, "Money contests require valid currency and prize bounds")
+    }
+
+    const entryFeeCoins = contestData.coinRequirement === false
+        ? 0
+        : (contestData.entryFeeCoins ?? contest.entryFeeCoins)
+    if(contestData.coinRequirement && !entryFeeCoins){
+        throw new ApiError(httpstatus.BAD_REQUEST, "A positive entryFeeCoins value is required when coinRequirement is enabled")
+    }
+
+    const { category, prizeIds, prizes, rules, coinRequirement, ...updatePayload } = contestData as any
+
+    const [bannerUrl, categoryId] = await Promise.all([
+        banner ? fileUploader.uploadToDigitalOcean(banner).then(upload => upload.Location) : Promise.resolve(undefined),
+        category ? resolveContestCategoryId(undefined, category) : Promise.resolve(undefined)
+    ])
+    if(categoryId !== undefined){
+        updatePayload.categoryId = categoryId
+    }
+    if(bannerUrl){
+        updatePayload.banner = bannerUrl
+    }
+
+    const updatedContest = await prisma.contest.update({
+        where:{id:contestId},
+        data:{
+            ...updatePayload,
+            startDate,
+            endDate,
+            isMoneyContest,
+            currency:isMoneyContest ? currency : null,
+            minPrize:isMoneyContest ? minPrize : 0,
+            maxPrize:isMoneyContest ? maxPrize : 0,
+            entryFeeCoins,
+        }
+    })
+
+    const [updatedRules, updatedAwards] = await Promise.all([
+        rules !== undefined
+            ? contestRuleService.addContestRules(contestId, rules)
+            : Promise.resolve(undefined),
+        (prizeIds !== undefined || prizes !== undefined)
+            ? prizeService.replaceContestAwards(contestId, prizeIds || [], prizes || [])
+            : Promise.resolve(undefined)
+    ])
+
+    return {
+        ...updatedContest,
+        ...(updatedRules !== undefined && {rules:updatedRules}),
+        ...(updatedAwards !== undefined && {prizes:updatedAwards})
+    }
 }
 
 

@@ -157,7 +157,7 @@ const createContestObjectSchema = z.object({
 
 export const createContestSchema = z.preprocess(normalizeCreateContestInput, createContestObjectSchema);
 
-export const updateContestSchema = z.object({
+const updateContestObjectSchema = z.object({
     title: z.string().trim().min(1).max(160).optional(),
     description: richTextField("Description", 5000).optional(),
     category: z.string().trim().min(1).max(100).optional(),
@@ -170,11 +170,17 @@ export const updateContestSchema = z.object({
     ]).optional(),
     maxPrize: z.preprocess(parseOptionalNumberField, z.number().int().nonnegative().optional()),
     minPrize: z.preprocess(parseOptionalNumberField, z.number().int().nonnegative().optional()),
+    coinRequirement: z.preprocess(parseBooleanField, z.boolean()).optional(),
     entryFeeCoins: z.preprocess(
         parseOptionalNumberField,
         z.number().int().nonnegative().max(100000000).optional()
     ),
+    prizeIds: z.preprocess(parseJsonValue, z.array(z.string())).optional(),
+    prizes: z.preprocess(parseJsonValue, contestPrizeInputArraySchema).optional(),
+    rules: z.preprocess(parseJsonValue, contestRuleInputArraySchema).optional(),
 }).strict();
+
+export const updateContestSchema = z.preprocess(normalizeCreateContestInput, updateContestObjectSchema);
 
 export const joinContestSchema = z.object({
     body: z.object({

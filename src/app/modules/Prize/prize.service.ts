@@ -353,6 +353,27 @@ const createContestAwardsFromConfigs = async (contestId: string, awards: Contest
   return getContestAwards(contestId);
 };
 
+const replaceContestAwards = async (
+  contestId: string,
+  prizeIds: string[] = [],
+  awards: ContestAwardConfigData[] = []
+) => {
+  const rows = await resolveAwardRows(
+    prizeIds,
+    awards,
+    prizeIds.length === 0 && awards.length === 0
+  );
+  await prisma.$transaction(async tx => {
+    await tx.contestAward.deleteMany({ where: { contestId } });
+    if (rows.length > 0) {
+      await tx.contestAward.createMany({
+        data: rows.map((row) => ({ contestId, ...row })),
+      });
+    }
+  });
+  return getContestAwards(contestId);
+};
+
 const createRecurringContestAwardsFromPrizeIds = async (recurringContestId: string, prizeIds: string[]) => {
   const rows = await resolveAwardRows(prizeIds);
 
@@ -472,6 +493,7 @@ export const prizeService = {
   deletePrize,
   createContestAwardsFromPrizeIds,
   createContestAwardsFromConfigs,
+  replaceContestAwards,
   createRecurringContestAwardsFromPrizeIds,
   createRecurringContestAwardsFromConfigs,
   replaceRecurringContestAwards,

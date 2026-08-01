@@ -50,7 +50,7 @@ router.delete("/:contestId/photos/:photoId", auth(), contestController.deleteCon
 router.post("/:contestId/upload", auth(), fileUploader.userPhoto, contestController.uploadPhoto)
 router.route("/:contestId")
     .get(auth(), contestController.getContestById)
-    .put(auth(UserRole.ADMIN), validateRequest(updateContestSchema), contestController.updateContestDetails)
+    .put(auth(UserRole.ADMIN), fileUploader.contestBanner, validateRequest(updateContestSchema), contestController.updateContestDetails)
     .delete(auth(UserRole.ADMIN), contestController.deleteContest)
 router.route("/:contestId/join").post(auth(),contestController.joinContest)
 
