@@ -1,92 +1,103 @@
-import { createServer,Server } from "http";
+import { Server } from "http";
 import config from "./config";
-import fs from "fs";
 import app from "./app";
-import { setupWebSocket } from "./helpers/websocketSetUp";
-import "./app/modules/Agenda";
-import agenda from "./app/modules/Agenda";
+import agenda, { startAgenda } from "./app/modules/Agenda";
 import prisma from "./shared/prisma";
 import WebSocketHandler from "./socket";
 
+let server: Server | undefined;
+let isShuttingDown = false;
+const PORT = config.port || 5003;
 
-let server: Server;
-const PORT = config.port || 5003
+const getErrorMessage = (error:unknown) => {
+  if(error instanceof Error){
+    return error.message;
+  }
 
-//Https options
-// const options = {
-//   key: fs.readFileSync("./server.key"),
-//   cert: fs.readFileSync("./server.cert"),
-// };
+  return String(error);
+}
 
+const logDatabaseConnectionHint = (error:unknown) => {
+  const message = getErrorMessage(error);
 
-
+  if(message.includes("querySrv") || message.includes("ECONNREFUSED")){
+    console.error("Database connection failed during MongoDB SRV lookup.");
+    console.error("Please verify DATABASE_URL, DNS/network access, and MongoDB Atlas network access settings.");
+  }
+}
 
 async function startServer() {
-  // server = createServer(options, app);
+  try{
+      await prisma.$connect();
+  }catch(err){
+    // console.log(err)
+    throw new Error("Failed to connect to the database. Please check your DATABASE_URL and ensure the database is running.");
+  }
+
+
   server = app.listen(PORT, () => {
-    console.log("Server is listiening on port ", config.port);
+    console.log("Server is listiening on port ", PORT);
   });
- 
-  // await setupWebSocket(server);
-  let webSocket = new WebSocketHandler(server)
-  
+
+  new WebSocketHandler(server);
+
+  startAgenda().catch((error) => {
+    console.error("Agenda scheduler failed to start:", error);
+    logDatabaseConnectionHint(error);
+  });
 }
 
-async function main() {
-  await startServer();
-  await agenda.start();
-  const exitHandler = async (signalName?: string, exitCode = 0) => {
-    console.info(`Exit handler triggered by: ${signalName || "direct call"}`);
+async function shutdown(exitCode = 0) {
+  if(isShuttingDown){
+    return;
+  }
 
-    const forceExitTimeout = setTimeout(() => {
-      console.warn("Graceful shutdown timed out. Force exiting...");
-      process.exit(exitCode);
-    }, 5000);
-    forceExitTimeout.unref();
+  isShuttingDown = true;
 
-    if (server) {
-      server.close(async () => {
+  if(server){
+    await new Promise<void>((resolve) => {
+      server?.close(() => {
         console.info("Server closed!");
-        try {
-          await agenda.stop();
-          console.info("Agenda stopped successfully!");
-        } catch (e) {
-          console.error("Error stopping Agenda:", e);
-        }
-        try {
-          await prisma.$disconnect();
-          console.info("Prisma disconnected successfully!");
-        } catch (e) {
-          console.error("Error disconnecting Prisma:", e);
-        }
-        clearTimeout(forceExitTimeout);
-        process.exit(exitCode);
+        resolve();
       });
-    } else {
-      process.exit(exitCode);
-    }
-  };
+    });
+  }
 
-  process.on("uncaughtException", (error) => {
-    console.error("Uncaught Exception: ", error);
-    exitHandler("uncaughtException", 1);
+  await agenda.stop().catch((error) => {
+    console.error("Failed to stop agenda:", error);
   });
 
-  process.on("unhandledRejection", (error) => {
-    console.error("Unhandled Rejection: ", error);
-    exitHandler("unhandledRejection", 1);
+  await prisma.$disconnect().catch((error) => {
+    console.error("Failed to disconnect prisma:", error);
   });
 
-  // Handling the server shutdown with SIGTERM and SIGINT
-  process.on("SIGTERM", () => {
-    console.log("SIGTERM signal received. Shutting down gracefully...");
-    exitHandler("SIGTERM", 0);
-  });
-
-  process.on("SIGINT", () => {
-    console.log("SIGINT signal received. Shutting down gracefully...");
-    exitHandler("SIGINT", 0);
-  });
+  process.exit(exitCode);
 }
 
-main();
+process.on("uncaughtException", (error) => {
+  console.log("Uncaught Exception: ", error);
+  logDatabaseConnectionHint(error);
+  shutdown(1);
+});
+
+process.on("unhandledRejection", (error) => {
+  console.log("Unhandled Rejection: ", error);
+  logDatabaseConnectionHint(error);
+  shutdown(1);
+});
+
+process.on("SIGTERM", () => {
+  console.log("SIGTERM signal received. Shutting down gracefully...");
+  shutdown(0);
+});
+
+process.on("SIGINT", () => {
+  console.log("SIGINT signal received. Shutting down gracefully...");
+  shutdown(0);
+});
+
+startServer().catch((error) => {
+  console.error("Failed to start server:", error);
+  logDatabaseConnectionHint(error);
+  shutdown(1);
+});

@@ -164,10 +164,10 @@ const joinByInvitation = catchAsync(async (req:Request, res:Response) => {
 })
 
 const leaveTeam = catchAsync(async (req:Request, res:Response) => {
-    const {teamId, memberId} = req.body
+    const {teamId} = req.body
     const userId = req.user.id
 
-    const result = await teamService.leaveATeam(userId,teamId, memberId)
+    const result = await teamService.leaveATeam(userId,teamId)
 
     sendResponse(res, {
         success:true,

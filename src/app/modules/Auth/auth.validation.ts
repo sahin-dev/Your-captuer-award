@@ -14,6 +14,7 @@ export const userRegistrationSchema = z.object({
     lastName:z.string({required_error:"last name is required"}),
     email:z.string().email({message:"Email is invalid"}),
     phone:z.string({required_error:"phone is required"}),
+    dateOfBirth:z.coerce.date().optional(),
     password:z.string({required_error:"password is required"}).min(6, "password must be at least 6 characters long"),
     confirmPassword: z.string().optional()
 })

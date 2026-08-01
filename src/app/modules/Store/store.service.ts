@@ -42,9 +42,6 @@ const addProduct = async (userId: string, productData: {
     // Convert quantity and amount to numbers
     const parsedAmount = Number(productData.amount);
     
-
-     
-
     if (isNaN(parsedAmount) || parsedAmount < 0) {
         throw new ApiError(httpStatus.BAD_REQUEST, "Amount must be a non-negative number");
     }

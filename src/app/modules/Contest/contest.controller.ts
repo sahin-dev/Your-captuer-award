@@ -1,9 +1,8 @@
 import { Request, Response } from "express";
 import sendResponse from "../../../shared/ApiResponse";
 import {contestService} from "./contest.service";
-import { IContest } from "./contest.interface";
 import catchAsync from "../../../shared/catchAsync";
-import { contestData } from "./contest.type";
+import { contestData, updateContestData } from "./contest.type";
 import { ContestStatus } from "../../../prismaClient";
 import httpStatus from 'http-status'
 
@@ -26,84 +25,26 @@ const createContest = catchAsync( async (req: any, res: Response) => {
     });
 })
 
-const createRecurringContest = catchAsync(async (req:any, res:Response) => {
-    const creatorId = req.user.id;
-    const banner = req.file;
-    const body: contestData = req.body;
-
-    const contest = await contestService.createRecurringContest(creatorId, body, banner);
+const getCreateOptions = catchAsync(async (_req:Request, res:Response) => {
+    const options = await contestService.getContestCreateOptions()
 
     sendResponse(res, {
-        statusCode: 201,
-        success: true,
-        message: "Recurring contest created successfully",
-        data: contest,
-    });
-});
+        statusCode:httpStatus.OK,
+        success:true,
+        message:"Contest creation options fetched successfully",
+        data:options
+    })
+})
 
-const getRecurringContests = catchAsync(async (req:any, res:Response) => {
-    const { page = "1", limit = "20" } = req.query as { page?: string; limit?: string };
-    const pageNum = parseInt(page) || 1;
-    const limitNum = parseInt(limit) || 20;
-
-    const result = await contestService.getRecurringContests(pageNum, limitNum);
-
-    sendResponse(res, {
-        statusCode: 200,
-        success: true,
-        message: "Recurring contests fetched successfully",
-        data: result.data,
-        meta: result.meta,
-    });
-});
-
-const getRecurringContestById = catchAsync(async (req:any, res:Response) => {
-    const { contestId } = req.params;
-    const contest = await contestService.getRecurringContestById(contestId);
-
-    sendResponse(res, {
-        statusCode: 200,
-        success: true,
-        message: "Recurring contest fetched successfully",
-        data: contest,
-    });
-});
-
-const updateRecurringContestDetails = catchAsync(async (req:any, res:Response) => {
-    const { contestId } = req.params;
-    const contestData: Partial<IContest> = req.body;
-    const banner = req.file;
-
-    const contest = await contestService.updateRecurringContest(contestId, contestData, banner);
-
-    sendResponse(res, {
-        statusCode: 200,
-        success: true,
-        message: "Recurring contest updated successfully",
-        data: contest,
-    });
-});
-
-const deleteRecurringContest = catchAsync(async (req:any, res:Response) => {
-    const { contestId } = req.params;
-    await contestService.deleteRecurringContestById(contestId);
-
-    sendResponse(res, {
-        statusCode: 200,
-        success: true,
-        message: "Recurring contest deleted successfully",
-        data: null,
-    });
-});
 
 const getAllContests = catchAsync(async (req:any, res:Response)=>{
 
-    const {page, limit, search} = req.query  as {page:string, limit:string,search:string}
+    const {page, limit} = req.query  as {page:string, limit:string}
     const pageNum = Number(page) || 1
     const limitNum = Number(limit) || 20
 
     
-    const contests = await contestService.getAllContests(pageNum, limitNum, search)
+    const contests = await contestService.getAllContests(pageNum, limitNum)
 
     sendResponse(res, {
         statusCode:200,
@@ -115,7 +56,7 @@ const getAllContests = catchAsync(async (req:any, res:Response)=>{
 
 const getContestById = catchAsync(async (req:any, res:Response)=>{
     const {contestId} = req.params
-    const userId = req.user?.id
+    const userId = req.user.id
 
     const contest = await contestService.getContestByUserId(userId, contestId)
 
@@ -129,10 +70,10 @@ const getContestById = catchAsync(async (req:any, res:Response)=>{
 
 const updateContestDetails = catchAsync(async (req:any, res:Response)=>{
     const {contestId} = req.params
-    const contestData:Partial<IContest> = req.body
+    const body:updateContestData = req.body
     const banner = req.file
 
-    const contest = await contestService.updateContest(contestId, contestData, banner)
+    const contest = await contestService.updateContest(contestId, body, banner)
 
     sendResponse(res, {
         statusCode:200,
@@ -145,8 +86,9 @@ const updateContestDetails = catchAsync(async (req:any, res:Response)=>{
 const joinContest = catchAsync(async (req:any, res:Response)=>{
     const userId = req.user.id
     const {contestId} = req.params
+    const {acceptedRuleKeys} = req.body || {}
 
-    const joinData = await contestService.joinContest(userId, contestId)
+    const joinData = await contestService.joinContest(userId, contestId, acceptedRuleKeys)
 
     sendResponse(res, {
         statusCode:200,
@@ -158,33 +100,29 @@ const joinContest = catchAsync(async (req:any, res:Response)=>{
 
 const getUploadedPhotos =  catchAsync(async  (req:any, res: Response)=>{
     const {contestId} = req.params
-    const {page = 1, limit = 10} = req.query
     const user = req.user
 
-    const uploadedPhotos = await contestService.getContestUploads(user.id, contestId, parseInt(page), parseInt(limit))
+    const uploadedPhotos = await contestService.getContestUploads(user.id,contestId)
 
      sendResponse(res, {
         statusCode:200,
         success:true,
         message:"photos fetched successfully",
-        data:uploadedPhotos.data,
-        meta:uploadedPhotos.meta
+        data:uploadedPhotos
     })
 })
 
 const getUploadedPhotosToVote =  catchAsync(async  (req:any, res: Response)=>{
     const {contestId} = req.params
-    const {page = "1", limit = "10"} = req.query as {page?:string, limit?:string}
     const user = req.user
 
-    const uploadedPhotos = await contestService.getContestUploadsToVote(user.id, contestId, parseInt(page), parseInt(limit))
+    const uploadedPhotos = await contestService.getContestUploadsToVote(user.id,contestId)
 
      sendResponse(res, {
         statusCode:200,
         success:true,
         message:"photos fetched successfully",
-        data:uploadedPhotos.data,
-        meta:uploadedPhotos.meta
+        data:uploadedPhotos
     })
 })
 
@@ -192,12 +130,12 @@ const getUploadedPhotosToVote =  catchAsync(async  (req:any, res: Response)=>{
 
 const uploadPhoto = catchAsync(async (req:any, res:Response)=>{
     const user = req.user
-    const { photoIds} = req.body
+    const { photoIds, acceptedRuleKeys} = req.body
     const {contestId} = req.params
 
     const file = req.file as Express.Multer.File
 
-    const uploadedPhoto = await contestService.uploadPhotoToContest(contestId, user.id, photoIds, file)
+    const uploadedPhoto = await contestService.uploadPhotoToContest(contestId, user.id, photoIds, file, acceptedRuleKeys)
 
      sendResponse(res, {
         statusCode:200,
@@ -221,39 +159,29 @@ const deleteContest = catchAsync(async (req:any, res:Response)=>{
 })
 
 const getContestsByStatus = catchAsync (async (req:Request, res:Response) => {
-    const {status, page = "1", limit = "10"} = req.query as {status:ContestStatus, page?:string, limit?:string}
+    const {status} = req.query as {status:ContestStatus}
     const userId = req.user.id
 
-    const pageNum = parseInt(page) || 1;
-    const limitNum = parseInt(limit) || 10;
-
-    const result = await contestService.getContestsByStatus(userId, status, pageNum, limitNum)
+    const contests = await contestService.getContestsByStatus(userId,status)
 
     sendResponse(res, {
         success:true,
         statusCode:httpStatus.OK,
         message:`contests fetched successfully`,
-        data:result.data,
-        meta:result.meta
+        data:contests
     })
 })
 
 const getMyActiveContests = catchAsync(async (req:Request, res:Response) => {
-    const {page = "1", limit = "10"} = req.query as {page?:string, limit?:string}
     const userId = req.user.id
     console.log(userId)
-
-    const pageNum = parseInt(page) || 1;
-    const limitNum = parseInt(limit) || 10;
-
-    const result = await contestService.getMyActiveContests(userId, pageNum, limitNum)
+    const contests = await contestService.getMyActiveContests(userId)
 
     sendResponse(res, {
         success:true,
         statusCode:httpStatus.OK,
         message:"user active contest fetched successfully",
-        data:result.data,
-        meta:result.meta
+        data:contests
     })
 })
 
@@ -285,34 +213,30 @@ const promotePhoto = catchAsync(async (req:Request, res:Response) => {
 
 const getWinners = catchAsync(async (req:Request, res:Response) => {
     const {contestId} = req.params
-    const {page = "1", limit = "10"} = req.query as {page?:string, limit?:string}
     const userId = req.user.id
 
-    const winners = await contestService.getContestWinners(contestId, parseInt(page), parseInt(limit))
+    const winners = await contestService.getContestWinners(contestId)
 
     sendResponse(res, {
         success:true,
         statusCode:httpStatus.OK,
         message:"contest winners fetched successfully",
-        data:winners.data,
-        meta:winners.meta
+        data:winners
     })
 })
 
 
 const getUserRemainingPhotos = catchAsync(async (req:Request, res:Response) => {
     const {contestId} = req.params
-    const {page = "1", limit = "10"} = req.query as {page?:string, limit?:string}
     const userId = req.user.id
 
-    const remainingPhotos = await contestService.getRemainingPhotos(userId, contestId, parseInt(page), parseInt(limit))
+    const remainingPhotos = await contestService.getRemainingPhotos(userId, contestId)
 
     sendResponse(res, {
         success:true,
         statusCode:httpStatus.OK,
         message:"remaining photos found successfully",
-        data:remainingPhotos.data,
-        meta:remainingPhotos.meta
+        data:remainingPhotos
     })
 })
 
@@ -349,15 +273,14 @@ const chargePhoto = catchAsync(async (req:Request, res:Response) => {
 const getContestPhotosSortedByVote = catchAsync(async (req:Request, res:Response)=> {
 
     const {contestId} = req.params
-    const {page = "1", limit = "10"} = req.query as {page?:string, limit?:string}
-    const photos = await contestService.getContestPhotosSortedByVote(contestId, parseInt(page), parseInt(limit))
+    const {page = "1", limit = "20"} = req.query as {page:string, limit:string}
+    const photos = await contestService.getContestPhotosSortedByVote(contestId, Number(page), Number(limit))
 
     sendResponse(res, {
         statusCode:200,
         success:true,
         message:'photos fetched successfully',
-        data:photos.data,
-        meta:photos.meta
+        data:photos
     })
 })
 
@@ -366,72 +289,83 @@ const getContestPhotosSortedByVote = catchAsync(async (req:Request, res:Response
 const getContestPhotographers = catchAsync(async (req:Request, res:Response)=> {
 
     const {contestId} = req.params
-    const {page = "1", limit = "20"} = req.query as {page?:string, limit?:string}
-    const photos = await contestService.getContestTopPhotographers(contestId, parseInt(page), parseInt(limit))
+    const userId = req.user.id
+    const {page = "1", limit = "20", level} = req.query as {page:string, limit:string, level?:string}
+    const photos = await contestService.getContestTopPhotographers(contestId, userId, Number(page), Number(limit), level)
 
     sendResponse(res, {
         statusCode:200,
         success:true,
         message:'photographer fetched successfully',
-        data:photos.data,
-        meta:photos.meta
+        data:photos
     })
 })
 
-const getPublicContestsByStatus = catchAsync(async (req:Request, res:Response) => {
-    const {status, page = "1", limit = "20"} = req.query as {status: string, page?: string, limit?: string}
-    
-    if (!status) {
-        return sendResponse(res, {
-            statusCode: 400,
-            success: false,
-            message: "Status query parameter is required",
-            data: null
-        });
-    }
-
-    // Validate that status is a valid ContestStatus
-    const validStatuses = ['UPCOMING', 'ACTIVE', 'CLOSED'];
-    if (!validStatuses.includes(status.toUpperCase())) {
-        return sendResponse(res, {
-            statusCode: 400,
-            success: false,
-            message: "Invalid status. Must be one of: UPCOMING, ACTIVE, CLOSED",
-            data: null
-        });
-    }
-
-    const pageNum = parseInt(page) || 1;
-    const limitNum = parseInt(limit) || 20;
-
-    const result = await contestService.getPublicContestsByStatus(status as any, pageNum, limitNum);
+const selectAwardPhoto = catchAsync(async (req:Request, res:Response) => {
+    const {contestId, awardId} = req.params
+    const selection = await contestService.selectAwardPhoto(
+        contestId,
+        awardId,
+        req.body.photoId,
+        req.user.id
+    )
 
     sendResponse(res, {
-        statusCode: 200,
-        success: true,
-        message: `${status.toLowerCase()} contests fetched successfully`,
-        data: result.data,
-        meta: result.meta
-    });
-});
+        success:true,
+        statusCode:httpStatus.OK,
+        message:"prize photo selected successfully",
+        data:selection
+    })
+})
 
+const getAwardSelections = catchAsync(async (req:Request, res:Response) => {
+    const selections = await contestService.getContestAwardSelections(req.params.contestId)
+
+    sendResponse(res, {
+        success:true,
+        statusCode:httpStatus.OK,
+        message:"contest prize selections fetched successfully",
+        data:selections
+    })
+})
+
+const getContestPrizes = catchAsync(async (req:Request, res:Response) => {
+    const {contestId} = req.params
+    const prizes = await contestService.getContestPrizes(contestId)
+
+    sendResponse(res, {
+        success:true,
+        statusCode:httpStatus.OK,
+        message:"contest prizes fetched successfully",
+        data:prizes
+    })
+})
+
+const getContestYCTopPicks = catchAsync(async (req:Request, res:Response)=> {
+
+    const {contestId} = req.params
+    const {page = "1", limit = "20"} = req.query as {page:string, limit:string}
+    const photos = await contestService.getContestYCTopPicks(contestId, Number(page), Number(limit))
+
+    sendResponse(res, {
+        statusCode:200,
+        success:true,
+        message:'yc top picks fetched successfully',
+        data:photos
+    })
+})
 export const contestController = {
     createContest,
+    getCreateOptions,
     uploadPhoto,
     getUploadedPhotos,
     deleteContest,
     getContestsByStatus,
-    getPublicContestsByStatus,
     getMyActiveContests,
     joinContest,
     updateContestDetails,
     getContestById,
     getAllContests,
-    createRecurringContest,
-    getRecurringContests,
-    getRecurringContestById,
-    updateRecurringContestDetails,
-    deleteRecurringContest,
     promotePhoto,
     getWinners,
     getUserRemainingPhotos,
@@ -440,6 +374,10 @@ export const contestController = {
     deleteContestPhoto,
     getContestPhotosSortedByVote,
     getContestPhotographers,
-    getUploadedPhotosToVote
+    getContestYCTopPicks,
+    selectAwardPhoto,
+    getAwardSelections,
+    getUploadedPhotosToVote,
+    getContestPrizes
 
 }

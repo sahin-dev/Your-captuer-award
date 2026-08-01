@@ -12,6 +12,7 @@ export const UserDto = (user:User)=>{
         email: user.email,
         role: user.role,
         phone: user.phone,
+        dateOfBirth:user.dateOfBirth,
         avatar: user.avatar,
         cover: user.cover,
         location: user.location

@@ -3,87 +3,43 @@ import ApiError from '../../../errors/ApiError';
 import httpstatus from 'http-status';
 import { fileUploader } from '../../../helpers/fileUploader';
 import { ITeam } from './team.interface';
-import { ContestMode, ContestStatus, MemberLevel, NotificationType, TeamAccessibility } from '../../../prismaClient';
+import { ContestStatus, HistoryResult, JoinRequestStatus, LevelName, MatchResult, MatchStatus, MemberLevel, NotificationType, TeamAccessibility } from '../../../prismaClient';
 import { contestService } from '../Contest/contest.service';
-import { createExposureWatcher } from '../Agenda/exposureWatcher';
 import { notificationService } from '../Notification/notification.service';
 import { levelService } from '../Level/level.service';
 import { voteService } from '../Vote/vote.service';
 import { userService } from '../User/user.service';
-import { paginationHelper } from '../../../helpers/paginationHelper';
 import { profileService } from '../Profile/profile.service';
-import { userStoreService } from '../User/UserStore/userStore.service';
+import { paginationHelper } from '../../../helpers/paginationHelper';
 
 
 //create a team
-//Only subscribed users can create a team
+//Now, only admin can create  a team
 
 export const createTeam = async (creatorId: string, body: ITeam, file:Express.Multer.File) => {
 
-    // Check if user has an active subscription
-    const user = await prisma.user.findUnique({
-        where: { id: creatorId },
-        include: { subscriptions: true }
+    const badgeUrl = await fileUploader.uploadToDigitalOcean(file)
+    const min_requirement_order = parseInt(body.min_requirement)
+
+    const level = await levelService.getLevelByOrder(min_requirement_order)
+
+
+    const team = await prisma.team.create({
+        data: {
+            creatorId,
+            name:body.name,
+            level: body.level,
+            language: body.language,
+            country: body.country,
+            description: body.description,
+            min_requirement: body.min_requirement,
+            min_requirement_str: level?.levelName ?? 'None',
+            accessibility: body.accessibility as TeamAccessibility,
+            badge: badgeUrl.Location,
+        },
     });
 
-    if (!user) {
-        throw new ApiError(httpstatus.NOT_FOUND, "User not found")
-    }
-
-    const userStore = await userStoreService.getStoreData(creatorId)
-
-    if(userStore && userStore.key < 5){
-        throw new ApiError(httpstatus.BAD_REQUEST, "You need at least 5 keys to create a team. Please purchase keys from the store.")
-    }
-
-    // Check if user has an active subscription plan
-    // const hasActiveSubscription = user.subscriptions && user.subscriptions.some(sub => {
-    //     const now = new Date();
-    //     return sub.status === 'VALID' && sub.endDate && sub.endDate > now;
-    // });
-
-    // if (!hasActiveSubscription) {
-    //     throw new ApiError(httpstatus.FORBIDDEN, "Only subscribed users can create a team. Please subscribe first.")
-    // }
-
-    if (await hasTeam(creatorId)) {
-        throw new ApiError(httpstatus.BAD_REQUEST, "You are already joined a team!")
-    }
-
-    // const badgeUrl = await fileUploader.upload.single("badge")
-    // const min_requirement = parseInt(body.min_requirement)
-
-    // const level = await levelService.getLevelByOrder(min_requirement)
-    
-    // Upload badge file and get URL with BASE_URL prefix
-    const badgeUrl = (await fileUploader.uploadToFilesystem(file)).Location;
-
-    const team = await prisma.$transaction(async (tx) => {
-        const team = await tx.team.create({
-            data: {
-                creatorId,
-                name:body.name,
-                level: body.level,
-                language: body.language,
-                country: body.country,
-                description: body.description,
-                min_requirement:`${body.min_requirement}`,
-                min_requirement_str: 'None',
-                accessibility: body.accessibility as TeamAccessibility,
-                badge: badgeUrl,
-            },
-        });
-
-
-
-        await tx.teamMember.create({data:{memberId:creatorId,teamId:team.id, level:MemberLevel.LEADER}})
-        await tx.team.update({where:{id:team.id}, data:{member_count:{increment:1}}})
-        await tx.userStore.update({where:{userId:creatorId}, data:{key:{decrement:5}}})
-
-        return team
-    })
-    
-    
+    const member = await prisma.teamMember.create({data:{memberId:creatorId,teamId:team.id, level:MemberLevel.LEADER}})
     return team;
 };
 
@@ -99,7 +55,7 @@ export const updateTeam = async (teamId: string, body: Partial<ITeam>, file?:Exp
 
     let badgeUrl = existingTeam.badge
     if(file){
-        badgeUrl = (await fileUploader.uploadToFilesystem(file)).Location
+        badgeUrl = (await fileUploader.uploadToDigitalOcean(file)).Location
     }
 
     const updatedTeam = await prisma.team.update({
@@ -111,7 +67,6 @@ export const updateTeam = async (teamId: string, body: Partial<ITeam>, file?:Exp
             country: body.country || existingTeam.country,
             description: body.description || existingTeam.description,
             accessibility: (body.accessibility || existingTeam.accessibility) as TeamAccessibility,
-            min_requirement: body.min_requirement || existingTeam.min_requirement,
             badge: badgeUrl,
         },
     });
@@ -121,27 +76,21 @@ export const updateTeam = async (teamId: string, body: Partial<ITeam>, file?:Exp
 
 //Get all the teams
 
-export const getTeams = async (s?:string, page?: number, limit?: number) => {
-    const paginationOptions = paginationHelper.calculatePagination({
-        page: page || 1,
-        limit: limit || 10,
-        sortBy: 'createdAt',
-        sortOrder: 'desc'
-    });
+export const getTeams = async (search?:string, page?:number, limit?:number) => {
+    const { skip, limit:take, page:currentPage } = paginationHelper.calculatePagination({page, limit})
 
-    const teams = await prisma.team.findMany({
-        where:{name:{contains:s, mode:"insensitive"}},
-        skip: paginationOptions.skip,
-        take: paginationOptions.limit,
-        orderBy: { [paginationOptions.sortBy]: paginationOptions.sortOrder as any }
-    });
+    const where = search ? { name:{contains:search, mode:'insensitive' as const} } : {}
 
-    const total = await prisma.team.count({
-        where:{name:{contains:s, mode:"insensitive"}}
-    });
-    const meta = paginationHelper.getPaginationMetaData(paginationOptions.page, paginationOptions.limit, total);
+    const [teams, total] = await Promise.all([
+        prisma.team.findMany({
+            where,
+            include: { creator: true, members: { include: { member: true } } },
+            skip, take
+        }),
+        prisma.team.count({where})
+    ]);
 
-    return { data: teams, meta };
+    return { data:teams, meta:paginationHelper.getPaginationMetaData(currentPage, take, total) };
 };
 
 
@@ -158,9 +107,7 @@ const getTeam = async (teamId:string)=>{
 export const getTeamDetails = async (teamId: string) => {
     const team = await prisma.team.findUnique({
         where: { id: teamId },
-        include: { creator: {select:{id:true, avatar:true, fullName:true, firstName:true, lastName:true}}, members:{
-            include:{member:{select:{id:true, avatar:true, fullName:true, firstName:true, lastName:true}}}
-        } },
+        include: { creator: {select:{id:true, avatar:true, fullName:true, firstName:true, lastName:true}} },
     });
 
     if (!team) {
@@ -175,9 +122,7 @@ const getMyTeamDetails = async (userId:string)=>{
     if(!member){
         throw new ApiError(httpstatus.NOT_FOUND, "member does not found")
     }
-    const team = await prisma.team.findUnique({where:{id:member.teamId}, include:{creator:true,members:{
-        include:{member:{select:{id:true, avatar:true, fullName:true, firstName:true, lastName:true}}}
-    }}})
+    const team = await prisma.team.findUnique({where:{id:member.teamId}})
 
     if(!team){
         throw new ApiError(httpstatus.NOT_FOUND, "team not found")
@@ -185,9 +130,9 @@ const getMyTeamDetails = async (userId:string)=>{
 
     const memberCount = await prisma.teamMember.count({where:{teamId:team?.id}})
 
-   
+    const memberDetails = await getMembers(team.id)
 
-  return {team,memberCount}
+  return {team, members:memberDetails,memberCount}
 }
 
 
@@ -247,50 +192,23 @@ const getMyTeamDetails = async (userId:string)=>{
 // };
 
 
-const getSuggestedTeams = async (userId:string, page?: number, limit?: number) => {
+const getSuggestedTeams = async (userId:string, page?:number, limit?:number) => {
     const user = await userService.getUserDetails(userId)
 
     if(!user){
         throw new ApiError(httpstatus.NOT_FOUND, "user not found")
     }
+    const country = user.country as string
+    const { skip, limit:take, page:currentPage } = paginationHelper.calculatePagination({page, limit})
 
-    const paginationOptions = paginationHelper.calculatePagination({
-        page: page || 1,
-        limit: limit || 10,
-        sortBy: 'createdAt',
-        sortOrder: 'desc'
-    });
+    const where = { OR:[{country}, {min_requirement:String(user.currentLevel)}] }
 
-    // Build OR conditions dynamically
-    const orConditions: any[] = [];
-    
-    // Only add country filter if user has a country
-    if (user.country) {
-        orConditions.push({ country: user.country });
-    }
-    
-    // Add level requirement filter
-    orConditions.push({ min_requirement: `${user.currentLevel}` });
+    const [teams, total] = await Promise.all([
+        prisma.team.findMany({where, skip, take}),
+        prisma.team.count({where})
+    ])
 
-    const teams = await prisma.team.findMany({
-        where:{
-            ...(orConditions.length > 0 && { OR: orConditions }),
-            members:{none:{memberId:userId}}
-        },
-        skip: paginationOptions.skip,
-        take: paginationOptions.limit,
-        orderBy: { [paginationOptions.sortBy]: paginationOptions.sortOrder as any }
-    })
-
-    const total = await prisma.team.count({
-        where:{
-            ...(orConditions.length > 0 && { OR: orConditions })
-        }
-    });
-
-    const meta = paginationHelper.getPaginationMetaData(paginationOptions.page, paginationOptions.limit, total);
-
-    return { data: teams, meta }
+    return { data:teams, meta:paginationHelper.getPaginationMetaData(currentPage, take, total) }
 }
 
 const isTeamExist = async (teamId:string)=>{
@@ -307,36 +225,12 @@ export const deleteTeam = async (userId:string, teamId: string) => {
         throw new ApiError(httpstatus.NOT_FOUND, 'Team not found');
     }
 
-    const member = await prisma.teamMember.findFirst({ where: { teamId: teamId, memberId: userId } });
-    if (!member) {
-        throw new ApiError(httpstatus.BAD_REQUEST, 'You are not member of this team.');
+    const requester = await prisma.teamMember.findFirst({where:{memberId:userId, teamId}})
+    if(existingTeam.creatorId !== userId && (!requester || requester.level !== MemberLevel.LEADER)){
+        throw new ApiError(httpstatus.FORBIDDEN, 'You are not allowed to delete this team');
     }
 
-    if (member.level !== MemberLevel.LEADER) {
-        throw new ApiError(httpstatus.BAD_REQUEST, 'You are not allowed to delete this team.');
-    }
-
-    const teamMembers = await prisma.teamMember.findMany({ where: { teamId } });
-    const teamMemberIds = teamMembers.map((m) => m.id);
-
-    await prisma.$transaction([
-        // Clear team-member references from contest participant records before deleting team members.
-        prisma.contestParticipant.updateMany({
-            where: { memberId: { in: teamMemberIds } },
-            data: { memberId: null }
-        }),
-        prisma.teamMatchHistory.deleteMany({
-            where: { OR: [{ teamId }, { opponent_team_id: teamId }] }
-        }),
-        prisma.teamJoinRequest.deleteMany({ where: { teamId } }),
-        prisma.teamInvitation.deleteMany({ where: { teamId } }),
-        prisma.teamParticipation.deleteMany({ where: { teamId } }),
-        prisma.chat.deleteMany({ where: { teamId } }),
-        prisma.room.deleteMany({ where: { teamId } }),
-        prisma.teamMatch.deleteMany({ where: { OR: [{ team1Id: teamId }, { team2Id: teamId }] } }),
-        prisma.teamMember.deleteMany({ where: { teamId } }),
-        prisma.team.delete({ where: { id: teamId } })
-    ]);
+    await prisma.team.delete({ where: { id: teamId } });
 
     return { message: 'Team deleted successfully' };
 };
@@ -356,21 +250,6 @@ const joinATeam = async (userId:string, teamId:string)=>{
     const existingTeam = await prisma.teamMember.findFirst({where:{memberId:userId}})
     if(existingTeam){
         throw new ApiError(httpstatus.BAD_REQUEST, "You are already joined a team!")
-    }
-
-    const userLevel = await userService.getUserCurrentLevel(userId)
-    const teamLevel = await levelService.getLevelByName(team.min_requirement as any)
-
-    if(userLevel.currentLevel.order < teamLevel?.order!){
-        throw new ApiError(httpstatus.BAD_REQUEST, "Sorry, you do not meet the minimum requirement to join this team")
-    }
-
-    if(team.accessibility === TeamAccessibility.PRIVATE){
-        throw new ApiError(httpstatus.BAD_REQUEST, "Sorry, you can not join this team without invitation")
-    }
-
-    if(team.member_count >= team.member_slots){
-        throw new ApiError(httpstatus.BAD_REQUEST, "Sorry, this team is full")
     }
 
     // if(team.min_requirement >= (await userService.getUserCurrentLevel(userId))){
@@ -393,7 +272,7 @@ const isTeamMemberExist = async (userId:string, teamId:string)=>{
     return member || false
 }
 
-const hasTeam =async (userId:string)=>{
+const isAlreaderJoinedTeam =async (userId:string)=>{
     const userJoined = await prisma.teamMember.findFirst({where:{memberId:userId}})
 
     if(userJoined){
@@ -407,18 +286,14 @@ const hasTeam =async (userId:string)=>{
 
 const joinTeamContest = async (userId:string,contestId:string, teamId:string)=>{
     const contest = await contestService.getContestById(contestId)
-    if(contest?.mode !== ContestMode.TEAM){
-        throw new ApiError(httpstatus.BAD_REQUEST, "Contest is only for solo participation")
-    }
     if(!contest){
-        throw new ApiError(httpstatus.NOT_FOUND, "Team contest not found")
+        throw new ApiError(httpstatus.NOT_FOUND, "Contest not found")
     }
     const teamMember = await prisma.teamMember.findFirst({where:{memberId:userId, teamId}})
     if(!teamMember){
         throw new ApiError(httpstatus.NOT_FOUND, "Team member does not exist")
     }
     const contestParticipant = await prisma.contestParticipant.create({data:{memberId:teamMember.id,userId:userId, contestId}})
-    await createExposureWatcher(contestParticipant.id)
 
 }
 
@@ -428,473 +303,34 @@ const getJoinedTeamContests = async (userId:string)=>{
     return teamJoinedContests
 }
 
-const getAllTeamMember = async (teamId:string, page?: number, limit?: number)=>{
+const getAllTeamMember = async (teamId:string, page?:number, limit?:number)=>{
     const team = await prisma.team.findUnique({where:{id:teamId}})
 
     if(!team){
 
         throw new ApiError(httpstatus.NOT_FOUND, 'Team not found')
     }
+    const { skip, limit:take, page:currentPage } = paginationHelper.calculatePagination({page, limit})
 
-    const paginationOptions = paginationHelper.calculatePagination({
-        page: page || 1,
-        limit: limit || 10,
-        sortBy: 'createdAt',
-        sortOrder: 'desc'
-    });
-
-    const members = await prisma.teamMember.findMany({
-        where:{teamId},
-        skip: paginationOptions.skip,
-        take: paginationOptions.limit,
-        include:{member:{select:{id:true, avatar:true, firstName:true, lastName:true, fullName:true}}},
-        orderBy: { [paginationOptions.sortBy]: paginationOptions.sortOrder as any }
-    })
-
-    const total = await prisma.teamMember.count({where:{teamId}});
-    const meta = paginationHelper.getPaginationMetaData(paginationOptions.page, paginationOptions.limit, total);
-
-    return { data: members, meta }
-}
-
-/**
- * Get list of available TEAM contests for a team to participate in
- * Only shows contests with 5-24 hours remaining
- * @param teamId - The team ID
- * @returns List of active TEAM contests with participant count and time remaining
- */
-const getAvailableTeamContests = async (teamId: string, page?: number, limit?: number) => {
-    // Verify team exists
-    const team = await isTeamExist(teamId)
-    if (!team) {
-        throw new ApiError(httpstatus.NOT_FOUND, "Team not found")
-    }
-
-
-    const paginationOptions = paginationHelper.calculatePagination({
-        page: page || 1,
-        limit: limit || 10,
-        sortBy: 'startDate',
-        sortOrder: 'asc'
-    });
-
-    // Get all active TEAM mode contests
-    const allContests = await prisma.contest.findMany({
-        where: {
-            status: ContestStatus.ACTIVE,
-           
-            // mode: ContestMode.TEAM
-        },
-        include: {
-            participants: {
-                where: { status: 'ACTIVE',member:{teamId} },
-       
-               
-            },
-            _count: { select: { participants: true } }
-        },
-        orderBy: { [paginationOptions.sortBy]: paginationOptions.sortOrder as any }
-    })
-
-
-    console.log("All active contests:", allContests)
-    // Filter contests by time remaining (5-24 hours only)
-    const now = new Date();
-    const fiveHoursFromNow = new Date(now.getTime() + 5 * 60 * 60 * 1000);
-    const twentyFourHoursFromNow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
-
-    const contestsWithinTimeWindow = allContests.filter(contest => {
-        const timeRemaining = contest.endDate.getTime() - now.getTime();
-        const fiveHoursInMs = 5 * 60 * 60 * 1000;
-        const twentyFourHoursInMs = 24 * 60 * 60 * 1000;
-
-        return timeRemaining >= fiveHoursInMs && timeRemaining <= twentyFourHoursInMs;
-    });
-    console.log("Contests within time window:", contestsWithinTimeWindow);
-    // Filter contests where team hasn't already participated
-    const participatingMembers = await prisma.contestParticipant.findMany({
-        where: { contestId: { in: contestsWithinTimeWindow.map(c => c.id) } },
-        include: { member: { select: { teamId: true } } }
-    })
-
-    const teamContestParticipations = new Set(
-        participatingMembers
-            .filter(p => p.member?.teamId === teamId)
-            .map(p => p.contestId)
-    )
-
-    console.log("Team contest participations:", teamContestParticipations)
-
-    const availableContests = contestsWithinTimeWindow.filter(contest => true)
-
-    // Apply pagination
-    const paginatedContests = availableContests.slice(
-        (paginationOptions.page - 1) * paginationOptions.limit,
-        paginationOptions.page * paginationOptions.limit
-    );
-
-    const total = availableContests.length;
-    const meta = paginationHelper.getPaginationMetaData(paginationOptions.page, paginationOptions.limit, total);
-
-    const mappedContests = paginatedContests.map(contest => {
-        const timeRemaining = contest.endDate.getTime() - now.getTime();
-        const hoursRemaining = Math.floor(timeRemaining / (60 * 60 * 1000));
-
-        // Count how many members from THIS team have already joined
-        // const teamMembersJoined = contest.participants.filter(p => p.member?.teamId === teamId).length;
-
-        return {
-            id: contest.id,
-            title: contest.title,
-            description: contest.description,
-            banner: contest.banner,
-            startDate: contest.startDate,
-            endDate: contest.endDate,
-            maxUploads: contest.maxUploads,
-            hoursRemaining,
-            totalParticipants: contest.participants.length,
-            participantDetails: contest.participants
-        };
-    });
-
-    return { data: mappedContests, meta }
-}
-
-/**
- * Start team match with automatic rival team finding
- * Only LEADER and MODERATOR can start matches
- * Team admin selects a contest, system finds rival team with similar skill level and starts match
- * Requires minimum 1 photo and maximum based on contest's maxUploads
- * @param teamId - The team ID (team admin's team)
- * @param contestId - The selected contest ID
- * @param userId - The user starting the match (must be LEADER or MODERATOR)
- * @param files - Photo/proof file uploads (minimum 1, maximum = contest.maxUploads)
- * @returns Created team match with rival team details
- */
-const startTeamMatchWithAutoRival = async (teamId: string, contestId: string, userId?: string, files?: Express.Multer.File[]) => {
-    // Validate files upload - minimum 1
-    if (!files || files.length === 0) {
-        throw new ApiError(httpstatus.BAD_REQUEST, 'Minimum 1 photo file is required to start a team match')
-    }
-    // Verify user has permission to start match (LEADER or MODERATOR only)
-    if (userId) {
-        const userTeamMember = await prisma.teamMember.findFirst({
-            where: { teamId, memberId: userId }
-        })
-
-        if (!userTeamMember || (userTeamMember.level !== MemberLevel.LEADER && userTeamMember.level !== MemberLevel.MODERATOR)) {
-            throw new ApiError(httpstatus.FORBIDDEN, "Only team leader or moderator can start matches")
-        }
-    }
-
-    // Verify contest exists and is active
-    const contest = await prisma.contest.findUnique({
-        where: { id: contestId, status: ContestStatus.ACTIVE },
-        include: { _count: { select: { participants: true } } }
-    })
-
-    if (!contest) {
-        throw new ApiError(httpstatus.NOT_FOUND, "Contest not found or not active")
-    }
-
-    // Validate files count against contest maxUploads
-    if (files.length > contest.maxUploads) {
-        throw new ApiError(httpstatus.BAD_REQUEST, `Maximum ${contest.maxUploads} photo files allowed. You uploaded ${files.length}`)
-    }
-
-    // if (contest.mode !== ContestMode.TEAM) {
-    //     throw new ApiError(httpstatus.BAD_REQUEST, "This contest is not a team competition")
-    // }
-
-    // Verify team exists
-    const ownTeam = await isTeamExist(teamId)
-    if (!ownTeam) {
-        throw new ApiError(httpstatus.NOT_FOUND, "Your team not found")
-    }
-
-    // // Verify team has already registered for the contest
-    // const teamMembers = await prisma.teamMember.findMany({
-    //     where: { teamId }
-    // })
-
-    // const memberIds = teamMembers.map(m => m.id)
-
-    // const teamParticipation = await prisma.contestParticipant.findFirst({
-    //     where: {
-    //         contestId,
-    //         memberId: { in: memberIds }
-    //     }
-    // })
-
-    // if (!teamParticipation) {
-    //     throw new ApiError(httpstatus.BAD_REQUEST, "Your team must register for this contest before starting a match")
-    // }
-
-    // Check if team already has an active match in this contest
-    const existingActiveMatch = await prisma.teamMatch.findFirst({
-        where: {
-            contestId,
-            status: 'ACTIVE',
-            OR: [
-                { team1Id: teamId },
-                { team2Id: teamId }
-            ]
-        }
-    })
-
-    if (existingActiveMatch) {
-        throw new ApiError(httpstatus.CONFLICT, "Your team already has an active match in this contest")
-    }
-
-    // Automatically find a rival team with similar skill level
-    const rivalTeam = await findRivalTeam(teamId, contestId)
-
-    if (!rivalTeam) {
-        throw new ApiError(httpstatus.NOT_FOUND, "No rival team found with similar skill level. Please try again later.")
-    }
-
-    // STEP 1: Join the user in the contest WITH uploaded photos
-    let contestParticipant;
-    if (userId) {
-        // Check if user is already a contest participant
-        contestParticipant = await prisma.contestParticipant.findUnique({
-            where: { contestId_userId: { contestId, userId } }
-        })
-
-        // If not, create participant entry WITH memberId for team score calculation
-        if (!contestParticipant) {
-            // Get user's team member ID to link to team
-            const userTeamMember = await prisma.teamMember.findFirst({
-                where: { teamId, memberId: userId }
-            })
-
-            if (!userTeamMember) {
-                throw new ApiError(httpstatus.NOT_FOUND, "User is not a member of this team")
-            }
-
-            // Create participant with memberId so votes count toward team score
-            contestParticipant = await prisma.contestParticipant.create({
-                data: {
-                    contestId,
-                    userId,
-                    memberId: userTeamMember.id  // Link to team member for team score calculation
-                }
-            })
-        }
-
-        // Upload files to contest
-        for (const file of files) {
-            // Check current upload count
-            const currentUploadCount = await prisma.contestPhoto.count({
-                where: { contestId, participantId: contestParticipant.id }
-            })
-
-            if (currentUploadCount >= contest.maxUploads) {
-                throw new ApiError(
-                    httpstatus.BAD_REQUEST,
-                    `Maximum ${contest.maxUploads} photos already uploaded. Cannot upload more.`
-                )
-            }
-
-            try {
-                // Upload the photo file
-                const uploadedPhoto = await profileService.uploadUserPhoto(userId, file)
-
-                // Create contestPhoto entry linking the photo to the participant
-                await prisma.contestPhoto.create({
-                    data: {
-                        contestId,
-                        participantId: contestParticipant.id,
-                        photoId: uploadedPhoto.id
-                    }
-                })
-            } catch (error) {
-                throw new ApiError(
-                    httpstatus.INTERNAL_SERVER_ERROR,
-                    `Failed to upload photo: ${error instanceof Error ? error.message : 'Unknown error'}`
-                )
-            }
-        }
-    }
-
-    // STEP 2: Create the match after user joins with photos
-    const teamMatch = await prisma.teamMatch.create({
-        data: {
-            contestId,
-            team1Id: teamId,
-            team2Id: rivalTeam.id,
-            status: 'ACTIVE',
-            endedAt: contest.endDate
-        },
-        include: {
-            team1: {
-                select: {
-                    id: true,
-                    name: true,
-                    skill_level: true,
-                    badge: true,
-                    creator: { select: { id: true, firstName: true, lastName: true } }
-                }
-            },
-            team2: {
-                select: {
-                    id: true,
-                    name: true,
-                    skill_level: true,
-                    badge: true,
-                    creator: { select: { id: true, firstName: true, lastName: true } }
-                }
-            },
-            contest: { select: { id: true, title: true, banner: true } }
-        }
-    })
-
-    // Update team active_match_id
-    await Promise.all([
-        prisma.team.update({
-            where: { id: teamId },
-            data: { active_match_id: teamMatch.id }
-        }),
-        prisma.team.update({
-            where: { id: rivalTeam.id },
-            data: { active_match_id: teamMatch.id }
-        })
+    const [members, total] = await Promise.all([
+        prisma.teamMember.findMany({where:{teamId}, include:{member:{select:{id:true, avatar:true, firstName:true, lastName:true, fullName:true}}}, skip, take}),
+        prisma.teamMember.count({where:{teamId}})
     ])
 
-    // Send notifications to both team leaders
-    const team1Leader = await prisma.teamMember.findFirst({
-        where: { teamId: teamMatch.team1Id, level: MemberLevel.LEADER },
-        include: { member: true }
-    })
-
-    const team2Leader = await prisma.teamMember.findFirst({
-        where: { teamId: teamMatch.team2Id, level: MemberLevel.LEADER },
-        include: { member: true }
-    })
-
-    if (team1Leader) {
-        await notificationService.postNotification(
-            'Match Started! 🎮',
-            `Your team "${teamMatch.team1.name}" is now competing against "${teamMatch.team2.name}" in ${teamMatch.contest.title}`,
-            team1Leader.memberId,
-            NotificationType.DEFAULT
-        )
-    }
-
-    if (team2Leader) {
-        await notificationService.postNotification(
-            'Match Started! 🎮',
-            `Your team "${teamMatch.team2.name}" is now competing against "${teamMatch.team1.name}" in ${teamMatch.contest.title}`,
-            team2Leader.memberId,
-            NotificationType.DEFAULT
-        )
-    }
-
-    return teamMatch
+    return { data:members, meta:paginationHelper.getPaginationMetaData(currentPage, take, total) }
 }
 
-/**
- * Original startTeamMatch - kept for backward compatibility
- * Only LEADER and MODERATOR can manually specify both teams for a match
- * Requires minimum 1 photo and maximum based on contest's maxUploads
- */
-const startTeamMatch = async (contestId:string, ownTeamId:string, otherTeamId:string, userId?: string, files?: Express.Multer.File[]) => {
-    // Validate files upload - minimum 1
-    if (!files || files.length === 0) {
-        throw new ApiError(httpstatus.BAD_REQUEST, 'Minimum 1 photo file is required to start a team match')
-    }
-
-    // Verify user has permission to start match (LEADER or MODERATOR only)
-    if (userId) {
-        const userTeamMember = await prisma.teamMember.findFirst({
-            where: { teamId: ownTeamId, memberId: userId }
-        })
-
-        if (!userTeamMember || (userTeamMember.level !== MemberLevel.LEADER && userTeamMember.level !== MemberLevel.MODERATOR)) {
-            throw new ApiError(httpstatus.FORBIDDEN, "Only team leader or moderator can start matches")
-        }
-    }
-
+const startTeamMatch = async (contestId:string, ownTeamId:string, otherTeamId:string) => {
     const contest = await prisma.contest.findUnique({where:{id:contestId, status:ContestStatus.ACTIVE}})
 
     if(!contest){
         throw new ApiError(httpstatus.NOT_FOUND, "contest not found")
     }
 
-    // Validate files count against contest maxUploads
-    if (files.length > contest.maxUploads) {
-        throw new ApiError(httpstatus.BAD_REQUEST, `Maximum ${contest.maxUploads} photo files allowed. You uploaded ${files.length}`)
-    }
-
     const ownTeam = await prisma.team.findUnique({where:{id:ownTeamId}})
     const otherTeam = await prisma.team.findUnique({where:{id:otherTeamId}})
 
-    // STEP 1: Join the user in the contest WITH uploaded photos
-    let contestParticipant;
-    if (userId) {
-        // Check if user is already a contest participant
-        contestParticipant = await prisma.contestParticipant.findUnique({
-            where: { contestId_userId: { contestId, userId } }
-        })
-
-        // If not, create participant entry WITH memberId for team score calculation
-        if (!contestParticipant) {
-            // Get user's team member ID to link to team
-            const userTeamMember = await prisma.teamMember.findFirst({
-                where: { teamId: ownTeamId, memberId: userId }
-            })
-
-            if (!userTeamMember) {
-                throw new ApiError(httpstatus.NOT_FOUND, "User is not a member of this team")
-            }
-
-            // Create participant with memberId so votes count toward team score
-            contestParticipant = await prisma.contestParticipant.create({
-                data: {
-                    contestId,
-                    userId,
-                    memberId: userTeamMember.id  // Link to team member for team score calculation
-                }
-            })
-        }
-
-        // Upload files to contest
-        for (const file of files) {
-            // Check current upload count
-            const currentUploadCount = await prisma.contestPhoto.count({
-                where: { contestId, participantId: contestParticipant.id }
-            })
-
-            if (currentUploadCount >= contest.maxUploads) {
-                throw new ApiError(
-                    httpstatus.BAD_REQUEST,
-                    `Maximum ${contest.maxUploads} photos already uploaded. Cannot upload more.`
-                )
-            }
-
-            try {
-                // Upload the photo file
-                const uploadedPhoto = await profileService.uploadUserPhoto(userId, file)
-
-                // Create contestPhoto entry linking the photo to the participant
-                await prisma.contestPhoto.create({
-                    data: {
-                        contestId,
-                        participantId: contestParticipant.id,
-                        photoId: uploadedPhoto.id
-                    }
-                })
-            } catch (error) {
-                throw new ApiError(
-                    httpstatus.INTERNAL_SERVER_ERROR,
-                    `Failed to upload photo: ${error instanceof Error ? error.message : 'Unknown error'}`
-                )
-            }
-        }
-    }
-
-    // STEP 2: Create the match after user joins with photos
-    const teamMatch = await prisma.teamMatch.create({data:{contestId, team1Id:ownTeamId, team2Id:otherTeamId, endedAt:contest.endDate}})
+   const teamMatch =  await prisma.teamMatch.create({data:{contestId, team1Id:ownTeamId, team2Id:otherTeamId, endedAt:contest.endDate}})
 
    return teamMatch
 }
@@ -909,23 +345,25 @@ const inviteUser = async (senderId:string, teamId:string, receiverId:string) => 
     }
 
     const teamMember = await isTeamMemberExist(senderId, team.id)
-    console.log(teamMember)
 
-    if(!teamMember){
+    if(!teamMember || (teamMember.level !== MemberLevel.LEADER)){
         throw new ApiError(httpstatus.BAD_REQUEST, "you are not allowed to invite any user")
     }
-
+   
     const teamInvitation = await prisma.teamInvitation.create({data:{teamId,senderId,receiverId,expiredAt: new Date(Date.now() + 30*60*1000)}})
     await notificationService.postNotificationWithPayload("Team Invitation",`You recieve an invitatino to join ${team.name} team`,receiverId,{code:teamInvitation.id}, NotificationType.INVITATION)
     await notificationService.postNotification("Invitation Sent", "Your invitation sent successfully", senderId, NotificationType.DEFAULT)
     return teamInvitation
 }
-
-const joinByInvitation = async (receiverId:string,invitationId:string) => {
-    const invitation = await prisma.teamInvitation.findFirst({where:{id:invitationId, receiverId}})
+const joinByInvitation = async (userId:string, invitationId:string) => {
+    const invitation = await prisma.teamInvitation.findUnique({where:{id:invitationId}})
 
     if(!invitation || (invitation.expiredAt < new Date())){
-        throw new ApiError(httpstatus.BAD_REQUEST, "invalid invitation or invitation expired")
+        throw new ApiError(httpstatus.BAD_REQUEST, "invitation expired")
+    }
+
+    if(invitation.receiverId !== userId){
+        throw new ApiError(httpstatus.FORBIDDEN, "This invitation does not belong to you")
     }
     try{
         const joinedTeam = await joinATeam(invitation.receiverId, invitation.teamId)
@@ -935,38 +373,18 @@ const joinByInvitation = async (receiverId:string,invitationId:string) => {
         console.log(err)
         throw new ApiError(httpstatus.BAD_REQUEST, err.message)
     }
-
+    
 }
 
 
-const leaveATeam = async (userId:string, teamId:string, memberId?:string) => {
+const leaveATeam = async (userId:string, teamId:string) => {
     const member = await prisma.teamMember.findFirst({where:{memberId:userId,teamId}})
-    if(member?.level === MemberLevel.LEADER){
-        // const leaderCount = await prisma.teamMember.count({where:{teamId,level:MemberLevel.LEADER,NOT:{id:member.id}}})
-        if (!memberId){
-            throw new ApiError(httpstatus.BAD_REQUEST,"member id required for team leader")
-        }
-
-        await selectAndAssignNewLeader(memberId)
-
-    }
-
     if(!member){
         throw new ApiError(httpstatus.NOT_FOUND, "member not found")
     }
 
-  prisma.$transaction([
-    prisma.teamMember.delete({where:{id:member.id}}),
-    prisma.team.update({where:{id:teamId}, data:{member_count:{decrement:1}}})
-    ])
-}
-
-const selectAndAssignNewLeader = async (memberId:string) => {
-    const member = await prisma.teamMember.findFirst({where:{memberId:memberId}, orderBy:{createdAt:"asc"}})
-    if(!member){
-       throw new ApiError(httpstatus.BAD_REQUEST, "member not found")
-    }
-     await prisma.teamMember.update({where:{id:member.id}, data:{level:MemberLevel.LEADER}})
+    await prisma.teamMember.delete({where:{id:member.id}})
+    await prisma.team.update({where:{id:teamId}, data:{member_count:{decrement:1}}})
 
 }
 
@@ -974,149 +392,20 @@ const removeFromTeam = async (userId:string,memberId:string, teamId:string) => {
 
     const teamMember = await isTeamMemberExist(userId, teamId)
 
-    if(!teamMember || (teamMember.level === (MemberLevel.MEMBER))){
-        throw new ApiError(httpstatus.FORBIDDEN, 'Only team leader or moderators can remove members. Moderators can only start matches.')
+    if(!teamMember || (teamMember.level !== MemberLevel.LEADER)){
+        throw new ApiError(httpstatus.BAD_REQUEST, 'Sorry, You are not allowed to remove member')
     }
 
-    const teamMemeberExist = await prisma.teamMember.findUnique({where:{id:memberId}})
-
-    if(!teamMemeberExist){
-        throw new ApiError(httpstatus.NOT_FOUND, "team member not found")
-    }
-
-    const deletedMember = await prisma.$transaction(async tx => {
-        const teamMember = await prisma.teamMember.delete({where:{id:memberId}})
-        await prisma.team.update({where:{id:teamId}, data:{member_count:{decrement:1}}})
-        return teamMember
-    }) 
-
-    return deletedMember
-}
-
-/**
- * Assign a role to a team member
- * Only LEADER can assign MODERATOR or LEADER roles
- * @param userId - The user assigning the role (must be LEADER)
- * @param memberId - The team member ID to assign role to
- * @param teamId - The team ID
- * @param newRole - The role to assign (MODERATOR or LEADER)
- */
-const assignMemberRole = async (userId: string, memberId: string, teamId: string, newRole: MemberLevel) => {
-    // Verify requester is team leader
-    const requesterMember = await prisma.teamMember.findFirst({
-        where: { memberId: userId, teamId }
-    })
-
-    if (!requesterMember || requesterMember.level !== MemberLevel.LEADER) {
-        throw new ApiError(httpstatus.FORBIDDEN, "Only team leader can assign roles")
-    }
-
-    // Verify target member exists
-    const targetMember = await prisma.teamMember.findUnique({
-        where: { id: memberId }
-    })
-
-    if (!targetMember) {
-        throw new ApiError(httpstatus.NOT_FOUND, "Team member not found")
-    }
-
-    if (targetMember.teamId !== teamId) {
-        throw new ApiError(httpstatus.BAD_REQUEST, "Member does not belong to this team")
-    }
-
-    // Validate role assignment (can only assign MODERATOR or LEADER)
-    if (newRole !== MemberLevel.MODERATOR && newRole !== MemberLevel.LEADER) {
-        throw new ApiError(httpstatus.BAD_REQUEST, "Can only assign MODERATOR or LEADER roles")
-    }
-
-    // Update member role
-    const updatedMember = await prisma.teamMember.update({
-        where: { id: memberId },
-        data: { level: newRole },
-        include: { member: { select: { id: true, firstName: true, lastName: true, fullName: true } } }
-    })
-
-    // Send notification to the member
-    await notificationService.postNotification(
-        'Role Assigned',
-        `You have been promoted to ${newRole} in your team`,
-        targetMember.memberId,
-        NotificationType.DEFAULT
-    )
-
-    return updatedMember
-}
-
-/**
- * Revoke a member's role and downgrade them to regular MEMBER
- * Only LEADER can revoke roles
- * @param userId - The user revoking the role (must be LEADER)
- * @param memberId - The team member ID to revoke role from
- * @param teamId - The team ID
- */
-const revokeMemberRole = async (userId: string, memberId: string, teamId: string) => {
-    // Verify requester is team leader
-    const requesterMember = await prisma.teamMember.findFirst({
-        where: { memberId: userId, teamId }
-    })
-
-    if (!requesterMember || requesterMember.level !== MemberLevel.LEADER) {
-        throw new ApiError(httpstatus.FORBIDDEN, "Only team leader can revoke roles")
-    }
-
-    // Verify target member exists
-    const targetMember = await prisma.teamMember.findUnique({
-        where: { id: memberId }
-    })
-
-    if (!targetMember) {
-        throw new ApiError(httpstatus.NOT_FOUND, "Team member not found")
-    }
-
-    if (targetMember.teamId !== teamId) {
-        throw new ApiError(httpstatus.BAD_REQUEST, "Member does not belong to this team")
-    }
-
-    // Cannot revoke role from another leader
-    if (targetMember.level === MemberLevel.LEADER && targetMember.memberId !== userId) {
-        throw new ApiError(httpstatus.BAD_REQUEST, "Cannot revoke role from another leader")
-    }
-
-    // Cannot revoke your own leader role (team must have at least one leader)
-    if (targetMember.memberId === userId && targetMember.level === MemberLevel.LEADER) {
-        const otherLeaders = await prisma.teamMember.count({
-            where: { teamId, level: MemberLevel.LEADER, id: { not: memberId } }
-        })
-        if (otherLeaders === 0) {
-            throw new ApiError(httpstatus.BAD_REQUEST, "Team must have at least one leader. Assign another leader before revoking your role.")
-        }
-    }
-
-    // Update member role back to MEMBER
-    const updatedMember = await prisma.teamMember.update({
-        where: { id: memberId },
-        data: { level: MemberLevel.MEMBER },
-        include: { member: { select: { id: true, firstName: true, lastName: true, fullName: true } } }
-    })
-
-    // Send notification to the member
-    await notificationService.postNotification(
-        'Role Revoked',
-        `Your ${targetMember.level} role has been revoked in your team`,
-        targetMember.memberId,
-        NotificationType.DEFAULT
-    )
-
-    return updatedMember
+    return await prisma.teamMember.delete({where:{id:memberId}})
 }
 
 const getMyTeamMatches = async (userId:string ) => {
     const teamMember = await prisma.teamMember.findFirst({where:{memberId:userId}})
-
+    
     if(!teamMember){
         throw new ApiError(httpstatus.NOT_FOUND, "team not found")
     }
-    const teamMatch = await prisma.teamMatch.findMany({where:{OR:[{team1Id:teamMember.teamId}, {team2Id:teamMember.teamId}]}, include:{contest:{select:{title:true, banner:true, maxUploads:true}}}})
+    const teamMatch = await prisma.teamMatch.findMany({where:{OR:[{team1Id:teamMember.teamId}, {team2Id:teamMember.teamId}]}, include:{contest:{select:{title:true, banner:true}}}})
 
     return teamMatch
 }
@@ -1124,31 +413,23 @@ const getMyTeamMatches = async (userId:string ) => {
 
 const getMembers = async (teamId:string, contestId?:string) => {
 
-    const members = await prisma.teamMember.findMany({where:{teamId,member:{ContestParticipant:{some:{contestId}}}},
-        include:{member:{select:{id:true, avatar:true, fullName:true, firstName:true,lastName:true,location:true}}}})
+    const members = await prisma.teamMember.findMany({where:{teamId},include:{member:{select:{id:true, avatar:true, fullName:true, firstName:true,lastName:true,location:true}}}})
     let mappedMember
     if(!contestId){
         mappedMember = members.map(async member => {
         const memberTotalVotes = await voteService.getUserTotalVotes(member.memberId)
-        const totalPhotoUploads = await prisma.contestPhoto.count({where:{contestId, participant:{memberId:member.memberId}}})
-        return {...member, totalVote:memberTotalVotes, totalPhotoUploads}
+
+        return {...member, totalVote:memberTotalVotes}
     } )
 
         return await Promise.all(mappedMember)
     }else{
         mappedMember = members.map(async member => {
-            // For team matches: get votes RECEIVED by this member (member_score)
-            const participant = await prisma.contestParticipant.findFirst({
-                where: { contestId, memberId: member.id },
-                select: { member_score: true }
-            })
-            const votesReceived = participant?.member_score ?? 0
-            
-            const totalPhotoUploads = await prisma.contestPhoto.count({where:{contestId, participant:{memberId:member.memberId}}})
-            return {...member, totalVote:votesReceived, totalPhotoUploads}
+            const memberTotalVotes = await voteService.getUserContestSpecificVote(contestId,member.memberId)
+             return {...member, totalVote:memberTotalVotes}
         })
     }
-
+   
     return await Promise.all(mappedMember)
 
 }
@@ -1179,769 +460,364 @@ const getMatchDetails = async (userId:string,matchId:string) => {
 
 }
 
-// NEW: Join Request System Functions
 
-/**
- * Send a join request to a team
- * @param userId - The user sending the request
- * @param teamId - The team to request join to
- */
-const sendJoinRequest = async (userId: string, teamId: string) => {
-    // Verify team exists
-    const team = await isTeamExist(teamId)
-    if (!team) {
-        throw new ApiError(httpstatus.NOT_FOUND, "Team not found")
+// ============ Role Management ============
+
+const assignMemberRole = async (userId:string, memberId:string, teamId:string, role:string) => {
+    if(role !== MemberLevel.MODERATOR && role !== MemberLevel.LEADER){
+        throw new ApiError(httpstatus.BAD_REQUEST, "Role must be MODERATOR or LEADER")
     }
 
-    // Check if user is already a member
-    const existingMember = await prisma.teamMember.findFirst({
-        where: { memberId: userId, teamId }
-    })
-    if (existingMember) {
-        throw new ApiError(httpstatus.CONFLICT, "You are already a member of this team")
+    const actingMember = await isTeamMemberExist(userId, teamId)
+    if(!actingMember || actingMember.level !== MemberLevel.LEADER){
+        throw new ApiError(httpstatus.FORBIDDEN, "Only the team leader can assign roles")
     }
 
-    // Check if request already exists
-    const existingRequest = await prisma.teamJoinRequest.findFirst({
-        where: { requesterId: userId, teamId, status: 'PENDING' }
-    })
-    if (existingRequest) {
-        throw new ApiError(httpstatus.CONFLICT, "You already have a pending request for this team")
+    const targetMember = await prisma.teamMember.findUnique({where:{id:memberId}})
+    if(!targetMember || targetMember.teamId !== teamId){
+        throw new ApiError(httpstatus.NOT_FOUND, "Team member not found")
     }
 
-    // Create join request
-    const joinRequest = await prisma.teamJoinRequest.create({
-        data: {
-            teamId,
-            requesterId: userId
-        },
-        include: {
-            requester: { select: { id: true, firstName: true, lastName: true, avatar: true } },
-            team: { select: { id: true, name: true } }
-        }
-    })
+    return await prisma.teamMember.update({where:{id:memberId}, data:{level:role as MemberLevel}})
+}
 
-    // Send notification to team leader
-    const teamLeader = await prisma.teamMember.findFirst({
-        where: { teamId, level: MemberLevel.LEADER },
-        include: { member: true }
-    })
+const revokeMemberRole = async (userId:string, memberId:string, teamId:string) => {
+    const actingMember = await isTeamMemberExist(userId, teamId)
+    if(!actingMember || actingMember.level !== MemberLevel.LEADER){
+        throw new ApiError(httpstatus.FORBIDDEN, "Only the team leader can revoke roles")
+    }
 
-    if (teamLeader) {
-        await notificationService.postNotification(
-            `New join request`,
-            `${joinRequest.requester.firstName} ${joinRequest.requester.lastName} requested to join ${joinRequest.team.name}`,
-            teamLeader.memberId,
-            NotificationType.TEAM_JOIN_REQUEST
-        )
+    const targetMember = await prisma.teamMember.findUnique({where:{id:memberId}})
+    if(!targetMember || targetMember.teamId !== teamId){
+        throw new ApiError(httpstatus.NOT_FOUND, "Team member not found")
+    }
+
+    if(targetMember.level === MemberLevel.LEADER){
+        throw new ApiError(httpstatus.BAD_REQUEST, "Cannot revoke the team leader's role")
+    }
+
+    return await prisma.teamMember.update({where:{id:memberId}, data:{level:MemberLevel.MEMBER}})
+}
+
+// ============ Join Request System ============
+
+const sendJoinRequest = async (userId:string, teamId:string) => {
+    const team = await getTeam(teamId)
+
+    const alreadyInTeam = await isAlreaderJoinedTeam(userId)
+    if(alreadyInTeam){
+        throw new ApiError(httpstatus.BAD_REQUEST, "You are already in a team")
+    }
+
+    const existingRequest = await prisma.teamJoinRequest.findFirst({where:{teamId, requesterId:userId, status:JoinRequestStatus.PENDING}})
+    if(existingRequest){
+        throw new ApiError(httpstatus.BAD_REQUEST, "You already have a pending join request for this team")
+    }
+
+    const joinRequest = await prisma.teamJoinRequest.create({data:{teamId, requesterId:userId}})
+
+    const leader = await prisma.teamMember.findFirst({where:{teamId, level:MemberLevel.LEADER}})
+    if(leader){
+        await notificationService.postNotificationWithPayload("New Join Request", `Someone requested to join ${team.name}`, leader.memberId, {teamId, joinRequestId:joinRequest.id}, NotificationType.TEAM_JOIN_REQUEST)
     }
 
     return joinRequest
 }
 
-/**
- * Get pending join requests for a team (team leader only)
- * @param teamId - The team ID
- * @param userId - The user requesting (must be team leader)
- */
-const getJoinRequests = async (teamId: string, userId: string, page?: number, limit?: number) => {
-    // Verify user is team leader
-    const leader = await prisma.teamMember.findFirst({
-        where: { teamId, memberId: userId, level: MemberLevel.LEADER }
-    })
-
-    if (!leader) {
-        throw new ApiError(httpstatus.FORBIDDEN, "Only team leader can view join requests")
+const getJoinRequests = async (teamId:string, userId:string, page?:number, limit?:number) => {
+    const actingMember = await isTeamMemberExist(userId, teamId)
+    if(!actingMember || (actingMember.level !== MemberLevel.LEADER && actingMember.level !== MemberLevel.MODERATOR)){
+        throw new ApiError(httpstatus.FORBIDDEN, "You are not allowed to view join requests for this team")
     }
 
-    const paginationOptions = paginationHelper.calculatePagination({
-        page: page || 1,
-        limit: limit || 10,
-        sortBy: 'createdAt',
-        sortOrder: 'desc'
-    });
+    const { skip, limit:take, page:currentPage } = paginationHelper.calculatePagination({page, limit})
+    const where = { teamId, status:JoinRequestStatus.PENDING }
 
-    const requests = await prisma.teamJoinRequest.findMany({
-        where: { teamId, status: 'PENDING' },
-        skip: paginationOptions.skip,
-        take: paginationOptions.limit,
-        include: {
-            requester: { select: { id: true, firstName: true, lastName: true, avatar: true, level: true } }
-        },
-        orderBy: { [paginationOptions.sortBy]: paginationOptions.sortOrder as any }
-    })
+    const [requests, total] = await Promise.all([
+        prisma.teamJoinRequest.findMany({where, include:{requester:{select:{id:true, avatar:true, firstName:true, lastName:true, fullName:true}}}, skip, take, orderBy:{createdAt:'desc'}}),
+        prisma.teamJoinRequest.count({where})
+    ])
 
-    const total = await prisma.teamJoinRequest.count({where: { teamId, status: 'PENDING' }});
-    const meta = paginationHelper.getPaginationMetaData(paginationOptions.page, paginationOptions.limit, total);
-
-    return { data: requests, meta }
+    return { data:requests, meta:paginationHelper.getPaginationMetaData(currentPage, take, total) }
 }
 
-/**
- * Approve a join request and add user to team
- * @param joinRequestId - The join request ID
- * @param userId - The user approving (must be team leader)
- */
-const approveJoinRequest = async (joinRequestId: string, userId: string) => {
-    // Get join request details
-    const joinRequest = await prisma.teamJoinRequest.findUnique({
-        where: { id: joinRequestId },
-        include: { team: true, requester: true }
-    })
-
-    if (!joinRequest) {
+const approveJoinRequest = async (joinRequestId:string, userId:string) => {
+    const request = await prisma.teamJoinRequest.findUnique({where:{id:joinRequestId}})
+    if(!request || request.status !== JoinRequestStatus.PENDING){
         throw new ApiError(httpstatus.NOT_FOUND, "Join request not found")
     }
 
-    if (joinRequest.status !== 'PENDING') {
-        throw new ApiError(httpstatus.CONFLICT, "This request has already been processed")
+    const actingMember = await isTeamMemberExist(userId, request.teamId)
+    if(!actingMember || (actingMember.level !== MemberLevel.LEADER && actingMember.level !== MemberLevel.MODERATOR)){
+        throw new ApiError(httpstatus.FORBIDDEN, "You are not allowed to approve join requests for this team")
     }
 
-    // Verify user is team leader
-    const leader = await prisma.teamMember.findFirst({
-        where: { teamId: joinRequest.teamId, memberId: userId, level: MemberLevel.LEADER }
-    })
-
-    if (!leader) {
-        throw new ApiError(httpstatus.FORBIDDEN, "Only team leader can approve join requests. Moderators can only start matches.")
+    const alreadyInTeam = await isAlreaderJoinedTeam(request.requesterId)
+    if(alreadyInTeam){
+        await prisma.teamJoinRequest.update({where:{id:joinRequestId}, data:{status:JoinRequestStatus.REJECTED}})
+        throw new ApiError(httpstatus.BAD_REQUEST, "Requester already joined a team")
     }
 
-    // Check team member slots
-    const memberCount = await prisma.teamMember.count({
-        where: { teamId: joinRequest.teamId, status: 'ACTIVE' }
-    })
+    await joinATeam(request.requesterId, request.teamId)
+    const updatedRequest = await prisma.teamJoinRequest.update({where:{id:joinRequestId}, data:{status:JoinRequestStatus.APPROVED}})
 
-    if (memberCount >= joinRequest.team.member_slots) {
-        throw new ApiError(httpstatus.CONFLICT, "Team member slots are full")
+    await notificationService.postNotification("Join Request Approved", "Your request to join the team was approved", request.requesterId, NotificationType.TEAM_JOIN_APPROVED)
+
+    return updatedRequest
+}
+
+const rejectJoinRequest = async (joinRequestId:string, userId:string) => {
+    const request = await prisma.teamJoinRequest.findUnique({where:{id:joinRequestId}})
+    if(!request || request.status !== JoinRequestStatus.PENDING){
+        throw new ApiError(httpstatus.NOT_FOUND, "Join request not found")
     }
 
-    // Add user to team
-    await prisma.teamMember.create({
-        data: {
-            teamId: joinRequest.teamId,
-            memberId: joinRequest.requesterId,
-            level: MemberLevel.MEMBER
-        }
+    const actingMember = await isTeamMemberExist(userId, request.teamId)
+    if(!actingMember || (actingMember.level !== MemberLevel.LEADER && actingMember.level !== MemberLevel.MODERATOR)){
+        throw new ApiError(httpstatus.FORBIDDEN, "You are not allowed to reject join requests for this team")
+    }
+
+    const updatedRequest = await prisma.teamJoinRequest.update({where:{id:joinRequestId}, data:{status:JoinRequestStatus.REJECTED}})
+
+    await notificationService.postNotification("Join Request Rejected", "Your request to join the team was rejected", request.requesterId, NotificationType.TEAM_JOIN_REJECTED)
+
+    return updatedRequest
+}
+
+// ============ Leaderboard & Match History ============
+
+const PERIOD_DAYS: Record<'weekly' | 'monthly' | 'yearly', number> = {weekly:7, monthly:30, yearly:365}
+
+const getTeamLeaderboard = async (contestId?:string, page?:number, limit?:number, period:'weekly'|'monthly'|'yearly' = 'weekly') => {
+    const { skip, limit:take, page:currentPage } = paginationHelper.calculatePagination({page, limit})
+
+    const cutoff = new Date(Date.now() - PERIOD_DAYS[period] * 24 * 60 * 60 * 1000)
+
+    const historyWhere = { match_date:{gte:cutoff}, ...(contestId ? {contest_id:contestId} : {}) }
+
+    const history = await prisma.teamMatchHistory.findMany({where:historyWhere})
+
+    const statsByTeam = new Map<string, {score:number, wins:number}>()
+    history.forEach(entry => {
+        const existing = statsByTeam.get(entry.teamId) ?? {score:0, wins:0}
+        existing.score += entry.team_score
+        if(entry.result === HistoryResult.WIN) existing.wins += 1
+        statsByTeam.set(entry.teamId, existing)
     })
 
-    // Update join request status
-    const updatedRequest = await prisma.teamJoinRequest.update({
-        where: { id: joinRequestId },
-        data: { status: 'APPROVED' }
-    })
+    const ranked = Array.from(statsByTeam.entries())
+        .sort((a,b) => (b[1].wins - a[1].wins) || (b[1].score - a[1].score))
 
-    // Update team member count
+    const total = ranked.length
+    const pageSlice = ranked.slice(skip, skip + take)
+
+    const teams = await prisma.team.findMany({where:{id:{in:pageSlice.map(([teamId]) => teamId)}}, select:{id:true, name:true, badge:true, skill_level:true}})
+    const teamById = new Map(teams.map(team => [team.id, team]))
+
+    const data = pageSlice.map(([teamId, stats], index) => ({
+        rank:skip + index + 1,
+        team:teamById.get(teamId) ?? {id:teamId},
+        wins:stats.wins,
+        score:stats.score
+    }))
+
+    return { data, meta:paginationHelper.getPaginationMetaData(currentPage, take, total), period }
+}
+
+const getTeamHistory = async (teamId:string, page?:number, limit?:number) => {
+    await getTeam(teamId)
+
+    const { skip, limit:take, page:currentPage } = paginationHelper.calculatePagination({page, limit})
+    const where = { teamId }
+
+    const [history, total] = await Promise.all([
+        prisma.teamMatchHistory.findMany({
+            where, skip, take,
+            orderBy:{match_date:'desc'},
+            include:{opponent_team:{select:{id:true, name:true, badge:true}}, contest:{select:{id:true, title:true, banner:true}}}
+        }),
+        prisma.teamMatchHistory.count({where})
+    ])
+
+    return { data:history, meta:paginationHelper.getPaginationMetaData(currentPage, take, total) }
+}
+
+const updateTeamStatsForMatch = async (teamId:string, opponentTeamId:string, teamScore:number, opponentScore:number, result:HistoryResult, matchId:string, contestId:string) => {
+    const scoreDelta = result === HistoryResult.WIN ? 3 : result === HistoryResult.DRAW ? 1 : 0
+
     await prisma.team.update({
-        where: { id: joinRequest.teamId },
-        data: { member_count: { increment: 1 } }
-    })
-
-    // Send notification to requester
-    await notificationService.postNotification(
-        'Request approved',
-        `Your request to join ${joinRequest.team.name} has been approved`,
-        joinRequest.requesterId,
-        NotificationType.TEAM_JOIN_APPROVED
-    )
-
-    return updatedRequest
-}
-
-/**
- * Reject a join request
- * @param joinRequestId - The join request ID
- * @param userId - The user rejecting (must be team leader)
- */
-const rejectJoinRequest = async (joinRequestId: string, userId: string) => {
-    // Get join request details
-    const joinRequest = await prisma.teamJoinRequest.findUnique({
-        where: { id: joinRequestId },
-        include: { team: true, requester: true }
-    })
-
-    if (!joinRequest) {
-        throw new ApiError(httpstatus.NOT_FOUND, "Join request not found")
-    }
-
-    if (joinRequest.status !== 'PENDING') {
-        throw new ApiError(httpstatus.CONFLICT, "This request has already been processed")
-    }
-
-    // Verify user is team leader
-    const leader = await prisma.teamMember.findFirst({
-        where: { teamId: joinRequest.teamId, memberId: userId, level: MemberLevel.LEADER }
-    })
-
-    if (!leader) {
-        throw new ApiError(httpstatus.FORBIDDEN, "Only team leader can reject join requests")
-    }
-
-    // Update join request status
-    const updatedRequest = await prisma.teamJoinRequest.update({
-        where: { id: joinRequestId },
-        data: { status: 'REJECTED' }
-    })
-
-    // Send notification to requester
-    await notificationService.postNotification(
-        'Request rejected',
-        `Your request to join ${joinRequest.team.name} has been rejected`,
-        joinRequest.requesterId,
-        NotificationType.TEAM_JOIN_REJECTED
-    )
-
-    return updatedRequest
-}
-
-/**
- * Calculate team skill level based on member skill levels
- * @param teamId - The team ID
- */
-const calculateTeamSkillLevel = async (teamId: string) => {
-    const members = await prisma.teamMember.findMany({
-        where: { teamId, status: 'ACTIVE' },
-        include: { member: { select: { level: true } } }
-    })
-
-    if (members.length === 0) {
-        return 'INTERMEDIATE'
-    }
-
-    // Map user levels to skill levels for averaging
-    const skillWeights: { [key: string]: number } = {
-        'LEVEL_1': 1,
-        'LEVEL_2': 2,
-        'LEVEL_3': 3,
-        'LEVEL_4': 4,
-        'LEVEL_5': 5
-    }
-
-    let totalWeight = 0
-    for (const member of members) {
-        const levelKey = (member.member.level?.toString()) || 'LEVEL_1'
-        totalWeight += skillWeights[levelKey] || 2
-    }
-
-    const avgWeight = totalWeight / members.length
-
-    if (avgWeight <= 1.5) return 'BEGINNER'
-    if (avgWeight <= 2.5) return 'INTERMEDIATE'
-    if (avgWeight <= 3.5) return 'ADVANCED'
-    return 'EXPERT'
-}
-
-/**
- * Find a rival team for auto-matching
- * @param ownTeamId - The team looking for a rival
- * @param contestId - The contest ID
- */
-const findRivalTeam = async (ownTeamId: string, contestId: string) => {
-    const ownTeam = await isTeamExist(ownTeamId)
-    if (!ownTeam) {
-        throw new ApiError(httpstatus.NOT_FOUND, "Your team not found")
-    }
-
-    // Find teams with similar skill level participating in the same contest
-    const rivalTeam = await prisma.team.findFirst({
-        where: {
-            id: { not: ownTeamId },
-            skill_level: ownTeam.skill_level,
-            // participations: {
-            //     some: { contestId }
-            // },
-            // active_match_id: null, // No active match
-            MatchesAsTeam1: { none: { contestId } }, // No existing match in this contest
-            MatchesAsTeam2: { none: { contestId } }
-        },
-        include: { members: { include: { member: true } } }
-    })
-
-    return rivalTeam
-}
-
-/**
- * Check if team has an active match
- * Enhanced with team details, scores, and member information with votes
- * @param teamId - The team ID
- */
-const getActiveMatch = async (teamId: string) => {
-
-    const team = await isTeamExist(teamId)
-    if(!team){
-        throw new ApiError(httpstatus.NOT_FOUND, "team not found")
-    }
-    const match = await prisma.teamMatch.findFirst({
-        where: {
-            status: 'ACTIVE',
-            OR: [
-                { team1Id: teamId },
-                { team2Id: teamId }
-            ]
-        },
-        include: {
-            team1: true,
-            team2: true,
-            contest: {
-                select:{id:true, title:true, banner:true, maxUploads:true}
-            }
+        where:{id:teamId},
+        data:{
+            total_matches:{increment:1},
+            score:{increment:scoreDelta},
+            win:{increment:result === HistoryResult.WIN ? 1 : 0},
+            lost:{increment:result === HistoryResult.LOSS ? 1 : 0},
+            draw:{increment:result === HistoryResult.DRAW ? 1 : 0},
         }
     })
 
-    if (!match) {
-        return {
-            has_active_team_match: false
-        }
-    }
-
-    // Get team total votes
-    const team1Vote = await voteService.getTeamTotalVotes(match.contestId, match.team1Id)
-    const team2Vote = await voteService.getTeamTotalVotes(match.contestId, match.team2Id)
-
-    console.log("Team 1 vote", team1Vote)
-    console.log("Team 2 vote", team2Vote)
-
-    // Get members with their individual votes
-    const team1Members = await getMembers(match.team1Id, match.contestId)
-    const team2Members = await getMembers(match.team2Id, match.contestId)
-
-    console.log("Team 1 members", team1Members)
-    console.log("Team 2 members", team2Members)
-
-    // Structure the response based on which team the user belongs to
-    const matchResponse = {
-        id: match.id,
-        contestId: match.contestId,
-        contest: match.contest,
-        status: match.status,
-        createdAt: match.createdAt,
-        endedAt: match.endedAt,
-        team1_score: match.team1_score || 0,
-        team2_score: match.team2_score || 0,
-        result: match.result,
-        team1: {
-            details: match.team1,
-            totalVote: team1Vote,
-            members: team1Members
-        },
-        team2: {
-            details: match.team2,
-            totalVote: team2Vote,
-            members: team2Members
-        }
-    }
-
-    // Reorder if user's team is team2 to show own team first
-    if (match.team2Id === teamId) {
-        return {
-            ...matchResponse,
-            has_active_team_match: true,
-            own: matchResponse.team2,
-            opposition: matchResponse.team1,
-            own_team_id: match.team2Id,
-            opposition_team_id: match.team1Id
-        }
-    }
-
-    return {
-        ...matchResponse,
-        has_active_team_match: true,
-        own: matchResponse.team1,
-        opposition: matchResponse.team2,
-        own_team_id: match.team1Id,
-        opposition_team_id: match.team2Id
-    }
-}
-
-/**
- * Get team leaderboard ranking
- */
-const getTeamLeaderboard = async (contestId?: string, page?: number, limit?: number, period: 'weekly' | 'monthly' | 'yearly' = 'weekly') => {
-    const paginationOptions = paginationHelper.calculatePagination({
-        page: page || 1,
-        limit: limit || 10,
-        sortBy: 'score',
-        sortOrder: 'desc'
-    });
-
-    // Helper function to get date range for a period
-    const getDateRange = (periodType: 'week' | 'month' | 'year') => {
-        const now = new Date();
-        let startDate: Date;
-        let endDate: Date;
-
-        if (periodType === 'week') {
-            // Get current week (Monday to Sunday)
-            const day = now.getDay();
-            const diff = now.getDate() - day + (day === 0 ? -6 : 1); // Adjust for Sunday
-            startDate = new Date(now.setDate(diff));
-            startDate.setHours(0, 0, 0, 0);
-            endDate = new Date(startDate);
-            endDate.setDate(endDate.getDate() + 6);
-            endDate.setHours(23, 59, 59, 999);
-        } else if (periodType === 'month') {
-            // Get current month
-            startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-            startDate.setHours(0, 0, 0, 0);
-            endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-            endDate.setHours(23, 59, 59, 999);
-        } else {
-            // Get current year
-            startDate = new Date(now.getFullYear(), 0, 1);
-            startDate.setHours(0, 0, 0, 0);
-            endDate = new Date(now.getFullYear(), 11, 31);
-            endDate.setHours(23, 59, 59, 999);
-        }
-
-        return { startDate, endDate };
-    };
-
-    // Helper function to get period leaderboard
-    const getPeriodLeaderboard = async (periodType: 'week' | 'month' | 'year', skip: number, take: number) => {
-        const { startDate, endDate } = getDateRange(periodType);
-
-        const matches = await prisma.teamMatch.findMany({
-            where: {
-                ...(contestId && { contestId }),
-                createdAt: {
-                    gte: startDate,
-                    lte: endDate
-                }
-            },
-            select: {
-                id: true,
-                team1Id: true,
-                team2Id: true,
-                team1_score: true,
-                team2_score: true,
-                status: true,
-                team1: { select: { id: true, name: true, badge: true, skill_level: true, country: true, accessibility: true } },
-                team2: { select: { id: true, name: true, badge: true, skill_level: true, country: true, accessibility: true } }
-            }
-        });
-
-        // Calculate scores for each team
-        const teamScores = new Map<string, any>();
-
-        matches.forEach(match => {
-            const team1Id = match.team1Id;
-            const team2Id = match.team2Id;
-            const team1Score = match.team1_score || 0;
-            const team2Score = match.team2_score || 0;
-
-            // Initialize team stats if not exists
-            if (!teamScores.has(team1Id)) {
-                teamScores.set(team1Id, {
-                    id: team1Id,
-                    name: match.team1.name,
-                    badge: match.team1.badge,
-                    skill_level: match.team1.skill_level,
-                    country: match.team1.country,
-                    accessibility: match.team1.accessibility,
-                    wins: 0,
-                    losses: 0,
-                    draws: 0,
-                    matches: 0,
-                    score: 0
-                });
-            }
-
-            if (!teamScores.has(team2Id)) {
-                teamScores.set(team2Id, {
-                    id: team2Id,
-                    name: match.team2.name,
-                    badge: match.team2.badge,
-                    skill_level: match.team2.skill_level,
-                    country: match.team2.country,
-                    accessibility: match.team2.accessibility,
-                    wins: 0,
-                    losses: 0,
-                    draws: 0,
-                    matches: 0,
-                    score: 0
-                });
-            }
-
-            const team1Stats = teamScores.get(team1Id);
-            const team2Stats = teamScores.get(team2Id);
-
-            team1Stats.matches++;
-            team2Stats.matches++;
-
-            if (team1Score > team2Score) {
-                team1Stats.wins++;
-                team1Stats.score += 3;
-                team2Stats.losses++;
-            } else if (team2Score > team1Score) {
-                team2Stats.wins++;
-                team2Stats.score += 3;
-                team1Stats.losses++;
-            } else {
-                team1Stats.draws++;
-                team2Stats.draws++;
-                team1Stats.score += 1;
-                team2Stats.score += 1;
-            }
-        });
-
-        // Sort by score and apply pagination
-        const sortedTeams = Array.from(teamScores.values())
-            .sort((a, b) => b.score - a.score)
-            .slice(skip, skip + take);
-
-        const total = teamScores.size;
-
-        // Add rank and member count
-        const rankedTeams = await Promise.all(sortedTeams.map(async (team, index) => {
-            // Get member count for this team
-            const memberCount = await prisma.teamMember.count({
-                where: { teamId: team.id, status: 'ACTIVE' }
-            })
-
-            return {
-                ...team,
-                rank: skip + index + 1,
-                member_count: memberCount,
-                accessibility: team.accessibility
-            }
-        }));
-
-        return {
-            data: rankedTeams,
-            meta: paginationHelper.getPaginationMetaData(
-                Math.floor(skip / take) + 1,
-                take,
-                total
-            )
-        };
-    };
-
-    // Convert period parameter to internal format
-    const periodMap = {
-        'weekly': 'week' as const,
-        'monthly': 'month' as const,
-        'yearly': 'year' as const
-    };
-
-    const periodType = periodMap[period];
-    const leaderboard = await getPeriodLeaderboard(periodType, paginationOptions.skip, paginationOptions.limit);
-
-    return {
-        period,
-        ...leaderboard
-    };
-}
-
-/**
- * Record match result and update team statistics
- * 
- * TEAM SCORING SYSTEM:
- * - When a team match starts, each team member participates in the contest
- * - Each team member's individual votes are counted toward their team's total score
- * - Team Score = Sum of all votes received by team members in the contest
- * - The team with higher total votes wins the match
- * 
- * This function:
- * 1. Determines match result (WIN/LOSS/DRAW) based on vote comparison
- * 2. Updates TeamMatch status to CLOSED with scores and winner
- * 3. Updates both teams' statistics (wins/losses/draws/total_matches)
- * 4. Creates TeamMatchHistory records for both teams
- * 5. Clears the active_match_id from both teams
- * 
- * @param matchId - The TeamMatch ID
- * @param team1Score - Team 1's total score (sum of member votes)
- * @param team2Score - Team 2's total score (sum of member votes)
- */
-const recordMatchResult = async (matchId: string, team1Score: number, team2Score: number) => {
-    const match = await prisma.teamMatch.findUnique({
-        where: { id: matchId },
-        include: { team1: true, team2: true }
+    await prisma.teamMatchHistory.upsert({
+        where:{teamId_matchId:{teamId, matchId}},
+        update:{opponent_team_id:opponentTeamId, team_score:teamScore, opponent_score:opponentScore, result, match_date:new Date(), contest_id:contestId},
+        create:{teamId, matchId, opponent_team_id:opponentTeamId, team_score:teamScore, opponent_score:opponentScore, result, match_date:new Date(), contest_id:contestId}
     })
+}
 
-    if (!match) {
-        throw new ApiError(httpstatus.NOT_FOUND, "Match not found")
+const recordMatchResult = async (matchId:string, team1Score:number, team2Score:number) => {
+    const match = await prisma.teamMatch.findUnique({where:{id:matchId}})
+    if(!match){
+        throw new ApiError(httpstatus.NOT_FOUND, "match not found")
+    }
+    if(match.status !== MatchStatus.ACTIVE){
+        throw new ApiError(httpstatus.BAD_REQUEST, "This match has already been closed")
     }
 
-    // Determine result
-    let result: 'TEAM1_WIN' | 'TEAM2_WIN' | 'DRAW'
-    let winnerTeamId: string | null
-    let team1Result: 'WIN' | 'LOSS' | 'DRAW'
-    let team2Result: 'WIN' | 'LOSS' | 'DRAW'
-
-    if (team1Score > team2Score) {
-        result = 'TEAM1_WIN'
-        winnerTeamId = match.team1Id
-        team1Result = 'WIN'
-        team2Result = 'LOSS'
-    } else if (team2Score > team1Score) {
-        result = 'TEAM2_WIN'
-        winnerTeamId = match.team2Id
-        team1Result = 'LOSS'
-        team2Result = 'WIN'
-    } else {
-        result = 'DRAW'
-        winnerTeamId = null
-        team1Result = 'DRAW'
-        team2Result = 'DRAW'
+    let result:MatchResult = MatchResult.DRAW
+    let winnerId:string | undefined
+    if(team1Score > team2Score){
+        result = MatchResult.TEAM1_WIN
+        winnerId = match.team1Id
+    }else if(team2Score > team1Score){
+        result = MatchResult.TEAM2_WIN
+        winnerId = match.team2Id
     }
 
-    // Update match record
     const updatedMatch = await prisma.teamMatch.update({
-        where: { id: matchId },
-        data: {
-            team1_score: team1Score,
-            team2_score: team2Score,
-            winner_id: winnerTeamId,
-            result,
-            endedAt: new Date(),
-            status: 'CLOSED'
-        }
+        where:{id:matchId},
+        data:{team1_score:team1Score, team2_score:team2Score, winner_id:winnerId, result, status:MatchStatus.CLOSED, endedAt:new Date()}
     })
 
-    // Update team statistics
-    if (team1Result === 'WIN') {
-        await prisma.team.update({
-            where: { id: match.team1Id },
-            data: { win: { increment: 1 }, score: { increment: team1Score }, total_matches: { increment: 1 } }
-        })
-        await prisma.team.update({
-            where: { id: match.team2Id },
-            data: { lost: { increment: 1 }, total_matches: { increment: 1 } }
-        })
-    } else if (team2Result === 'WIN') {
-        await prisma.team.update({
-            where: { id: match.team2Id },
-            data: { win: { increment: 1 }, score: { increment: team2Score }, total_matches: { increment: 1 } }
-        })
-        await prisma.team.update({
-            where: { id: match.team1Id },
-            data: { lost: { increment: 1 }, total_matches: { increment: 1 } }
-        })
-    } else {
-        await prisma.team.update({
-            where: { id: match.team1Id },
-            data: { draw: { increment: 1 }, total_matches: { increment: 1 } }
-        })
-        await prisma.team.update({
-            where: { id: match.team2Id },
-            data: { draw: { increment: 1 }, total_matches: { increment: 1 } }
-        })
-    }
+    await updateTeamStatsForMatch(match.team1Id, match.team2Id, team1Score, team2Score, result === MatchResult.TEAM1_WIN ? HistoryResult.WIN : result === MatchResult.TEAM2_WIN ? HistoryResult.LOSS : HistoryResult.DRAW, matchId, match.contestId)
+    await updateTeamStatsForMatch(match.team2Id, match.team1Id, team2Score, team1Score, result === MatchResult.TEAM2_WIN ? HistoryResult.WIN : result === MatchResult.TEAM1_WIN ? HistoryResult.LOSS : HistoryResult.DRAW, matchId, match.contestId)
 
-    // Record in team history
-    await prisma.teamMatchHistory.create({
-        data: {
-            teamId: match.team1Id,
-            matchId,
-            opponent_team_id: match.team2Id,
-            team_score: team1Score,
-            opponent_score: team2Score,
-            result: team1Result,
-            match_date: new Date(),
-            contest_id: match.contestId
-        }
-    })
-
-    await prisma.teamMatchHistory.create({
-        data: {
-            teamId: match.team2Id,
-            matchId,
-            opponent_team_id: match.team1Id,
-            team_score: team2Score,
-            opponent_score: team1Score,
-            result: team2Result,
-            match_date: new Date(),
-            contest_id: match.contestId
-        }
-    })
-
-    // Clear active match flag
-    await prisma.team.update({
-        where: { id: match.team1Id },
-        data: { active_match_id: null }
-    })
-    await prisma.team.update({
-        where: { id: match.team2Id },
-        data: { active_match_id: null }
-    })
+    await prisma.team.updateMany({where:{active_match_id:matchId}, data:{active_match_id:null}})
 
     return updatedMatch
 }
 
-/**
- * Get team match history
- * @param teamId - The team ID
- */
-const getTeamHistory = async (teamId: string, page?: number, limit?: number) => {
-    const team = await isTeamExist(teamId)
-    if(!team){
-        throw new ApiError(httpstatus.NOT_FOUND, "team not found")
-    }
-    const paginationOptions = paginationHelper.calculatePagination({
-        page: page || 1,
-        limit: limit || 10,
-        sortBy: 'match_date',
-        sortOrder: 'desc'
-    });
-
-    const history = await prisma.teamMatchHistory.findMany({
-        where: { teamId },
-        skip: paginationOptions.skip,
-        take: paginationOptions.limit,
-        include: {
-            team: { select: { id: true, name: true, badge:true } },
-            opponent_team: { select: { id: true, name: true, badge:true } },
-            contest: { select: { id: true, title: true, banner: true,endDate:true } }
-        },
-        orderBy: { [paginationOptions.sortBy]: paginationOptions.sortOrder as any }
+const getActiveMatch = async (teamId:string) => {
+    const match = await prisma.teamMatch.findFirst({
+        where:{OR:[{team1Id:teamId}, {team2Id:teamId}], status:MatchStatus.ACTIVE},
+        include:{team1:{select:{id:true, name:true, badge:true}}, team2:{select:{id:true, name:true, badge:true}}, contest:{select:{id:true, title:true, banner:true, endDate:true}}}
     })
 
-    const total = await prisma.teamMatchHistory.count({where: { teamId }});
-    const meta = paginationHelper.getPaginationMetaData(paginationOptions.page, paginationOptions.limit, total);
-
-    return { data: history, meta }
+    return match
 }
 
-const getUserTeam = async (userId:string) => {
-    if(!(await hasTeam(userId))){
-        throw new ApiError(httpstatus.BAD_REQUEST, "User is not a member of any team")
-    }
-    const teamMember = await prisma.teamMember.findFirst({where:{memberId:userId}, include:{team:true}})
+// ============ Auto-Rival Matchmaking ============
 
-    return teamMember?.team || null
+const getAvailableTeamContests = async (teamId:string, page?:number, limit?:number) => {
+    await getTeam(teamId)
+
+    const { skip, limit:take, page:currentPage } = paginationHelper.calculatePagination({page, limit})
+
+    const activeTeamMatches = await prisma.teamMatch.findMany({where:{OR:[{team1Id:teamId}, {team2Id:teamId}], status:MatchStatus.ACTIVE}, select:{contestId:true}})
+    const excludedContestIds = activeTeamMatches.map(match => match.contestId)
+
+    const where = { status:ContestStatus.ACTIVE, id:{notIn:excludedContestIds} }
+
+    const [contests, total] = await Promise.all([
+        prisma.contest.findMany({where, skip, take, select:{id:true, title:true, banner:true, startDate:true, endDate:true}}),
+        prisma.contest.count({where})
+    ])
+
+    return { data:contests, meta:paginationHelper.getPaginationMetaData(currentPage, take, total) }
+}
+
+const findRivalTeam = async (teamId:string, skillLevel:LevelName) => {
+    const teamsWithActiveMatch = await prisma.teamMatch.findMany({where:{status:MatchStatus.ACTIVE}, select:{team1Id:true, team2Id:true}})
+    const busyTeamIds = new Set<string>([teamId])
+    teamsWithActiveMatch.forEach(match => {
+        busyTeamIds.add(match.team1Id)
+        busyTeamIds.add(match.team2Id)
+    })
+
+    const rival = await prisma.team.findFirst({
+        where:{id:{notIn:Array.from(busyTeamIds)}, skill_level:skillLevel},
+        orderBy:{score:'desc'}
+    }) ?? await prisma.team.findFirst({
+        where:{id:{notIn:Array.from(busyTeamIds)}},
+        orderBy:{score:'desc'}
+    })
+
+    return rival
+}
+
+const startTeamMatchWithAutoRival = async (teamId:string, contestId:string, userId:string, files:Express.Multer.File[]) => {
+    const team = await getTeam(teamId)
+
+    const actingMember = await isTeamMemberExist(userId, teamId)
+    if(!actingMember || (actingMember.level !== MemberLevel.LEADER && actingMember.level !== MemberLevel.MODERATOR)){
+        throw new ApiError(httpstatus.FORBIDDEN, "Only the team leader or moderator can start a match")
+    }
+
+    const existingActiveMatch = await prisma.teamMatch.findFirst({where:{OR:[{team1Id:teamId}, {team2Id:teamId}], status:MatchStatus.ACTIVE}})
+    if(existingActiveMatch){
+        throw new ApiError(httpstatus.BAD_REQUEST, "This team already has an active match")
+    }
+
+    const contest = await prisma.contest.findUnique({where:{id:contestId}})
+    if(!contest || contest.status !== ContestStatus.ACTIVE){
+        throw new ApiError(httpstatus.BAD_REQUEST, "Contest is not open for team matches")
+    }
+
+    const rivalTeam = await findRivalTeam(teamId, team.skill_level)
+    if(!rivalTeam){
+        throw new ApiError(httpstatus.NOT_FOUND, "No available rival team found right now")
+    }
+
+    let participant = await prisma.contestParticipant.findUnique({where:{contestId_userId:{contestId, userId}}})
+    if(!participant){
+        participant = await prisma.contestParticipant.create({data:{contestId, userId, memberId:actingMember.id}})
+    }
+
+    for(const file of files){
+        const uploadedPhoto = await profileService.uploadUserPhoto(userId, file)
+        await prisma.contestPhoto.create({data:{contestId, participantId:participant.id, photoId:uploadedPhoto.id}})
+    }
+
+    const match = await startTeamMatch(contestId, teamId, rivalTeam.id)
+
+    await Promise.all([
+        prisma.team.update({where:{id:teamId}, data:{active_match_id:match.id}}),
+        prisma.team.update({where:{id:rivalTeam.id}, data:{active_match_id:match.id}}),
+        prisma.teamParticipation.upsert({
+            where:{teamId_contestId:{teamId, contestId}},
+            update:{}, create:{teamId, contestId}
+        }),
+        prisma.teamParticipation.upsert({
+            where:{teamId_contestId:{teamId:rivalTeam.id, contestId}},
+            update:{}, create:{teamId:rivalTeam.id, contestId}
+        })
+    ])
+
+    return await prisma.teamMatch.findUnique({
+        where:{id:match.id},
+        include:{team1:{select:{id:true, name:true, badge:true}}, team2:{select:{id:true, name:true, badge:true}}, contest:{select:{id:true, title:true}}}
+    })
 }
 
 
 export const teamService = {
     createTeam, getTeams, getTeamDetails, updateTeam, deleteTeam, joinATeam, isTeamExist, isTeamMemberExist, getAllTeamMember, getMyTeamDetails,
-    // Match management
     startTeamMatch,
-    startTeamMatchWithAutoRival,
-    getAvailableTeamContests,
-    // User invitations
     inviteUser,
     joinByInvitation,
-    // Match details
     getMatchDetails,
     getMyTeamMatches,
-    // Team membership
     leaveATeam,
     removeFromTeam,
     getSuggestedTeams,
-    // Role management
     assignMemberRole,
     revokeMemberRole,
-    // Join Request System
     sendJoinRequest,
     getJoinRequests,
     approveJoinRequest,
     rejectJoinRequest,
-    // Team Skill & Matching
-    calculateTeamSkillLevel,
-    findRivalTeam,
-    getActiveMatch,
-    // Leaderboard & Results
     getTeamLeaderboard,
-    recordMatchResult,
     getTeamHistory,
-    getUserTeam
+    recordMatchResult,
+    getActiveMatch,
+    getAvailableTeamContests,
+    startTeamMatchWithAutoRival
 }

@@ -1,8 +1,69 @@
 import ApiError from "../../../errors/ApiError";
-import { PrizeType } from "../../../prismaClient";
+import { AchievementKind, AwardTarget, AwardType, PrizeType } from "../../../prismaClient";
 import prisma from "../../../shared/prisma";
 import httpStatus from 'http-status'
-import { paginationHelper } from "../../../helpers/paginationHelper";
+import {
+    ContestLevelBadgeValue,
+    getContestLevelBadge,
+    getContestLevelOrder,
+    isContestLevelPrizeType,
+    prizeTypes,
+} from "../Awards/award.definitions";
+
+type AchievementMetadata = {
+    kind?: AchievementKind;
+    type?: AwardType | null;
+    target?: AwardTarget | null;
+    rankLimit?: number | null;
+    levelBadge?: ContestLevelBadgeValue | null;
+    levelOrder?: number | null;
+}
+
+type AchievementRecord = {
+    category: PrizeType;
+    kind?: AchievementKind | null;
+    levelOrder?: number | null;
+    participantId?: string | null;
+    contestId: string;
+}
+
+const getLevelOrderFromAchievement = (achievement: AchievementRecord) => {
+    return achievement.levelOrder || getContestLevelOrder(achievement.category) || 0
+}
+
+const collapseLevelAchievements = <T extends AchievementRecord>(achievements:T[]) => {
+    const levelByParticipantContest = new Map<string, T>()
+    const results:T[] = []
+
+    achievements.forEach(achievement => {
+        const isLevelAchievement = achievement.kind === AchievementKind.CONTEST_LEVEL || isContestLevelPrizeType(achievement.category)
+
+        if(!isLevelAchievement){
+            results.push(achievement)
+            return
+        }
+
+        const key = `${achievement.participantId || "NONE"}:${achievement.contestId}`
+        const saved = levelByParticipantContest.get(key)
+
+        if(!saved || getLevelOrderFromAchievement(achievement) > getLevelOrderFromAchievement(saved)){
+            levelByParticipantContest.set(key, achievement)
+        }
+    })
+
+    return [...results, ...levelByParticipantContest.values()]
+}
+
+const paginateAchievements = <T>(records:T[], page = 1, limit = 20) => {
+    const safePage = Number.isFinite(page) && page > 0 ? Math.floor(page) : 1
+    const safeLimit = Number.isFinite(limit) && limit > 0 ? Math.floor(limit) : 20
+    const start = (safePage - 1) * safeLimit
+
+    return {
+        data:records.slice(start, start + safeLimit),
+        meta:{page:safePage, limit:safeLimit, total:records.length}
+    }
+}
 
 
 //Add achievements to the user
@@ -12,148 +73,119 @@ const addAchievement = async (userId:string,contestId:string, category:PrizeType
     if(!participant){
         throw new ApiError(httpStatus.NOT_FOUND, "user does not exist in this contest")
     }
-    
-    // FIX: Include participantId when creating achievement record
-    const achievement = await prisma.contestAchievement.create({
-        data:{
-            photoId: photoId || null,
-            participantId: participant.id,
-            contestId, 
-            category
+     const achievement = await addContestAchievement(participant.id, contestId, category, photoId)
+
+     return achievement
+}
+
+const addContestAchievement = async (
+    participantId:string,
+    contestId:string,
+    category:PrizeType,
+    photoId?:string | null,
+    metadata:AchievementMetadata = {}
+) => {
+    const existingAchievement = await prisma.contestAchievement.findFirst({
+        where:{
+            participantId,
+            contestId,
+            category,
+            photoId:photoId || null,
+            ...(metadata.kind && {kind:metadata.kind}),
+            ...(metadata.target && {target:metadata.target}),
+            ...(metadata.rankLimit !== undefined && {rankLimit:metadata.rankLimit})
         }
     })
 
-    console.log(`Achievement created for user ${userId}: ${category} in contest ${contestId}`)
-    return achievement
+    if(existingAchievement){
+        return existingAchievement
+    }
+
+    return prisma.contestAchievement.create({
+        data:{
+            participantId,
+            contestId,
+            category,
+            kind:metadata.kind || AchievementKind.CONTEST_AWARD,
+            type:metadata.type || null,
+            target:metadata.target || null,
+            rankLimit:metadata.rankLimit ?? null,
+            levelBadge:metadata.levelBadge || null,
+            levelOrder:metadata.levelOrder ?? null,
+            ...(photoId && {photoId})
+        }
+    })
+}
+
+const upsertContestLevelAchievement = async (participantId:string, contestId:string, category:PrizeType) => {
+    const levelBadge = getContestLevelBadge(category)
+    const levelOrder = getContestLevelOrder(category)
+
+    if(!levelBadge || !levelOrder){
+        throw new ApiError(httpStatus.BAD_REQUEST, "Invalid contest level achievement")
+    }
+
+    const existingLevelAchievements = await prisma.contestAchievement.findMany({
+        where:{
+            participantId,
+            contestId,
+            OR:[
+                {kind:AchievementKind.CONTEST_LEVEL},
+                {category:{in:[prizeTypes.AMATEUR, prizeTypes.TALENTED, prizeTypes.SUPREME, prizeTypes.SUPERIOR, prizeTypes.TOP_NOTCH]}}
+            ]
+        }
+    })
+
+    const highestExistingOrder = Math.max(
+        0,
+        ...existingLevelAchievements.map(achievement => achievement.levelOrder || getContestLevelOrder(achievement.category) || 0)
+    )
+
+    if(highestExistingOrder >= levelOrder){
+        return existingLevelAchievements.find(achievement => {
+            const order = achievement.levelOrder || getContestLevelOrder(achievement.category)
+            return order === highestExistingOrder
+        })
+    }
+
+    return prisma.$transaction(async tx => {
+        await tx.contestAchievement.deleteMany({
+            where:{
+                participantId,
+                contestId,
+                OR:[
+                    {kind:AchievementKind.CONTEST_LEVEL},
+                    {category:{in:[prizeTypes.AMATEUR, prizeTypes.TALENTED, prizeTypes.SUPREME, prizeTypes.SUPERIOR, prizeTypes.TOP_NOTCH]}}
+                ]
+            }
+        })
+
+        return tx.contestAchievement.create({
+            data:{
+                participantId,
+                contestId,
+                category,
+                kind:AchievementKind.CONTEST_LEVEL,
+                levelBadge,
+                levelOrder,
+            }
+        })
+    })
 }
 
 //get the contest achievements for a specific user
-const getContestAchievementsByUser = async (userId:string,type?:PrizeType | string, page: number = 1, limit: number = 10)=>{
-    const { skip, limit: paginationLimit } = paginationHelper.calculatePagination({ page, limit });
-
-    let prizeCategory: PrizeType | undefined = undefined;
-    if (type) {
-        const typeStr = type.toString().toUpperCase();
-        if (typeStr === 'TOP_PHOTO' || typeStr === PrizeType.TOP_PHOTO) {
-            prizeCategory = PrizeType.TOP_PHOTO;
-        } else if (typeStr === 'TOP_PHOTOGRAPHER' || typeStr === PrizeType.TOP_PHOTOGRAPHER) {
-            prizeCategory = PrizeType.TOP_PHOTOGRAPHER;
-        }
+const getContestAchievementsByUser = async (userId:string,type?:PrizeType, page = 1, limit = 20)=>{
+    
+    const participantCount = await prisma.contestParticipant.count({where:{userId}})
+    if (participantCount <= 0){
+        throw new ApiError(httpStatus.NOT_FOUND, "participant not found")
     }
-
-    const where: any = {
-        participant: {
-            userId: userId
-        }
-    };
-
-    if (prizeCategory) {
-        where.category = prizeCategory;
-    }
-
     const achievements = await prisma.contestAchievement.findMany({
-        where,
-        skip,
-        take: paginationLimit,
-        include: {
-            contest: {
-                select: {
-                    id: true,
-                    title: true,
-                    banner: true,
-                    description: true,
-                    startDate: true,
-                    endDate: true
-                }
-            },
-            photo: {
-                include: {
-                    photo: {
-                        select: {
-                            id: true,
-                            url: true,
-                            title: true,
-                            description: true
-                        }
-                    },
-                    _count: {
-                        select: { votes: true }
-                    }
-                }
-            },
-            participant: {
-                include: {
-                    photos: {
-                        include: {
-                            photo: {
-                                select: {
-                                    id: true,
-                                    url: true,
-                                    title: true,
-                                    description: true
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        orderBy: { createdAt: 'desc' }
-    });
-
-    const total = await prisma.contestAchievement.count({ where });
-    const meta = paginationHelper.getPaginationMetaData(page, paginationLimit, total);
-
-    const formattedData = achievements.map(ach => {
-        const contestData = ach.contest;
-        if (ach.category === PrizeType.TOP_PHOTOGRAPHER) {
-            const uploadedPhotos = ach.participant?.photos.map(p => ({
-                id: p.id,
-                title: p.title,
-                rank: p.rank,
-                photoId: p.photoId,
-                photoDetails: p.photo,
-                createdAt: p.createdAt
-            })) || [];
-
-            return {
-                id: ach.id,
-                category: ach.category,
-                contestId: ach.contestId,
-                participantId: ach.participantId,
-                createdAt: ach.createdAt,
-                updatedAt: ach.updatedAt,
-                contest: contestData,
-                uploadedPhotos
-            };
-        } else {
-            const photoDetails = ach.photo ? {
-                id: ach.photo.id,
-                title: ach.photo.title,
-                rank: ach.photo.rank,
-                photoId: ach.photo.photoId,
-                photoDetails: ach.photo.photo,
-                createdAt: ach.photo.createdAt
-            } : null;
-
-            const totalVotes = ach.photo?._count?.votes || 0;
-
-            return {
-                id: ach.id,
-                category: ach.category,
-                contestId: ach.contestId,
-                participantId: ach.participantId,
-                photoId: ach.photoId,
-                createdAt: ach.createdAt,
-                updatedAt: ach.updatedAt,
-                contest: contestData,
-                photo: photoDetails,
-                totalVotes
-            };
-        }
-    });
-
-    return { data: formattedData, meta };
+        where:{participant:{userId}, ...(type && {category:type})},
+        include:{contest:{select:{id:true, title:true, banner:true}}},
+        orderBy:{createdAt:"desc"}
+    })
+    return paginateAchievements(collapseLevelAchievements(achievements), page, limit)
 }
 
 
@@ -165,33 +197,25 @@ const getPhotoAchievements = async (photoId:string)=>{
     }
     const achievements = await prisma.contestAchievement.findMany({where:{photoId}})
 
-    return achievements
+    return collapseLevelAchievements(achievements)
 }
 
 
 const getContestAchievements = async (contestId:string)=>{
     const achievememnts = await prisma.contestAchievement.findMany({where:{contestId}})
 
-    return achievememnts
+    return collapseLevelAchievements(achievememnts)
 }
 
 
-const getAchievements = async (contestId:string, page: number = 1, limit: number = 10)=>{
-    const { skip, limit: paginationLimit } = paginationHelper.calculatePagination({ page, limit });
-
+const getAchievements = async (contestId:string, page = 1, limit = 20)=>{
     const achievements = await prisma.contestAchievement.findMany({
-        where:{contestId}, 
-        skip,
-        take: paginationLimit,
-        include:{photo:{select:{photo:{select:{id:true, url:true}}}}, 
-        participant:{select:{user:{omit:{password:true, accessToken:true}}, photos:{select:{photo:{select:{id:true, url:true}}}}}}},
-        orderBy: { createdAt: 'desc' }
+        where:{contestId},
+        include:{photo:{select:{photo:{select:{id:true, url:true}}}}, participant:{select:{user:true}}},
+        orderBy:{createdAt:"desc"}
     })
 
-    const total = await prisma.contestAchievement.count({where:{contestId}});
-    const meta = paginationHelper.getPaginationMetaData(page, paginationLimit, total);
-
-    return { data: achievements };
+    return paginateAchievements(collapseLevelAchievements(achievements), page, limit)
 }
 
 const getAchievementCount = async (userId:string)=>{
@@ -202,98 +226,58 @@ const getAchievementCount = async (userId:string)=>{
     return {top_photo:top_photo_award_count,top_photographer:top_photographer_count}
 }
 
-const getContestByAchievementsType = async (userId:string,type:PrizeType, page: number = 1, limit: number = 10)=>{
-    const contestParticipant = await prisma.contestParticipant.findFirst({where:{userId}})
-    if(!contestParticipant){
+const getContestByAchievementsType = async (userId:string,type:PrizeType, page = 1, limit = 20)=>{
+    const participantCount = await prisma.contestParticipant.count({where:{userId}})
+    if(participantCount <= 0){
         throw new ApiError(httpStatus.NOT_FOUND, "participant not found")
     }
-
-    const { skip, limit: paginationLimit } = paginationHelper.calculatePagination({ page, limit });
-
     const achievements = await prisma.contestAchievement.findMany({
-        where:{participantId:contestParticipant.id,category:type}, 
-        skip,
-        take: paginationLimit,
+        where:{participant:{userId}, category:type},
         include:{contest:{select:{banner:true, title:true}}},
-        orderBy: { createdAt: 'desc' }
+        orderBy:{createdAt:"desc"}
     })
 
-    const total = await prisma.contestAchievement.count({where:{participantId:contestParticipant.id,category:type}});
-    const meta = paginationHelper.getPaginationMetaData(page, paginationLimit, total);
-
-    return { data: achievements, meta };
+    return paginateAchievements(collapseLevelAchievements(achievements), page, limit)
 }
 
 const getUserPhotoAchievements = async (userId:string, photoId:string) => {
 
-    const achievements = await prisma.contestAchievement.findMany({where:{photo:{photoId}, participantId:userId}})
+    const achievements = await prisma.contestAchievement.findMany({where:{photo:{photoId}, participant:{userId}}})
 
-    return achievements
+    return collapseLevelAchievements(achievements)
+}
+
+const getAllPhotosAchievements = async (page = 1, limit = 20) => {
+    const achievements = await prisma.contestAchievement.findMany({
+        where:{photoId:{not:null}},
+        include:{
+            contest:{select:{id:true, title:true, banner:true}},
+            photo:{select:{id:true, photo:{select:{id:true, url:true, title:true}}}},
+            participant:{select:{user:{select:{id:true, fullName:true, avatar:true}}}}
+        },
+        orderBy:{createdAt:"desc"}
+    })
+
+    return paginateAchievements(collapseLevelAchievements(achievements), page, limit)
 }
 
 const getMyAchievementsByContest = async (userId:string, contestId:string) => {
-    const participant = await prisma.contestParticipant.findUnique({
-        where: { contestId_userId: { contestId, userId } }
+    const achievements = await prisma.contestAchievement.findMany({
+        where:{contestId, participant:{userId}},
+        include:{photo:{select:{photo:{select:{id:true, url:true}}}}, participant:{select:{user:true}}},
+        orderBy:{createdAt:"desc"}
     })
 
-    if (!participant) {
-        return []
-    }
-
-    const achievements = await prisma.contestAchievement.findMany({
-        where: { contestId, participantId: participant.id },
-        include: {
-            photo: { select: { photo: { select: { id: true, url: true } } } },
-            participant: { select: { user: {
-                omit: { password: true, accessToken: true }
-            } } }
-        },
-        orderBy: { createdAt: 'desc' }
-    })
-
-    return achievements
-}
-
-const getAllPhotosAchievements = async (page: number = 1, limit: number = 10) => {
-    const { skip, limit: paginationLimit } = paginationHelper.calculatePagination({ page, limit });
-
-    const achievements = await prisma.contestAchievement.findMany({
-        where:{category:PrizeType.TOP_PHOTO},
-        skip,
-        take: paginationLimit,
-        include: {
-            photo: { select: { id:true, photo: { select: { id: true, url: true, likes:true, views:true } } } },
-            participant: { select: { user: {
-                omit: { password: true, accessToken: true }
-            } } }
-        },
-        orderBy: { createdAt: 'desc' }
-    });
+    return collapseLevelAchievements(achievements)
     
-    const mappedAchievements = await Promise.all(achievements.map(async (achievement) => {
-        if (achievement.photo) {
-            const photo = achievement.photo;
-
-            const voteCount = await prisma.vote.count({ where: { photoId: photo.photo.id } });
-            return {
-                ...achievement,
-                voteCount
-            };
-        }
-        return achievement;
-    }));
-
-    const total = await prisma.contestAchievement.count({where:{category:PrizeType.TOP_PHOTO}});
-    const meta = paginationHelper.getPaginationMetaData(page, paginationLimit, total);
-   
-
-    return { data: mappedAchievements, meta };
 }
 
 // const getContestAchievements
 
 export const achievementService = {
     addAchievement,
+    addContestAchievement,
+    upsertContestLevelAchievement,
     getContestAchievementsByUser,
     getContestAchievements,
     getAchievements,
@@ -301,6 +285,6 @@ export const achievementService = {
     getPhotoAchievements,
     getContestByAchievementsType,
     getUserPhotoAchievements,
-    getMyAchievementsByContest,
-    getAllPhotosAchievements
+    getAllPhotosAchievements,
+    getMyAchievementsByContest
 }

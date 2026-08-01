@@ -12,11 +12,23 @@ const getContestRules = catchAsync(async (req:Request, res:Response) => {
     sendResponse(res, {
         success:true,
         statusCode:httpStatus.OK,
-        message:"Contest dules fetched successfully",
+        message:"Contest rules fetched successfully",
         data:rules
     })
 })
 
+const getContestRuleDefinitions = catchAsync(async (req:Request, res:Response) => {
+    const definitions = contestRuleService.getContestRuleDefinitions()
+
+    sendResponse(res, {
+        success:true,
+        statusCode:httpStatus.OK,
+        message:"Contest rule definitions fetched successfully",
+        data:definitions
+    })
+})
+
 export const contestRuleController = {
-    getContestRules
+    getContestRules,
+    getContestRuleDefinitions
 }

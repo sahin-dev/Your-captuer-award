@@ -1,10 +1,11 @@
-import { Prisma } from "@prisma/client";
+import { Prisma } from "../../prismaClient";
 import { NextFunction, Request, Response } from "express";
 import httpStatus from "http-status";
 import { ZodError } from "zod";
 import handleZodError from "../../errors/handleZodError";
 import parsePrismaValidationError from "../../errors/parsePrismaValidationError";
 import ApiError from "../../errors/ApiError";
+import multer from "multer";
 
 
 // TODO Replace `config.NODE_ENV` with your actual environment configuration
@@ -38,9 +39,44 @@ const ErrorHandler = (
     message = err.message;
     errorSources = [{ type: "ApiError", details: err.message }];
   }
+  else if (err instanceof multer.MulterError) {
+    statusCode = err.code === "LIMIT_FILE_SIZE" ? 413 : httpStatus.BAD_REQUEST;
+    message = err.code === "LIMIT_FILE_SIZE"
+      ? "Uploaded file exceeds the allowed size"
+      : err.message;
+    errorSources = [{ type: "UploadError", details: message }];
+  }
   // handle prisma client validation errors
-  // Note: These error types don't exist in @prisma/client v6.18.0
-  // Prisma error handling can be added here when using compatible versions
+  else if (err instanceof Prisma.PrismaClientValidationError) {
+    statusCode = httpStatus.BAD_REQUEST;
+    message = parsePrismaValidationError(err.message);
+    errorSources.push("Prisma Client Validation Error");
+  }
+  // Prisma Client Initialization Error
+  else if (err instanceof Prisma.PrismaClientInitializationError) {
+    statusCode = httpStatus.SERVICE_UNAVAILABLE;
+    message =
+      "Failed to initialize Prisma Client. Check your database connection or Prisma configuration.";
+    errorSources.push("Prisma Client Initialization Error");
+  }
+  // Prisma Client Rust Panic Error
+  else if (err instanceof Prisma.PrismaClientRustPanicError) {
+    statusCode = httpStatus.INTERNAL_SERVER_ERROR;
+    message =
+      "A critical error occurred in the Prisma engine. Please try again later.";
+    errorSources.push("Prisma Client Rust Panic Error");
+  }
+  // Prisma Client Unknown Request Error
+  else if (err instanceof Prisma.PrismaClientUnknownRequestError) {
+    statusCode = httpStatus.INTERNAL_SERVER_ERROR;
+    message = "An unknown error occurred while processing the request.";
+    errorSources.push("Prisma Client Unknown Request Error");
+  }
+  else if (err?.code === "ECONNREFUSED" || err?.message?.includes("querySrv")) {
+    statusCode = httpStatus.SERVICE_UNAVAILABLE;
+    message = "Database connection failed. Check MongoDB Atlas DNS/network access and DATABASE_URL.";
+    errorSources.push("Database Connection Error");
+  }
   // Generic Error Handling (e.g., JavaScript Errors)
   else if (err instanceof SyntaxError) {
     statusCode = httpStatus.BAD_REQUEST;

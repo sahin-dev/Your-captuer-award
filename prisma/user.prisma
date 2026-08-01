@@ -11,6 +11,7 @@ model User {
   username           String?
   phone              String?
   email              String               @unique
+  dateOfBirth        DateTime?
   location           String?
   country            String?
   password           String?
@@ -56,6 +57,7 @@ model UserStore {
   key      Int     @default(0)
   boost    Int     @default(0)
   swap   Int     @default(0)
+  coin   Int     @default(0)
 
   user    User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -156,6 +158,7 @@ model Vote {
   contestId  String @db.ObjectId
   type       VoteType
   power      Int @default(1)
+  weight     Int @default(1)
 
   provider User?         @relation(fields: [providerId], references: [id], onDelete: SetNull)
   photo    ContestPhoto @relation(fields: [photoId], references: [id])
@@ -164,6 +167,9 @@ model Vote {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@unique([providerId, contestId, photoId])
+  @@index([contestId, photoId])
+  @@index([contestId, providerId])
   @@map("votes")
 }
 

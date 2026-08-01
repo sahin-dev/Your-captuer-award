@@ -422,8 +422,6 @@ import httpStatus from 'http-status';
     return canceledPayment;
   }
 
-
-
 }
 
 

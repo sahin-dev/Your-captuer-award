@@ -20,12 +20,6 @@ export abstract class AbstractContestBuilder {
         return this
     }
 
-    levelRequirements (levels:string[]){
-        this.contest.level_requirements = levels.map(l => parseInt(l))
-
-        return this
-    }
-
     banner (url:string | null){
         if(url){
             this.contest.banner = url
