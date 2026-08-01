@@ -2,7 +2,6 @@ import { z } from "zod";
 import { RecurringType } from "../../../prismaClient";
 import { contestRuleInputArraySchema } from "../Contest/ContestRules/contestRule.validation";
 import { contestAwardInputArraySchema } from "../Prize/prize.validation";
-import { checkObjectId } from "../../../helpers/checkObjectId";
 import { getRichTextLength, sanitizeContestRichText } from "../Contest/contestContent";
 
 const parseJsonArray = (value: unknown) => {
@@ -22,7 +21,7 @@ export const updateRecurringContestSchema = z.object({
     })
     .transform(sanitizeContestRichText)
     .optional(),
-  categoryId: z.string().refine(checkObjectId, {message:"Invalid category ID"}).nullable().optional(),
+  category: z.string().trim().min(1).max(100).optional(),
   startDate: z.string().datetime().optional(),
   endDate: z.string().datetime().optional(),
   isMoneyContest: z.boolean().optional(),

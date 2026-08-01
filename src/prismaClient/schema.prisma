@@ -9,7 +9,7 @@ model Contest {
   isMoneyContest Boolean       @default(false)
   maxPrize       Int?          @default(0)
   minPrize       Int?          @default(0)
-  currency       String?
+  currency       String?       @default("USD")
   entryFeeCoins  Int           @default(0)
 
   startDate          DateTime
@@ -55,7 +55,7 @@ model RecurringContest {
   isMoneyContest Boolean @default(false)
   maxPrize       Int?    @default(0)
   minPrize       Int?    @default(0)
-  currency       String?
+  currency       String? @default("USD")
   entryFeeCoins  Int     @default(0)
 
   startDate DateTime

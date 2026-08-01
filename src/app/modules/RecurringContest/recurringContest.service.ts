@@ -10,7 +10,7 @@ import { contestRuleService } from "../Contest/ContestRules/contestRules.service
 type RecurringUpdateData = {
   title?: string;
   description?: string;
-  categoryId?: string | null;
+  category?: string;
   startDate?: string;
   endDate?: string;
   isMoneyContest?: boolean;
@@ -19,6 +19,29 @@ type RecurringUpdateData = {
   currency?: string | null;
   entryFeeCoins?: number;
   rules?: ContestRuleConfigInput[];
+};
+
+const resolveRecurringContestCategoryId = async (category?: string) => {
+  if (!category) {
+    return undefined;
+  }
+
+  const slug = category.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  const contestCategory = await prisma.contestCategory.findFirst({
+    where: {
+      isActive: true,
+      OR: [
+        { name: { equals: category, mode: "insensitive" as const } },
+        { slug },
+      ],
+    },
+  });
+
+  if (!contestCategory) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Contest category is invalid or inactive");
+  }
+
+  return contestCategory.id;
 };
 
 const getRecurringContests = async (page = 1, limit = 20) => {
@@ -67,14 +90,7 @@ const updateRecurringContest = async (recurringContestId: string, data: Recurrin
   if(isMoneyContest && (!currency || minPrize > maxPrize)){
     throw new ApiError(httpStatus.BAD_REQUEST, "Money contests require valid currency and prize bounds");
   }
-  if(data.categoryId){
-    const category = await prisma.contestCategory.findFirst({
-      where:{id:data.categoryId, isActive:true}
-    });
-    if(!category){
-      throw new ApiError(httpStatus.BAD_REQUEST, "Contest category is invalid or inactive");
-    }
-  }
+  const categoryId = await resolveRecurringContestCategoryId(data.category);
   const recurring = data.startDate || data.endDate
     ? {
         set: {
@@ -93,7 +109,7 @@ const updateRecurringContest = async (recurringContestId: string, data: Recurrin
     data: {
       title: data.title,
       description: data.description,
-      categoryId: data.categoryId,
+      categoryId,
       startDate: data.startDate ? startDate : undefined,
       endDate: data.endDate ? endDate : undefined,
       isMoneyContest,
