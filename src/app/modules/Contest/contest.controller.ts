@@ -54,6 +54,41 @@ const getAllContests = catchAsync(async (req:any, res:Response)=>{
     })
 })
 
+const getPublicContests = catchAsync(async (req:Request, res:Response) => {
+    const {status, page = "1", limit = "20", search} = req.query as {
+        status?:ContestStatus,
+        page?:string,
+        limit?:string,
+        search?:string
+    }
+
+    const contests = await contestService.getPublicContests(
+        status,
+        Number(page) || 1,
+        Number(limit) || 20,
+        search
+    )
+
+    sendResponse(res, {
+        statusCode:httpStatus.OK,
+        success:true,
+        message:"public contests fetched successfully",
+        data:contests
+    })
+})
+
+const getPublicContestById = catchAsync(async (req:Request, res:Response) => {
+    const {contestId} = req.params
+    const contest = await contestService.getContestById(contestId)
+
+    sendResponse(res, {
+        statusCode:httpStatus.OK,
+        success:true,
+        message:"public contest fetched successfully",
+        data:contest
+    })
+})
+
 const getContestById = catchAsync(async (req:any, res:Response)=>{
     const {contestId} = req.params
     const userId = req.user.id
@@ -365,6 +400,8 @@ export const contestController = {
     joinContest,
     updateContestDetails,
     getContestById,
+    getPublicContests,
+    getPublicContestById,
     getAllContests,
     promotePhoto,
     getWinners,

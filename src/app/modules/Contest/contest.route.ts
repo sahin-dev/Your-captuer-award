@@ -16,6 +16,8 @@ router.get("/all", auth(UserRole.ADMIN), contestController.getAllContests)
 router.get("/create-options", auth(UserRole.ADMIN), contestController.getCreateOptions)
 
 router.get("/my-active-contests", auth(), contestController.getMyActiveContests)
+router.get("/ucontests", contestController.getPublicContests)
+router.get("/ucontests/:contestId", contestController.getPublicContestById)
 router.get("/rules/definitions", auth(UserRole.ADMIN), contestRuleController.getContestRuleDefinitions)
 router.post("/photos/promote", auth(), contestController.promotePhoto)
 router.post("/trade", auth(), fileUploader.tradePhoto, contestController.tradePhoto)

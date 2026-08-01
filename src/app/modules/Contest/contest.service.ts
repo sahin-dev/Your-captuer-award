@@ -482,6 +482,38 @@ const getAllContests = async (page:number = 1, limit:number = 20, search?:string
     }
 };
 
+const getPublicContests = async (
+    status?:ContestStatus,
+    page:number = 1,
+    limit:number = 20,
+    search?:string
+) => {
+    const {skip, limit:paginationLimit, page:currentPage} = paginationHelper.calculatePagination({page, limit})
+    const where:Prisma.ContestWhereInput = {
+        ...(status && {status}),
+        ...(search && {title:{contains:search, mode:"insensitive" as const}})
+    }
+
+    const [contests, total] = await Promise.all([
+        prisma.contest.findMany({
+            where,
+            include:{creator:{omit:{password:true, accessToken:true}}},
+            skip,
+            take:paginationLimit,
+            orderBy:{startDate:"desc"}
+        }),
+        prisma.contest.count({where})
+    ])
+
+    return {
+        contests,
+        total,
+        page:currentPage,
+        limit:paginationLimit,
+        meta:paginationHelper.getPaginationMetaData(currentPage, paginationLimit, total)
+    }
+}
+
 //Search contest by contest status
 const getContestsByStatus = async (userId:string,status: ContestStatus) => {
 
@@ -1481,6 +1513,7 @@ export const contestService = {
     updateContest,
     joinContest,
     getContestById,
+    getPublicContests,
     getAllContests,
     getMyActiveContests,
     getContestsByStatus,
