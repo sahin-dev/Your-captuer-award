@@ -133,7 +133,7 @@ exports.Prisma.ContestScalarFieldEnum = {
   configVersion: 'configVersion',
   scoringVersion: 'scoringVersion',
   creatorId: 'creatorId',
-  categoryId: 'categoryId',
+  category: 'category',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -151,7 +151,7 @@ exports.Prisma.RecurringContestScalarFieldEnum = {
   startDate: 'startDate',
   endDate: 'endDate',
   creatorId: 'creatorId',
-  categoryId: 'categoryId',
+  category: 'category',
   status: 'status',
   lastGeneratedContestId: 'lastGeneratedContestId',
   rules: 'rules',

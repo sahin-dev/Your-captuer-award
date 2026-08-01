@@ -5760,46 +5760,6 @@ export namespace Prisma {
 
 
   /**
-   * Count Type ContestCategoryCountOutputType
-   */
-
-  export type ContestCategoryCountOutputType = {
-    contests: number
-    recurringContests: number
-  }
-
-  export type ContestCategoryCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    contests?: boolean | ContestCategoryCountOutputTypeCountContestsArgs
-    recurringContests?: boolean | ContestCategoryCountOutputTypeCountRecurringContestsArgs
-  }
-
-  // Custom InputTypes
-  /**
-   * ContestCategoryCountOutputType without action
-   */
-  export type ContestCategoryCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ContestCategoryCountOutputType
-     */
-    select?: ContestCategoryCountOutputTypeSelect<ExtArgs> | null
-  }
-
-  /**
-   * ContestCategoryCountOutputType without action
-   */
-  export type ContestCategoryCountOutputTypeCountContestsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: ContestWhereInput
-  }
-
-  /**
-   * ContestCategoryCountOutputType without action
-   */
-  export type ContestCategoryCountOutputTypeCountRecurringContestsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: RecurringContestWhereInput
-  }
-
-
-  /**
    * Count Type PrizeCountOutputType
    */
 
@@ -6630,7 +6590,7 @@ export namespace Prisma {
     configVersion: number | null
     scoringVersion: number | null
     creatorId: string | null
-    categoryId: string | null
+    category: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -6655,7 +6615,7 @@ export namespace Prisma {
     configVersion: number | null
     scoringVersion: number | null
     creatorId: string | null
-    categoryId: string | null
+    category: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -6680,7 +6640,7 @@ export namespace Prisma {
     configVersion: number
     scoringVersion: number
     creatorId: number
-    categoryId: number
+    category: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -6723,7 +6683,7 @@ export namespace Prisma {
     configVersion?: true
     scoringVersion?: true
     creatorId?: true
-    categoryId?: true
+    category?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -6748,7 +6708,7 @@ export namespace Prisma {
     configVersion?: true
     scoringVersion?: true
     creatorId?: true
-    categoryId?: true
+    category?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -6773,7 +6733,7 @@ export namespace Prisma {
     configVersion?: true
     scoringVersion?: true
     creatorId?: true
-    categoryId?: true
+    category?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -6885,7 +6845,7 @@ export namespace Prisma {
     configVersion: number
     scoringVersion: number
     creatorId: string
-    categoryId: string | null
+    category: string | null
     createdAt: Date
     updatedAt: Date
     _count: ContestCountAggregateOutputType | null
@@ -6929,11 +6889,10 @@ export namespace Prisma {
     configVersion?: boolean
     scoringVersion?: boolean
     creatorId?: boolean
-    categoryId?: boolean
+    category?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     creator?: boolean | UserDefaultArgs<ExtArgs>
-    category?: boolean | Contest$categoryArgs<ExtArgs>
     participants?: boolean | Contest$participantsArgs<ExtArgs>
     teamParticipations?: boolean | Contest$teamParticipationsArgs<ExtArgs>
     votes?: boolean | Contest$votesArgs<ExtArgs>
@@ -6970,15 +6929,14 @@ export namespace Prisma {
     configVersion?: boolean
     scoringVersion?: boolean
     creatorId?: boolean
-    categoryId?: boolean
+    category?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type ContestOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "description" | "banner" | "status" | "isMoneyContest" | "maxPrize" | "minPrize" | "currency" | "entryFeeCoins" | "startDate" | "endDate" | "startedAt" | "endedAt" | "finalizedAt" | "recurringContestId" | "configVersion" | "scoringVersion" | "creatorId" | "categoryId" | "createdAt" | "updatedAt", ExtArgs["result"]["contest"]>
+  export type ContestOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "description" | "banner" | "status" | "isMoneyContest" | "maxPrize" | "minPrize" | "currency" | "entryFeeCoins" | "startDate" | "endDate" | "startedAt" | "endedAt" | "finalizedAt" | "recurringContestId" | "configVersion" | "scoringVersion" | "creatorId" | "category" | "createdAt" | "updatedAt", ExtArgs["result"]["contest"]>
   export type ContestInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     creator?: boolean | UserDefaultArgs<ExtArgs>
-    category?: boolean | Contest$categoryArgs<ExtArgs>
     participants?: boolean | Contest$participantsArgs<ExtArgs>
     teamParticipations?: boolean | Contest$teamParticipationsArgs<ExtArgs>
     votes?: boolean | Contest$votesArgs<ExtArgs>
@@ -6997,7 +6955,6 @@ export namespace Prisma {
     name: "Contest"
     objects: {
       creator: Prisma.$UserPayload<ExtArgs>
-      category: Prisma.$ContestCategoryPayload<ExtArgs> | null
       participants: Prisma.$ContestParticipantPayload<ExtArgs>[]
       teamParticipations: Prisma.$TeamParticipationPayload<ExtArgs>[]
       votes: Prisma.$VotePayload<ExtArgs>[]
@@ -7030,7 +6987,7 @@ export namespace Prisma {
       configVersion: number
       scoringVersion: number
       creatorId: string
-      categoryId: string | null
+      category: string | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["contest"]>
@@ -7397,7 +7354,6 @@ export namespace Prisma {
   export interface Prisma__ContestClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     creator<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    category<T extends Contest$categoryArgs<ExtArgs> = {}>(args?: Subset<T, Contest$categoryArgs<ExtArgs>>): Prisma__ContestCategoryClient<$Result.GetResult<Prisma.$ContestCategoryPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     participants<T extends Contest$participantsArgs<ExtArgs> = {}>(args?: Subset<T, Contest$participantsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ContestParticipantPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     teamParticipations<T extends Contest$teamParticipationsArgs<ExtArgs> = {}>(args?: Subset<T, Contest$teamParticipationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TeamParticipationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     votes<T extends Contest$votesArgs<ExtArgs> = {}>(args?: Subset<T, Contest$votesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VotePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -7457,7 +7413,7 @@ export namespace Prisma {
     readonly configVersion: FieldRef<"Contest", 'Int'>
     readonly scoringVersion: FieldRef<"Contest", 'Int'>
     readonly creatorId: FieldRef<"Contest", 'String'>
-    readonly categoryId: FieldRef<"Contest", 'String'>
+    readonly category: FieldRef<"Contest", 'String'>
     readonly createdAt: FieldRef<"Contest", 'DateTime'>
     readonly updatedAt: FieldRef<"Contest", 'DateTime'>
   }
@@ -7830,25 +7786,6 @@ export namespace Prisma {
   }
 
   /**
-   * Contest.category
-   */
-  export type Contest$categoryArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ContestCategory
-     */
-    select?: ContestCategorySelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ContestCategory
-     */
-    omit?: ContestCategoryOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ContestCategoryInclude<ExtArgs> | null
-    where?: ContestCategoryWhereInput
-  }
-
-  /**
    * Contest.participants
    */
   export type Contest$participantsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -8163,7 +8100,7 @@ export namespace Prisma {
     startDate: Date | null
     endDate: Date | null
     creatorId: string | null
-    categoryId: string | null
+    category: string | null
     status: $Enums.RecurringContestStatus | null
     lastGeneratedContestId: string | null
     createdAt: Date | null
@@ -8183,7 +8120,7 @@ export namespace Prisma {
     startDate: Date | null
     endDate: Date | null
     creatorId: string | null
-    categoryId: string | null
+    category: string | null
     status: $Enums.RecurringContestStatus | null
     lastGeneratedContestId: string | null
     createdAt: Date | null
@@ -8203,7 +8140,7 @@ export namespace Prisma {
     startDate: number
     endDate: number
     creatorId: number
-    categoryId: number
+    category: number
     status: number
     lastGeneratedContestId: number
     rules: number
@@ -8239,7 +8176,7 @@ export namespace Prisma {
     startDate?: true
     endDate?: true
     creatorId?: true
-    categoryId?: true
+    category?: true
     status?: true
     lastGeneratedContestId?: true
     createdAt?: true
@@ -8259,7 +8196,7 @@ export namespace Prisma {
     startDate?: true
     endDate?: true
     creatorId?: true
-    categoryId?: true
+    category?: true
     status?: true
     lastGeneratedContestId?: true
     createdAt?: true
@@ -8279,7 +8216,7 @@ export namespace Prisma {
     startDate?: true
     endDate?: true
     creatorId?: true
-    categoryId?: true
+    category?: true
     status?: true
     lastGeneratedContestId?: true
     rules?: true
@@ -8388,7 +8325,7 @@ export namespace Prisma {
     startDate: Date
     endDate: Date
     creatorId: string
-    categoryId: string | null
+    category: string | null
     status: $Enums.RecurringContestStatus
     lastGeneratedContestId: string | null
     rules: JsonValue
@@ -8429,7 +8366,7 @@ export namespace Prisma {
     startDate?: boolean
     endDate?: boolean
     creatorId?: boolean
-    categoryId?: boolean
+    category?: boolean
     status?: boolean
     recurring?: boolean | RecurringDataDefaultArgs<ExtArgs>
     lastGeneratedContestId?: boolean
@@ -8437,7 +8374,6 @@ export namespace Prisma {
     prizes?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    category?: boolean | RecurringContest$categoryArgs<ExtArgs>
     contestAwards?: boolean | RecurringContest$contestAwardsArgs<ExtArgs>
     contestInstances?: boolean | RecurringContest$contestInstancesArgs<ExtArgs>
     _count?: boolean | RecurringContestCountOutputTypeDefaultArgs<ExtArgs>
@@ -8458,7 +8394,7 @@ export namespace Prisma {
     startDate?: boolean
     endDate?: boolean
     creatorId?: boolean
-    categoryId?: boolean
+    category?: boolean
     status?: boolean
     lastGeneratedContestId?: boolean
     rules?: boolean
@@ -8467,9 +8403,8 @@ export namespace Prisma {
     updatedAt?: boolean
   }
 
-  export type RecurringContestOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "description" | "banner" | "isMoneyContest" | "maxPrize" | "minPrize" | "currency" | "entryFeeCoins" | "startDate" | "endDate" | "creatorId" | "categoryId" | "status" | "recurring" | "lastGeneratedContestId" | "rules" | "prizes" | "createdAt" | "updatedAt", ExtArgs["result"]["recurringContest"]>
+  export type RecurringContestOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "description" | "banner" | "isMoneyContest" | "maxPrize" | "minPrize" | "currency" | "entryFeeCoins" | "startDate" | "endDate" | "creatorId" | "category" | "status" | "recurring" | "lastGeneratedContestId" | "rules" | "prizes" | "createdAt" | "updatedAt", ExtArgs["result"]["recurringContest"]>
   export type RecurringContestInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    category?: boolean | RecurringContest$categoryArgs<ExtArgs>
     contestAwards?: boolean | RecurringContest$contestAwardsArgs<ExtArgs>
     contestInstances?: boolean | RecurringContest$contestInstancesArgs<ExtArgs>
     _count?: boolean | RecurringContestCountOutputTypeDefaultArgs<ExtArgs>
@@ -8478,7 +8413,6 @@ export namespace Prisma {
   export type $RecurringContestPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "RecurringContest"
     objects: {
-      category: Prisma.$ContestCategoryPayload<ExtArgs> | null
       contestAwards: Prisma.$RecurringContestAwardPayload<ExtArgs>[]
       contestInstances: Prisma.$ContestPayload<ExtArgs>[]
     }
@@ -8495,7 +8429,7 @@ export namespace Prisma {
       startDate: Date
       endDate: Date
       creatorId: string
-      categoryId: string | null
+      category: string | null
       status: $Enums.RecurringContestStatus
       lastGeneratedContestId: string | null
       rules: Prisma.JsonValue
@@ -8867,7 +8801,6 @@ export namespace Prisma {
    */
   export interface Prisma__RecurringContestClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    category<T extends RecurringContest$categoryArgs<ExtArgs> = {}>(args?: Subset<T, RecurringContest$categoryArgs<ExtArgs>>): Prisma__ContestCategoryClient<$Result.GetResult<Prisma.$ContestCategoryPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     contestAwards<T extends RecurringContest$contestAwardsArgs<ExtArgs> = {}>(args?: Subset<T, RecurringContest$contestAwardsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RecurringContestAwardPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     contestInstances<T extends RecurringContest$contestInstancesArgs<ExtArgs> = {}>(args?: Subset<T, RecurringContest$contestInstancesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ContestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
@@ -8911,7 +8844,7 @@ export namespace Prisma {
     readonly startDate: FieldRef<"RecurringContest", 'DateTime'>
     readonly endDate: FieldRef<"RecurringContest", 'DateTime'>
     readonly creatorId: FieldRef<"RecurringContest", 'String'>
-    readonly categoryId: FieldRef<"RecurringContest", 'String'>
+    readonly category: FieldRef<"RecurringContest", 'String'>
     readonly status: FieldRef<"RecurringContest", 'RecurringContestStatus'>
     readonly lastGeneratedContestId: FieldRef<"RecurringContest", 'String'>
     readonly rules: FieldRef<"RecurringContest", 'Json'>
@@ -9288,25 +9221,6 @@ export namespace Prisma {
   }
 
   /**
-   * RecurringContest.category
-   */
-  export type RecurringContest$categoryArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ContestCategory
-     */
-    select?: ContestCategorySelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ContestCategory
-     */
-    omit?: ContestCategoryOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ContestCategoryInclude<ExtArgs> | null
-    where?: ContestCategoryWhereInput
-  }
-
-  /**
    * RecurringContest.contestAwards
    */
   export type RecurringContest$contestAwardsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -9595,9 +9509,6 @@ export namespace Prisma {
     order?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    contests?: boolean | ContestCategory$contestsArgs<ExtArgs>
-    recurringContests?: boolean | ContestCategory$recurringContestsArgs<ExtArgs>
-    _count?: boolean | ContestCategoryCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["contestCategory"]>
 
 
@@ -9614,18 +9525,10 @@ export namespace Prisma {
   }
 
   export type ContestCategoryOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "slug" | "name" | "description" | "isActive" | "order" | "createdAt" | "updatedAt", ExtArgs["result"]["contestCategory"]>
-  export type ContestCategoryInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    contests?: boolean | ContestCategory$contestsArgs<ExtArgs>
-    recurringContests?: boolean | ContestCategory$recurringContestsArgs<ExtArgs>
-    _count?: boolean | ContestCategoryCountOutputTypeDefaultArgs<ExtArgs>
-  }
 
   export type $ContestCategoryPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "ContestCategory"
-    objects: {
-      contests: Prisma.$ContestPayload<ExtArgs>[]
-      recurringContests: Prisma.$RecurringContestPayload<ExtArgs>[]
-    }
+    objects: {}
     scalars: $Extensions.GetPayloadResult<{
       id: string
       slug: string
@@ -9998,8 +9901,6 @@ export namespace Prisma {
    */
   export interface Prisma__ContestCategoryClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    contests<T extends ContestCategory$contestsArgs<ExtArgs> = {}>(args?: Subset<T, ContestCategory$contestsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ContestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    recurringContests<T extends ContestCategory$recurringContestsArgs<ExtArgs> = {}>(args?: Subset<T, ContestCategory$recurringContestsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RecurringContestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -10054,10 +9955,6 @@ export namespace Prisma {
      */
     omit?: ContestCategoryOmit<ExtArgs> | null
     /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ContestCategoryInclude<ExtArgs> | null
-    /**
      * Filter, which ContestCategory to fetch.
      */
     where: ContestCategoryWhereUniqueInput
@@ -10076,10 +9973,6 @@ export namespace Prisma {
      */
     omit?: ContestCategoryOmit<ExtArgs> | null
     /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ContestCategoryInclude<ExtArgs> | null
-    /**
      * Filter, which ContestCategory to fetch.
      */
     where: ContestCategoryWhereUniqueInput
@@ -10097,10 +9990,6 @@ export namespace Prisma {
      * Omit specific fields from the ContestCategory
      */
     omit?: ContestCategoryOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ContestCategoryInclude<ExtArgs> | null
     /**
      * Filter, which ContestCategory to fetch.
      */
@@ -10150,10 +10039,6 @@ export namespace Prisma {
      */
     omit?: ContestCategoryOmit<ExtArgs> | null
     /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ContestCategoryInclude<ExtArgs> | null
-    /**
      * Filter, which ContestCategory to fetch.
      */
     where?: ContestCategoryWhereInput
@@ -10202,10 +10087,6 @@ export namespace Prisma {
      */
     omit?: ContestCategoryOmit<ExtArgs> | null
     /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ContestCategoryInclude<ExtArgs> | null
-    /**
      * Filter, which ContestCategories to fetch.
      */
     where?: ContestCategoryWhereInput
@@ -10249,10 +10130,6 @@ export namespace Prisma {
      */
     omit?: ContestCategoryOmit<ExtArgs> | null
     /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ContestCategoryInclude<ExtArgs> | null
-    /**
      * The data needed to create a ContestCategory.
      */
     data: XOR<ContestCategoryCreateInput, ContestCategoryUncheckedCreateInput>
@@ -10280,10 +10157,6 @@ export namespace Prisma {
      * Omit specific fields from the ContestCategory
      */
     omit?: ContestCategoryOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ContestCategoryInclude<ExtArgs> | null
     /**
      * The data needed to update a ContestCategory.
      */
@@ -10325,10 +10198,6 @@ export namespace Prisma {
      */
     omit?: ContestCategoryOmit<ExtArgs> | null
     /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ContestCategoryInclude<ExtArgs> | null
-    /**
      * The filter to search for the ContestCategory to update in case it exists.
      */
     where: ContestCategoryWhereUniqueInput
@@ -10354,10 +10223,6 @@ export namespace Prisma {
      * Omit specific fields from the ContestCategory
      */
     omit?: ContestCategoryOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ContestCategoryInclude<ExtArgs> | null
     /**
      * Filter which ContestCategory to delete.
      */
@@ -10407,54 +10272,6 @@ export namespace Prisma {
   }
 
   /**
-   * ContestCategory.contests
-   */
-  export type ContestCategory$contestsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Contest
-     */
-    select?: ContestSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Contest
-     */
-    omit?: ContestOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ContestInclude<ExtArgs> | null
-    where?: ContestWhereInput
-    orderBy?: ContestOrderByWithRelationInput | ContestOrderByWithRelationInput[]
-    cursor?: ContestWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: ContestScalarFieldEnum | ContestScalarFieldEnum[]
-  }
-
-  /**
-   * ContestCategory.recurringContests
-   */
-  export type ContestCategory$recurringContestsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the RecurringContest
-     */
-    select?: RecurringContestSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the RecurringContest
-     */
-    omit?: RecurringContestOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: RecurringContestInclude<ExtArgs> | null
-    where?: RecurringContestWhereInput
-    orderBy?: RecurringContestOrderByWithRelationInput | RecurringContestOrderByWithRelationInput[]
-    cursor?: RecurringContestWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: RecurringContestScalarFieldEnum | RecurringContestScalarFieldEnum[]
-  }
-
-  /**
    * ContestCategory without action
    */
   export type ContestCategoryDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -10466,10 +10283,6 @@ export namespace Prisma {
      * Omit specific fields from the ContestCategory
      */
     omit?: ContestCategoryOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ContestCategoryInclude<ExtArgs> | null
   }
 
 
@@ -57828,7 +57641,7 @@ export namespace Prisma {
     configVersion: 'configVersion',
     scoringVersion: 'scoringVersion',
     creatorId: 'creatorId',
-    categoryId: 'categoryId',
+    category: 'category',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -57849,7 +57662,7 @@ export namespace Prisma {
     startDate: 'startDate',
     endDate: 'endDate',
     creatorId: 'creatorId',
-    categoryId: 'categoryId',
+    category: 'category',
     status: 'status',
     lastGeneratedContestId: 'lastGeneratedContestId',
     rules: 'rules',
@@ -59284,11 +59097,10 @@ export namespace Prisma {
     configVersion?: IntFilter<"Contest"> | number
     scoringVersion?: IntFilter<"Contest"> | number
     creatorId?: StringFilter<"Contest"> | string
-    categoryId?: StringNullableFilter<"Contest"> | string | null
+    category?: StringNullableFilter<"Contest"> | string | null
     createdAt?: DateTimeFilter<"Contest"> | Date | string
     updatedAt?: DateTimeFilter<"Contest"> | Date | string
     creator?: XOR<UserScalarRelationFilter, UserWhereInput>
-    category?: XOR<ContestCategoryNullableScalarRelationFilter, ContestCategoryWhereInput> | null
     participants?: ContestParticipantListRelationFilter
     teamParticipations?: TeamParticipationListRelationFilter
     votes?: VoteListRelationFilter
@@ -59322,11 +59134,10 @@ export namespace Prisma {
     configVersion?: SortOrder
     scoringVersion?: SortOrder
     creatorId?: SortOrder
-    categoryId?: SortOrder
+    category?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     creator?: UserOrderByWithRelationInput
-    category?: ContestCategoryOrderByWithRelationInput
     participants?: ContestParticipantOrderByRelationAggregateInput
     teamParticipations?: TeamParticipationOrderByRelationAggregateInput
     votes?: VoteOrderByRelationAggregateInput
@@ -59363,11 +59174,10 @@ export namespace Prisma {
     configVersion?: IntFilter<"Contest"> | number
     scoringVersion?: IntFilter<"Contest"> | number
     creatorId?: StringFilter<"Contest"> | string
-    categoryId?: StringNullableFilter<"Contest"> | string | null
+    category?: StringNullableFilter<"Contest"> | string | null
     createdAt?: DateTimeFilter<"Contest"> | Date | string
     updatedAt?: DateTimeFilter<"Contest"> | Date | string
     creator?: XOR<UserScalarRelationFilter, UserWhereInput>
-    category?: XOR<ContestCategoryNullableScalarRelationFilter, ContestCategoryWhereInput> | null
     participants?: ContestParticipantListRelationFilter
     teamParticipations?: TeamParticipationListRelationFilter
     votes?: VoteListRelationFilter
@@ -59401,7 +59211,7 @@ export namespace Prisma {
     configVersion?: SortOrder
     scoringVersion?: SortOrder
     creatorId?: SortOrder
-    categoryId?: SortOrder
+    category?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: ContestCountOrderByAggregateInput
@@ -59434,7 +59244,7 @@ export namespace Prisma {
     configVersion?: IntWithAggregatesFilter<"Contest"> | number
     scoringVersion?: IntWithAggregatesFilter<"Contest"> | number
     creatorId?: StringWithAggregatesFilter<"Contest"> | string
-    categoryId?: StringNullableWithAggregatesFilter<"Contest"> | string | null
+    category?: StringNullableWithAggregatesFilter<"Contest"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Contest"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Contest"> | Date | string
   }
@@ -59455,7 +59265,7 @@ export namespace Prisma {
     startDate?: DateTimeFilter<"RecurringContest"> | Date | string
     endDate?: DateTimeFilter<"RecurringContest"> | Date | string
     creatorId?: StringFilter<"RecurringContest"> | string
-    categoryId?: StringNullableFilter<"RecurringContest"> | string | null
+    category?: StringNullableFilter<"RecurringContest"> | string | null
     status?: EnumRecurringContestStatusFilter<"RecurringContest"> | $Enums.RecurringContestStatus
     recurring?: XOR<RecurringDataCompositeFilter, RecurringDataObjectEqualityInput>
     lastGeneratedContestId?: StringNullableFilter<"RecurringContest"> | string | null
@@ -59463,7 +59273,6 @@ export namespace Prisma {
     prizes?: JsonNullableFilter<"RecurringContest">
     createdAt?: DateTimeFilter<"RecurringContest"> | Date | string
     updatedAt?: DateTimeFilter<"RecurringContest"> | Date | string
-    category?: XOR<ContestCategoryNullableScalarRelationFilter, ContestCategoryWhereInput> | null
     contestAwards?: RecurringContestAwardListRelationFilter
     contestInstances?: ContestListRelationFilter
   }
@@ -59481,7 +59290,7 @@ export namespace Prisma {
     startDate?: SortOrder
     endDate?: SortOrder
     creatorId?: SortOrder
-    categoryId?: SortOrder
+    category?: SortOrder
     status?: SortOrder
     recurring?: RecurringDataOrderByInput
     lastGeneratedContestId?: SortOrder
@@ -59489,7 +59298,6 @@ export namespace Prisma {
     prizes?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-    category?: ContestCategoryOrderByWithRelationInput
     contestAwards?: RecurringContestAwardOrderByRelationAggregateInput
     contestInstances?: ContestOrderByRelationAggregateInput
   }
@@ -59510,7 +59318,7 @@ export namespace Prisma {
     startDate?: DateTimeFilter<"RecurringContest"> | Date | string
     endDate?: DateTimeFilter<"RecurringContest"> | Date | string
     creatorId?: StringFilter<"RecurringContest"> | string
-    categoryId?: StringNullableFilter<"RecurringContest"> | string | null
+    category?: StringNullableFilter<"RecurringContest"> | string | null
     status?: EnumRecurringContestStatusFilter<"RecurringContest"> | $Enums.RecurringContestStatus
     recurring?: XOR<RecurringDataCompositeFilter, RecurringDataObjectEqualityInput>
     lastGeneratedContestId?: StringNullableFilter<"RecurringContest"> | string | null
@@ -59518,7 +59326,6 @@ export namespace Prisma {
     prizes?: JsonNullableFilter<"RecurringContest">
     createdAt?: DateTimeFilter<"RecurringContest"> | Date | string
     updatedAt?: DateTimeFilter<"RecurringContest"> | Date | string
-    category?: XOR<ContestCategoryNullableScalarRelationFilter, ContestCategoryWhereInput> | null
     contestAwards?: RecurringContestAwardListRelationFilter
     contestInstances?: ContestListRelationFilter
   }, "id">
@@ -59536,7 +59343,7 @@ export namespace Prisma {
     startDate?: SortOrder
     endDate?: SortOrder
     creatorId?: SortOrder
-    categoryId?: SortOrder
+    category?: SortOrder
     status?: SortOrder
     lastGeneratedContestId?: SortOrder
     rules?: SortOrder
@@ -59566,7 +59373,7 @@ export namespace Prisma {
     startDate?: DateTimeWithAggregatesFilter<"RecurringContest"> | Date | string
     endDate?: DateTimeWithAggregatesFilter<"RecurringContest"> | Date | string
     creatorId?: StringWithAggregatesFilter<"RecurringContest"> | string
-    categoryId?: StringNullableWithAggregatesFilter<"RecurringContest"> | string | null
+    category?: StringNullableWithAggregatesFilter<"RecurringContest"> | string | null
     status?: EnumRecurringContestStatusWithAggregatesFilter<"RecurringContest"> | $Enums.RecurringContestStatus
     lastGeneratedContestId?: StringNullableWithAggregatesFilter<"RecurringContest"> | string | null
     rules?: JsonWithAggregatesFilter<"RecurringContest">
@@ -59587,8 +59394,6 @@ export namespace Prisma {
     order?: IntFilter<"ContestCategory"> | number
     createdAt?: DateTimeFilter<"ContestCategory"> | Date | string
     updatedAt?: DateTimeFilter<"ContestCategory"> | Date | string
-    contests?: ContestListRelationFilter
-    recurringContests?: RecurringContestListRelationFilter
   }
 
   export type ContestCategoryOrderByWithRelationInput = {
@@ -59600,8 +59405,6 @@ export namespace Prisma {
     order?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-    contests?: ContestOrderByRelationAggregateInput
-    recurringContests?: RecurringContestOrderByRelationAggregateInput
   }
 
   export type ContestCategoryWhereUniqueInput = Prisma.AtLeast<{
@@ -59616,8 +59419,6 @@ export namespace Prisma {
     order?: IntFilter<"ContestCategory"> | number
     createdAt?: DateTimeFilter<"ContestCategory"> | Date | string
     updatedAt?: DateTimeFilter<"ContestCategory"> | Date | string
-    contests?: ContestListRelationFilter
-    recurringContests?: RecurringContestListRelationFilter
   }, "id" | "slug" | "name">
 
   export type ContestCategoryOrderByWithAggregationInput = {
@@ -63449,10 +63250,10 @@ export namespace Prisma {
     finalizedAt?: Date | string | null
     configVersion?: number
     scoringVersion?: number
+    category?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     creator: UserCreateNestedOneWithoutCreatedContestsInput
-    category?: ContestCategoryCreateNestedOneWithoutContestsInput
     participants?: ContestParticipantCreateNestedManyWithoutContestInput
     teamParticipations?: TeamParticipationCreateNestedManyWithoutContestInput
     votes?: VoteCreateNestedManyWithoutContestInput
@@ -63486,7 +63287,7 @@ export namespace Prisma {
     configVersion?: number
     scoringVersion?: number
     creatorId: string
-    categoryId?: string | null
+    category?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     participants?: ContestParticipantUncheckedCreateNestedManyWithoutContestInput
@@ -63518,10 +63319,10 @@ export namespace Prisma {
     finalizedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     configVersion?: IntFieldUpdateOperationsInput | number
     scoringVersion?: IntFieldUpdateOperationsInput | number
+    category?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     creator?: UserUpdateOneRequiredWithoutCreatedContestsNestedInput
-    category?: ContestCategoryUpdateOneWithoutContestsNestedInput
     participants?: ContestParticipantUpdateManyWithoutContestNestedInput
     teamParticipations?: TeamParticipationUpdateManyWithoutContestNestedInput
     votes?: VoteUpdateManyWithoutContestNestedInput
@@ -63554,7 +63355,7 @@ export namespace Prisma {
     configVersion?: IntFieldUpdateOperationsInput | number
     scoringVersion?: IntFieldUpdateOperationsInput | number
     creatorId?: StringFieldUpdateOperationsInput | string
-    categoryId?: NullableStringFieldUpdateOperationsInput | string | null
+    category?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     participants?: ContestParticipantUncheckedUpdateManyWithoutContestNestedInput
@@ -63589,7 +63390,7 @@ export namespace Prisma {
     configVersion?: number
     scoringVersion?: number
     creatorId: string
-    categoryId?: string | null
+    category?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -63611,6 +63412,7 @@ export namespace Prisma {
     finalizedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     configVersion?: IntFieldUpdateOperationsInput | number
     scoringVersion?: IntFieldUpdateOperationsInput | number
+    category?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -63634,7 +63436,7 @@ export namespace Prisma {
     configVersion?: IntFieldUpdateOperationsInput | number
     scoringVersion?: IntFieldUpdateOperationsInput | number
     creatorId?: StringFieldUpdateOperationsInput | string
-    categoryId?: NullableStringFieldUpdateOperationsInput | string | null
+    category?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -63652,6 +63454,7 @@ export namespace Prisma {
     startDate: Date | string
     endDate: Date | string
     creatorId: string
+    category?: string | null
     status?: $Enums.RecurringContestStatus
     recurring: XOR<RecurringDataCreateEnvelopeInput, RecurringDataCreateInput>
     lastGeneratedContestId?: string | null
@@ -63659,7 +63462,6 @@ export namespace Prisma {
     prizes?: InputJsonValue | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    category?: ContestCategoryCreateNestedOneWithoutRecurringContestsInput
     contestAwards?: RecurringContestAwardCreateNestedManyWithoutRecurringContestInput
     contestInstances?: ContestCreateNestedManyWithoutRecurringContestInput
   }
@@ -63677,7 +63479,7 @@ export namespace Prisma {
     startDate: Date | string
     endDate: Date | string
     creatorId: string
-    categoryId?: string | null
+    category?: string | null
     status?: $Enums.RecurringContestStatus
     recurring: XOR<RecurringDataCreateEnvelopeInput, RecurringDataCreateInput>
     lastGeneratedContestId?: string | null
@@ -63701,6 +63503,7 @@ export namespace Prisma {
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     creatorId?: StringFieldUpdateOperationsInput | string
+    category?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumRecurringContestStatusFieldUpdateOperationsInput | $Enums.RecurringContestStatus
     recurring?: XOR<RecurringDataUpdateEnvelopeInput, RecurringDataCreateInput>
     lastGeneratedContestId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -63708,7 +63511,6 @@ export namespace Prisma {
     prizes?: InputJsonValue | InputJsonValue | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    category?: ContestCategoryUpdateOneWithoutRecurringContestsNestedInput
     contestAwards?: RecurringContestAwardUpdateManyWithoutRecurringContestNestedInput
     contestInstances?: ContestUpdateManyWithoutRecurringContestNestedInput
   }
@@ -63725,7 +63527,7 @@ export namespace Prisma {
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     creatorId?: StringFieldUpdateOperationsInput | string
-    categoryId?: NullableStringFieldUpdateOperationsInput | string | null
+    category?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumRecurringContestStatusFieldUpdateOperationsInput | $Enums.RecurringContestStatus
     recurring?: XOR<RecurringDataUpdateEnvelopeInput, RecurringDataCreateInput>
     lastGeneratedContestId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -63750,7 +63552,7 @@ export namespace Prisma {
     startDate: Date | string
     endDate: Date | string
     creatorId: string
-    categoryId?: string | null
+    category?: string | null
     status?: $Enums.RecurringContestStatus
     recurring: XOR<RecurringDataCreateEnvelopeInput, RecurringDataCreateInput>
     lastGeneratedContestId?: string | null
@@ -63772,6 +63574,7 @@ export namespace Prisma {
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     creatorId?: StringFieldUpdateOperationsInput | string
+    category?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumRecurringContestStatusFieldUpdateOperationsInput | $Enums.RecurringContestStatus
     recurring?: XOR<RecurringDataUpdateEnvelopeInput, RecurringDataCreateInput>
     lastGeneratedContestId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -63793,7 +63596,7 @@ export namespace Prisma {
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     creatorId?: StringFieldUpdateOperationsInput | string
-    categoryId?: NullableStringFieldUpdateOperationsInput | string | null
+    category?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumRecurringContestStatusFieldUpdateOperationsInput | $Enums.RecurringContestStatus
     recurring?: XOR<RecurringDataUpdateEnvelopeInput, RecurringDataCreateInput>
     lastGeneratedContestId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -63812,8 +63615,6 @@ export namespace Prisma {
     order?: number
     createdAt?: Date | string
     updatedAt?: Date | string
-    contests?: ContestCreateNestedManyWithoutCategoryInput
-    recurringContests?: RecurringContestCreateNestedManyWithoutCategoryInput
   }
 
   export type ContestCategoryUncheckedCreateInput = {
@@ -63825,8 +63626,6 @@ export namespace Prisma {
     order?: number
     createdAt?: Date | string
     updatedAt?: Date | string
-    contests?: ContestUncheckedCreateNestedManyWithoutCategoryInput
-    recurringContests?: RecurringContestUncheckedCreateNestedManyWithoutCategoryInput
   }
 
   export type ContestCategoryUpdateInput = {
@@ -63837,8 +63636,6 @@ export namespace Prisma {
     order?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    contests?: ContestUpdateManyWithoutCategoryNestedInput
-    recurringContests?: RecurringContestUpdateManyWithoutCategoryNestedInput
   }
 
   export type ContestCategoryUncheckedUpdateInput = {
@@ -63849,8 +63646,6 @@ export namespace Prisma {
     order?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    contests?: ContestUncheckedUpdateManyWithoutCategoryNestedInput
-    recurringContests?: RecurringContestUncheckedUpdateManyWithoutCategoryNestedInput
   }
 
   export type ContestCategoryCreateManyInput = {
@@ -68028,11 +67823,6 @@ export namespace Prisma {
     isNot?: UserWhereInput
   }
 
-  export type ContestCategoryNullableScalarRelationFilter = {
-    is?: ContestCategoryWhereInput | null
-    isNot?: ContestCategoryWhereInput | null
-  }
-
   export type ContestParticipantListRelationFilter = {
     every?: ContestParticipantWhereInput
     some?: ContestParticipantWhereInput
@@ -68158,7 +67948,7 @@ export namespace Prisma {
     configVersion?: SortOrder
     scoringVersion?: SortOrder
     creatorId?: SortOrder
-    categoryId?: SortOrder
+    category?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -68191,7 +67981,7 @@ export namespace Prisma {
     configVersion?: SortOrder
     scoringVersion?: SortOrder
     creatorId?: SortOrder
-    categoryId?: SortOrder
+    category?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -68216,7 +68006,7 @@ export namespace Prisma {
     configVersion?: SortOrder
     scoringVersion?: SortOrder
     creatorId?: SortOrder
-    categoryId?: SortOrder
+    category?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -68437,7 +68227,7 @@ export namespace Prisma {
     startDate?: SortOrder
     endDate?: SortOrder
     creatorId?: SortOrder
-    categoryId?: SortOrder
+    category?: SortOrder
     status?: SortOrder
     lastGeneratedContestId?: SortOrder
     rules?: SortOrder
@@ -68465,7 +68255,7 @@ export namespace Prisma {
     startDate?: SortOrder
     endDate?: SortOrder
     creatorId?: SortOrder
-    categoryId?: SortOrder
+    category?: SortOrder
     status?: SortOrder
     lastGeneratedContestId?: SortOrder
     createdAt?: SortOrder
@@ -68485,7 +68275,7 @@ export namespace Prisma {
     startDate?: SortOrder
     endDate?: SortOrder
     creatorId?: SortOrder
-    categoryId?: SortOrder
+    category?: SortOrder
     status?: SortOrder
     lastGeneratedContestId?: SortOrder
     createdAt?: SortOrder
@@ -68535,16 +68325,6 @@ export namespace Prisma {
     _min?: NestedJsonNullableFilter<$PrismaModel>
     _max?: NestedJsonNullableFilter<$PrismaModel>
     isSet?: boolean
-  }
-
-  export type RecurringContestListRelationFilter = {
-    every?: RecurringContestWhereInput
-    some?: RecurringContestWhereInput
-    none?: RecurringContestWhereInput
-  }
-
-  export type RecurringContestOrderByRelationAggregateInput = {
-    _count?: SortOrder
   }
 
   export type ContestCategoryCountOrderByAggregateInput = {
@@ -71680,12 +71460,6 @@ export namespace Prisma {
     connect?: UserWhereUniqueInput
   }
 
-  export type ContestCategoryCreateNestedOneWithoutContestsInput = {
-    create?: XOR<ContestCategoryCreateWithoutContestsInput, ContestCategoryUncheckedCreateWithoutContestsInput>
-    connectOrCreate?: ContestCategoryCreateOrConnectWithoutContestsInput
-    connect?: ContestCategoryWhereUniqueInput
-  }
-
   export type ContestParticipantCreateNestedManyWithoutContestInput = {
     create?: XOR<ContestParticipantCreateWithoutContestInput, ContestParticipantUncheckedCreateWithoutContestInput> | ContestParticipantCreateWithoutContestInput[] | ContestParticipantUncheckedCreateWithoutContestInput[]
     connectOrCreate?: ContestParticipantCreateOrConnectWithoutContestInput | ContestParticipantCreateOrConnectWithoutContestInput[]
@@ -71881,16 +71655,6 @@ export namespace Prisma {
     upsert?: UserUpsertWithoutCreatedContestsInput
     connect?: UserWhereUniqueInput
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutCreatedContestsInput, UserUpdateWithoutCreatedContestsInput>, UserUncheckedUpdateWithoutCreatedContestsInput>
-  }
-
-  export type ContestCategoryUpdateOneWithoutContestsNestedInput = {
-    create?: XOR<ContestCategoryCreateWithoutContestsInput, ContestCategoryUncheckedCreateWithoutContestsInput>
-    connectOrCreate?: ContestCategoryCreateOrConnectWithoutContestsInput
-    upsert?: ContestCategoryUpsertWithoutContestsInput
-    disconnect?: boolean
-    delete?: ContestCategoryWhereInput | boolean
-    connect?: ContestCategoryWhereUniqueInput
-    update?: XOR<XOR<ContestCategoryUpdateToOneWithWhereWithoutContestsInput, ContestCategoryUpdateWithoutContestsInput>, ContestCategoryUncheckedUpdateWithoutContestsInput>
   }
 
   export type ContestParticipantUpdateManyWithoutContestNestedInput = {
@@ -72198,12 +71962,6 @@ export namespace Prisma {
     generatedOccurrences?: number | null
   }
 
-  export type ContestCategoryCreateNestedOneWithoutRecurringContestsInput = {
-    create?: XOR<ContestCategoryCreateWithoutRecurringContestsInput, ContestCategoryUncheckedCreateWithoutRecurringContestsInput>
-    connectOrCreate?: ContestCategoryCreateOrConnectWithoutRecurringContestsInput
-    connect?: ContestCategoryWhereUniqueInput
-  }
-
   export type RecurringContestAwardCreateNestedManyWithoutRecurringContestInput = {
     create?: XOR<RecurringContestAwardCreateWithoutRecurringContestInput, RecurringContestAwardUncheckedCreateWithoutRecurringContestInput> | RecurringContestAwardCreateWithoutRecurringContestInput[] | RecurringContestAwardUncheckedCreateWithoutRecurringContestInput[]
     connectOrCreate?: RecurringContestAwardCreateOrConnectWithoutRecurringContestInput | RecurringContestAwardCreateOrConnectWithoutRecurringContestInput[]
@@ -72239,16 +71997,6 @@ export namespace Prisma {
   export type RecurringDataUpdateEnvelopeInput = {
     set?: RecurringDataCreateInput
     update?: RecurringDataUpdateInput
-  }
-
-  export type ContestCategoryUpdateOneWithoutRecurringContestsNestedInput = {
-    create?: XOR<ContestCategoryCreateWithoutRecurringContestsInput, ContestCategoryUncheckedCreateWithoutRecurringContestsInput>
-    connectOrCreate?: ContestCategoryCreateOrConnectWithoutRecurringContestsInput
-    upsert?: ContestCategoryUpsertWithoutRecurringContestsInput
-    disconnect?: boolean
-    delete?: ContestCategoryWhereInput | boolean
-    connect?: ContestCategoryWhereUniqueInput
-    update?: XOR<XOR<ContestCategoryUpdateToOneWithWhereWithoutRecurringContestsInput, ContestCategoryUpdateWithoutRecurringContestsInput>, ContestCategoryUncheckedUpdateWithoutRecurringContestsInput>
   }
 
   export type RecurringContestAwardUpdateManyWithoutRecurringContestNestedInput = {
@@ -72305,90 +72053,6 @@ export namespace Prisma {
     update?: ContestUpdateWithWhereUniqueWithoutRecurringContestInput | ContestUpdateWithWhereUniqueWithoutRecurringContestInput[]
     updateMany?: ContestUpdateManyWithWhereWithoutRecurringContestInput | ContestUpdateManyWithWhereWithoutRecurringContestInput[]
     deleteMany?: ContestScalarWhereInput | ContestScalarWhereInput[]
-  }
-
-  export type ContestCreateNestedManyWithoutCategoryInput = {
-    create?: XOR<ContestCreateWithoutCategoryInput, ContestUncheckedCreateWithoutCategoryInput> | ContestCreateWithoutCategoryInput[] | ContestUncheckedCreateWithoutCategoryInput[]
-    connectOrCreate?: ContestCreateOrConnectWithoutCategoryInput | ContestCreateOrConnectWithoutCategoryInput[]
-    createMany?: ContestCreateManyCategoryInputEnvelope
-    connect?: ContestWhereUniqueInput | ContestWhereUniqueInput[]
-  }
-
-  export type RecurringContestCreateNestedManyWithoutCategoryInput = {
-    create?: XOR<RecurringContestCreateWithoutCategoryInput, RecurringContestUncheckedCreateWithoutCategoryInput> | RecurringContestCreateWithoutCategoryInput[] | RecurringContestUncheckedCreateWithoutCategoryInput[]
-    connectOrCreate?: RecurringContestCreateOrConnectWithoutCategoryInput | RecurringContestCreateOrConnectWithoutCategoryInput[]
-    createMany?: RecurringContestCreateManyCategoryInputEnvelope
-    connect?: RecurringContestWhereUniqueInput | RecurringContestWhereUniqueInput[]
-  }
-
-  export type ContestUncheckedCreateNestedManyWithoutCategoryInput = {
-    create?: XOR<ContestCreateWithoutCategoryInput, ContestUncheckedCreateWithoutCategoryInput> | ContestCreateWithoutCategoryInput[] | ContestUncheckedCreateWithoutCategoryInput[]
-    connectOrCreate?: ContestCreateOrConnectWithoutCategoryInput | ContestCreateOrConnectWithoutCategoryInput[]
-    createMany?: ContestCreateManyCategoryInputEnvelope
-    connect?: ContestWhereUniqueInput | ContestWhereUniqueInput[]
-  }
-
-  export type RecurringContestUncheckedCreateNestedManyWithoutCategoryInput = {
-    create?: XOR<RecurringContestCreateWithoutCategoryInput, RecurringContestUncheckedCreateWithoutCategoryInput> | RecurringContestCreateWithoutCategoryInput[] | RecurringContestUncheckedCreateWithoutCategoryInput[]
-    connectOrCreate?: RecurringContestCreateOrConnectWithoutCategoryInput | RecurringContestCreateOrConnectWithoutCategoryInput[]
-    createMany?: RecurringContestCreateManyCategoryInputEnvelope
-    connect?: RecurringContestWhereUniqueInput | RecurringContestWhereUniqueInput[]
-  }
-
-  export type ContestUpdateManyWithoutCategoryNestedInput = {
-    create?: XOR<ContestCreateWithoutCategoryInput, ContestUncheckedCreateWithoutCategoryInput> | ContestCreateWithoutCategoryInput[] | ContestUncheckedCreateWithoutCategoryInput[]
-    connectOrCreate?: ContestCreateOrConnectWithoutCategoryInput | ContestCreateOrConnectWithoutCategoryInput[]
-    upsert?: ContestUpsertWithWhereUniqueWithoutCategoryInput | ContestUpsertWithWhereUniqueWithoutCategoryInput[]
-    createMany?: ContestCreateManyCategoryInputEnvelope
-    set?: ContestWhereUniqueInput | ContestWhereUniqueInput[]
-    disconnect?: ContestWhereUniqueInput | ContestWhereUniqueInput[]
-    delete?: ContestWhereUniqueInput | ContestWhereUniqueInput[]
-    connect?: ContestWhereUniqueInput | ContestWhereUniqueInput[]
-    update?: ContestUpdateWithWhereUniqueWithoutCategoryInput | ContestUpdateWithWhereUniqueWithoutCategoryInput[]
-    updateMany?: ContestUpdateManyWithWhereWithoutCategoryInput | ContestUpdateManyWithWhereWithoutCategoryInput[]
-    deleteMany?: ContestScalarWhereInput | ContestScalarWhereInput[]
-  }
-
-  export type RecurringContestUpdateManyWithoutCategoryNestedInput = {
-    create?: XOR<RecurringContestCreateWithoutCategoryInput, RecurringContestUncheckedCreateWithoutCategoryInput> | RecurringContestCreateWithoutCategoryInput[] | RecurringContestUncheckedCreateWithoutCategoryInput[]
-    connectOrCreate?: RecurringContestCreateOrConnectWithoutCategoryInput | RecurringContestCreateOrConnectWithoutCategoryInput[]
-    upsert?: RecurringContestUpsertWithWhereUniqueWithoutCategoryInput | RecurringContestUpsertWithWhereUniqueWithoutCategoryInput[]
-    createMany?: RecurringContestCreateManyCategoryInputEnvelope
-    set?: RecurringContestWhereUniqueInput | RecurringContestWhereUniqueInput[]
-    disconnect?: RecurringContestWhereUniqueInput | RecurringContestWhereUniqueInput[]
-    delete?: RecurringContestWhereUniqueInput | RecurringContestWhereUniqueInput[]
-    connect?: RecurringContestWhereUniqueInput | RecurringContestWhereUniqueInput[]
-    update?: RecurringContestUpdateWithWhereUniqueWithoutCategoryInput | RecurringContestUpdateWithWhereUniqueWithoutCategoryInput[]
-    updateMany?: RecurringContestUpdateManyWithWhereWithoutCategoryInput | RecurringContestUpdateManyWithWhereWithoutCategoryInput[]
-    deleteMany?: RecurringContestScalarWhereInput | RecurringContestScalarWhereInput[]
-  }
-
-  export type ContestUncheckedUpdateManyWithoutCategoryNestedInput = {
-    create?: XOR<ContestCreateWithoutCategoryInput, ContestUncheckedCreateWithoutCategoryInput> | ContestCreateWithoutCategoryInput[] | ContestUncheckedCreateWithoutCategoryInput[]
-    connectOrCreate?: ContestCreateOrConnectWithoutCategoryInput | ContestCreateOrConnectWithoutCategoryInput[]
-    upsert?: ContestUpsertWithWhereUniqueWithoutCategoryInput | ContestUpsertWithWhereUniqueWithoutCategoryInput[]
-    createMany?: ContestCreateManyCategoryInputEnvelope
-    set?: ContestWhereUniqueInput | ContestWhereUniqueInput[]
-    disconnect?: ContestWhereUniqueInput | ContestWhereUniqueInput[]
-    delete?: ContestWhereUniqueInput | ContestWhereUniqueInput[]
-    connect?: ContestWhereUniqueInput | ContestWhereUniqueInput[]
-    update?: ContestUpdateWithWhereUniqueWithoutCategoryInput | ContestUpdateWithWhereUniqueWithoutCategoryInput[]
-    updateMany?: ContestUpdateManyWithWhereWithoutCategoryInput | ContestUpdateManyWithWhereWithoutCategoryInput[]
-    deleteMany?: ContestScalarWhereInput | ContestScalarWhereInput[]
-  }
-
-  export type RecurringContestUncheckedUpdateManyWithoutCategoryNestedInput = {
-    create?: XOR<RecurringContestCreateWithoutCategoryInput, RecurringContestUncheckedCreateWithoutCategoryInput> | RecurringContestCreateWithoutCategoryInput[] | RecurringContestUncheckedCreateWithoutCategoryInput[]
-    connectOrCreate?: RecurringContestCreateOrConnectWithoutCategoryInput | RecurringContestCreateOrConnectWithoutCategoryInput[]
-    upsert?: RecurringContestUpsertWithWhereUniqueWithoutCategoryInput | RecurringContestUpsertWithWhereUniqueWithoutCategoryInput[]
-    createMany?: RecurringContestCreateManyCategoryInputEnvelope
-    set?: RecurringContestWhereUniqueInput | RecurringContestWhereUniqueInput[]
-    disconnect?: RecurringContestWhereUniqueInput | RecurringContestWhereUniqueInput[]
-    delete?: RecurringContestWhereUniqueInput | RecurringContestWhereUniqueInput[]
-    connect?: RecurringContestWhereUniqueInput | RecurringContestWhereUniqueInput[]
-    update?: RecurringContestUpdateWithWhereUniqueWithoutCategoryInput | RecurringContestUpdateWithWhereUniqueWithoutCategoryInput[]
-    updateMany?: RecurringContestUpdateManyWithWhereWithoutCategoryInput | RecurringContestUpdateManyWithWhereWithoutCategoryInput[]
-    deleteMany?: RecurringContestScalarWhereInput | RecurringContestScalarWhereInput[]
   }
 
   export type EnumContestOccurrenceStatusFieldUpdateOperationsInput = {
@@ -75915,35 +75579,6 @@ export namespace Prisma {
     create: XOR<UserCreateWithoutCreatedContestsInput, UserUncheckedCreateWithoutCreatedContestsInput>
   }
 
-  export type ContestCategoryCreateWithoutContestsInput = {
-    id?: string
-    slug: string
-    name: string
-    description?: string | null
-    isActive?: boolean
-    order?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    recurringContests?: RecurringContestCreateNestedManyWithoutCategoryInput
-  }
-
-  export type ContestCategoryUncheckedCreateWithoutContestsInput = {
-    id?: string
-    slug: string
-    name: string
-    description?: string | null
-    isActive?: boolean
-    order?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    recurringContests?: RecurringContestUncheckedCreateNestedManyWithoutCategoryInput
-  }
-
-  export type ContestCategoryCreateOrConnectWithoutContestsInput = {
-    where: ContestCategoryWhereUniqueInput
-    create: XOR<ContestCategoryCreateWithoutContestsInput, ContestCategoryUncheckedCreateWithoutContestsInput>
-  }
-
   export type ContestParticipantCreateWithoutContestInput = {
     id?: string
     status?: $Enums.ContestParticipantStatus
@@ -76293,6 +75928,7 @@ export namespace Prisma {
     startDate: Date | string
     endDate: Date | string
     creatorId: string
+    category?: string | null
     status?: $Enums.RecurringContestStatus
     recurring: XOR<RecurringDataCreateEnvelopeInput, RecurringDataCreateInput>
     lastGeneratedContestId?: string | null
@@ -76300,7 +75936,6 @@ export namespace Prisma {
     prizes?: InputJsonValue | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    category?: ContestCategoryCreateNestedOneWithoutRecurringContestsInput
     contestAwards?: RecurringContestAwardCreateNestedManyWithoutRecurringContestInput
   }
 
@@ -76317,7 +75952,7 @@ export namespace Prisma {
     startDate: Date | string
     endDate: Date | string
     creatorId: string
-    categoryId?: string | null
+    category?: string | null
     status?: $Enums.RecurringContestStatus
     recurring: XOR<RecurringDataCreateEnvelopeInput, RecurringDataCreateInput>
     lastGeneratedContestId?: string | null
@@ -76432,39 +76067,6 @@ export namespace Prisma {
     chat?: ChatUncheckedUpdateManyWithoutSenderNestedInput
     subscriptions?: SubscriptionUncheckedUpdateManyWithoutUserNestedInput
     payments?: PaymentUncheckedUpdateManyWithoutUserNestedInput
-  }
-
-  export type ContestCategoryUpsertWithoutContestsInput = {
-    update: XOR<ContestCategoryUpdateWithoutContestsInput, ContestCategoryUncheckedUpdateWithoutContestsInput>
-    create: XOR<ContestCategoryCreateWithoutContestsInput, ContestCategoryUncheckedCreateWithoutContestsInput>
-    where?: ContestCategoryWhereInput
-  }
-
-  export type ContestCategoryUpdateToOneWithWhereWithoutContestsInput = {
-    where?: ContestCategoryWhereInput
-    data: XOR<ContestCategoryUpdateWithoutContestsInput, ContestCategoryUncheckedUpdateWithoutContestsInput>
-  }
-
-  export type ContestCategoryUpdateWithoutContestsInput = {
-    slug?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    isActive?: BoolFieldUpdateOperationsInput | boolean
-    order?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    recurringContests?: RecurringContestUpdateManyWithoutCategoryNestedInput
-  }
-
-  export type ContestCategoryUncheckedUpdateWithoutContestsInput = {
-    slug?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    isActive?: BoolFieldUpdateOperationsInput | boolean
-    order?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    recurringContests?: RecurringContestUncheckedUpdateManyWithoutCategoryNestedInput
   }
 
   export type ContestParticipantUpsertWithWhereUniqueWithoutContestInput = {
@@ -76811,6 +76413,7 @@ export namespace Prisma {
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     creatorId?: StringFieldUpdateOperationsInput | string
+    category?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumRecurringContestStatusFieldUpdateOperationsInput | $Enums.RecurringContestStatus
     recurring?: XOR<RecurringDataUpdateEnvelopeInput, RecurringDataCreateInput>
     lastGeneratedContestId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -76818,7 +76421,6 @@ export namespace Prisma {
     prizes?: InputJsonValue | InputJsonValue | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    category?: ContestCategoryUpdateOneWithoutRecurringContestsNestedInput
     contestAwards?: RecurringContestAwardUpdateManyWithoutRecurringContestNestedInput
   }
 
@@ -76834,7 +76436,7 @@ export namespace Prisma {
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     creatorId?: StringFieldUpdateOperationsInput | string
-    categoryId?: NullableStringFieldUpdateOperationsInput | string | null
+    category?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumRecurringContestStatusFieldUpdateOperationsInput | $Enums.RecurringContestStatus
     recurring?: XOR<RecurringDataUpdateEnvelopeInput, RecurringDataCreateInput>
     lastGeneratedContestId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -76843,35 +76445,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     contestAwards?: RecurringContestAwardUncheckedUpdateManyWithoutRecurringContestNestedInput
-  }
-
-  export type ContestCategoryCreateWithoutRecurringContestsInput = {
-    id?: string
-    slug: string
-    name: string
-    description?: string | null
-    isActive?: boolean
-    order?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    contests?: ContestCreateNestedManyWithoutCategoryInput
-  }
-
-  export type ContestCategoryUncheckedCreateWithoutRecurringContestsInput = {
-    id?: string
-    slug: string
-    name: string
-    description?: string | null
-    isActive?: boolean
-    order?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    contests?: ContestUncheckedCreateNestedManyWithoutCategoryInput
-  }
-
-  export type ContestCategoryCreateOrConnectWithoutRecurringContestsInput = {
-    where: ContestCategoryWhereUniqueInput
-    create: XOR<ContestCategoryCreateWithoutRecurringContestsInput, ContestCategoryUncheckedCreateWithoutRecurringContestsInput>
   }
 
   export type RecurringContestAwardCreateWithoutRecurringContestInput = {
@@ -76943,10 +76516,10 @@ export namespace Prisma {
     finalizedAt?: Date | string | null
     configVersion?: number
     scoringVersion?: number
+    category?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     creator: UserCreateNestedOneWithoutCreatedContestsInput
-    category?: ContestCategoryCreateNestedOneWithoutContestsInput
     participants?: ContestParticipantCreateNestedManyWithoutContestInput
     teamParticipations?: TeamParticipationCreateNestedManyWithoutContestInput
     votes?: VoteCreateNestedManyWithoutContestInput
@@ -76978,7 +76551,7 @@ export namespace Prisma {
     configVersion?: number
     scoringVersion?: number
     creatorId: string
-    categoryId?: string | null
+    category?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     participants?: ContestParticipantUncheckedCreateNestedManyWithoutContestInput
@@ -77011,39 +76584,6 @@ export namespace Prisma {
     endsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     maxOccurrences?: NullableIntFieldUpdateOperationsInput | number | null
     generatedOccurrences?: NullableIntFieldUpdateOperationsInput | number | null
-  }
-
-  export type ContestCategoryUpsertWithoutRecurringContestsInput = {
-    update: XOR<ContestCategoryUpdateWithoutRecurringContestsInput, ContestCategoryUncheckedUpdateWithoutRecurringContestsInput>
-    create: XOR<ContestCategoryCreateWithoutRecurringContestsInput, ContestCategoryUncheckedCreateWithoutRecurringContestsInput>
-    where?: ContestCategoryWhereInput
-  }
-
-  export type ContestCategoryUpdateToOneWithWhereWithoutRecurringContestsInput = {
-    where?: ContestCategoryWhereInput
-    data: XOR<ContestCategoryUpdateWithoutRecurringContestsInput, ContestCategoryUncheckedUpdateWithoutRecurringContestsInput>
-  }
-
-  export type ContestCategoryUpdateWithoutRecurringContestsInput = {
-    slug?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    isActive?: BoolFieldUpdateOperationsInput | boolean
-    order?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    contests?: ContestUpdateManyWithoutCategoryNestedInput
-  }
-
-  export type ContestCategoryUncheckedUpdateWithoutRecurringContestsInput = {
-    slug?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    isActive?: BoolFieldUpdateOperationsInput | boolean
-    order?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    contests?: ContestUncheckedUpdateManyWithoutCategoryNestedInput
   }
 
   export type RecurringContestAwardUpsertWithWhereUniqueWithoutRecurringContestInput = {
@@ -77126,200 +76666,9 @@ export namespace Prisma {
     configVersion?: IntFilter<"Contest"> | number
     scoringVersion?: IntFilter<"Contest"> | number
     creatorId?: StringFilter<"Contest"> | string
-    categoryId?: StringNullableFilter<"Contest"> | string | null
+    category?: StringNullableFilter<"Contest"> | string | null
     createdAt?: DateTimeFilter<"Contest"> | Date | string
     updatedAt?: DateTimeFilter<"Contest"> | Date | string
-  }
-
-  export type ContestCreateWithoutCategoryInput = {
-    id?: string
-    title: string
-    description: string
-    banner?: string | null
-    status?: $Enums.ContestStatus
-    isMoneyContest?: boolean
-    maxPrize?: number | null
-    minPrize?: number | null
-    currency?: string | null
-    entryFeeCoins?: number
-    startDate: Date | string
-    endDate: Date | string
-    startedAt?: Date | string | null
-    endedAt?: Date | string | null
-    finalizedAt?: Date | string | null
-    configVersion?: number
-    scoringVersion?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    creator: UserCreateNestedOneWithoutCreatedContestsInput
-    participants?: ContestParticipantCreateNestedManyWithoutContestInput
-    teamParticipations?: TeamParticipationCreateNestedManyWithoutContestInput
-    votes?: VoteCreateNestedManyWithoutContestInput
-    contestRules?: ContestRuleCreateNestedManyWithoutContestInput
-    ruleConfigs?: ContestRuleConfigCreateNestedManyWithoutContestInput
-    contestAwards?: ContestAwardCreateNestedManyWithoutContestInput
-    achievements?: ContestAchievementCreateNestedManyWithoutContestInput
-    entryFeeTransactions?: ContestEntryFeeTransactionCreateNestedManyWithoutContestInput
-    teamMatch?: TeamMatchCreateNestedManyWithoutContestInput
-    teamMatchHistory?: TeamMatchHistoryCreateNestedManyWithoutContestInput
-    recurringContest?: RecurringContestCreateNestedOneWithoutContestInstancesInput
-  }
-
-  export type ContestUncheckedCreateWithoutCategoryInput = {
-    id?: string
-    title: string
-    description: string
-    banner?: string | null
-    status?: $Enums.ContestStatus
-    isMoneyContest?: boolean
-    maxPrize?: number | null
-    minPrize?: number | null
-    currency?: string | null
-    entryFeeCoins?: number
-    startDate: Date | string
-    endDate: Date | string
-    startedAt?: Date | string | null
-    endedAt?: Date | string | null
-    finalizedAt?: Date | string | null
-    recurringContestId?: string | null
-    configVersion?: number
-    scoringVersion?: number
-    creatorId: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    participants?: ContestParticipantUncheckedCreateNestedManyWithoutContestInput
-    teamParticipations?: TeamParticipationUncheckedCreateNestedManyWithoutContestInput
-    votes?: VoteUncheckedCreateNestedManyWithoutContestInput
-    contestRules?: ContestRuleUncheckedCreateNestedManyWithoutContestInput
-    ruleConfigs?: ContestRuleConfigUncheckedCreateNestedManyWithoutContestInput
-    contestAwards?: ContestAwardUncheckedCreateNestedManyWithoutContestInput
-    achievements?: ContestAchievementUncheckedCreateNestedManyWithoutContestInput
-    entryFeeTransactions?: ContestEntryFeeTransactionUncheckedCreateNestedManyWithoutContestInput
-    teamMatch?: TeamMatchUncheckedCreateNestedManyWithoutContestInput
-    teamMatchHistory?: TeamMatchHistoryUncheckedCreateNestedManyWithoutContestInput
-  }
-
-  export type ContestCreateOrConnectWithoutCategoryInput = {
-    where: ContestWhereUniqueInput
-    create: XOR<ContestCreateWithoutCategoryInput, ContestUncheckedCreateWithoutCategoryInput>
-  }
-
-  export type ContestCreateManyCategoryInputEnvelope = {
-    data: ContestCreateManyCategoryInput | ContestCreateManyCategoryInput[]
-  }
-
-  export type RecurringContestCreateWithoutCategoryInput = {
-    id?: string
-    title: string
-    description: string
-    banner?: string | null
-    isMoneyContest?: boolean
-    maxPrize?: number | null
-    minPrize?: number | null
-    currency?: string | null
-    entryFeeCoins?: number
-    startDate: Date | string
-    endDate: Date | string
-    creatorId: string
-    status?: $Enums.RecurringContestStatus
-    recurring: XOR<RecurringDataCreateEnvelopeInput, RecurringDataCreateInput>
-    lastGeneratedContestId?: string | null
-    rules: InputJsonValue
-    prizes?: InputJsonValue | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    contestAwards?: RecurringContestAwardCreateNestedManyWithoutRecurringContestInput
-    contestInstances?: ContestCreateNestedManyWithoutRecurringContestInput
-  }
-
-  export type RecurringContestUncheckedCreateWithoutCategoryInput = {
-    id?: string
-    title: string
-    description: string
-    banner?: string | null
-    isMoneyContest?: boolean
-    maxPrize?: number | null
-    minPrize?: number | null
-    currency?: string | null
-    entryFeeCoins?: number
-    startDate: Date | string
-    endDate: Date | string
-    creatorId: string
-    status?: $Enums.RecurringContestStatus
-    recurring: XOR<RecurringDataCreateEnvelopeInput, RecurringDataCreateInput>
-    lastGeneratedContestId?: string | null
-    rules: InputJsonValue
-    prizes?: InputJsonValue | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    contestAwards?: RecurringContestAwardUncheckedCreateNestedManyWithoutRecurringContestInput
-    contestInstances?: ContestUncheckedCreateNestedManyWithoutRecurringContestInput
-  }
-
-  export type RecurringContestCreateOrConnectWithoutCategoryInput = {
-    where: RecurringContestWhereUniqueInput
-    create: XOR<RecurringContestCreateWithoutCategoryInput, RecurringContestUncheckedCreateWithoutCategoryInput>
-  }
-
-  export type RecurringContestCreateManyCategoryInputEnvelope = {
-    data: RecurringContestCreateManyCategoryInput | RecurringContestCreateManyCategoryInput[]
-  }
-
-  export type ContestUpsertWithWhereUniqueWithoutCategoryInput = {
-    where: ContestWhereUniqueInput
-    update: XOR<ContestUpdateWithoutCategoryInput, ContestUncheckedUpdateWithoutCategoryInput>
-    create: XOR<ContestCreateWithoutCategoryInput, ContestUncheckedCreateWithoutCategoryInput>
-  }
-
-  export type ContestUpdateWithWhereUniqueWithoutCategoryInput = {
-    where: ContestWhereUniqueInput
-    data: XOR<ContestUpdateWithoutCategoryInput, ContestUncheckedUpdateWithoutCategoryInput>
-  }
-
-  export type ContestUpdateManyWithWhereWithoutCategoryInput = {
-    where: ContestScalarWhereInput
-    data: XOR<ContestUpdateManyMutationInput, ContestUncheckedUpdateManyWithoutCategoryInput>
-  }
-
-  export type RecurringContestUpsertWithWhereUniqueWithoutCategoryInput = {
-    where: RecurringContestWhereUniqueInput
-    update: XOR<RecurringContestUpdateWithoutCategoryInput, RecurringContestUncheckedUpdateWithoutCategoryInput>
-    create: XOR<RecurringContestCreateWithoutCategoryInput, RecurringContestUncheckedCreateWithoutCategoryInput>
-  }
-
-  export type RecurringContestUpdateWithWhereUniqueWithoutCategoryInput = {
-    where: RecurringContestWhereUniqueInput
-    data: XOR<RecurringContestUpdateWithoutCategoryInput, RecurringContestUncheckedUpdateWithoutCategoryInput>
-  }
-
-  export type RecurringContestUpdateManyWithWhereWithoutCategoryInput = {
-    where: RecurringContestScalarWhereInput
-    data: XOR<RecurringContestUpdateManyMutationInput, RecurringContestUncheckedUpdateManyWithoutCategoryInput>
-  }
-
-  export type RecurringContestScalarWhereInput = {
-    AND?: RecurringContestScalarWhereInput | RecurringContestScalarWhereInput[]
-    OR?: RecurringContestScalarWhereInput[]
-    NOT?: RecurringContestScalarWhereInput | RecurringContestScalarWhereInput[]
-    id?: StringFilter<"RecurringContest"> | string
-    title?: StringFilter<"RecurringContest"> | string
-    description?: StringFilter<"RecurringContest"> | string
-    banner?: StringNullableFilter<"RecurringContest"> | string | null
-    isMoneyContest?: BoolFilter<"RecurringContest"> | boolean
-    maxPrize?: IntNullableFilter<"RecurringContest"> | number | null
-    minPrize?: IntNullableFilter<"RecurringContest"> | number | null
-    currency?: StringNullableFilter<"RecurringContest"> | string | null
-    entryFeeCoins?: IntFilter<"RecurringContest"> | number
-    startDate?: DateTimeFilter<"RecurringContest"> | Date | string
-    endDate?: DateTimeFilter<"RecurringContest"> | Date | string
-    creatorId?: StringFilter<"RecurringContest"> | string
-    categoryId?: StringNullableFilter<"RecurringContest"> | string | null
-    status?: EnumRecurringContestStatusFilter<"RecurringContest"> | $Enums.RecurringContestStatus
-    lastGeneratedContestId?: StringNullableFilter<"RecurringContest"> | string | null
-    rules?: JsonFilter<"RecurringContest">
-    prizes?: JsonNullableFilter<"RecurringContest">
-    createdAt?: DateTimeFilter<"RecurringContest"> | Date | string
-    updatedAt?: DateTimeFilter<"RecurringContest"> | Date | string
   }
 
   export type ContestAwardCreateWithoutPrizeInput = {
@@ -77474,10 +76823,10 @@ export namespace Prisma {
     finalizedAt?: Date | string | null
     configVersion?: number
     scoringVersion?: number
+    category?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     creator: UserCreateNestedOneWithoutCreatedContestsInput
-    category?: ContestCategoryCreateNestedOneWithoutContestsInput
     participants?: ContestParticipantCreateNestedManyWithoutContestInput
     teamParticipations?: TeamParticipationCreateNestedManyWithoutContestInput
     votes?: VoteCreateNestedManyWithoutContestInput
@@ -77510,7 +76859,7 @@ export namespace Prisma {
     configVersion?: number
     scoringVersion?: number
     creatorId: string
-    categoryId?: string | null
+    category?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     participants?: ContestParticipantUncheckedCreateNestedManyWithoutContestInput
@@ -77557,10 +76906,10 @@ export namespace Prisma {
     finalizedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     configVersion?: IntFieldUpdateOperationsInput | number
     scoringVersion?: IntFieldUpdateOperationsInput | number
+    category?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     creator?: UserUpdateOneRequiredWithoutCreatedContestsNestedInput
-    category?: ContestCategoryUpdateOneWithoutContestsNestedInput
     participants?: ContestParticipantUpdateManyWithoutContestNestedInput
     teamParticipations?: TeamParticipationUpdateManyWithoutContestNestedInput
     votes?: VoteUpdateManyWithoutContestNestedInput
@@ -77592,7 +76941,7 @@ export namespace Prisma {
     configVersion?: IntFieldUpdateOperationsInput | number
     scoringVersion?: IntFieldUpdateOperationsInput | number
     creatorId?: StringFieldUpdateOperationsInput | string
-    categoryId?: NullableStringFieldUpdateOperationsInput | string | null
+    category?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     participants?: ContestParticipantUncheckedUpdateManyWithoutContestNestedInput
@@ -77624,10 +76973,10 @@ export namespace Prisma {
     finalizedAt?: Date | string | null
     configVersion?: number
     scoringVersion?: number
+    category?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     creator: UserCreateNestedOneWithoutCreatedContestsInput
-    category?: ContestCategoryCreateNestedOneWithoutContestsInput
     participants?: ContestParticipantCreateNestedManyWithoutContestInput
     teamParticipations?: TeamParticipationCreateNestedManyWithoutContestInput
     votes?: VoteCreateNestedManyWithoutContestInput
@@ -77660,7 +77009,7 @@ export namespace Prisma {
     configVersion?: number
     scoringVersion?: number
     creatorId: string
-    categoryId?: string | null
+    category?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     participants?: ContestParticipantUncheckedCreateNestedManyWithoutContestInput
@@ -77707,10 +77056,10 @@ export namespace Prisma {
     finalizedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     configVersion?: IntFieldUpdateOperationsInput | number
     scoringVersion?: IntFieldUpdateOperationsInput | number
+    category?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     creator?: UserUpdateOneRequiredWithoutCreatedContestsNestedInput
-    category?: ContestCategoryUpdateOneWithoutContestsNestedInput
     participants?: ContestParticipantUpdateManyWithoutContestNestedInput
     teamParticipations?: TeamParticipationUpdateManyWithoutContestNestedInput
     votes?: VoteUpdateManyWithoutContestNestedInput
@@ -77742,7 +77091,7 @@ export namespace Prisma {
     configVersion?: IntFieldUpdateOperationsInput | number
     scoringVersion?: IntFieldUpdateOperationsInput | number
     creatorId?: StringFieldUpdateOperationsInput | string
-    categoryId?: NullableStringFieldUpdateOperationsInput | string | null
+    category?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     participants?: ContestParticipantUncheckedUpdateManyWithoutContestNestedInput
@@ -78080,10 +77429,10 @@ export namespace Prisma {
     finalizedAt?: Date | string | null
     configVersion?: number
     scoringVersion?: number
+    category?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     creator: UserCreateNestedOneWithoutCreatedContestsInput
-    category?: ContestCategoryCreateNestedOneWithoutContestsInput
     teamParticipations?: TeamParticipationCreateNestedManyWithoutContestInput
     votes?: VoteCreateNestedManyWithoutContestInput
     contestRules?: ContestRuleCreateNestedManyWithoutContestInput
@@ -78116,7 +77465,7 @@ export namespace Prisma {
     configVersion?: number
     scoringVersion?: number
     creatorId: string
-    categoryId?: string | null
+    category?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     teamParticipations?: TeamParticipationUncheckedCreateNestedManyWithoutContestInput
@@ -78367,10 +77716,10 @@ export namespace Prisma {
     finalizedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     configVersion?: IntFieldUpdateOperationsInput | number
     scoringVersion?: IntFieldUpdateOperationsInput | number
+    category?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     creator?: UserUpdateOneRequiredWithoutCreatedContestsNestedInput
-    category?: ContestCategoryUpdateOneWithoutContestsNestedInput
     teamParticipations?: TeamParticipationUpdateManyWithoutContestNestedInput
     votes?: VoteUpdateManyWithoutContestNestedInput
     contestRules?: ContestRuleUpdateManyWithoutContestNestedInput
@@ -78402,7 +77751,7 @@ export namespace Prisma {
     configVersion?: IntFieldUpdateOperationsInput | number
     scoringVersion?: IntFieldUpdateOperationsInput | number
     creatorId?: StringFieldUpdateOperationsInput | string
-    categoryId?: NullableStringFieldUpdateOperationsInput | string | null
+    category?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     teamParticipations?: TeamParticipationUncheckedUpdateManyWithoutContestNestedInput
@@ -78613,10 +77962,10 @@ export namespace Prisma {
     finalizedAt?: Date | string | null
     configVersion?: number
     scoringVersion?: number
+    category?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     creator: UserCreateNestedOneWithoutCreatedContestsInput
-    category?: ContestCategoryCreateNestedOneWithoutContestsInput
     participants?: ContestParticipantCreateNestedManyWithoutContestInput
     teamParticipations?: TeamParticipationCreateNestedManyWithoutContestInput
     votes?: VoteCreateNestedManyWithoutContestInput
@@ -78649,7 +77998,7 @@ export namespace Prisma {
     configVersion?: number
     scoringVersion?: number
     creatorId: string
-    categoryId?: string | null
+    category?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     participants?: ContestParticipantUncheckedCreateNestedManyWithoutContestInput
@@ -78696,10 +78045,10 @@ export namespace Prisma {
     finalizedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     configVersion?: IntFieldUpdateOperationsInput | number
     scoringVersion?: IntFieldUpdateOperationsInput | number
+    category?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     creator?: UserUpdateOneRequiredWithoutCreatedContestsNestedInput
-    category?: ContestCategoryUpdateOneWithoutContestsNestedInput
     participants?: ContestParticipantUpdateManyWithoutContestNestedInput
     teamParticipations?: TeamParticipationUpdateManyWithoutContestNestedInput
     votes?: VoteUpdateManyWithoutContestNestedInput
@@ -78731,7 +78080,7 @@ export namespace Prisma {
     configVersion?: IntFieldUpdateOperationsInput | number
     scoringVersion?: IntFieldUpdateOperationsInput | number
     creatorId?: StringFieldUpdateOperationsInput | string
-    categoryId?: NullableStringFieldUpdateOperationsInput | string | null
+    category?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     participants?: ContestParticipantUncheckedUpdateManyWithoutContestNestedInput
@@ -78763,10 +78112,10 @@ export namespace Prisma {
     finalizedAt?: Date | string | null
     configVersion?: number
     scoringVersion?: number
+    category?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     creator: UserCreateNestedOneWithoutCreatedContestsInput
-    category?: ContestCategoryCreateNestedOneWithoutContestsInput
     participants?: ContestParticipantCreateNestedManyWithoutContestInput
     teamParticipations?: TeamParticipationCreateNestedManyWithoutContestInput
     votes?: VoteCreateNestedManyWithoutContestInput
@@ -78799,7 +78148,7 @@ export namespace Prisma {
     configVersion?: number
     scoringVersion?: number
     creatorId: string
-    categoryId?: string | null
+    category?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     participants?: ContestParticipantUncheckedCreateNestedManyWithoutContestInput
@@ -78893,10 +78242,10 @@ export namespace Prisma {
     finalizedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     configVersion?: IntFieldUpdateOperationsInput | number
     scoringVersion?: IntFieldUpdateOperationsInput | number
+    category?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     creator?: UserUpdateOneRequiredWithoutCreatedContestsNestedInput
-    category?: ContestCategoryUpdateOneWithoutContestsNestedInput
     participants?: ContestParticipantUpdateManyWithoutContestNestedInput
     teamParticipations?: TeamParticipationUpdateManyWithoutContestNestedInput
     votes?: VoteUpdateManyWithoutContestNestedInput
@@ -78928,7 +78277,7 @@ export namespace Prisma {
     configVersion?: IntFieldUpdateOperationsInput | number
     scoringVersion?: IntFieldUpdateOperationsInput | number
     creatorId?: StringFieldUpdateOperationsInput | string
-    categoryId?: NullableStringFieldUpdateOperationsInput | string | null
+    category?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     participants?: ContestParticipantUncheckedUpdateManyWithoutContestNestedInput
@@ -79006,6 +78355,7 @@ export namespace Prisma {
     startDate: Date | string
     endDate: Date | string
     creatorId: string
+    category?: string | null
     status?: $Enums.RecurringContestStatus
     recurring: XOR<RecurringDataCreateEnvelopeInput, RecurringDataCreateInput>
     lastGeneratedContestId?: string | null
@@ -79013,7 +78363,6 @@ export namespace Prisma {
     prizes?: InputJsonValue | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    category?: ContestCategoryCreateNestedOneWithoutRecurringContestsInput
     contestInstances?: ContestCreateNestedManyWithoutRecurringContestInput
   }
 
@@ -79030,7 +78379,7 @@ export namespace Prisma {
     startDate: Date | string
     endDate: Date | string
     creatorId: string
-    categoryId?: string | null
+    category?: string | null
     status?: $Enums.RecurringContestStatus
     recurring: XOR<RecurringDataCreateEnvelopeInput, RecurringDataCreateInput>
     lastGeneratedContestId?: string | null
@@ -79116,6 +78465,7 @@ export namespace Prisma {
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     creatorId?: StringFieldUpdateOperationsInput | string
+    category?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumRecurringContestStatusFieldUpdateOperationsInput | $Enums.RecurringContestStatus
     recurring?: XOR<RecurringDataUpdateEnvelopeInput, RecurringDataCreateInput>
     lastGeneratedContestId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -79123,7 +78473,6 @@ export namespace Prisma {
     prizes?: InputJsonValue | InputJsonValue | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    category?: ContestCategoryUpdateOneWithoutRecurringContestsNestedInput
     contestInstances?: ContestUpdateManyWithoutRecurringContestNestedInput
   }
 
@@ -79139,7 +78488,7 @@ export namespace Prisma {
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     creatorId?: StringFieldUpdateOperationsInput | string
-    categoryId?: NullableStringFieldUpdateOperationsInput | string | null
+    category?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumRecurringContestStatusFieldUpdateOperationsInput | $Enums.RecurringContestStatus
     recurring?: XOR<RecurringDataUpdateEnvelopeInput, RecurringDataCreateInput>
     lastGeneratedContestId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -79256,10 +78605,10 @@ export namespace Prisma {
     finalizedAt?: Date | string | null
     configVersion?: number
     scoringVersion?: number
+    category?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     creator: UserCreateNestedOneWithoutCreatedContestsInput
-    category?: ContestCategoryCreateNestedOneWithoutContestsInput
     participants?: ContestParticipantCreateNestedManyWithoutContestInput
     teamParticipations?: TeamParticipationCreateNestedManyWithoutContestInput
     votes?: VoteCreateNestedManyWithoutContestInput
@@ -79292,7 +78641,7 @@ export namespace Prisma {
     configVersion?: number
     scoringVersion?: number
     creatorId: string
-    categoryId?: string | null
+    category?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     participants?: ContestParticipantUncheckedCreateNestedManyWithoutContestInput
@@ -79413,10 +78762,10 @@ export namespace Prisma {
     finalizedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     configVersion?: IntFieldUpdateOperationsInput | number
     scoringVersion?: IntFieldUpdateOperationsInput | number
+    category?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     creator?: UserUpdateOneRequiredWithoutCreatedContestsNestedInput
-    category?: ContestCategoryUpdateOneWithoutContestsNestedInput
     participants?: ContestParticipantUpdateManyWithoutContestNestedInput
     teamParticipations?: TeamParticipationUpdateManyWithoutContestNestedInput
     votes?: VoteUpdateManyWithoutContestNestedInput
@@ -79448,7 +78797,7 @@ export namespace Prisma {
     configVersion?: IntFieldUpdateOperationsInput | number
     scoringVersion?: IntFieldUpdateOperationsInput | number
     creatorId?: StringFieldUpdateOperationsInput | string
-    categoryId?: NullableStringFieldUpdateOperationsInput | string | null
+    category?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     participants?: ContestParticipantUncheckedUpdateManyWithoutContestNestedInput
@@ -80881,10 +80230,10 @@ export namespace Prisma {
     finalizedAt?: Date | string | null
     configVersion?: number
     scoringVersion?: number
+    category?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     creator: UserCreateNestedOneWithoutCreatedContestsInput
-    category?: ContestCategoryCreateNestedOneWithoutContestsInput
     participants?: ContestParticipantCreateNestedManyWithoutContestInput
     teamParticipations?: TeamParticipationCreateNestedManyWithoutContestInput
     votes?: VoteCreateNestedManyWithoutContestInput
@@ -80917,7 +80266,7 @@ export namespace Prisma {
     configVersion?: number
     scoringVersion?: number
     creatorId: string
-    categoryId?: string | null
+    category?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     participants?: ContestParticipantUncheckedCreateNestedManyWithoutContestInput
@@ -81106,10 +80455,10 @@ export namespace Prisma {
     finalizedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     configVersion?: IntFieldUpdateOperationsInput | number
     scoringVersion?: IntFieldUpdateOperationsInput | number
+    category?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     creator?: UserUpdateOneRequiredWithoutCreatedContestsNestedInput
-    category?: ContestCategoryUpdateOneWithoutContestsNestedInput
     participants?: ContestParticipantUpdateManyWithoutContestNestedInput
     teamParticipations?: TeamParticipationUpdateManyWithoutContestNestedInput
     votes?: VoteUpdateManyWithoutContestNestedInput
@@ -81141,7 +80490,7 @@ export namespace Prisma {
     configVersion?: IntFieldUpdateOperationsInput | number
     scoringVersion?: IntFieldUpdateOperationsInput | number
     creatorId?: StringFieldUpdateOperationsInput | string
-    categoryId?: NullableStringFieldUpdateOperationsInput | string | null
+    category?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     participants?: ContestParticipantUncheckedUpdateManyWithoutContestNestedInput
@@ -81791,10 +81140,10 @@ export namespace Prisma {
     finalizedAt?: Date | string | null
     configVersion?: number
     scoringVersion?: number
+    category?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     creator: UserCreateNestedOneWithoutCreatedContestsInput
-    category?: ContestCategoryCreateNestedOneWithoutContestsInput
     participants?: ContestParticipantCreateNestedManyWithoutContestInput
     votes?: VoteCreateNestedManyWithoutContestInput
     contestRules?: ContestRuleCreateNestedManyWithoutContestInput
@@ -81827,7 +81176,7 @@ export namespace Prisma {
     configVersion?: number
     scoringVersion?: number
     creatorId: string
-    categoryId?: string | null
+    category?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     participants?: ContestParticipantUncheckedCreateNestedManyWithoutContestInput
@@ -81949,10 +81298,10 @@ export namespace Prisma {
     finalizedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     configVersion?: IntFieldUpdateOperationsInput | number
     scoringVersion?: IntFieldUpdateOperationsInput | number
+    category?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     creator?: UserUpdateOneRequiredWithoutCreatedContestsNestedInput
-    category?: ContestCategoryUpdateOneWithoutContestsNestedInput
     participants?: ContestParticipantUpdateManyWithoutContestNestedInput
     votes?: VoteUpdateManyWithoutContestNestedInput
     contestRules?: ContestRuleUpdateManyWithoutContestNestedInput
@@ -81984,7 +81333,7 @@ export namespace Prisma {
     configVersion?: IntFieldUpdateOperationsInput | number
     scoringVersion?: IntFieldUpdateOperationsInput | number
     creatorId?: StringFieldUpdateOperationsInput | string
-    categoryId?: NullableStringFieldUpdateOperationsInput | string | null
+    category?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     participants?: ContestParticipantUncheckedUpdateManyWithoutContestNestedInput
@@ -82502,10 +81851,10 @@ export namespace Prisma {
     finalizedAt?: Date | string | null
     configVersion?: number
     scoringVersion?: number
+    category?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     creator: UserCreateNestedOneWithoutCreatedContestsInput
-    category?: ContestCategoryCreateNestedOneWithoutContestsInput
     participants?: ContestParticipantCreateNestedManyWithoutContestInput
     teamParticipations?: TeamParticipationCreateNestedManyWithoutContestInput
     votes?: VoteCreateNestedManyWithoutContestInput
@@ -82538,7 +81887,7 @@ export namespace Prisma {
     configVersion?: number
     scoringVersion?: number
     creatorId: string
-    categoryId?: string | null
+    category?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     participants?: ContestParticipantUncheckedCreateNestedManyWithoutContestInput
@@ -82735,10 +82084,10 @@ export namespace Prisma {
     finalizedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     configVersion?: IntFieldUpdateOperationsInput | number
     scoringVersion?: IntFieldUpdateOperationsInput | number
+    category?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     creator?: UserUpdateOneRequiredWithoutCreatedContestsNestedInput
-    category?: ContestCategoryUpdateOneWithoutContestsNestedInput
     participants?: ContestParticipantUpdateManyWithoutContestNestedInput
     teamParticipations?: TeamParticipationUpdateManyWithoutContestNestedInput
     votes?: VoteUpdateManyWithoutContestNestedInput
@@ -82770,7 +82119,7 @@ export namespace Prisma {
     configVersion?: IntFieldUpdateOperationsInput | number
     scoringVersion?: IntFieldUpdateOperationsInput | number
     creatorId?: StringFieldUpdateOperationsInput | string
-    categoryId?: NullableStringFieldUpdateOperationsInput | string | null
+    category?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     participants?: ContestParticipantUncheckedUpdateManyWithoutContestNestedInput
@@ -82994,9 +82343,9 @@ export namespace Prisma {
     finalizedAt?: Date | string | null
     configVersion?: number
     scoringVersion?: number
+    category?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    category?: ContestCategoryCreateNestedOneWithoutContestsInput
     participants?: ContestParticipantCreateNestedManyWithoutContestInput
     teamParticipations?: TeamParticipationCreateNestedManyWithoutContestInput
     votes?: VoteCreateNestedManyWithoutContestInput
@@ -83029,7 +82378,7 @@ export namespace Prisma {
     recurringContestId?: string | null
     configVersion?: number
     scoringVersion?: number
-    categoryId?: string | null
+    category?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     participants?: ContestParticipantUncheckedCreateNestedManyWithoutContestInput
@@ -85682,10 +85031,10 @@ export namespace Prisma {
     finalizedAt?: Date | string | null
     configVersion?: number
     scoringVersion?: number
+    category?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     creator: UserCreateNestedOneWithoutCreatedContestsInput
-    category?: ContestCategoryCreateNestedOneWithoutContestsInput
     participants?: ContestParticipantCreateNestedManyWithoutContestInput
     teamParticipations?: TeamParticipationCreateNestedManyWithoutContestInput
     contestRules?: ContestRuleCreateNestedManyWithoutContestInput
@@ -85718,7 +85067,7 @@ export namespace Prisma {
     configVersion?: number
     scoringVersion?: number
     creatorId: string
-    categoryId?: string | null
+    category?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     participants?: ContestParticipantUncheckedCreateNestedManyWithoutContestInput
@@ -85907,10 +85256,10 @@ export namespace Prisma {
     finalizedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     configVersion?: IntFieldUpdateOperationsInput | number
     scoringVersion?: IntFieldUpdateOperationsInput | number
+    category?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     creator?: UserUpdateOneRequiredWithoutCreatedContestsNestedInput
-    category?: ContestCategoryUpdateOneWithoutContestsNestedInput
     participants?: ContestParticipantUpdateManyWithoutContestNestedInput
     teamParticipations?: TeamParticipationUpdateManyWithoutContestNestedInput
     contestRules?: ContestRuleUpdateManyWithoutContestNestedInput
@@ -85942,7 +85291,7 @@ export namespace Prisma {
     configVersion?: IntFieldUpdateOperationsInput | number
     scoringVersion?: IntFieldUpdateOperationsInput | number
     creatorId?: StringFieldUpdateOperationsInput | string
-    categoryId?: NullableStringFieldUpdateOperationsInput | string | null
+    category?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     participants?: ContestParticipantUncheckedUpdateManyWithoutContestNestedInput
@@ -86780,7 +86129,7 @@ export namespace Prisma {
     configVersion?: number
     scoringVersion?: number
     creatorId: string
-    categoryId?: string | null
+    category?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -86866,10 +86215,10 @@ export namespace Prisma {
     finalizedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     configVersion?: IntFieldUpdateOperationsInput | number
     scoringVersion?: IntFieldUpdateOperationsInput | number
+    category?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     creator?: UserUpdateOneRequiredWithoutCreatedContestsNestedInput
-    category?: ContestCategoryUpdateOneWithoutContestsNestedInput
     participants?: ContestParticipantUpdateManyWithoutContestNestedInput
     teamParticipations?: TeamParticipationUpdateManyWithoutContestNestedInput
     votes?: VoteUpdateManyWithoutContestNestedInput
@@ -86900,7 +86249,7 @@ export namespace Prisma {
     configVersion?: IntFieldUpdateOperationsInput | number
     scoringVersion?: IntFieldUpdateOperationsInput | number
     creatorId?: StringFieldUpdateOperationsInput | string
-    categoryId?: NullableStringFieldUpdateOperationsInput | string | null
+    category?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     participants?: ContestParticipantUncheckedUpdateManyWithoutContestNestedInput
@@ -86933,209 +86282,7 @@ export namespace Prisma {
     configVersion?: IntFieldUpdateOperationsInput | number
     scoringVersion?: IntFieldUpdateOperationsInput | number
     creatorId?: StringFieldUpdateOperationsInput | string
-    categoryId?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type ContestCreateManyCategoryInput = {
-    id?: string
-    title: string
-    description: string
-    banner?: string | null
-    status?: $Enums.ContestStatus
-    isMoneyContest?: boolean
-    maxPrize?: number | null
-    minPrize?: number | null
-    currency?: string | null
-    entryFeeCoins?: number
-    startDate: Date | string
-    endDate: Date | string
-    startedAt?: Date | string | null
-    endedAt?: Date | string | null
-    finalizedAt?: Date | string | null
-    recurringContestId?: string | null
-    configVersion?: number
-    scoringVersion?: number
-    creatorId: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type RecurringContestCreateManyCategoryInput = {
-    id?: string
-    title: string
-    description: string
-    banner?: string | null
-    isMoneyContest?: boolean
-    maxPrize?: number | null
-    minPrize?: number | null
-    currency?: string | null
-    entryFeeCoins?: number
-    startDate: Date | string
-    endDate: Date | string
-    creatorId: string
-    status?: $Enums.RecurringContestStatus
-    recurring: XOR<RecurringDataCreateEnvelopeInput, RecurringDataCreateInput>
-    lastGeneratedContestId?: string | null
-    rules: InputJsonValue
-    prizes?: InputJsonValue | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type ContestUpdateWithoutCategoryInput = {
-    title?: StringFieldUpdateOperationsInput | string
-    description?: StringFieldUpdateOperationsInput | string
-    banner?: NullableStringFieldUpdateOperationsInput | string | null
-    status?: EnumContestStatusFieldUpdateOperationsInput | $Enums.ContestStatus
-    isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
-    maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
-    minPrize?: NullableIntFieldUpdateOperationsInput | number | null
-    currency?: NullableStringFieldUpdateOperationsInput | string | null
-    entryFeeCoins?: IntFieldUpdateOperationsInput | number
-    startDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    endDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    finalizedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    configVersion?: IntFieldUpdateOperationsInput | number
-    scoringVersion?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    creator?: UserUpdateOneRequiredWithoutCreatedContestsNestedInput
-    participants?: ContestParticipantUpdateManyWithoutContestNestedInput
-    teamParticipations?: TeamParticipationUpdateManyWithoutContestNestedInput
-    votes?: VoteUpdateManyWithoutContestNestedInput
-    contestRules?: ContestRuleUpdateManyWithoutContestNestedInput
-    ruleConfigs?: ContestRuleConfigUpdateManyWithoutContestNestedInput
-    contestAwards?: ContestAwardUpdateManyWithoutContestNestedInput
-    achievements?: ContestAchievementUpdateManyWithoutContestNestedInput
-    entryFeeTransactions?: ContestEntryFeeTransactionUpdateManyWithoutContestNestedInput
-    teamMatch?: TeamMatchUpdateManyWithoutContestNestedInput
-    teamMatchHistory?: TeamMatchHistoryUpdateManyWithoutContestNestedInput
-    recurringContest?: RecurringContestUpdateOneWithoutContestInstancesNestedInput
-  }
-
-  export type ContestUncheckedUpdateWithoutCategoryInput = {
-    title?: StringFieldUpdateOperationsInput | string
-    description?: StringFieldUpdateOperationsInput | string
-    banner?: NullableStringFieldUpdateOperationsInput | string | null
-    status?: EnumContestStatusFieldUpdateOperationsInput | $Enums.ContestStatus
-    isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
-    maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
-    minPrize?: NullableIntFieldUpdateOperationsInput | number | null
-    currency?: NullableStringFieldUpdateOperationsInput | string | null
-    entryFeeCoins?: IntFieldUpdateOperationsInput | number
-    startDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    endDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    finalizedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    recurringContestId?: NullableStringFieldUpdateOperationsInput | string | null
-    configVersion?: IntFieldUpdateOperationsInput | number
-    scoringVersion?: IntFieldUpdateOperationsInput | number
-    creatorId?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    participants?: ContestParticipantUncheckedUpdateManyWithoutContestNestedInput
-    teamParticipations?: TeamParticipationUncheckedUpdateManyWithoutContestNestedInput
-    votes?: VoteUncheckedUpdateManyWithoutContestNestedInput
-    contestRules?: ContestRuleUncheckedUpdateManyWithoutContestNestedInput
-    ruleConfigs?: ContestRuleConfigUncheckedUpdateManyWithoutContestNestedInput
-    contestAwards?: ContestAwardUncheckedUpdateManyWithoutContestNestedInput
-    achievements?: ContestAchievementUncheckedUpdateManyWithoutContestNestedInput
-    entryFeeTransactions?: ContestEntryFeeTransactionUncheckedUpdateManyWithoutContestNestedInput
-    teamMatch?: TeamMatchUncheckedUpdateManyWithoutContestNestedInput
-    teamMatchHistory?: TeamMatchHistoryUncheckedUpdateManyWithoutContestNestedInput
-  }
-
-  export type ContestUncheckedUpdateManyWithoutCategoryInput = {
-    title?: StringFieldUpdateOperationsInput | string
-    description?: StringFieldUpdateOperationsInput | string
-    banner?: NullableStringFieldUpdateOperationsInput | string | null
-    status?: EnumContestStatusFieldUpdateOperationsInput | $Enums.ContestStatus
-    isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
-    maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
-    minPrize?: NullableIntFieldUpdateOperationsInput | number | null
-    currency?: NullableStringFieldUpdateOperationsInput | string | null
-    entryFeeCoins?: IntFieldUpdateOperationsInput | number
-    startDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    endDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    finalizedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    recurringContestId?: NullableStringFieldUpdateOperationsInput | string | null
-    configVersion?: IntFieldUpdateOperationsInput | number
-    scoringVersion?: IntFieldUpdateOperationsInput | number
-    creatorId?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type RecurringContestUpdateWithoutCategoryInput = {
-    title?: StringFieldUpdateOperationsInput | string
-    description?: StringFieldUpdateOperationsInput | string
-    banner?: NullableStringFieldUpdateOperationsInput | string | null
-    isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
-    maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
-    minPrize?: NullableIntFieldUpdateOperationsInput | number | null
-    currency?: NullableStringFieldUpdateOperationsInput | string | null
-    entryFeeCoins?: IntFieldUpdateOperationsInput | number
-    startDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    endDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    creatorId?: StringFieldUpdateOperationsInput | string
-    status?: EnumRecurringContestStatusFieldUpdateOperationsInput | $Enums.RecurringContestStatus
-    recurring?: XOR<RecurringDataUpdateEnvelopeInput, RecurringDataCreateInput>
-    lastGeneratedContestId?: NullableStringFieldUpdateOperationsInput | string | null
-    rules?: InputJsonValue | InputJsonValue
-    prizes?: InputJsonValue | InputJsonValue | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    contestAwards?: RecurringContestAwardUpdateManyWithoutRecurringContestNestedInput
-    contestInstances?: ContestUpdateManyWithoutRecurringContestNestedInput
-  }
-
-  export type RecurringContestUncheckedUpdateWithoutCategoryInput = {
-    title?: StringFieldUpdateOperationsInput | string
-    description?: StringFieldUpdateOperationsInput | string
-    banner?: NullableStringFieldUpdateOperationsInput | string | null
-    isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
-    maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
-    minPrize?: NullableIntFieldUpdateOperationsInput | number | null
-    currency?: NullableStringFieldUpdateOperationsInput | string | null
-    entryFeeCoins?: IntFieldUpdateOperationsInput | number
-    startDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    endDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    creatorId?: StringFieldUpdateOperationsInput | string
-    status?: EnumRecurringContestStatusFieldUpdateOperationsInput | $Enums.RecurringContestStatus
-    recurring?: XOR<RecurringDataUpdateEnvelopeInput, RecurringDataCreateInput>
-    lastGeneratedContestId?: NullableStringFieldUpdateOperationsInput | string | null
-    rules?: InputJsonValue | InputJsonValue
-    prizes?: InputJsonValue | InputJsonValue | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    contestAwards?: RecurringContestAwardUncheckedUpdateManyWithoutRecurringContestNestedInput
-    contestInstances?: ContestUncheckedUpdateManyWithoutRecurringContestNestedInput
-  }
-
-  export type RecurringContestUncheckedUpdateManyWithoutCategoryInput = {
-    title?: StringFieldUpdateOperationsInput | string
-    description?: StringFieldUpdateOperationsInput | string
-    banner?: NullableStringFieldUpdateOperationsInput | string | null
-    isMoneyContest?: BoolFieldUpdateOperationsInput | boolean
-    maxPrize?: NullableIntFieldUpdateOperationsInput | number | null
-    minPrize?: NullableIntFieldUpdateOperationsInput | number | null
-    currency?: NullableStringFieldUpdateOperationsInput | string | null
-    entryFeeCoins?: IntFieldUpdateOperationsInput | number
-    startDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    endDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    creatorId?: StringFieldUpdateOperationsInput | string
-    status?: EnumRecurringContestStatusFieldUpdateOperationsInput | $Enums.RecurringContestStatus
-    recurring?: XOR<RecurringDataUpdateEnvelopeInput, RecurringDataCreateInput>
-    lastGeneratedContestId?: NullableStringFieldUpdateOperationsInput | string | null
-    rules?: InputJsonValue | InputJsonValue
-    prizes?: InputJsonValue | InputJsonValue | null
+    category?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -87991,7 +87138,7 @@ export namespace Prisma {
     recurringContestId?: string | null
     configVersion?: number
     scoringVersion?: number
-    categoryId?: string | null
+    category?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -88230,9 +87377,9 @@ export namespace Prisma {
     finalizedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     configVersion?: IntFieldUpdateOperationsInput | number
     scoringVersion?: IntFieldUpdateOperationsInput | number
+    category?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    category?: ContestCategoryUpdateOneWithoutContestsNestedInput
     participants?: ContestParticipantUpdateManyWithoutContestNestedInput
     teamParticipations?: TeamParticipationUpdateManyWithoutContestNestedInput
     votes?: VoteUpdateManyWithoutContestNestedInput
@@ -88264,7 +87411,7 @@ export namespace Prisma {
     recurringContestId?: NullableStringFieldUpdateOperationsInput | string | null
     configVersion?: IntFieldUpdateOperationsInput | number
     scoringVersion?: IntFieldUpdateOperationsInput | number
-    categoryId?: NullableStringFieldUpdateOperationsInput | string | null
+    category?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     participants?: ContestParticipantUncheckedUpdateManyWithoutContestNestedInput
@@ -88297,7 +87444,7 @@ export namespace Prisma {
     recurringContestId?: NullableStringFieldUpdateOperationsInput | string | null
     configVersion?: IntFieldUpdateOperationsInput | number
     scoringVersion?: IntFieldUpdateOperationsInput | number
-    categoryId?: NullableStringFieldUpdateOperationsInput | string | null
+    category?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

@@ -23,10 +23,9 @@ model Contest {
   scoringVersion Int @default(1)
 
   creatorId String @db.ObjectId
-  categoryId String? @db.ObjectId
+  category String?
 
   creator      User                 @relation(fields: [creatorId], references: [id])
-  category     ContestCategory?     @relation(fields: [categoryId], references: [id])
   participants ContestParticipant[]
   teamParticipations    TeamParticipation[]
   votes        Vote[]
@@ -44,7 +43,7 @@ model Contest {
   @@index([status, startDate])
   @@index([status, endDate])
   @@index([recurringContestId, startDate])
-  @@index([categoryId, status, startDate])
+  @@index([category, status, startDate])
   @@map("contests")
 
 }
@@ -65,8 +64,7 @@ model RecurringContest {
   endDate   DateTime
 
   creatorId String @db.ObjectId
-  categoryId String? @db.ObjectId
-  category ContestCategory? @relation(fields: [categoryId], references: [id])
+  category String?
   status RecurringContestStatus @default(ACTIVE)
   recurring RecurringData
   lastGeneratedContestId String? @db.ObjectId
@@ -79,7 +77,7 @@ model RecurringContest {
   updatedAt    DateTime             @updatedAt
 
   @@index([status])
-  @@index([categoryId, status])
+  @@index([category, status])
   @@map("recurring_contests")
 }
 
@@ -90,9 +88,6 @@ model ContestCategory {
   description String?
   isActive    Boolean @default(true)
   order       Int     @default(0)
-
-  contests          Contest[]
-  recurringContests RecurringContest[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

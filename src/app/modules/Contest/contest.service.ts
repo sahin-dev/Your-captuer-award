@@ -22,29 +22,6 @@ import { prizeTypes, ycLevels } from '../Awards/award.definitions';
 const completedContestStatuses:ContestStatus[] = [ContestStatus.COMPLETED, ContestStatus.CLOSED]
 const isCompletedContest = (status:ContestStatus) => completedContestStatuses.includes(status)
 
-const resolveContestCategoryId = async (categoryId?:string, category?:string) => {
-    if(!categoryId && !category){
-        return undefined
-    }
-
-    const slug = category?.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")
-    const contestCategory = await prisma.contestCategory.findFirst({
-        where:{
-            isActive:true,
-            OR:[
-                ...(categoryId ? [{id:categoryId}] : []),
-                ...(category ? [{name:{equals:category, mode:"insensitive" as const}}, {slug}] : [])
-            ]
-        }
-    })
-
-    if(!contestCategory){
-        throw new ApiError(httpstatus.BAD_REQUEST, "Contest category is invalid or inactive")
-    }
-
-    return contestCategory.id
-}
-
 const shouldUseDefaultAwards = (body:contestData) =>
     body.prizeIds === undefined && body.prizes === undefined
 
@@ -154,10 +131,9 @@ const createContest = async (creatorId: string, body: contestData, banner:Expres
        return createRecurringContest(creatorId, body, banner)
     }
 
-    const [bannerUrl, categoryId] = await Promise.all([
-        banner ? fileUploader.uploadToDigitalOcean(banner).then(upload => upload.Location) : Promise.resolve(null),
-        resolveContestCategoryId(undefined, body.category)
-    ])
+    const bannerUrl = banner
+        ? (await fileUploader.uploadToDigitalOcean(banner)).Location
+        : null
 
     const normalizedRules = contestRuleService.normalizeContestRules(body.rules)
     const awardRows = await prizeService.resolveAwardRows(
@@ -171,7 +147,7 @@ const createContest = async (creatorId: string, body: contestData, banner:Expres
         title: body.title,
         description: body.description,
         status: ContestStatus.UPCOMING,
-        categoryId,
+        category:body.category,
         isMoneyContest:body.isMoneyContest,
         currency:body.isMoneyContest ? body.currency : null,
         minPrize:body.isMoneyContest ? body.minPrize : 0,
@@ -229,15 +205,13 @@ const createRecurringContest  =  async (creatorId: string, body: contestData, ba
         body.prizes || [],
         shouldUseDefaultAwards(body)
     )
-    const categoryId = await resolveContestCategoryId(undefined, body.category)
-
     const contestData:any = {
         creatorId,
         title: body.title,
         description: body.description,
         startDate,
         endDate,
-        categoryId,
+        category:body.category,
         isMoneyContest:body.isMoneyContest,
         currency:body.isMoneyContest ? body.currency : null,
         minPrize:body.isMoneyContest ? body.minPrize : 0,
@@ -316,15 +290,11 @@ const updateContest = async (contestId:string, contestData:updateContestData, ba
         throw new ApiError(httpstatus.BAD_REQUEST, "A positive entryFeeCoins value is required when coinRequirement is enabled")
     }
 
-    const { category, prizeIds, prizes, rules, coinRequirement, ...updatePayload } = contestData as any
+    const { prizeIds, prizes, rules, coinRequirement, ...updatePayload } = contestData as any
 
-    const [bannerUrl, categoryId] = await Promise.all([
-        banner ? fileUploader.uploadToDigitalOcean(banner).then(upload => upload.Location) : Promise.resolve(undefined),
-        category ? resolveContestCategoryId(undefined, category) : Promise.resolve(undefined)
-    ])
-    if(categoryId !== undefined){
-        updatePayload.categoryId = categoryId
-    }
+    const bannerUrl = await (
+        banner ? fileUploader.uploadToDigitalOcean(banner).then(upload => upload.Location) : Promise.resolve(undefined)
+    )
     if(bannerUrl){
         updatePayload.banner = bannerUrl
     }
@@ -418,8 +388,7 @@ const getContestByUserId = async ( userId:string, contestId: string) => {
     const contest = await prisma.contest.findUnique({
         where: { id: contestId },
         include: {
-            creator: {omit:{password:true, accessToken:true}},
-            category:true
+            creator: {omit:{password:true, accessToken:true}}
         }
     });
     if(!contest){
@@ -457,8 +426,7 @@ const getContestById = async ( contestId: string) => {
     const contest = await prisma.contest.findUnique({
         where: { id: contestId },
         include: {
-            creator: {omit:{password:true, accessToken:true}},
-            category:true
+            creator: {omit:{password:true, accessToken:true}}
         }
     });
     if(!contest){

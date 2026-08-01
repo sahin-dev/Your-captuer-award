@@ -180,7 +180,7 @@ async function scheduleContest(rContest:RecurringContest){
                     minPrize:rContest.minPrize,
                     currency:rContest.currency,
                     entryFeeCoins:rContest.entryFeeCoins,
-                    categoryId:rContest.categoryId,
+                    category:rContest.category,
                     description:rContest.description,
                     creatorId:rContest.creatorId,
                     recurringContestId:rContest.id,
