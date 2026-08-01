@@ -39,12 +39,12 @@ const getCreateOptions = catchAsync(async (_req:Request, res:Response) => {
 
 const getAllContests = catchAsync(async (req:any, res:Response)=>{
 
-    const {page, limit} = req.query  as {page:string, limit:string}
+    const {page, limit, search} = req.query  as {page:string, limit:string, search?:string}
     const pageNum = Number(page) || 1
     const limitNum = Number(limit) || 20
 
     
-    const contests = await contestService.getAllContests(pageNum, limitNum)
+    const contests = await contestService.getAllContests(pageNum, limitNum, search)
 
     sendResponse(res, {
         statusCode:200,

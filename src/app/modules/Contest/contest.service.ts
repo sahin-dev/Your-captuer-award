@@ -18,6 +18,7 @@ import { contestFinalizationService } from './ContestFinalization/contestFinaliz
 import { contestRankingService } from './ContestRanking/contestRanking.service';
 import { getContestRuleDefinitionViews, supportedContestImageMimeTypes } from './ContestRules/contestRule.definitions';
 import { prizeTypes, ycLevels } from '../Awards/award.definitions';
+import { paginationHelper } from '../../../helpers/paginationHelper';
 
 const completedContestStatuses:ContestStatus[] = [ContestStatus.COMPLETED, ContestStatus.CLOSED]
 const isCompletedContest = (status:ContestStatus) => completedContestStatuses.includes(status)
@@ -454,21 +455,31 @@ const getContestById = async ( contestId: string) => {
 
 
 //Return all the contests
-const getAllContests = async (page:number = 1, limit:number = 20) => {
+const getAllContests = async (page:number = 1, limit:number = 20, search?:string) => {
 
-    const skip = (page - 1) * limit
+    const {skip, limit:paginationLimit, page:currentPage} = paginationHelper.calculatePagination({page, limit})
+    const where = search
+        ? {title:{contains:search, mode:"insensitive" as const}}
+        : {}
 
     const [contests, total] = await Promise.all([
         prisma.contest.findMany({    
-        include: { creator: {omit:{password:true}}},
-        skip,
-        take:limit,
-        orderBy:{startDate:"desc"}
-    }),
-    prisma.contest.count()
+            where,
+            include: { creator: {omit:{password:true, accessToken:true}}},
+            skip,
+            take:paginationLimit,
+            orderBy:{startDate:"desc"}
+        }),
+        prisma.contest.count({where})
     ])
 
-    return {contests, total, page,limit};
+    return {
+        contests,
+        total,
+        page:currentPage,
+        limit:paginationLimit,
+        meta:paginationHelper.getPaginationMetaData(currentPage, paginationLimit, total)
+    }
 };
 
 //Search contest by contest status
