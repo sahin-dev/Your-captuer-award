@@ -96,7 +96,7 @@ const createContestObjectSchema = z.object({
     isMoneyContest: z.preprocess(parseBooleanField, z.boolean()).optional().default(false),
     currency: z.string().trim().toUpperCase()
         .regex(/^[A-Z]{3}$/, "Currency must be a 3-letter ISO code")
-        .optional(),
+        .optional().default('USD'),
     maxPrize: z.preprocess(parseOptionalNumberField, z.number().int().nonnegative().optional()),
     minPrize: z.preprocess(parseOptionalNumberField, z.number().int().nonnegative().optional()),
     coinRequirement: z.preprocess(parseBooleanField, z.boolean()).optional(),
