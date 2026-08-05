@@ -120,8 +120,41 @@ const getImageDimensions = (file: Express.Multer.File) => {
 const validateJoinRules = async (
   contestId: string,
   userId: string,
-  acceptedRuleKeysInput?: unknown
+  acceptedRuleKeysInput?: unknown,
+  autoAccept = false
 ) => {
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+
+  if (!user) {
+    throw new ApiError(httpStatus.NOT_FOUND, "User not found");
+  }
+
+  const eligibility = await contestRuleService.getEnabledRuleValue<EligibilityValue>(contestId, "ELIGIBILITY");
+  const copyright = await contestRuleService.getEnabledRuleValue<CopyrightValue>(contestId, "COPYRIGHT");
+  const participation = await contestRuleService.getEnabledRuleValue<ParticipationValue>(contestId, "PARTICIPATION");
+
+  const requiredRuleKeys: ContestRuleKey[] = [];
+  if (eligibility?.requiresAcceptance) {
+    requiredRuleKeys.push("ELIGIBILITY");
+  }
+  if (copyright && (copyright.requiresAcceptance || copyright.requiresOwnership)) {
+    requiredRuleKeys.push("COPYRIGHT");
+  }
+  if (participation?.requiresTermsAcceptance) {
+    requiredRuleKeys.push("PARTICIPATION");
+  }
+
+  // Uploading a photo implies acceptance of the join rules, so record acceptance
+  // without requiring the client to send acceptedRuleKeys or blocking on minAge.
+  if (autoAccept) {
+    await Promise.all(requiredRuleKeys.map((key) => prisma.contestRuleAcceptance.upsert({
+      where: { contestId_userId_key: { contestId, userId, key } },
+      update: { acceptedAt: new Date() },
+      create: { contestId, userId, key },
+    })));
+    return;
+  }
+
   const submittedRuleKeys = parseAcceptedRuleKeys(acceptedRuleKeysInput).filter(isContestRuleKey);
   const savedAcceptances = await prisma.contestRuleAcceptance.findMany({
     where: { contestId, userId },
@@ -131,14 +164,8 @@ const validateJoinRules = async (
     ...savedAcceptances.map((acceptance) => acceptance.key).filter(isContestRuleKey),
     ...submittedRuleKeys,
   ]));
-  const user = await prisma.user.findUnique({ where: { id: userId } });
 
-  if (!user) {
-    throw new ApiError(httpStatus.NOT_FOUND, "User not found");
-  }
-
-  const eligibility = await contestRuleService.getEnabledRuleValue<EligibilityValue>(contestId, "ELIGIBILITY");
-  if (eligibility?.requiresAcceptance) {
+  if (requiredRuleKeys.includes("ELIGIBILITY")) {
     requireAcceptedRule(
       acceptedRuleKeys,
       "ELIGIBILITY",
@@ -159,8 +186,7 @@ const validateJoinRules = async (
     }
   }
 
-  const copyright = await contestRuleService.getEnabledRuleValue<CopyrightValue>(contestId, "COPYRIGHT");
-  if (copyright && (copyright.requiresAcceptance || copyright.requiresOwnership)) {
+  if (requiredRuleKeys.includes("COPYRIGHT")) {
     requireAcceptedRule(
       acceptedRuleKeys,
       "COPYRIGHT",
@@ -168,8 +194,7 @@ const validateJoinRules = async (
     );
   }
 
-  const participation = await contestRuleService.getEnabledRuleValue<ParticipationValue>(contestId, "PARTICIPATION");
-  if (participation?.requiresTermsAcceptance) {
+  if (requiredRuleKeys.includes("PARTICIPATION")) {
     requireAcceptedRule(
       acceptedRuleKeys,
       "PARTICIPATION",
@@ -263,7 +288,7 @@ const validateUploadRules = async (payload: UploadValidationPayload) => {
   await validateSubmissionRules(payload.contestId, payload.photoIds);
 
   if (payload.isJoiningThroughUpload) {
-    await validateJoinRules(payload.contestId, payload.userId, payload.acceptedRuleKeys);
+    await validateJoinRules(payload.contestId, payload.userId, payload.acceptedRuleKeys, true);
   }
 };
 
