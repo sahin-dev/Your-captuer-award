@@ -12,7 +12,8 @@ model Contest {
   minPrize       Int?          @default(0)
   currency       String?       @default("USD")
   entryFeeCoins  Int           @default(0)
-  
+  maxUpload      Int           @default(4)
+
   startDate DateTime
   endDate   DateTime
   startedAt DateTime?

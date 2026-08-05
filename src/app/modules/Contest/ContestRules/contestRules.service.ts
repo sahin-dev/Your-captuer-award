@@ -61,6 +61,13 @@ const normalizeContestRules = (
   return contestRuleConfigArraySchema.parse(normalized);
 };
 
+const getSubmissionLimitFromRules = (rules: ContestRuleConfigInput[]): number => {
+  const rule = rules.find((r) => r.key === "SUBMISSION_LIMIT");
+  const value = rule?.enabled === false ? undefined : rule?.value;
+
+  return typeof value === "number" ? value : (contestRuleDefinitions.SUBMISSION_LIMIT.defaultValue as number);
+};
+
 const addContestRules = async (
   contestId: string,
   rules?: ContestRuleConfigInput[]
@@ -215,4 +222,5 @@ export const contestRuleService = {
   getEnabledRuleValue,
   getContestRuleDefinitions: getContestRuleDefinitionViews,
   normalizeContestRules,
+  getSubmissionLimitFromRules,
 };

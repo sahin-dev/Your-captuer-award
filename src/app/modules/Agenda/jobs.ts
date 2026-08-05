@@ -187,6 +187,7 @@ async function scheduleContest(rContest:RecurringContest){
                     startDate:nextOccurrence,
                     endDate,
                     status:initialStatus,
+                    maxUpload:contestRuleService.getSubmissionLimitFromRules(rules),
                     ...(initialStatus === ContestStatus.ACTIVE && {startedAt:new Date()})
                 }
             })

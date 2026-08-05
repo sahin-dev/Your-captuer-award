@@ -154,6 +154,7 @@ const createContest = async (creatorId: string, body: contestData, banner:Expres
         minPrize:body.isMoneyContest ? body.minPrize : 0,
         maxPrize:body.isMoneyContest ? body.maxPrize : 0,
         entryFeeCoins:body.coinRequirement === false ? 0 : (body.entryFeeCoins || 0),
+        maxUpload:contestRuleService.getSubmissionLimitFromRules(normalizedRules),
         ...(bannerUrl && {banner:bannerUrl})
     }
     // If contest is money contest, add money contest data like max prize and min prize for the paerticipants
@@ -311,6 +312,7 @@ const updateContest = async (contestId:string, contestData:updateContestData, ba
             minPrize:isMoneyContest ? minPrize : 0,
             maxPrize:isMoneyContest ? maxPrize : 0,
             entryFeeCoins,
+            ...(rules !== undefined && {maxUpload:contestRuleService.getSubmissionLimitFromRules(contestRuleService.normalizeContestRules(rules))}),
         }
     })
 

@@ -211,7 +211,7 @@ const getContestAchievements = async (contestId:string)=>{
 const getAchievements = async (contestId:string, page = 1, limit = 20)=>{
     const achievements = await prisma.contestAchievement.findMany({
         where:{contestId},
-        include:{photo:{select:{photo:{select:{id:true, url:true}}}}, participant:{select:{user:true}}},
+        include:{photo:{select:{photo:{select:{id:true, url:true}}}}, participant:{select:{user:{select:{id:true, fullName:true, avatar:true}}}}},
         orderBy:{createdAt:"desc"}
     })
 
@@ -264,12 +264,12 @@ const getAllPhotosAchievements = async (page = 1, limit = 20) => {
 const getMyAchievementsByContest = async (userId:string, contestId:string) => {
     const achievements = await prisma.contestAchievement.findMany({
         where:{contestId, participant:{userId}},
-        include:{photo:{select:{photo:{select:{id:true, url:true}}}}, participant:{select:{user:true}}},
+        include:{photo:{select:{photo:{select:{id:true, url:true}}}}, participant:{select:{user:{select:{id:true, fullName:true, avatar:true}}}}},
         orderBy:{createdAt:"desc"}
     })
 
     return collapseLevelAchievements(achievements)
-    
+
 }
 
 // const getContestAchievements
