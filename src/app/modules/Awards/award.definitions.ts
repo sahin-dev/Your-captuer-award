@@ -13,10 +13,14 @@ export const prizeTypes = {
   SUPREME: "SUPREME",
   SUPERIOR: "SUPERIOR",
   YC_PICK: "YC_PICK",
-  TOP_100: "TOP_100",
-  TOP_50: "TOP_50",
-  TOP_20: "TOP_20",
-  TOP_10: "TOP_10",
+  TOP_100_PHOTO: "TOP_100_PHOTO",
+  TOP_100_PHOTOGRAPHER: "TOP_100_PHOTOGRAPHER",
+  TOP_50_PHOTO: "TOP_50_PHOTO",
+  TOP_50_PHOTOGRAPHER: "TOP_50_PHOTOGRAPHER",
+  TOP_20_PHOTO: "TOP_20_PHOTO",
+  TOP_20_PHOTOGRAPHER: "TOP_20_PHOTOGRAPHER",
+  TOP_10_PHOTO: "TOP_10_PHOTO",
+  TOP_10_PHOTOGRAPHER: "TOP_10_PHOTOGRAPHER",
   WINNER: "WINNER",
   TOP_NOTCH: "TOP_NOTCH",
 } as const satisfies Record<PrizeType, PrizeType>;
@@ -57,18 +61,33 @@ export type AwardIdentity = {
   rankLimit: number | null;
 };
 
-const topRankCategoryByLimit: Record<number, PrizeType> = {
-  10: prizeTypes.TOP_10,
-  20: prizeTypes.TOP_20,
-  50: prizeTypes.TOP_50,
-  100: prizeTypes.TOP_100,
+const topRankCategoryByLimit: Record<number, Record<AwardTarget, PrizeType>> = {
+  10: { PHOTO: prizeTypes.TOP_10_PHOTO, PHOTOGRAPHER: prizeTypes.TOP_10_PHOTOGRAPHER },
+  20: { PHOTO: prizeTypes.TOP_20_PHOTO, PHOTOGRAPHER: prizeTypes.TOP_20_PHOTOGRAPHER },
+  50: { PHOTO: prizeTypes.TOP_50_PHOTO, PHOTOGRAPHER: prizeTypes.TOP_50_PHOTOGRAPHER },
+  100: { PHOTO: prizeTypes.TOP_100_PHOTO, PHOTOGRAPHER: prizeTypes.TOP_100_PHOTOGRAPHER },
 };
 
 const topRankLimitByCategory: Partial<Record<PrizeType, number>> = {
-  [prizeTypes.TOP_10]: 10,
-  [prizeTypes.TOP_20]: 20,
-  [prizeTypes.TOP_50]: 50,
-  [prizeTypes.TOP_100]: 100,
+  [prizeTypes.TOP_10_PHOTO]: 10,
+  [prizeTypes.TOP_10_PHOTOGRAPHER]: 10,
+  [prizeTypes.TOP_20_PHOTO]: 20,
+  [prizeTypes.TOP_20_PHOTOGRAPHER]: 20,
+  [prizeTypes.TOP_50_PHOTO]: 50,
+  [prizeTypes.TOP_50_PHOTOGRAPHER]: 50,
+  [prizeTypes.TOP_100_PHOTO]: 100,
+  [prizeTypes.TOP_100_PHOTOGRAPHER]: 100,
+};
+
+const topRankTargetByCategory: Partial<Record<PrizeType, AwardTarget>> = {
+  [prizeTypes.TOP_10_PHOTO]: awardTargets.PHOTO,
+  [prizeTypes.TOP_10_PHOTOGRAPHER]: awardTargets.PHOTOGRAPHER,
+  [prizeTypes.TOP_20_PHOTO]: awardTargets.PHOTO,
+  [prizeTypes.TOP_20_PHOTOGRAPHER]: awardTargets.PHOTOGRAPHER,
+  [prizeTypes.TOP_50_PHOTO]: awardTargets.PHOTO,
+  [prizeTypes.TOP_50_PHOTOGRAPHER]: awardTargets.PHOTOGRAPHER,
+  [prizeTypes.TOP_100_PHOTO]: awardTargets.PHOTO,
+  [prizeTypes.TOP_100_PHOTOGRAPHER]: awardTargets.PHOTOGRAPHER,
 };
 
 export const contestLevelBadges = {
@@ -116,13 +135,13 @@ export const getContestLevelOrder = (category: PrizeType) => {
   return badge ? contestLevelBadgeOrder[badge] : null;
 };
 
-const categoryFromAward = (type: AwardType, rankLimit: number | null) => {
+const categoryFromAward = (type: AwardType, rankLimit: number | null, target: AwardTarget) => {
   if (type === awardTypes.TOP_RANK) {
     if (!rankLimit || !topRankCategoryByLimit[rankLimit]) {
       throw new Error("TOP_RANK awards require rankLimit 10, 20, 50, or 100");
     }
 
-    return topRankCategoryByLimit[rankLimit];
+    return topRankCategoryByLimit[rankLimit][target];
   }
 
   const categoryMap: Record<Exclude<AwardType, "TOP_RANK">, PrizeType> = {
@@ -147,7 +166,7 @@ export const normalizeAwardIdentity = (input: AwardIdentityInput): AwardIdentity
   if (input.type) {
     const rankLimit = input.type === awardTypes.TOP_RANK ? input.rankLimit || null : null;
     const target = input.target || defaultTargetForType(input.type);
-    const category = input.category || categoryFromAward(input.type, rankLimit);
+    const category = input.category || categoryFromAward(input.type, rankLimit, target);
     const defaultTarget = defaultTargetForType(input.type);
 
     if (!isContestPrizeCategory(category)) {
@@ -179,7 +198,7 @@ export const normalizeAwardIdentity = (input: AwardIdentityInput): AwardIdentity
     return {
       category: input.category,
       type: awardTypes.TOP_RANK,
-      target: input.target || awardTargets.PHOTOGRAPHER,
+      target: topRankTargetByCategory[input.category]!,
       rankLimit,
     };
   }

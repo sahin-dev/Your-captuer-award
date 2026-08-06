@@ -1,5 +1,6 @@
 import bcrypt from 'bcryptjs'
 import {
+    AchievementKind,
     AwardTarget,
     ContestParticipant,
     ContestPhoto,
@@ -14,7 +15,7 @@ import {
 } from "./prismaClient"
 import { LEVEL_RULES, LevelRule } from "./app/modules/Level/level.config"
 import { contestRuleDefinitions } from "./app/modules/Contest/ContestRules/contestRule.definitions"
-import { normalizeAwardIdentity } from "./app/modules/Awards/award.definitions"
+import { isContestLevelPrizeType, normalizeAwardIdentity } from "./app/modules/Awards/award.definitions"
 import { defaultPrizeDefinitions } from "./app/modules/Prize/prize.definitions"
 
 type SeedUserDefinition = {
@@ -328,32 +329,38 @@ class DatabaseSeeder {
         await this.createVote(providerId, contestId, promotedPhotoId, VoteType.Promoted, promotedPower)
     }
 
+    private achievementKindForCategory(category:PrizeType){
+        return isContestLevelPrizeType(category) ? AchievementKind.CONTEST_LEVEL : AchievementKind.CONTEST_AWARD
+    }
+
     private async seedBadgeHistory(participantId:string, contestId:string, photoId:string, targetLevel?:LevelRule){
         if(!targetLevel){
             await this.db.contestAchievement.create({
-                data:{participantId, contestId, photoId, category:PrizeType.TOP_100}
+                data:{participantId, contestId, photoId, category:PrizeType.TOP_100_PHOTOGRAPHER, kind:this.achievementKindForCategory(PrizeType.TOP_100_PHOTOGRAPHER)}
             })
             return
         }
 
         for(const badgeRequirement of targetLevel.badges){
             for(let idx = 0; idx < badgeRequirement.required; idx++){
+                const category = badgeRequirement.categories[0]
                 await this.db.contestAchievement.create({
                     data:{
                         participantId,
                         contestId,
                         photoId,
-                        category:badgeRequirement.category
+                        category,
+                        kind:this.achievementKindForCategory(category)
                     }
                 })
             }
         }
 
         await this.db.contestAchievement.create({
-            data:{participantId, contestId, photoId, category:PrizeType.TOP_PHOTO}
+            data:{participantId, contestId, photoId, category:PrizeType.TOP_PHOTO, kind:AchievementKind.CONTEST_AWARD}
         })
         await this.db.contestAchievement.create({
-            data:{participantId, contestId, photoId, category:PrizeType.TOP_PHOTOGRAPHER}
+            data:{participantId, contestId, photoId, category:PrizeType.TOP_PHOTOGRAPHER, kind:AchievementKind.CONTEST_AWARD}
         })
     }
 

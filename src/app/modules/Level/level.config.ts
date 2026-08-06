@@ -2,7 +2,7 @@ import { LevelName, PrizeType } from "../../../prismaClient";
 import { prizeTypes } from "../Awards/award.definitions";
 
 export type BadgeRequirement = {
-    category: PrizeType;
+    categories: PrizeType[];
     required: number;
 };
 
@@ -22,7 +22,7 @@ export const LEVEL_RULES: LevelRule[] = [
         votePower: 2,
         receivedVotes: 2500,
         promotedVotes: 100,
-        badges: [{ category: prizeTypes.AMATEUR, required: 5 }],
+        badges: [{ categories: [prizeTypes.AMATEUR], required: 5 }],
     },
     {
         order: 2,
@@ -30,7 +30,7 @@ export const LEVEL_RULES: LevelRule[] = [
         votePower: 4,
         receivedVotes: 5000,
         promotedVotes: 250,
-        badges: [{ category: prizeTypes.TALENTED, required: 5 }],
+        badges: [{ categories: [prizeTypes.TALENTED], required: 5 }],
     },
     {
         order: 3,
@@ -38,7 +38,7 @@ export const LEVEL_RULES: LevelRule[] = [
         votePower: 6,
         receivedVotes: 7500,
         promotedVotes: 500,
-        badges: [{ category: prizeTypes.SUPREME, required: 10 }],
+        badges: [{ categories: [prizeTypes.SUPREME], required: 10 }],
     },
     {
         order: 4,
@@ -46,7 +46,7 @@ export const LEVEL_RULES: LevelRule[] = [
         votePower: 8,
         receivedVotes: 10000,
         promotedVotes: 1000,
-        badges: [{ category: prizeTypes.SUPERIOR, required: 20 }],
+        badges: [{ categories: [prizeTypes.SUPERIOR], required: 20 }],
     },
     {
         order: 5,
@@ -55,8 +55,8 @@ export const LEVEL_RULES: LevelRule[] = [
         receivedVotes: 20000,
         promotedVotes: 1500,
         badges: [
-            { category: PrizeType.YC_PICK, required: 5 },
-            { category: PrizeType.TOP_100, required: 1 },
+            { categories: [PrizeType.YC_PICK], required: 5 },
+            { categories: [PrizeType.TOP_100_PHOTO, PrizeType.TOP_100_PHOTOGRAPHER], required: 1 },
         ],
     },
     {
@@ -66,8 +66,8 @@ export const LEVEL_RULES: LevelRule[] = [
         receivedVotes: 75000,
         promotedVotes: 2500,
         badges: [
-            { category: PrizeType.TOP_100, required: 3 },
-            { category: PrizeType.TOP_50, required: 1 },
+            { categories: [PrizeType.TOP_100_PHOTO, PrizeType.TOP_100_PHOTOGRAPHER], required: 3 },
+            { categories: [PrizeType.TOP_50_PHOTO, PrizeType.TOP_50_PHOTOGRAPHER], required: 1 },
         ],
     },
     {
@@ -77,9 +77,9 @@ export const LEVEL_RULES: LevelRule[] = [
         receivedVotes: 150000,
         promotedVotes: 7500,
         badges: [
-            { category: PrizeType.TOP_100, required: 5 },
-            { category: PrizeType.TOP_50, required: 3 },
-            { category: PrizeType.TOP_20, required: 1 },
+            { categories: [PrizeType.TOP_100_PHOTO, PrizeType.TOP_100_PHOTOGRAPHER], required: 5 },
+            { categories: [PrizeType.TOP_50_PHOTO, PrizeType.TOP_50_PHOTOGRAPHER], required: 3 },
+            { categories: [PrizeType.TOP_20_PHOTO, PrizeType.TOP_20_PHOTOGRAPHER], required: 1 },
         ],
     },
     {
@@ -89,10 +89,10 @@ export const LEVEL_RULES: LevelRule[] = [
         receivedVotes: 350000,
         promotedVotes: 10000,
         badges: [
-            { category: PrizeType.TOP_100, required: 20 },
-            { category: PrizeType.TOP_50, required: 5 },
-            { category: PrizeType.TOP_20, required: 3 },
-            { category: PrizeType.TOP_10, required: 1 },
+            { categories: [PrizeType.TOP_100_PHOTO, PrizeType.TOP_100_PHOTOGRAPHER], required: 20 },
+            { categories: [PrizeType.TOP_50_PHOTO, PrizeType.TOP_50_PHOTOGRAPHER], required: 5 },
+            { categories: [PrizeType.TOP_20_PHOTO, PrizeType.TOP_20_PHOTOGRAPHER], required: 3 },
+            { categories: [PrizeType.TOP_10_PHOTO, PrizeType.TOP_10_PHOTOGRAPHER], required: 1 },
         ],
     },
     {
@@ -102,14 +102,14 @@ export const LEVEL_RULES: LevelRule[] = [
         receivedVotes: 750000,
         promotedVotes: 15000,
         badges: [
-            { category: PrizeType.TOP_100, required: 30 },
-            { category: PrizeType.TOP_50, required: 10 },
-            { category: PrizeType.TOP_20, required: 5 },
-            { category: PrizeType.WINNER, required: 1 },
+            { categories: [PrizeType.TOP_100_PHOTO, PrizeType.TOP_100_PHOTOGRAPHER], required: 30 },
+            { categories: [PrizeType.TOP_50_PHOTO, PrizeType.TOP_50_PHOTOGRAPHER], required: 10 },
+            { categories: [PrizeType.TOP_20_PHOTO, PrizeType.TOP_20_PHOTOGRAPHER], required: 5 },
+            { categories: [PrizeType.WINNER], required: 1 },
         ],
     },
 ];
 
 export const LEVEL_BADGE_TYPES = Array.from(
-    new Set(LEVEL_RULES.flatMap(rule => rule.badges.map(badge => badge.category)))
+    new Set(LEVEL_RULES.flatMap(rule => rule.badges.flatMap(badge => badge.categories)))
 );

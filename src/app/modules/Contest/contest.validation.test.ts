@@ -200,7 +200,7 @@ test("contest creation accepts prizeIds and simplified prize payload overrides",
     assert.equal(topPhotoPrize.category, "TOP_PHOTO");
     assert.equal(topPhotoPrize.coin, 750);
     assert.equal(topPhotoPrize.boost, 12);
-    assert.equal(topRankPrize.category, "TOP_10");
+    assert.equal(topRankPrize.category, "TOP_10_PHOTO");
     assert.equal(topRankPrize.enabled, false);
     assert.equal(topRankPrize.coin, 250);
 });
@@ -244,7 +244,7 @@ test("contest prizes accept simplified definition payload overrides", () => {
     assert.equal(topPhotoPrize.category, "TOP_PHOTO");
     assert.equal(topPhotoPrize.coin, 750);
     assert.equal(topPhotoPrize.boost, 12);
-    assert.equal(topRankPrize.category, "TOP_10");
+    assert.equal(topRankPrize.category, "TOP_10_PHOTO");
     assert.equal(topRankPrize.enabled, false);
     assert.equal(topRankPrize.coin, 250);
 });

@@ -1,5 +1,5 @@
 import type { AwardTarget, AwardType, PrizeType } from "../../../prismaClient";
-import { awardTargets, awardTypes, prizeTypes } from "../Awards/award.definitions";
+import { awardTargets, awardTypes, normalizeAwardIdentity, prizeTypes } from "../Awards/award.definitions";
 
 export type PrizeDefinition = {
   category: PrizeType;
@@ -34,12 +34,7 @@ const topRankDefinition = (
   isDefault: boolean,
   order: number
 ): PrizeDefinition => ({
-  category: {
-    10: prizeTypes.TOP_10,
-    20: prizeTypes.TOP_20,
-    50: prizeTypes.TOP_50,
-    100: prizeTypes.TOP_100,
-  }[rankLimit],
+  category: normalizeAwardIdentity({ type: awardTypes.TOP_RANK, target, rankLimit }).category,
   type: awardTypes.TOP_RANK,
   target,
   rankLimit,

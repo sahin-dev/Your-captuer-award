@@ -105,12 +105,16 @@ const getReceivedVoteStats = async (userId:string) => {
     }
 }
 
+const sumBadgeCount = (badgeCounts:Record<string, number>, categories:string[]) => {
+    return categories.reduce((sum, category) => sum + (badgeCounts[category] || 0), 0)
+}
+
 const isRuleSatisfied = (
     rule:LevelRule,
     stats:{receivedVotes:number; promotedVotes:number; badgeCounts:Record<string, number>}
 ) => {
     const badgesSatisfied = rule.badges.every(badge => {
-        return (stats.badgeCounts[badge.category] || 0) >= badge.required
+        return sumBadgeCount(stats.badgeCounts, badge.categories) >= badge.required
     })
 
     return stats.receivedVotes >= rule.receivedVotes &&
@@ -138,10 +142,10 @@ const buildLevelProgress = (
             satisfied:stats.promotedVotes >= rule.promotedVotes
         },
         ...rule.badges.map(badge => {
-            const current = stats.badgeCounts[badge.category] || 0
+            const current = sumBadgeCount(stats.badgeCounts, badge.categories)
             return {
                 type:"badge",
-                badge:badge.category,
+                badges:badge.categories,
                 required:badge.required,
                 current,
                 percentage:Math.min(100, Math.floor((current * 100) / badge.required)),
