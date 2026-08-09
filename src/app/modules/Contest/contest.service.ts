@@ -11,17 +11,26 @@ import agenda from '../Agenda';
 import { validateContestDate } from '../../../helpers/validateDate';
 import { userStoreService } from '../User/UserStore/userStore.service';
 import { voteService } from '../Vote/vote.service';
+import { getVoteWeight } from '../Vote/voteWeight.service';
 import { achievementService } from '../Achievements/achievement.service';
 import { prizeService } from '../Prize/prize.service';
 import { contestRuleEngine } from './ContestRules/contestRule.engine';
 import { contestFinalizationService } from './ContestFinalization/contestFinalization.service';
 import { contestRankingService } from './ContestRanking/contestRanking.service';
-import { getContestRuleDefinitionViews, supportedContestImageMimeTypes } from './ContestRules/contestRule.definitions';
+import {
+    ContestRuleKey,
+    contestRuleDefinitions,
+    getContestRuleDefinitionViews,
+    isContestRuleKey,
+    LevelRequirementValue,
+    supportedContestImageMimeTypes,
+} from './ContestRules/contestRule.definitions';
 import { prizeTypes, ycLevels } from '../Awards/award.definitions';
 import { paginationHelper } from '../../../helpers/paginationHelper';
 
 const completedContestStatuses:ContestStatus[] = [ContestStatus.COMPLETED, ContestStatus.CLOSED]
 const isCompletedContest = (status:ContestStatus) => completedContestStatuses.includes(status)
+const contestListCreatorInclude = {omit:{password:true, accessToken:true}} as const
 
 const shouldUseDefaultAwards = (body:contestData) =>
     body.prizeIds === undefined && body.prizes === undefined
@@ -516,8 +525,214 @@ const getPublicContests = async (
     }
 }
 
+const formatContestRuleSummaryForList = (key:ContestRuleKey, value:any) => {
+    switch (key) {
+        case "SUBMISSION_LIMIT":
+            return `${value} photo submits per participant`;
+        case "SUBMISSION_RULES": {
+            if (Array.isArray(value)) {
+                return value.map((item:string) => `- ${item}`).join("\n");
+            }
+
+            const lines = [
+                value?.intro,
+                ...(value?.disallowed || []).map((item:string) => `- ${item}`),
+                value?.removalNotice,
+            ].filter(Boolean);
+            return lines.join("\n");
+        }
+        case "LEVEL_REQUIREMENTS":
+            return (value as LevelRequirementValue[])
+                .map((item) => `- ${item.level.replace("_", " ")} - ${item.votes} votes`)
+                .join("\n");
+        case "SUBMISSION_FORMAT": {
+            const mimeTypes = Array.isArray(value?.mimeTypes) ? value.mimeTypes : [];
+            const formats = mimeTypes
+                .map((mimeType:string) => mimeType.replace("image/", "").toUpperCase())
+                .join(", ");
+            return `${formats}, minimum resolution of ${value?.minWidth}px x ${value?.minHeight}px, maximum size ${value?.maxSizeMB}MB`;
+        }
+        default:
+            return value?.text || "";
+    }
+}
+
+const formatContestRulesForList = (configs:any[]) => {
+    return configs
+        .filter((rule) => isContestRuleKey(rule.key) && rule.enabled)
+        .map((rule) => {
+            const definition = contestRuleDefinitions[rule.key as ContestRuleKey];
+
+            return {
+                key: definition.key,
+                label: definition.label,
+                name: definition.label,
+                icon: definition.icon,
+                inputType: definition.inputType,
+                appliesTo: definition.appliesTo,
+                displayOnly: definition.displayOnly,
+                enabled: rule.enabled,
+                order: rule.order,
+                value: rule.value,
+                description: formatContestRuleSummaryForList(definition.key, rule.value),
+            };
+        });
+}
+
+const getDefaultContestRuleConfigsForList = () => {
+    return contestRuleService.normalizeContestRules().map((rule) => ({
+        key: rule.key,
+        value: rule.value,
+        enabled: rule.enabled ?? true,
+        order: rule.order ?? contestRuleDefinitions[rule.key].order,
+    }))
+}
+
+const groupByContestId = <T extends {contestId:string}>(rows:T[]) => {
+    const map = new Map<string, T[]>();
+
+    rows.forEach((row) => {
+        const existing = map.get(row.contestId) || [];
+        existing.push(row);
+        map.set(row.contestId, existing);
+    });
+
+    return map;
+}
+
+const getContestWinnerMapForList = async (contests:{id:string; status:ContestStatus}[]) => {
+    const completedContestIds = contests
+        .filter((contest) => isCompletedContest(contest.status))
+        .map((contest) => contest.id);
+
+    const winnersByContestId = new Map<string, any[]>();
+    if(completedContestIds.length === 0){
+        return winnersByContestId;
+    }
+
+    const grants = await prisma.contestAwardGrant.findMany({
+        where:{
+            contestId:{in:completedContestIds},
+            kind:AchievementKind.CONTEST_AWARD,
+            status:"COMPLETED",
+        },
+        orderBy:[{rank:"asc"}, {createdAt:"asc"}],
+    });
+
+    const grantsByContestId = groupByContestId(grants);
+    const userIds = [...new Set(grants.map((grant) => grant.userId))];
+    const photoIds = [...new Set(grants.flatMap((grant) => grant.photoId ? [grant.photoId] : []))];
+
+    const [users, photos] = await Promise.all([
+        userIds.length
+            ? prisma.user.findMany({
+                where:{id:{in:userIds}},
+                select:{id:true, avatar:true, fullName:true, firstName:true, lastName:true},
+            })
+            : Promise.resolve([]),
+        photoIds.length
+            ? prisma.contestPhoto.findMany({
+                where:{id:{in:photoIds}},
+                include:{photo:{select:{id:true, url:true, title:true}}},
+            })
+            : Promise.resolve([]),
+    ]);
+
+    const userById = new Map(users.map((user) => [user.id, user] as const));
+    const photoById = new Map(photos.map((photo) => [photo.id, photo] as const));
+
+    grantsByContestId.forEach((contestGrants, contestId) => {
+        winnersByContestId.set(contestId, contestGrants.map((grant) => ({
+            ...grant,
+            user:userById.get(grant.userId),
+            photo:grant.photoId ? photoById.get(grant.photoId) : null,
+        })));
+    });
+
+    const achievementContestIds = completedContestIds.filter((contestId) => !winnersByContestId.has(contestId));
+    if(achievementContestIds.length){
+        const achievements = await prisma.contestAchievement.findMany({
+            where:{contestId:{in:achievementContestIds}, kind:AchievementKind.CONTEST_AWARD},
+            include:{participant:{include:{user:{select:{avatar:true, fullName:true, firstName:true, lastName:true}}}}},
+        });
+
+        const achievementsByContestId = groupByContestId(achievements);
+        achievementContestIds.forEach((contestId) => {
+            winnersByContestId.set(contestId, achievementsByContestId.get(contestId) || []);
+        });
+    }
+
+    return winnersByContestId;
+}
+
+const enrichContestListDetails = async (contests:any[]) => {
+    const contestIds = contests.map((contest) => contest.id);
+
+    if(contestIds.length === 0){
+        return [];
+    }
+
+    const [
+        ruleConfigs,
+        prizes,
+        votes,
+        finalizations,
+        awardSelections,
+        winnersByContestId,
+    ] = await Promise.all([
+        prisma.contestRuleConfig.findMany({
+            where:{contestId:{in:contestIds}},
+            orderBy:{order:"asc"},
+        }),
+        prisma.contestAward.findMany({
+            where:{contestId:{in:contestIds}, enabled:true},
+            orderBy:[{order:"asc"}, {createdAt:"asc"}],
+        }),
+        prisma.vote.findMany({
+            where:{contestId:{in:contestIds}},
+            select:{contestId:true, weight:true, power:true},
+        }),
+        prisma.contestFinalization.findMany({
+            where:{contestId:{in:contestIds}},
+        }),
+        prisma.contestAwardSelection.findMany({
+            where:{contestId:{in:contestIds}},
+            orderBy:{createdAt:"asc"},
+        }),
+        getContestWinnerMapForList(contests),
+    ]);
+
+    const rulesByContestId = groupByContestId(ruleConfigs);
+    const prizesByContestId = groupByContestId(prizes);
+    const votesByContestId = groupByContestId(votes);
+    const finalizationByContestId = new Map(finalizations.map((finalization) => [finalization.contestId, finalization]));
+    const selectionsByContestId = groupByContestId(awardSelections);
+
+    return contests.map((contest) => {
+        const configuredRules = rulesByContestId.get(contest.id);
+        const rules = formatContestRulesForList(configuredRules?.length ? configuredRules : getDefaultContestRuleConfigsForList());
+        const baseContestDetails = {
+            ...contest,
+            rules,
+            prizes:prizesByContestId.get(contest.id) || [],
+            totalVotes:(votesByContestId.get(contest.id) || []).reduce((total, vote) => total + getVoteWeight(vote), 0),
+            finalization:finalizationByContestId.get(contest.id) || null,
+            awardSelections:selectionsByContestId.get(contest.id) || [],
+        };
+
+        if(isCompletedContest(contest.status)){
+            return {...baseContestDetails, winners:winnersByContestId.get(contest.id) || []};
+        }
+
+        return baseContestDetails;
+    });
+}
+
 //Search contest by contest status
 const getContestsByStatus = async (userId:string,status: ContestStatus) => {
+    if(status && !Object.values(ContestStatus).includes(status)){
+        throw new ApiError(httpstatus.BAD_REQUEST, "Invalid contest status")
+    }
 
     if(status === ContestStatus.COMPLETED){
 
@@ -552,51 +767,32 @@ const getContestsByStatus = async (userId:string,status: ContestStatus) => {
 
         const contests = await prisma.contest.findMany({
             where:{status, participants:{none:{userId}}},
-            include: { creator: {select:{id:true, avatar:true,fullName:true,cover:true, firstName:true, lastName:true}}}
+            include: { creator: contestListCreatorInclude },
+            orderBy:{startDate:"desc"}
         });
 
-        const contestDetails = contests.map(async contest => {
-            const details = getContestById(contest.id)
-
-            return details
-
-        })
-        return await Promise.all(contestDetails);
+        return enrichContestListDetails(contests);
     }
 
     if(status === ContestStatus.CLOSED){
 
         const contests = await prisma.contest.findMany({
             where:{status, participants:{none:{userId}}},
-            include: { creator: {select:{id:true, avatar:true,fullName:true,cover:true, firstName:true, lastName:true}}}
+            include: { creator: contestListCreatorInclude },
+            orderBy:{startDate:"desc"}
         });
 
-        const contestDetails = contests.map(async contest => {
-            const details = getContestById(contest.id)
-
-            return details
-
-        })
-        return await Promise.all(contestDetails);
+        return enrichContestListDetails(contests);
     }
 
     
     const contests = await prisma.contest.findMany({
         where:{status},
-        include: { creator: {select:{id:true, avatar:true,fullName:true,cover:true, firstName:true, lastName:true}}}
+        include: { creator: contestListCreatorInclude },
+        orderBy:{startDate:"desc"}
     });
 
-    const contestDetails = contests.map(async contest => {
-        const details = getContestById(contest.id)
-
-        return details
-
-    })
-
-    
-
-
-    return await Promise.all(contestDetails);
+    return enrichContestListDetails(contests);
 };
 
 
