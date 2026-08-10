@@ -52,6 +52,30 @@ const getMyAchievements = catchAsync(async (req:Request, res:Response) => {
     })
 })
 
+const getMyProfileAchievements = catchAsync(async (req:Request, res:Response) => {
+    const userId = req.user.id
+    const result = await achievementService.getProfileAchievements(userId)
+
+    sendResponse(res, {
+        statusCode:httpStatus.OK,
+        success:true,
+        message:"profile achievements fetched successfully",
+        data:result
+    })
+})
+
+const getUserProfileAchievements = catchAsync(async (req:Request, res:Response) => {
+    const {userId} = req.params
+    const result = await achievementService.getProfileAchievements(userId)
+
+    sendResponse(res, {
+        statusCode:httpStatus.OK,
+        success:true,
+        message:"profile achievements fetched successfully",
+        data:result
+    })
+})
+
 const getAchievementsByType = catchAsync(async (req:Request, res:Response) => {
     
     const {type} = req.body
@@ -99,5 +123,6 @@ const getAllPhotosAchievements = catchAsync(async (req:Request, res:Response) =>
 
 export const achieveController = {
     getAchievementsByContest, getAchievementByUser, getMyAchievements, 
+    getMyProfileAchievements, getUserProfileAchievements,
     getAchievementsByType, getUserPhotoAchievements, getAllPhotosAchievements
 }

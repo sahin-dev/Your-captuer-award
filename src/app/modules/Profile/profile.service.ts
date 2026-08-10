@@ -188,7 +188,7 @@ const getStates = async (userId:string)=>{
     const followerCount = await followService.getFollowerCount(userId)
     const followingCount = await followService.getFollowingCount(userId)
 
-    return {...userStates?._count, follower:followerCount, following:followingCount, achievements: (achievementsCount.top_photo + achievementsCount.top_photographer)}
+    return {...userStates?._count, follower:followerCount, following:followingCount, achievements: achievementsCount.total}
 }
 
 const isFollowedByViewer = async (targetUserId:string, viewerId?:string)=>{

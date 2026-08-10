@@ -6,6 +6,8 @@ import auth from "../../middlewares/auth.middleware";
 
 const router = Router()
 
+router.get("/profile", auth(), achieveController.getMyProfileAchievements)
+router.get("/users/:userId/profile", achieveController.getUserProfileAchievements)
 router.get("/", auth(),achieveController.getMyAchievements )
 router.get("/users/:userId",achieveController.getAchievementByUser)
 router.get("/photos/:photoId", auth(), achieveController.getUserPhotoAchievements)

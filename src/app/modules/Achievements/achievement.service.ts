@@ -10,6 +10,54 @@ import {
     prizeTypes,
 } from "../Awards/award.definitions";
 
+type ProfileAchievementGroupKey = "ultimate" | "ranking";
+
+type ProfileAchievementBadgeDefinition = {
+    id: PrizeType;
+    category: PrizeType;
+    title: string;
+    imageUrl: string;
+    group: ProfileAchievementGroupKey;
+    order: number;
+}
+
+type ProfileAchievementRecord = Awaited<ReturnType<typeof findProfileAchievementRecords>>[number];
+
+const achievementBadgeImages: Record<PrizeType, string> = {
+    [prizeTypes.TOP_PHOTO]: "/icons/top-photo.png",
+    [prizeTypes.TOP_PHOTOGRAPHER]: "/icons/top-photographer.png",
+    [prizeTypes.AMATEUR]: "/icons/award.png",
+    [prizeTypes.TALENTED]: "/icons/award.png",
+    [prizeTypes.SUPREME]: "/icons/award.png",
+    [prizeTypes.SUPERIOR]: "/icons/award.png",
+    [prizeTypes.YC_PICK]: "/icons/yc-top-pick.png",
+    [prizeTypes.TOP_100_PHOTO]: "/icons/top-photo.png",
+    [prizeTypes.TOP_100_PHOTOGRAPHER]: "/icons/top-photographer.png",
+    [prizeTypes.TOP_50_PHOTO]: "/icons/top-photo.png",
+    [prizeTypes.TOP_50_PHOTOGRAPHER]: "/icons/top-photographer.png",
+    [prizeTypes.TOP_20_PHOTO]: "/icons/top-photo.png",
+    [prizeTypes.TOP_20_PHOTOGRAPHER]: "/icons/top-photographer.png",
+    [prizeTypes.TOP_10_PHOTO]: "/icons/top-photo.png",
+    [prizeTypes.TOP_10_PHOTOGRAPHER]: "/icons/top-photographer.png",
+    [prizeTypes.WINNER]: "/icons/award.png",
+    [prizeTypes.TOP_NOTCH]: "/icons/award.png",
+};
+
+const profileAchievementCatalog: ProfileAchievementBadgeDefinition[] = [
+    { id: prizeTypes.TOP_PHOTO, category: prizeTypes.TOP_PHOTO, title: "Top Photo", imageUrl: achievementBadgeImages.TOP_PHOTO, group: "ultimate", order: 10 },
+    { id: prizeTypes.TOP_PHOTOGRAPHER, category: prizeTypes.TOP_PHOTOGRAPHER, title: "Top Photographer", imageUrl: achievementBadgeImages.TOP_PHOTOGRAPHER, group: "ultimate", order: 20 },
+    { id: prizeTypes.WINNER, category: prizeTypes.WINNER, title: "Winner", imageUrl: achievementBadgeImages.WINNER, group: "ultimate", order: 30 },
+    { id: prizeTypes.YC_PICK, category: prizeTypes.YC_PICK, title: "Guru's Pick", imageUrl: achievementBadgeImages.YC_PICK, group: "ultimate", order: 40 },
+    { id: prizeTypes.TOP_10_PHOTO, category: prizeTypes.TOP_10_PHOTO, title: "Top 10 Photos", imageUrl: achievementBadgeImages.TOP_10_PHOTO, group: "ranking", order: 50 },
+    { id: prizeTypes.TOP_10_PHOTOGRAPHER, category: prizeTypes.TOP_10_PHOTOGRAPHER, title: "Top 10 Photographers", imageUrl: achievementBadgeImages.TOP_10_PHOTOGRAPHER, group: "ranking", order: 60 },
+    { id: prizeTypes.TOP_20_PHOTO, category: prizeTypes.TOP_20_PHOTO, title: "Top 20 Photos", imageUrl: achievementBadgeImages.TOP_20_PHOTO, group: "ranking", order: 70 },
+    { id: prizeTypes.TOP_20_PHOTOGRAPHER, category: prizeTypes.TOP_20_PHOTOGRAPHER, title: "Top 20 Photographers", imageUrl: achievementBadgeImages.TOP_20_PHOTOGRAPHER, group: "ranking", order: 80 },
+    { id: prizeTypes.TOP_50_PHOTO, category: prizeTypes.TOP_50_PHOTO, title: "Top 50 Photos", imageUrl: achievementBadgeImages.TOP_50_PHOTO, group: "ranking", order: 90 },
+    { id: prizeTypes.TOP_50_PHOTOGRAPHER, category: prizeTypes.TOP_50_PHOTOGRAPHER, title: "Top 50 Photographers", imageUrl: achievementBadgeImages.TOP_50_PHOTOGRAPHER, group: "ranking", order: 100 },
+    { id: prizeTypes.TOP_100_PHOTO, category: prizeTypes.TOP_100_PHOTO, title: "Top 100 Photos", imageUrl: achievementBadgeImages.TOP_100_PHOTO, group: "ranking", order: 110 },
+    { id: prizeTypes.TOP_100_PHOTOGRAPHER, category: prizeTypes.TOP_100_PHOTOGRAPHER, title: "Top 100 Photographers", imageUrl: achievementBadgeImages.TOP_100_PHOTOGRAPHER, group: "ranking", order: 120 },
+];
+
 type AchievementMetadata = {
     kind?: AchievementKind;
     type?: AwardType | null;
@@ -62,6 +110,91 @@ const paginateAchievements = <T>(records:T[], page = 1, limit = 20) => {
     return {
         data:records.slice(start, start + safeLimit),
         meta:{page:safePage, limit:safeLimit, total:records.length}
+    }
+}
+
+const profileAchievementCategories = profileAchievementCatalog.map(item => item.category)
+
+const profileAchievementGroupLabels: Record<ProfileAchievementGroupKey, string> = {
+    ultimate: "Ultimate Achievement",
+    ranking: "Top Ranking",
+}
+
+const formatAchievementDate = (date:Date) => {
+    return date.toLocaleDateString("en-US", {month:"short", year:"numeric"})
+}
+
+const findProfileAchievementRecords = async (userId:string) => {
+    return prisma.contestAchievement.findMany({
+        where:{participant:{userId}, category:{in:profileAchievementCategories}},
+        include:{
+            contest:{select:{id:true, title:true, banner:true}},
+            photo:{select:{id:true, photo:{select:{id:true, url:true, title:true}}}},
+        },
+        orderBy:{createdAt:"desc"}
+    })
+}
+
+const mapAchievementCard = (achievement:ProfileAchievementRecord, title:string) => {
+    const userPhoto = achievement.photo?.photo
+
+    return {
+        id:achievement.id,
+        title,
+        subtitle:achievement.contest?.title || userPhoto?.title || null,
+        imageUrl:userPhoto?.url || achievement.contest?.banner || "",
+        date:formatAchievementDate(achievement.createdAt),
+        earnedAt:achievement.createdAt,
+        photoId:userPhoto?.id || null,
+        contestPhotoId:achievement.photo?.id || null,
+        contestId:achievement.contestId,
+        category:achievement.category,
+        kind:achievement.kind,
+        target:achievement.target,
+        rankLimit:achievement.rankLimit,
+    }
+}
+
+const getProfileAchievements = async (userId:string) => {
+    const user = await prisma.user.findUnique({where:{id:userId}, select:{id:true}})
+
+    if(!user){
+        throw new ApiError(httpStatus.NOT_FOUND, "user not found")
+    }
+
+    const earnedAchievements = await findProfileAchievementRecords(userId)
+    const collapsedAchievements = collapseLevelAchievements(earnedAchievements)
+    const achievementsByCategory = new Map<PrizeType, typeof collapsedAchievements>()
+
+    collapsedAchievements.forEach(achievement => {
+        const list = achievementsByCategory.get(achievement.category) || []
+        list.push(achievement)
+        achievementsByCategory.set(achievement.category, list)
+    })
+
+    const groups = (["ultimate", "ranking"] as ProfileAchievementGroupKey[]).map(groupKey => ({
+        key:groupKey,
+        label:profileAchievementGroupLabels[groupKey],
+        badges:profileAchievementCatalog
+            .filter(item => item.group === groupKey)
+            .sort((a,b) => a.order - b.order)
+            .map(item => {
+                const cards = (achievementsByCategory.get(item.category) || []).map(achievement => mapAchievementCard(achievement, item.title))
+
+                return {
+                    id:item.id,
+                    category:item.category,
+                    title:item.title,
+                    imageUrl:item.imageUrl,
+                    count:cards.length,
+                    cards,
+                }
+            })
+    }))
+
+    return {
+        totalAchievements:collapsedAchievements.length,
+        groups,
     }
 }
 
@@ -220,10 +353,14 @@ const getAchievements = async (contestId:string, page = 1, limit = 20)=>{
 
 const getAchievementCount = async (userId:string)=>{
 
-    let top_photo_award_count = await prisma.contestAchievement.count({where:{participant:{userId},category:PrizeType.TOP_PHOTO}})
-    let top_photographer_count = await prisma.contestAchievement.count({where:{participant:{userId},category:PrizeType.TOP_PHOTOGRAPHER}})
+    const achievements = await findProfileAchievementRecords(userId)
+    const collapsedAchievements = collapseLevelAchievements(achievements)
 
-    return {top_photo:top_photo_award_count,top_photographer:top_photographer_count}
+    return {
+        total:collapsedAchievements.length,
+        top_photo:collapsedAchievements.filter(achievement => achievement.category === PrizeType.TOP_PHOTO).length,
+        top_photographer:collapsedAchievements.filter(achievement => achievement.category === PrizeType.TOP_PHOTOGRAPHER).length,
+    }
 }
 
 const getContestByAchievementsType = async (userId:string,type:PrizeType, page = 1, limit = 20)=>{
@@ -282,6 +419,7 @@ export const achievementService = {
     getContestAchievements,
     getAchievements,
     getAchievementCount,
+    getProfileAchievements,
     getPhotoAchievements,
     getContestByAchievementsType,
     getUserPhotoAchievements,
