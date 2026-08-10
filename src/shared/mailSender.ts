@@ -10,10 +10,15 @@ const mailer = async (email: string, html: string, subject: string) => {
 
   const transporter = nodemailer.createTransport({
     service: "gmail",
+    port: 587,
+    secure: false, 
     auth: {
       user: config.emailSender.email,
       pass: config.emailSender.app_pass,
-    }
+    },
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 10000,
   });
 
   const info = await transporter.sendMail({
