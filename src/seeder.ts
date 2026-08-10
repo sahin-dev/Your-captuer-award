@@ -15,7 +15,7 @@ import {
 } from "./prismaClient"
 import { LEVEL_RULES, LevelRule } from "./app/modules/Level/level.config"
 import { contestRuleDefinitions } from "./app/modules/Contest/ContestRules/contestRule.definitions"
-import { isContestLevelPrizeType, normalizeAwardIdentity } from "./app/modules/Awards/award.definitions"
+import { getContestLevelBadge, getContestLevelOrder, isContestLevelPrizeType, normalizeAwardIdentity } from "./app/modules/Awards/award.definitions"
 import { defaultPrizeDefinitions } from "./app/modules/Prize/prize.definitions"
 
 type SeedUserDefinition = {
@@ -286,6 +286,51 @@ class DatabaseSeeder {
         })
     }
 
+    private async createContestBadgeAchievementContest(userId:string, title:string, bannerUrl:string, contestLevel?:PrizeType){
+        const existingContest = await this.db.contest.findFirst({where:{title}})
+        const contest = existingContest
+            ? await this.db.contest.update({
+                where:{id:existingContest.id},
+                data:{banner:bannerUrl, status:ContestStatus.CLOSED}
+            })
+            : await this.db.contest.create({
+                data:{
+                    creatorId:userId,
+                    title,
+                    description:`Seeded contest for ${title}`,
+                    banner:bannerUrl,
+                    status:ContestStatus.CLOSED,
+                    startDate:new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+                    endDate:new Date(Date.now() - 24 * 60 * 60 * 1000)
+                }
+            })
+
+        const participantData:any = {status:"ACTIVE"}
+        if(contestLevel){
+            participantData.level = contestLevel
+        }
+
+        const participant = await this.db.contestParticipant.upsert({
+            where:{contestId_userId:{contestId:contest.id, userId}},
+            update:participantData,
+            create:{contestId:contest.id, userId, ...participantData}
+        })
+
+        const photoTitle = `${title} achievement photo`
+        const existingPhoto = await this.db.userPhoto.findFirst({where:{userId, title:photoTitle}})
+        const photo = existingPhoto || await this.db.userPhoto.create({
+            data:{
+                userId,
+                title:photoTitle,
+                url:`https://picsum.photos/seed/${encodeURIComponent(photoTitle)}/1200/800`,
+                description:"Seeded contest badge achievement photo."
+            }
+        })
+
+        const contestPhoto = await this.getOrCreateContestPhoto(contest.id, participant.id, photo.id, photo.title || photoTitle, true)
+        return {contest, participant, contestPhoto}
+    }
+
     private async clearSeedProgress(participantIds:string[], contestPhotoIds:string[]){
         if(participantIds.length > 0){
             await this.db.contestAchievement.deleteMany({
@@ -362,6 +407,169 @@ class DatabaseSeeder {
         await this.db.contestAchievement.create({
             data:{participantId, contestId, photoId, category:PrizeType.TOP_PHOTOGRAPHER, kind:AchievementKind.CONTEST_AWARD}
         })
+    }
+
+    async seedAchievementsForUser(userId?:string, email?:string){
+        const targetUser = userId
+            ? await this.db.user.findUnique({where:{id:userId}})
+            : email
+                ? await this.db.user.findUnique({where:{email}})
+                : null
+
+        if(!targetUser){
+            throw new Error(`User not found for id=${userId ?? ""} email=${email ?? ""}`)
+        }
+
+        const contestTitle = `Achievement seed contest for ${targetUser.email}`
+        const existingContest = await this.db.contest.findFirst({where:{title:contestTitle}})
+        const contest = existingContest
+            ? await this.db.contest.update({
+                where:{id:existingContest.id},
+                data:{status:ContestStatus.CLOSED}
+            })
+            : await this.db.contest.create({
+                data:{
+                    creatorId:targetUser.id,
+                    title:contestTitle,
+                    description:"Seeded contest used to attach achievement badges for a specific user.",
+                    status:ContestStatus.CLOSED,
+                    startDate:new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+                    endDate:new Date(Date.now() - 24 * 60 * 60 * 1000)
+                }
+            })
+
+        const participant = await this.db.contestParticipant.upsert({
+            where:{contestId_userId:{contestId:contest.id, userId:targetUser.id}},
+            update:{status:"ACTIVE"},
+            create:{contestId:contest.id, userId:targetUser.id}
+        })
+
+        const existingPhoto = await this.db.userPhoto.findFirst({
+            where:{userId:targetUser.id, title:`Achievement seed photo for ${targetUser.username}`}
+        })
+
+        const photo = existingPhoto
+            ? existingPhoto
+            : await this.db.userPhoto.create({
+                data:{
+                    userId:targetUser.id,
+                    title:`Achievement seed photo for ${targetUser.username}`,
+                    url:`https://picsum.photos/seed/${encodeURIComponent(targetUser.email)}/1200/800`,
+                    description:"Seeded photo used for achievement records."
+                }
+            })
+
+        const contestPhoto = await this.db.contestPhoto.upsert({
+            where:{contestId_photoId:{contestId:contest.id, photoId:photo.id}},
+            update:{title:photo.title, promoted:true, promotionExpiresAt:new Date(Date.now() + 24 * 60 * 60 * 1000)},
+            create:{
+                contestId:contest.id,
+                participantId:participant.id,
+                photoId:photo.id,
+                title:photo.title,
+                promoted:true,
+                promotionExpiresAt:new Date(Date.now() + 24 * 60 * 60 * 1000)
+            }
+        })
+
+        const achievementsToSeed = [
+            {category:PrizeType.TOP_PHOTO, kind:AchievementKind.CONTEST_AWARD},
+            {category:PrizeType.TOP_PHOTOGRAPHER, kind:AchievementKind.CONTEST_AWARD},
+            {category:PrizeType.WINNER, kind:AchievementKind.CONTEST_AWARD}
+        ] as const
+
+        let createdCount = 0
+        for(const achievement of achievementsToSeed){
+            const existing = await this.db.contestAchievement.findFirst({
+                where:{
+                    contestId:contest.id,
+                    participantId:participant.id,
+                    photoId:contestPhoto.id,
+                    category:achievement.category,
+                    kind:achievement.kind
+                }
+            })
+
+            if(!existing){
+                await this.db.contestAchievement.create({
+                    data:{
+                        participantId:participant.id,
+                        contestId:contest.id,
+                        photoId:contestPhoto.id,
+                        category:achievement.category,
+                        kind:achievement.kind
+                    }
+                })
+                createdCount += 1
+            }
+        }
+
+        console.log(`Seeded ${createdCount} achievements for user ${targetUser.email} (${targetUser.id})`)
+        console.log(`Contest ID: ${contest.id}`)
+        console.log(`Participant ID: ${participant.id}`)
+        console.log(`Contest photo ID: ${contestPhoto.id}`)
+
+        const levelBadges: Array<{category:PrizeType; title:string}> = [
+            {category:PrizeType.AMATEUR, title:"Amateur Badge"},
+            {category:PrizeType.TALENTED, title:"Talented Badge"},
+            {category:PrizeType.SUPREME, title:"Supreme Badge"}
+        ]
+
+        let highestLevelOrder = targetUser.currentLevel ?? -1
+
+        for(const levelBadge of levelBadges){
+            const title = `${levelBadge.title} Contest for ${targetUser.username || targetUser.email}`
+            const bannerUrl = `https://picsum.photos/seed/${encodeURIComponent(title)}/1600/900`
+            const {contest: badgeContest, participant: badgeParticipant, contestPhoto: badgeContestPhoto} = await this.createContestBadgeAchievementContest(targetUser.id, title, bannerUrl, levelBadge.category)
+
+            const existingBadge = await this.db.contestAchievement.findFirst({
+                where:{
+                    contestId:badgeContest.id,
+                    participantId:badgeParticipant.id,
+                    photoId:badgeContestPhoto.id,
+                    category:levelBadge.category,
+                    kind:AchievementKind.CONTEST_LEVEL
+                }
+            })
+
+            if(!existingBadge){
+                await this.db.contestAchievement.create({
+                    data:{
+                        participantId:badgeParticipant.id,
+                        contestId:badgeContest.id,
+                        photoId:badgeContestPhoto.id,
+                        category:levelBadge.category,
+                        kind:AchievementKind.CONTEST_LEVEL,
+                        levelBadge:getContestLevelBadge(levelBadge.category),
+                        levelOrder:getContestLevelOrder(levelBadge.category) || 0
+                    }
+                })
+                createdCount += 1
+            }
+
+            const rule = LEVEL_RULES.find(rule => rule.badges.some(b => b.categories.includes(levelBadge.category)))
+            if(rule && rule.order > highestLevelOrder){
+                highestLevelOrder = rule.order
+            }
+        }
+
+        if(highestLevelOrder > (targetUser.currentLevel ?? -1)){
+            const levelRecord = await this.db.level.findFirst({where:{level:highestLevelOrder}})
+            if(levelRecord){
+                await this.db.userLevel.upsert({
+                    where:{userId:targetUser.id},
+                    create:{userId:targetUser.id, levelId:levelRecord.id},
+                    update:{levelId:levelRecord.id}
+                })
+            }
+
+            await this.db.user.update({
+                where:{id:targetUser.id},
+                data:{currentLevel:highestLevelOrder}
+            })
+        }
+
+        console.log(`Also seeded level badge achievements and updated level data for ${targetUser.email}`)
     }
 
     private getSeedContestRules(){
@@ -715,8 +923,14 @@ async function SeederCLI (){
             case "seed:contest-categories":
                 await seeder.seedContestCategories()
                 break
+            case "seed:achievements-for-user": {
+                const userId = process.argv[3] || process.env.TARGET_USER_ID
+                const email = process.argv[4] || process.env.TARGET_EMAIL
+                await seeder.seedAchievementsForUser(userId, email)
+                break
+            }
             default:
-                console.log("Available commands: create:admin, seed:levels-demo, seed:contest-config, seed:prizes, seed:contest-categories, -reset")
+                console.log("Available commands: create:admin, seed:levels-demo, seed:contest-config, seed:prizes, seed:contest-categories, seed:achievements-for-user, -reset")
         }
     }finally{
         await seeder.destroyClient()

@@ -13,9 +13,6 @@ const mailer = async (email: string, html: string, subject: string) => {
     auth: {
       user: config.emailSender.email,
       pass: config.emailSender.app_pass,
-    },
-    tls: {
-      rejectUnauthorized: false,
     }
   });
 
