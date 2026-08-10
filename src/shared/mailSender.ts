@@ -16,10 +16,7 @@ const mailer = async (email: string, html: string, subject: string) => {
     },
     tls: {
       rejectUnauthorized: false,
-    },
-    connectionTimeout: 15000,
-    greetingTimeout: 15000,
-    socketTimeout: 15000,
+    }
   });
 
   const info = await transporter.sendMail({

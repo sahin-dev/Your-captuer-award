@@ -241,8 +241,8 @@ const forgetPassword = async ( email:string)=>{
       <p>If you did not request this, please contact our support team immediately.</p>
     </div>`
 
-    mailer(email,html, "Your Capture Award")
-    
+    await mailer(email, html, "Your Capture Award")
+
     return `Otp send successfully `
 }
 
