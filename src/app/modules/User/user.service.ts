@@ -218,6 +218,7 @@ const uploadCover = async (userId:string,file:Express.Multer.File)=>{
 
 const forgetPassword = async ( email:string)=>{
     const user = await prisma.user.findFirst({where:{email}})
+    console.log("Forget password request for email:", email, "User found:", !!user)
 
     if(!user){
         throw new ApiError(httpstatus.NOT_FOUND, "User not found with this email")

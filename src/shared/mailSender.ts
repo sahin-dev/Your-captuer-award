@@ -6,8 +6,6 @@ const mailer = async (email: string, html: string, subject: string) => {
     throw new Error("Email sender configuration is missing EMAIL or APP_PASS")
   }
 
-  console.log("Sending email from", config.emailSender.email)
-
   const transporter = nodemailer.createTransport({
     service: "gmail",
     port: 587,
