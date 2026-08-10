@@ -241,7 +241,11 @@ const forgetPassword = async ( email:string)=>{
       <p>If you did not request this, please contact our support team immediately.</p>
     </div>`
 
-    await mailer(email, html, "Your Capture Award")
+    setImmediate(() => {
+      mailer(email, html, "Your Capture Award")
+        .then((info) => console.log("Forget password email queued", info?.messageId))
+        .catch((error) => console.error("Forget password email send failed:", error));
+    });
 
     return `Otp send successfully `
 }
