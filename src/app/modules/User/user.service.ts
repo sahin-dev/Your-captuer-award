@@ -311,18 +311,36 @@ const attachStoreToUser = async (userId:string)=>{
 const searchUserByUserName = async (queryString:string, page:number = 1, limit:number = 10, currentUserId?:string) => {
     const { skip, limit:take } = paginationHelper.calculatePagination({page, limit})
 
-    const user = await prisma.user.findMany({
-        where:{
-            AND:[
-                {OR:[{username:{contains:queryString, mode:'insensitive'}}, {fullName:{contains:queryString, mode:'insensitive'}}]},
-                currentUserId ? {id:{not:currentUserId}} : {}
-            ]
-        },
-        select:{id:true, avatar:true, firstName:true, username:true, lastName:true, fullName:true},
-        skip, take
-    })
+    const [total, users] = await Promise.all([
+        prisma.user.count({
+            where:{
+                AND:[
+                    {OR:[{username:{contains:queryString, mode:'insensitive'}}, {fullName:{contains:queryString, mode:'insensitive'}}]},
+                    currentUserId ? {id:{not:currentUserId}} : {}
+                ]
+            }
+        }),
+        prisma.user.findMany({
+            where:{
+                AND:[
+                    {OR:[{username:{contains:queryString, mode:'insensitive'}}, {fullName:{contains:queryString, mode:'insensitive'}}]},
+                    currentUserId ? {id:{not:currentUserId}} : {}
+                ]
+            },
+            select:{id:true, avatar:true, firstName:true, username:true, lastName:true, fullName:true},
+            skip, take
+        })
+    ])
 
-    return user
+    return {
+        users,
+        meta:{
+            total,
+            hasNextPage: total > page * limit,
+            hasPreviousPage: page > 1,
+            currentPage: page,
+        }
+    }
 }
 
 const deleteAccount = async (userId:string, password:string) => {
