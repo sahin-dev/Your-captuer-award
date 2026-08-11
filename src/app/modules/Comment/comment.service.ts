@@ -58,12 +58,40 @@ export const getAll = async (photoId:string)=>{
     return comments
 }
 
+const collectReplyLevels = async (commentId:string) => {
+    const levels:string[][] = []
+    let currentParentIds = [commentId]
+
+    while(currentParentIds.length){
+        const replies = await prisma.comment.findMany({
+            where:{parentId:{in:currentParentIds}},
+            select:{id:true}
+        })
+        const replyIds = replies.map(reply => reply.id)
+        if(!replyIds.length){
+            break
+        }
+
+        levels.push(replyIds)
+        currentParentIds = replyIds
+    }
+
+    return levels
+}
+
 export const handlDeleteComment = async (userId:string,commentId:string)=>{
     const comment = await prisma.comment.findUnique({where:{id:commentId}})
     if(!comment || comment.providerId !== userId){
         throw new ApiError(httpStatus.BAD_REQUEST, "unable to delete the comment")
     }
-    const deletedComment = await prisma.comment.delete({where:{id:commentId}})
+    const replyLevels = await collectReplyLevels(commentId)
+    const deletedComment = await prisma.$transaction(async (tx) => {
+        for(const replyIds of replyLevels.reverse()){
+            await tx.comment.deleteMany({where:{id:{in:replyIds}}})
+        }
+
+        return await tx.comment.delete({where:{id:commentId}})
+    })
 
     return deletedComment
 }
