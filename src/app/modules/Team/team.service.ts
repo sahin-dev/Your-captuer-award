@@ -11,35 +11,48 @@ import { voteService } from '../Vote/vote.service';
 import { userService } from '../User/user.service';
 import { profileService } from '../Profile/profile.service';
 import { paginationHelper } from '../../../helpers/paginationHelper';
+import { userStoreService } from '../User/UserStore/userStore.service';
 
 
 //create a team
-//Now, only admin can create  a team
+
 
 export const createTeam = async (creatorId: string, body: ITeam, file:Express.Multer.File) => {
 
+    const userStore = await userStoreService.getStoreData(creatorId)
+
+    if(!userStore || userStore.coins < 500){
+        throw new ApiError(httpstatus.BAD_REQUEST, "You need at least 500 coins to create a team")
+    }
+
     const badgeUrl = await fileUploader.uploadToDigitalOcean(file)
-    const min_requirement_order = parseInt(body.min_requirement)
+    
 
-    const level = await levelService.getLevelByOrder(min_requirement_order)
+    const level = await levelService.getLevelByLevelName(body.min_requirement as LevelName)
 
 
-    const team = await prisma.team.create({
-        data: {
-            creatorId,
-            name:body.name,
-            level: body.level,
-            language: body.language,
-            country: body.country,
-            description: body.description,
-            min_requirement: body.min_requirement,
-            min_requirement_str: level?.levelName ?? 'None',
-            accessibility: body.accessibility as TeamAccessibility,
-            badge: badgeUrl.Location,
-        },
-    });
+    const {team, member} = await prisma.$transaction(async (tx) => {
+        await userStoreService.deductCoinsFromStore(creatorId, 500)
+        const team = await prisma.team.create({
+            data: {
+                creatorId,
+                name:body.name,
+                level: body.level,
+                language: body.language,
+                country: body.country,
+                description: body.description,
+                min_requirement: level?.order ?? 0,
+                min_requirement_str: level?.levelName ?? 'None',
+                accessibility: body.accessibility as TeamAccessibility,
+                badge: badgeUrl.Location,
+            },
+        });
 
-    const member = await prisma.teamMember.create({data:{memberId:creatorId,teamId:team.id, level:MemberLevel.LEADER}})
+        const member = await prisma.teamMember.create({data:{memberId:creatorId,teamId:team.id, level:MemberLevel.LEADER}})
+        return {team, member}
+    })
+
+    
     return team;
 };
 
@@ -201,7 +214,7 @@ const getSuggestedTeams = async (userId:string, page?:number, limit?:number) => 
     const country = user.country as string
     const { skip, limit:take, page:currentPage } = paginationHelper.calculatePagination({page, limit})
 
-    const where = { OR:[{country}, {min_requirement:String(user.currentLevel)}] }
+    const where = { OR:[{country}, {min_requirement:user.currentLevel}] }
 
     const [teams, total] = await Promise.all([
         prisma.team.findMany({where, skip, take}),

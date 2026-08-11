@@ -74,6 +74,11 @@ const getLevelByOrder = async (order:number) => {
     return level
 }
 
+const getLevelByLevelName = async (levelName:LevelName) => {
+    const level = await prisma.level.findFirst({where:{levelName}})
+    return level
+}
+
 const getLevelRuleByOrder = (order:number) => {
     return LEVEL_RULES.find(rule => rule.order === order)
 }
@@ -247,5 +252,6 @@ export const levelService =  {
     getLevelByOrder,
     evaluateAndUpdateUserLevel,
     getReceivedVoteStats,
-    getBadgeCounts
+    getBadgeCounts,
+    getLevelByLevelName,
 }

@@ -68,9 +68,27 @@ const addUserStoreBasedOnType = async (userId: string, type: "key" | "boost" | "
     return updatedStore;
 };
 
+const deductCoinsFromStore = async (userId: string, amount: number) => {
+    const store = await prisma.userStore.findUnique({where:{userId}})
+    if (!store) {
+      throw new Error("User store not found");
+    }
+    if (store.coins < amount) {
+      throw new Error("Insufficient coins");
+    }
+    const updatedStore = await prisma.userStore.update({
+        where: { userId },
+        data: {
+            coins: { decrement: amount }
+        }
+    });
+    return updatedStore;
+};
+
 export const userStoreService = {
   getStoreData, 
   addStoreData,
   updateStoreData,
-  addUserStoreBasedOnType
+  addUserStoreBasedOnType,
+  deductCoinsFromStore
 };

@@ -1,4 +1,4 @@
-import { TeamAccessibility } from '../../../prismaClient';
+import { LevelName, TeamAccessibility } from '../../../prismaClient';
 import { z } from 'zod';
 
 export const createTeamValidationSchema = z.object({
@@ -20,7 +20,10 @@ export const createTeamValidationSchema = z.object({
     accessibility: z.nativeEnum(TeamAccessibility, {
         required_error: 'Accessibility is required',invalid_type_error: 'Accessibility must be PUBLIC or PRIVATE'
     }),
-    min_requirement: z.string({required_error:"min requirement is required"})
+    min_requirement: z.nativeEnum(LevelName, {
+        required_error: 'Minimum requirement is required',
+        invalid_type_error: 'Minimum requirement must be a valid level name'
+    }),
 });
 
 export const updateTeamValidationSchema = z.object({
