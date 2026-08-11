@@ -40,11 +40,11 @@ model Team {
 model TeamMatch {
   id      String        @id  @default(auto())  @map("_id")  @db.ObjectId
   contestId     String    @db.ObjectId
-  team1Id         String    @db.ObjectId
-  team2Id         String    @db.ObjectId
+  team1Id         String?    @db.ObjectId
+  team2Id         String?    @db.ObjectId
   contest     Contest     @relation(references: [id], fields: [contestId])
-  team1    Team         @relation(name: "team1",references: [id], fields: [team1Id], onDelete:NoAction)
-  team2     Team        @relation(name: "team2",references: [id], fields: [team2Id], onDelete:NoAction)
+  team1    Team?         @relation(name: "team1",references: [id], fields: [team1Id], onDelete:SetNull)
+  team2     Team?        @relation(name: "team2",references: [id], fields: [team2Id], onDelete:SetNull)
   
   // NEW: Scoring and Result Fields
   team1_score   Int       @default(0)
@@ -69,7 +69,7 @@ model TeamMember {
 
   teamId   String @db.ObjectId
   memberId String @unique @db.ObjectId
-  team     Team   @relation(fields: [teamId], references: [id])
+  team     Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
   member   User   @relation(fields: [memberId], references: [id], onDelete: Cascade)
   contestParticipant   ContestParticipant[]
 
@@ -82,15 +82,14 @@ model TeamMember {
 model TeamParticipation {
   id      String      @id  @map("_id")  @default(auto())  @db.ObjectId
 
-  teamId    String    @db.ObjectId
+  teamId    String?    @db.ObjectId
   contestId   String    @db.ObjectId
 
-  team      Team   @relation(references: [id], fields: [teamId])
+  team      Team?   @relation(references: [id], fields: [teamId], onDelete: SetNull)
   contest Contest   @relation(references: [id], fields: [contestId])
 
   @@map("team_participations")
   @@index([teamId])
-  @@unique([teamId, contestId])
 }
 
 model TeamInvitation {
@@ -130,23 +129,22 @@ model TeamJoinRequest {
 // NEW: Team Match History Model
 model TeamMatchHistory {
   id      String        @id  @default(auto())  @map("_id")  @db.ObjectId
-  teamId        String    @db.ObjectId
-  team          Team      @relation(fields: [teamId], references: [id])
+  teamId        String?    @db.ObjectId
+  team          Team?      @relation(fields: [teamId], references: [id], onDelete: SetNull)
   
   matchId       String    @db.ObjectId
-  opponent_team_id    String    @db.ObjectId
+  opponent_team_id    String?    @db.ObjectId
   team_score    Int
   opponent_score    Int
   result        HistoryResult
   match_date    DateTime
   contest_id    String?   @db.ObjectId
 
-  opponent_team   Team?     @relation("opponentTeam", fields: [opponent_team_id], references: [id])
+  opponent_team   Team?     @relation("opponentTeam", fields: [opponent_team_id], references: [id], onDelete: SetNull)
   contest          Contest?   @relation(fields: [contest_id], references: [id])
   createdAt   DateTime @default(now())
   updatedAt   DateTime  @updatedAt
 
-  @@unique([teamId, matchId])
   @@map("team_match_history")
 }
 

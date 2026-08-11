@@ -243,7 +243,72 @@ export const deleteTeam = async (userId:string, teamId: string) => {
         throw new ApiError(httpstatus.FORBIDDEN, 'You are not allowed to delete this team');
     }
 
-    await prisma.team.delete({ where: { id: teamId } });
+    const [teamMembers, teamMatches] = await Promise.all([
+        prisma.teamMember.findMany({ where: { teamId }, select: { id: true } }),
+        prisma.teamMatch.findMany({
+            where: { OR: [{ team1Id: teamId }, { team2Id: teamId }] },
+            select: { id: true }
+        })
+    ]);
+    const teamMemberIds = teamMembers.map(member => member.id);
+    const teamMatchIds = teamMatches.map(match => match.id);
+
+    await prisma.$transaction(async (tx) => {
+        if(teamMemberIds.length){
+            await tx.contestParticipant.updateMany({
+                where: { memberId: { in: teamMemberIds } },
+                data: { memberId: null }
+            });
+        }
+
+        await tx.chat.updateMany({
+            where: { teamId },
+            data: { teamId: null }
+        });
+
+        await tx.teamParticipation.updateMany({
+            where: { teamId },
+            data: { teamId: null }
+        });
+
+        await tx.teamMatch.updateMany({
+            where: { team1Id: teamId },
+            data: { team1Id: null }
+        });
+
+        await tx.teamMatch.updateMany({
+            where: { team2Id: teamId },
+            data: { team2Id: null }
+        });
+
+        await tx.teamMatch.updateMany({
+            where: { winner_id: teamId },
+            data: { winner_id: null }
+        });
+
+        await tx.teamMatchHistory.updateMany({
+            where: { teamId },
+            data: { teamId: null }
+        });
+
+        await tx.teamMatchHistory.updateMany({
+            where: { opponent_team_id: teamId },
+            data: { opponent_team_id: null }
+        });
+
+        if(teamMatchIds.length){
+            await tx.team.updateMany({
+                where: { active_match_id: { in: teamMatchIds } },
+                data: { active_match_id: null }
+            });
+        }
+
+        await tx.teamInvitation.deleteMany({ where: { teamId } });
+        await tx.teamJoinRequest.deleteMany({ where: { teamId } });
+        await tx.room.deleteMany({ where: { teamId } });
+        await tx.teamMember.deleteMany({ where: { teamId } });
+        await tx.team.delete({ where: { id: teamId } });
+    });
 
     return { message: 'Team deleted successfully' };
 };
@@ -346,6 +411,15 @@ const startTeamMatch = async (contestId:string, ownTeamId:string, otherTeamId:st
    const teamMatch =  await prisma.teamMatch.create({data:{contestId, team1Id:ownTeamId, team2Id:otherTeamId, endedAt:contest.endDate}})
 
    return teamMatch
+}
+
+const ensureTeamParticipation = async (teamId:string, contestId:string) => {
+    const existingParticipation = await prisma.teamParticipation.findFirst({where:{teamId, contestId}})
+    if(existingParticipation){
+        return existingParticipation
+    }
+
+    return await prisma.teamParticipation.create({data:{teamId, contestId}})
 }
 
 
@@ -458,6 +532,9 @@ const getMatchDetails = async (userId:string,matchId:string) => {
     if(!teamMatch){
         throw new ApiError(httpstatus.NOT_FOUND, "match not found")
     }
+    if(!teamMatch.team1Id || !teamMatch.team2Id){
+        throw new ApiError(httpstatus.BAD_REQUEST, "This match has a deleted team")
+    }
 
     const team1Vote = await voteService.getTeamTotalVotes(teamMatch.contestId, teamMatch.team1Id)
     const team2Vote = await voteService.getTeamTotalVotes(teamMatch.contestId, teamMatch.team2Id)
@@ -465,7 +542,7 @@ const getMatchDetails = async (userId:string,matchId:string) => {
     const team1Members = await getMembers(teamMatch.team1Id, teamMatch.contestId)
     const team2Members = await getMembers(teamMatch.team2Id, teamMatch.contestId)
 
-    if(teamMatch.team1Id === userTeam.id){
+    if(teamMatch.team1Id === userTeam.teamId){
         return {oposition:{totalVote:team2Vote,members:team2Members}, own:{totalVote:team1Vote,members:team1Members}}
     }
 
@@ -612,6 +689,9 @@ const getTeamLeaderboard = async (contestId?:string, page?:number, limit?:number
 
     const statsByTeam = new Map<string, {score:number, wins:number}>()
     history.forEach(entry => {
+        if(!entry.teamId){
+            return
+        }
         const existing = statsByTeam.get(entry.teamId) ?? {score:0, wins:0}
         existing.score += entry.team_score
         if(entry.result === HistoryResult.WIN) existing.wins += 1
@@ -669,10 +749,17 @@ const updateTeamStatsForMatch = async (teamId:string, opponentTeamId:string, tea
         }
     })
 
-    await prisma.teamMatchHistory.upsert({
-        where:{teamId_matchId:{teamId, matchId}},
-        update:{opponent_team_id:opponentTeamId, team_score:teamScore, opponent_score:opponentScore, result, match_date:new Date(), contest_id:contestId},
-        create:{teamId, matchId, opponent_team_id:opponentTeamId, team_score:teamScore, opponent_score:opponentScore, result, match_date:new Date(), contest_id:contestId}
+    const existingHistory = await prisma.teamMatchHistory.findFirst({where:{teamId, matchId}})
+    if(existingHistory){
+        await prisma.teamMatchHistory.update({
+            where:{id:existingHistory.id},
+            data:{opponent_team_id:opponentTeamId, team_score:teamScore, opponent_score:opponentScore, result, match_date:new Date(), contest_id:contestId}
+        })
+        return
+    }
+
+    await prisma.teamMatchHistory.create({
+        data:{teamId, matchId, opponent_team_id:opponentTeamId, team_score:teamScore, opponent_score:opponentScore, result, match_date:new Date(), contest_id:contestId}
     })
 }
 
@@ -683,6 +770,9 @@ const recordMatchResult = async (matchId:string, team1Score:number, team2Score:n
     }
     if(match.status !== MatchStatus.ACTIVE){
         throw new ApiError(httpstatus.BAD_REQUEST, "This match has already been closed")
+    }
+    if(!match.team1Id || !match.team2Id){
+        throw new ApiError(httpstatus.BAD_REQUEST, "This match has a deleted team")
     }
 
     let result:MatchResult = MatchResult.DRAW
@@ -741,8 +831,12 @@ const findRivalTeam = async (teamId:string, skillLevel:LevelName) => {
     const teamsWithActiveMatch = await prisma.teamMatch.findMany({where:{status:MatchStatus.ACTIVE}, select:{team1Id:true, team2Id:true}})
     const busyTeamIds = new Set<string>([teamId])
     teamsWithActiveMatch.forEach(match => {
-        busyTeamIds.add(match.team1Id)
-        busyTeamIds.add(match.team2Id)
+        if(match.team1Id){
+            busyTeamIds.add(match.team1Id)
+        }
+        if(match.team2Id){
+            busyTeamIds.add(match.team2Id)
+        }
     })
 
     const rival = await prisma.team.findFirst({
@@ -794,14 +888,8 @@ const startTeamMatchWithAutoRival = async (teamId:string, contestId:string, user
     await Promise.all([
         prisma.team.update({where:{id:teamId}, data:{active_match_id:match.id}}),
         prisma.team.update({where:{id:rivalTeam.id}, data:{active_match_id:match.id}}),
-        prisma.teamParticipation.upsert({
-            where:{teamId_contestId:{teamId, contestId}},
-            update:{}, create:{teamId, contestId}
-        }),
-        prisma.teamParticipation.upsert({
-            where:{teamId_contestId:{teamId:rivalTeam.id, contestId}},
-            update:{}, create:{teamId:rivalTeam.id, contestId}
-        })
+        ensureTeamParticipation(teamId, contestId),
+        ensureTeamParticipation(rivalTeam.id, contestId)
     ])
 
     return await prisma.teamMatch.findUnique({

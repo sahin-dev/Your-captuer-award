@@ -213,7 +213,7 @@ model ContestParticipant {
 
   contest            Contest              @relation(fields: [contestId], references: [id], onDelete: Cascade)
   user               User                @relation(fields: [userId], references: [id])
-  member                TeamMember?                @relation(fields: [memberId], references: [id])
+  member                TeamMember?                @relation(fields: [memberId], references: [id], onDelete: SetNull)
   photos             ContestPhoto[]
   contestAchievement ContestAchievement[]
   
