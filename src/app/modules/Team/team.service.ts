@@ -214,7 +214,7 @@ const getSuggestedTeams = async (userId:string, page?:number, limit?:number) => 
     const country = user.country as string
     const { skip, limit:take, page:currentPage } = paginationHelper.calculatePagination({page, limit})
 
-    const where = { OR:[{country}, {min_requirement:user.currentLevel}] }
+    const where = { OR:[country? {country}:{}, {min_requirement:user.currentLevel}] }
 
     const [teams, total] = await Promise.all([
         prisma.team.findMany({where, skip, take}),
