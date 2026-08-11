@@ -19,6 +19,9 @@ export const handleFollowUnfollow = async (followerId:string, followingId:string
 //If user does not follow previously, Add a new follower
 
 export const handleFollowUser = async (followerId: string, followingId: string) => {
+    if(followerId === followingId){
+        throw new ApiError(httpstatus.BAD_REQUEST, "You cannot follow yourself")
+    }
     const follow = await prisma.follow.create({
         data: { followerId, followingId }
     });
