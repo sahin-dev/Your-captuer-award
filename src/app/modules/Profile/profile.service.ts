@@ -213,7 +213,7 @@ const getUserProfileDetails = async (userId:string, viewerId?:string)=>{
 
 
 const getUserPhotoDetails = async (userId:string, photoId:string, viewerId?:string) => {
-    const photo = await prisma.userPhoto.findUnique({where:{id:photoId,userId}})
+    const photo = await prisma.userPhoto.findUnique({where:{id:photoId,userId}, include:{user:{select:{id:true, fullName:true, avatar:true}}}})
     if(!photo){
         throw new ApiError(httpStatus.NOT_FOUND, "photo not found")
     }
