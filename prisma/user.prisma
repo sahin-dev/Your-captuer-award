@@ -91,10 +91,10 @@ model UserPhoto {
 model Like {
   id         String @id @default(auto()) @map("_id") @db.ObjectId
   providerId String? @db.ObjectId
-  photoId    String @db.ObjectId
+  photoId    String? @db.ObjectId
  
   provider User?     @relation(fields: [providerId], references: [id], onDelete: SetNull)
-  photo    UserPhoto @relation(fields: [photoId], references: [id])
+  photo    UserPhoto? @relation(fields: [photoId], references: [id], onDelete: SetNull)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

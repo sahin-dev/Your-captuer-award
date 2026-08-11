@@ -459,10 +459,16 @@ class DatabaseSeeder {
                 }
             })
 
-        const contestPhoto = await this.db.contestPhoto.upsert({
-            where:{contestId_photoId:{contestId:contest.id, photoId:photo.id}},
-            update:{title:photo.title, promoted:true, promotionExpiresAt:new Date(Date.now() + 24 * 60 * 60 * 1000)},
-            create:{
+        const existingContestPhoto = await this.db.contestPhoto.findFirst({
+            where:{contestId:contest.id, photoId:photo.id}
+        })
+        const contestPhoto = existingContestPhoto
+            ? await this.db.contestPhoto.update({
+                where:{id:existingContestPhoto.id},
+                data:{title:photo.title, promoted:true, promotionExpiresAt:new Date(Date.now() + 24 * 60 * 60 * 1000)}
+            })
+            : await this.db.contestPhoto.create({
+                data:{
                 contestId:contest.id,
                 participantId:participant.id,
                 photoId:photo.id,
@@ -470,7 +476,7 @@ class DatabaseSeeder {
                 promoted:true,
                 promotionExpiresAt:new Date(Date.now() + 24 * 60 * 60 * 1000)
             }
-        })
+            })
 
         const achievementsToSeed = [
             {category:PrizeType.TOP_PHOTO, kind:AchievementKind.CONTEST_AWARD},

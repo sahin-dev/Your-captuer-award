@@ -248,7 +248,19 @@ const deleteUserPhoto = async (userId:string, photoId:string)=> {
         throw new ApiError(httpStatus.NOT_FOUND, "photo not found")
     }
 
-    const deletedPhoto = await prisma.userPhoto.delete({where:{id:photo.id}})
+    const deletedPhoto = await prisma.$transaction(async (tx) => {
+        await tx.like.updateMany({
+            where:{photoId:photo.id},
+            data:{photoId:null}
+        })
+
+        await tx.contestPhoto.updateMany({
+            where:{photoId:photo.id},
+            data:{photoId:null}
+        })
+
+        return await tx.userPhoto.delete({where:{id:photo.id}})
+    })
 
     return deletedPhoto
 }

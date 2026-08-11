@@ -10,7 +10,7 @@ export const CONTEST_SCORING_VERSION = 1;
 
 export type RankedPhoto = {
   photoId: string;
-  userPhotoId: string;
+  userPhotoId: string | null;
   participantId: string;
   userId: string;
   score: number;

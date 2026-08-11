@@ -800,11 +800,11 @@ const getContestsByStatus = async (userId:string,status: ContestStatus) => {
 
 const getContestUploadsByUserId = async (contestId:string, userId:string)=>{
     const userUploads = await prisma.contestPhoto.findMany({where:{contestId:contestId, photo:{userId}}, include:{photo:{select:{url:true}}}})
-   const mappedPhotos  = userUploads.map(upload => {
+   const mappedPhotos  = userUploads.flatMap(upload => {
 
     const {photo, ...rest} = upload
 
-    return {...rest,url:upload.photo.url}
+    return photo ? [{...rest,url:photo.url}] : []
    })
 
     return mappedPhotos
@@ -1028,7 +1028,7 @@ const getContestUploadsToVote = async (userId:string, contestId:string)=> {
             return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
         })
     }
-    return contestUploads.map(upload => ({url:upload.photo.url, id:upload.id}))
+    return contestUploads.flatMap(upload => upload.photo ? [{url:upload.photo.url, id:upload.id}] : [])
 }
 
 
@@ -1058,7 +1058,7 @@ const getCompletedContestUploads = async (userId:string,contestId:string)=>{
             return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
         })
     }
-    return contestUploads.map(upload => ({url:upload.photo.url, id:upload.id}))
+    return contestUploads.flatMap(upload => upload.photo ? [{url:upload.photo.url, id:upload.id}] : [])
 }   
 
 //Get all contest uploaded images
@@ -1087,11 +1087,17 @@ const getContestUploads = async (userId:string,contestId:string)=>{
             return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
         })
     }
-    const uploads =  await Promise.all(contestUploads.map(async upload => {
+    const uploads =  await Promise.all(contestUploads.flatMap(upload => {
+        if(!upload.photo){
+            return []
+        }
+        const photo = upload.photo
+        return [async () => {
         const voteCount = await voteService.getVoteCount(upload.id)
 
-        return {id:upload.photo.id, url:upload.photo.url, voteCount}
-    }))
+        return {id:photo.id, url:photo.url, voteCount}
+        }]
+    }).map(getUpload => getUpload()))
 
     return uploads
 }   
@@ -1551,7 +1557,7 @@ const getContestPhotosSortedByVote = async (contestId:string, page?:number, limi
     const sortedUploads = ranking.photos
         .map(photo => {
             const upload = uploadById.get(photo.photoId)
-            if(!upload){
+            if(!upload || !upload.photo){
                 return null
             }
             return {
@@ -1602,13 +1608,13 @@ const getContestTopPhotographers =  async (contestId:string, currentUserId:strin
             rank:photographer.rank,
             level:getDesignLevelFromYCLevel(photographer.level),
             user:participant.user,
-            photos:participant.photos.map(photo => ({
+            photos:participant.photos.flatMap(photo => photo.photo ? [{
                 contestPhotoId:photo.id,
                 userPhotoId:photo.photo.id,
                 url:photo.photo.url,
                 title:photo.photo.title,
                 voteCount:photoScoreById.get(photo.id) || 0
-            })).sort((a,b) => b.voteCount - a.voteCount),
+            }] : []).sort((a,b) => b.voteCount - a.voteCount),
             totalVotes:photographer.score
         }]
     })
@@ -1666,7 +1672,7 @@ const getContestYCTopPicks = async (contestId:string, page?:number, limit?:numbe
     }
 
     const ycPicks = await Promise.all(ycPickAchievements.map(async achievement => {
-        if(!achievement.photo){
+        if(!achievement.photo || !achievement.photo.photo){
             return null
         }
 

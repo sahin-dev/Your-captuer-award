@@ -179,7 +179,7 @@ model ContestPhoto {
   title         String?
   contestId     String  @db.ObjectId
   participantId String  @db.ObjectId
-  photoId       String  @db.ObjectId
+  photoId       String?  @db.ObjectId
   rank          Int?    @default(0)
   promoted     Boolean @default(false)
   promotionExpiresAt DateTime?
@@ -187,13 +187,13 @@ model ContestPhoto {
   // contest   Contest @relation(fields: [contestId],references: [id])
   participant  ContestParticipant   @relation(fields: [participantId], references: [id], onDelete: Cascade)
   votes        Vote[]
-  photo        UserPhoto            @relation(fields: [photoId], references: [id], onDelete: Cascade)
+  photo        UserPhoto?            @relation(fields: [photoId], references: [id], onDelete: SetNull)
   comments     Comment[]
   achievements ContestAchievement[]
   createdAt    DateTime             @default(now())
   updatedAt    DateTime             @updatedAt
 
-  @@unique([contestId, photoId])
+  @@index([contestId, photoId])
   @@index([contestId, participantId])
   @@index([contestId, createdAt])
   @@map("contest_photos")
