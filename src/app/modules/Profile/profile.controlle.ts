@@ -134,7 +134,7 @@ const getPublicPhotoDetails = catchAsync(async (req: Request, res: Response) => 
     const { id: targetUserId, photoId } = req.params
     const viewerId = req.user.id
 
-    const result = await profileService.getPublicPhotoDetails(photoId, viewerId)
+    const result = await profileService.getPublicPhotoDetails(targetUserId, photoId, viewerId)
 
     sendResponse(res, {
         success: true,

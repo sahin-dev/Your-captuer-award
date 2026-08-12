@@ -1560,7 +1560,7 @@ const getContestPhotosSortedByVote = async (contestId:string, page?:number, limi
         include:{
             participant:{
                 include:{
-                    user:{select:{id:true, avatar:true, country:true, fullName:true}}
+                    user:{select:{id:true, avatar:true, country:true, fullName:true, username:true}}
                 }
             },
             photo:{select:{id:true, url:true, title:true}}
@@ -1606,7 +1606,7 @@ const getContestTopPhotographers =  async (contestId:string, currentUserId:strin
         where:{id:{in:ranking.photographers.map(photographer => photographer.participantId)}},
         include:{
             photos:{select:{photo:{select:{id:true, url:true, title:true}}, id:true}},
-            user:{select:{id:true, avatar:true, country:true, fullName:true}}
+            user:{select:{id:true, avatar:true, country:true, fullName:true, username:true}}
         }
     })
     const participantById = new Map(contestParticipants.map(participant => [participant.id,participant]))
@@ -1670,7 +1670,7 @@ const getContestYCTopPicks = async (contestId:string, page?:number, limit?:numbe
             photo:{
                 include:{
                     photo:{select:{id:true, url:true, title:true}},
-                    participant:{include:{user:{select:{id:true, avatar:true, country:true, fullName:true}}}}
+                    participant:{include:{user:{select:{id:true, avatar:true, country:true, fullName:true, username:true}}}}
                 }
             }
         }
