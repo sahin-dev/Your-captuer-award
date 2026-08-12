@@ -183,12 +183,19 @@ const getStates = async (userId:string)=>{
         throw new ApiError(httpStatus.NOT_FOUND, "user not found")
     }
 
-    const userStates = await prisma.user.findUnique({where:{id:userId},select:{_count:{select:{likes:{where:{photo:{userId}}}, userPhotos:true, }}}})
+    const userPhotoCount = await prisma.userPhoto.count({ where: { userId } })
+    const likesCount = await prisma.like.count({ where: { photo: { userId } } })
     const achievementsCount = await achievementService.getAchievementCount(userId)
     const followerCount = await followService.getFollowerCount(userId)
     const followingCount = await followService.getFollowingCount(userId)
 
-    return {...userStates?._count, follower:followerCount, following:followingCount, achievements: achievementsCount.total}
+    return {
+        likes: likesCount,
+        userPhotos: userPhotoCount,
+        follower: followerCount,
+        following: followingCount,
+        achievements: achievementsCount.total,
+    }
 }
 
 const isFollowedByViewer = async (targetUserId:string, viewerId?:string)=>{
