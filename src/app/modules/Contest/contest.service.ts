@@ -9,6 +9,7 @@ import { ContestRuleConfigInput } from './ContestRules/contestRules.type';
 import { profileService } from '../Profile/profile.service';
 import agenda from '../Agenda';
 import { validateContestDate } from '../../../helpers/validateDate';
+import { getTeammateUserIds } from '../../../helpers/teammate.helper';
 import { userStoreService } from '../User/UserStore/userStore.service';
 import { voteService } from '../Vote/vote.service';
 import { getVoteWeight } from '../Vote/voteWeight.service';
@@ -1016,19 +1017,31 @@ const getContestUploadsToVote = async (userId:string, contestId:string)=> {
         throw new ApiError(httpstatus.NOT_FOUND, "user is not in the participation list")
     }
 
+    const teammateUserIds = await getTeammateUserIds(userId)
+    const excludedUserIds = [userId, ...teammateUserIds]
 
-    const contestUploads = await prisma.contestPhoto.findMany({where:{contestId, participant:{NOT:{userId}}, votes:{none:{providerId:participant.userId}}}, include:{photo:{select:{id:true, url:true}}}})
+    const contestUploads = await prisma.contestPhoto.findMany({where:{contestId, participant:{userId:{notIn:excludedUserIds}}, votes:{none:{providerId:participant.userId}}}, include:{photo:{select:{id:true, url:true}}}})
 
     if(contest.status === ContestStatus.ACTIVE){
         contestUploads.sort((a: ContestPhoto, b: ContestPhoto) => {
-            
+
             if (a.promoted && !b.promoted) return -1;
             if (!a.promoted && b.promoted) return 1;
-            
+
             return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
         })
     }
-    return contestUploads.flatMap(upload => upload.photo ? [{url:upload.photo.url, id:upload.id}] : [])
+    return Promise.all(contestUploads.flatMap(upload => {
+        if(!upload.photo){
+            return []
+        }
+        const photo = upload.photo
+        return [async () => {
+            const voteCount = await voteService.getVoteCount(upload.id)
+
+            return {id:upload.id, url:photo.url, voteCount}
+        }]
+    }).map(getUpload => getUpload()))
 }
 
 
@@ -1080,10 +1093,10 @@ const getContestUploads = async (userId:string,contestId:string)=>{
 
     if(contest.status === ContestStatus.ACTIVE){
         contestUploads.sort((a: ContestPhoto, b: ContestPhoto) => {
-            
+
             if (a.promoted && !b.promoted) return -1;
             if (!a.promoted && b.promoted) return 1;
-            
+
             return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
         })
     }
@@ -1100,7 +1113,7 @@ const getContestUploads = async (userId:string,contestId:string)=>{
     }).map(getUpload => getUpload()))
 
     return uploads
-}   
+}
 
 
 
@@ -1565,7 +1578,7 @@ const getContestPhotosSortedByVote = async (contestId:string, page?:number, limi
                 userPhotoId:upload.photo.id,
                 url:upload.photo.url,
                 title:upload.photo.title,
-                voteCount:photo.score,
+                voteCount:photo.voteCount,
                 rank:photo.rank,
                 photographer:upload.participant.user
             }
@@ -1597,7 +1610,7 @@ const getContestTopPhotographers =  async (contestId:string, currentUserId:strin
         }
     })
     const participantById = new Map(contestParticipants.map(participant => [participant.id,participant]))
-    const photoScoreById = new Map(ranking.photos.map(photo => [photo.photoId,photo.score]))
+    const photoVoteCountById = new Map(ranking.photos.map(photo => [photo.photoId,photo.voteCount]))
     const participantWithVote = ranking.photographers.flatMap(photographer => {
         const participant = participantById.get(photographer.participantId)
         if(!participant){
@@ -1613,13 +1626,13 @@ const getContestTopPhotographers =  async (contestId:string, currentUserId:strin
                 userPhotoId:photo.photo.id,
                 url:photo.photo.url,
                 title:photo.photo.title,
-                voteCount:photoScoreById.get(photo.id) || 0
+                voteCount:photoVoteCountById.get(photo.id) || 0
             }] : []).sort((a,b) => b.voteCount - a.voteCount),
-            totalVotes:photographer.score
+            totalVotes:photographer.voteCount
         }]
     })
 
-    const contesttotalVotes = ranking.photographers.reduce((total, participant) => total + participant.score, 0)
+    const contesttotalVotes = ranking.photographers.reduce((total, participant) => total + participant.voteCount, 0)
     const followingIds = await getFollowedUserIds(currentUserId, participantWithVote.map(participant => participant.user.id))
     const sortedParticipant = participantWithVote
         .filter(participant => participant.level === activeLevel)

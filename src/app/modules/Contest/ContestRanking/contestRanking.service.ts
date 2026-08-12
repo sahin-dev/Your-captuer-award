@@ -14,6 +14,7 @@ export type RankedPhoto = {
   participantId: string;
   userId: string;
   score: number;
+  voteCount: number;
   rank: number;
   createdAt: Date;
   tieBreakKey: string;
@@ -23,6 +24,7 @@ export type RankedPhotographer = {
   participantId: string;
   userId: string;
   score: number;
+  voteCount: number;
   rank: number;
   level: YCLevel;
   createdAt: Date;
@@ -93,8 +95,10 @@ const buildContestRanking = async (contestId: string): Promise<ContestRanking> =
   ]);
 
   const voteScoreByPhoto = new Map<string, number>();
+  const voteCountByPhoto = new Map<string, number>();
   votes.forEach((vote) => {
     voteScoreByPhoto.set(vote.photoId, (voteScoreByPhoto.get(vote.photoId) || 0) + getVoteWeight(vote));
+    voteCountByPhoto.set(vote.photoId, (voteCountByPhoto.get(vote.photoId) || 0) + 1);
   });
 
   const photos = participants
@@ -104,6 +108,8 @@ const buildContestRanking = async (contestId: string): Promise<ContestRanking> =
       participantId: participant.id,
       userId: participant.userId,
       score: (voteScoreByPhoto.get(photo.id) || 0) + (photo.initialVotes || 0),
+      // Raw vote count for display, independent of each voter's weight.
+      voteCount: (voteCountByPhoto.get(photo.id) || 0) + (photo.initialVotes || 0),
       createdAt: photo.createdAt,
       tieBreakKey: photo.id,
     })))
@@ -111,10 +117,15 @@ const buildContestRanking = async (contestId: string): Promise<ContestRanking> =
     .map((photo, index) => ({ ...photo, rank: index + 1 }));
 
   const photoScoreByParticipant = new Map<string, number>();
+  const photoVoteCountByParticipant = new Map<string, number>();
   photos.forEach((photo) => {
     photoScoreByParticipant.set(
       photo.participantId,
       (photoScoreByParticipant.get(photo.participantId) || 0) + photo.score
+    );
+    photoVoteCountByParticipant.set(
+      photo.participantId,
+      (photoVoteCountByParticipant.get(photo.participantId) || 0) + photo.voteCount
     );
   });
 
@@ -122,10 +133,12 @@ const buildContestRanking = async (contestId: string): Promise<ContestRanking> =
     .filter((participant) => participant.photos.length > 0)
     .map((participant) => {
       const score = photoScoreByParticipant.get(participant.id) || 0;
+      const voteCount = photoVoteCountByParticipant.get(participant.id) || 0;
       return {
         participantId: participant.id,
         userId: participant.userId,
         score,
+        voteCount,
         level: getContestLevelForScore(score, levelRequirements),
         createdAt: participant.createdAt,
         tieBreakKey: participant.id,

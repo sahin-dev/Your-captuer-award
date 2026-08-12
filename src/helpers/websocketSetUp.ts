@@ -14,6 +14,10 @@ type Message = { event: string; token?: string; teamId?: string; message?: strin
 export const onlineUsers = new Set<string>();
 export const userSockets = new Map<string, AuthenticatedSocket>();
 
+// Tracks every open socket connection (authenticated or not) so we can report
+// how many visitors are currently browsing the site, not just logged-in users.
+export const connectedSocketIds = new Set<string>();
+
 // Global io instance for use in other services
 let ioInstance: SocketIOServer | null = null;
 
@@ -33,6 +37,7 @@ export function setupWebSocket(server: HTTPServer) {
   io.on("connection", (socket: AuthenticatedSocket) => {
     console.log("A user connected:", socket.id);
     socket.teamIds = new Set();
+    connectedSocketIds.add(socket.id);
 
     socket.on("authenticate", async (token: string, callback) => {
       try {
@@ -211,6 +216,8 @@ export function setupWebSocket(server: HTTPServer) {
 
     socket.on("disconnect", async () => {
       try {
+        connectedSocketIds.delete(socket.id);
+
         if (socket.userId) {
           // Notify teams that user disconnected
           socket.teamIds?.forEach((teamId) => {
@@ -247,6 +254,14 @@ export function setupWebSocket(server: HTTPServer) {
  */
 export function getIO(): SocketIOServer | null {
   return ioInstance;
+}
+
+/**
+ * Number of visitors currently browsing the site (open socket connections,
+ * authenticated or anonymous).
+ */
+export function getOnlineCount(): number {
+  return connectedSocketIds.size;
 }
 
 // Export io for direct import in other modules

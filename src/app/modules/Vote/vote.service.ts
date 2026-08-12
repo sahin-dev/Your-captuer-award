@@ -7,7 +7,7 @@ import Events from '../../event/events.constant'
 import { ObjectId } from 'mongodb'
 import { levelService } from '../Level/level.service'
 import { contestRuleEngine } from '../Contest/ContestRules/contestRule.engine'
-import { sumVoteWeight } from './voteWeight.service'
+import { getVoteWeightStats } from './voteWeight.service'
 import { contestProgressService } from '../Contest/ContestProgress/contestProgress.service'
 
 const getVoteType = async (photoId:string)=>{
@@ -87,15 +87,15 @@ export const addVotes = async (userId:string,contestId:string, photoIds:string[]
 
 export const getVoteCount = async (photoId:string)=>{
 
-    const votesCount = await sumVoteWeight({photoId})
+    const { count } = await getVoteWeightStats({photoId})
 
-    return votesCount
+    return count
 }
 
 const getUserPhotoVoteCount = async (userPhotoId:string) => {
-    const votesCount = await sumVoteWeight({photo:{photoId:userPhotoId}})
+    const { count } = await getVoteWeightStats({photo:{photoId:userPhotoId}})
 
-    return votesCount
+    return count
 }
 
 
@@ -108,35 +108,35 @@ export const getVoteUsers = async (photoId:string)=>{
 
 
 const getTotalPromotedVotes = async (userId:string)=>{
-    const totalPromotedVotes = await sumVoteWeight({photo:{participant:{userId}}, type:VoteType.Promoted})
+    const { count } = await getVoteWeightStats({photo:{participant:{userId}}, type:VoteType.Promoted})
 
-    return totalPromotedVotes
+    return count
 }
 
 const getTotalOrganicVotes = async (userId:string)=>{
-    const totalOrganicVotes = await sumVoteWeight({photo:{participant:{userId}}, type:VoteType.Organic})
+    const { count } = await getVoteWeightStats({photo:{participant:{userId}}, type:VoteType.Organic})
 
-    return totalOrganicVotes
+    return count
 }
 
 const getTeamTotalVotes = async (contestId:string , teamId:string) => {
 
-    const votes = await sumVoteWeight({contestId, photo:{photo:{user:{joinedTeam:{id:teamId}}}}})
+    const { count } = await getVoteWeightStats({contestId, photo:{photo:{user:{joinedTeam:{id:teamId}}}}})
 
-    return votes
+    return count
 }
 
 const getUserTotalVotes = async (userId:string) => {
 
-    const totalVote = await sumVoteWeight({photo:{participant:{userId}}})
+    const { count } = await getVoteWeightStats({photo:{participant:{userId}}})
 
-    return totalVote
+    return count
 }
 
 const getUserContestSpecificVote = async (contestId:string, userId:string) => {
-    const totalVote = await sumVoteWeight({contestId,photo:{participant:{userId}}})
+    const { count } = await getVoteWeightStats({contestId,photo:{participant:{userId}}})
 
-    return totalVote
+    return count
 }
 
 const getParticipantTotalVotes = async (photos:{id:string, url:string}[])=>{
@@ -154,16 +154,16 @@ const getParticipantTotalVotes = async (photos:{id:string, url:string}[])=>{
 }
 
 const totalVotesOfParticipant = async (participantId:string, contestId:string)=> {
-    const totalVotes = await sumVoteWeight({contestId, photo:{participantId}})
+    const { count } = await getVoteWeightStats({contestId, photo:{participantId}})
 
-    return totalVotes
+    return count
 }
 
 
 const getContestTotalVotes = async (contestId:string)=> {
-    const votes = await sumVoteWeight({contestId})
+    const { count } = await getVoteWeightStats({contestId})
 
-    return votes
+    return count
 }
 export const voteService = {
     getTotalPromotedVotes,

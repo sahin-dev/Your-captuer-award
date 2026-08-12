@@ -10,6 +10,7 @@ import {
 } from "./contestRule.definitions";
 import { contestRuleService } from "./contestRules.service";
 import { imageSize } from "image-size";
+import { getTeammateUserIds } from "../../../../helpers/teammate.helper";
 
 type LegacySubmissionRulesValue = {
   allowAiImages?: boolean;
@@ -324,8 +325,13 @@ const validateVotingRules = async (
     throw new ApiError(httpStatus.NOT_FOUND, "Contest photo not found");
   }
 
-  if (voting?.disallowSelfVote && contestPhoto.participant.userId === userId) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "You are not allowed to vote yourself");
+  if (contestPhoto.participant.userId === userId) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "You are not allowed to vote on your own photo");
+  }
+
+  const teammateUserIds = await getTeammateUserIds(userId);
+  if (teammateUserIds.includes(contestPhoto.participant.userId)) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "You are not allowed to vote on your teammate's photo");
   }
 
   return { voterParticipant };

@@ -20,6 +20,7 @@ import { dashboardRoutes } from "../modules/Dashboard/dashboard.route";
 import { prizeRoutes } from "../modules/Prize/prize.route";
 import { recurringContestRoutes } from "../modules/RecurringContest/recurringContest.route";
 import { supportRoutes } from "../modules/Support/support.route";
+import { statsRoutes } from "../modules/Stats/stats.route";
 
 
 
@@ -46,7 +47,8 @@ const moduleRoutes = [
     {path:"/dashboard", route:dashboardRoutes},
     {path:"/prizes", route:prizeRoutes},
     {path:"/recurring-contests", route:recurringContestRoutes},
-    {path:"/support", route:supportRoutes}
+    {path:"/support", route:supportRoutes},
+    {path:"/stats", route:statsRoutes}
 
 ]
 
