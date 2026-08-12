@@ -184,10 +184,8 @@ const getStates = async (userId:string)=>{
     }
 
     const userPhotoCount = await prisma.userPhoto.count({ where: { userId } })
-    const photoIds = (await prisma.userPhoto.findMany({ where: { userId }, select: { id: true } })).map(photo => photo.id)
-    const likesCount = photoIds.length > 0
-        ? await prisma.like.count({ where: { photoId: { in: photoIds } } })
-        : 0
+
+    const likesCount = await prisma.like.count({ where: { providerId:userId } })
     const achievementsCount = await achievementService.getAchievementCount(userId)
     const followerCount = await followService.getFollowerCount(userId)
     const followingCount = await followService.getFollowingCount(userId)
