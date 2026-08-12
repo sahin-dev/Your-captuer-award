@@ -233,7 +233,11 @@ const getUserPhotoDetails = async (userId:string, photoId:string, viewerId?:stri
     const achievememnts = await achievementService.getPhotoAchievements(photoId)
     const isLiked = viewerId ? (await prisma.like.findFirst({where:{providerId:viewerId, photoId}})) != null : false
 
-    return {photo, votes, comments, achievememnts, isLiked}
+    // include likes count for the photo
+    const likesCount = await prisma.like.count({ where: { photoId: photo.id } })
+    const photoWithLikes = { ...photo, likes: likesCount }
+
+    return { photo: photoWithLikes, votes, comments, achievememnts, isLiked }
 }
 
 const getPublicPhotoDetails = async (targetUserId:string, photoId:string, viewerId?:string) => {
@@ -248,7 +252,11 @@ const getPublicPhotoDetails = async (targetUserId:string, photoId:string, viewer
     const isLiked = viewerId ? (await prisma.like.findFirst({where:{providerId:viewerId, photoId}})) != null : false
     const isFollowed = await isFollowedByViewer(photo.userId, viewerId)
 
-    return {photo, votes, comments, achievememnts, isLiked, isFollowed}
+    // include likes count for public photo
+    const likesCount = await prisma.like.count({ where: { photoId: photo.id } })
+    const photoWithLikes = { ...photo, likes: likesCount }
+
+    return { photo: photoWithLikes, votes, comments, achievememnts, isLiked, isFollowed }
 }
 
 const deleteUserPhoto = async (userId:string, photoId:string)=> {
