@@ -306,16 +306,12 @@ agenda.define("exposure:watcher", async (job:Job) => {
     const contestPhoto = await prisma.contestPhoto.findUnique({where:{id:contestPhotoId},include:{participant:true}})
     if(!contestPhoto){
         console.log("photo not found")
-        await agenda.cancel({name: "exposure:watcher"})
+        await agenda.cancel({name: "exposure:watcher", "data.contestPhotoId": contestPhotoId})
         return
     }
 
-    const updatedBonus = contestPhoto.participant.exposure_bonus - 10
-    await prisma.contestParticipant.update({where:{id:contestPhoto.participant.id}, data:{exposure_bonus:updatedBonus < 0? 0: updatedBonus}})
-
-     if(updatedBonus <= 0){
-        await agenda.cancel({name: "exposure:watcher"})
-    }
+    const updatedBonus = Math.max(0, contestPhoto.participant.exposure_bonus - 10)
+    await prisma.contestParticipant.update({where:{id:contestPhoto.participant.id}, data:{exposure_bonus:updatedBonus}})
 })
 
 
