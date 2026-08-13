@@ -7,6 +7,14 @@ import { contestRuleEngine } from "../ContestRules/contestRule.engine";
 import { LevelRequirementValue } from "../ContestRules/contestRule.definitions";
 
 export const CONTEST_SCORING_VERSION = 1;
+const UPDATE_BATCH_SIZE = 25;
+
+const updateInBatches = async <T>(items: T[], update: (item: T) => Promise<unknown>, batchSize = UPDATE_BATCH_SIZE) => {
+  for (let index = 0; index < items.length; index += batchSize) {
+    const batch = items.slice(index, index + batchSize);
+    await Promise.all(batch.map(update));
+  }
+};
 
 export type RankedPhoto = {
   photoId: string;
@@ -185,16 +193,19 @@ const persistContestRanking = async (tx: Prisma.TransactionClient, ranking: Cont
     await tx.contestRankingResult.createMany({ data: [...photoResults, ...photographerResults] });
   }
 
-  await Promise.all(ranking.photographers.map((photographer) =>
-    tx.contestParticipant.update({
+  await updateInBatches(ranking.photographers, async (photographer) => {
+    await tx.contestParticipant.update({
       where: { id: photographer.participantId },
       data: { rank: photographer.rank, level: photographer.level },
-    })
-  ));
+    });
+  });
 
-  await Promise.all(ranking.photos.map((photo) =>
-    tx.contestPhoto.update({ where: { id: photo.photoId }, data: { rank: photo.rank } })
-  ));
+  await updateInBatches(ranking.photos, async (photo) => {
+    await tx.contestPhoto.update({
+      where: { id: photo.photoId },
+      data: { rank: photo.rank },
+    });
+  });
 };
 
 const getPersistedContestRanking = async (contestId: string, scope: ContestRankingScope) => {

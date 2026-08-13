@@ -369,7 +369,10 @@ const finalizeContest = async (contestId: string) => {
       }),
     ]);
 
-    await prisma.$transaction((tx) => contestRankingService.persistContestRanking(tx, ranking));
+    await prisma.$transaction(
+      (tx) => contestRankingService.persistContestRanking(tx, ranking),
+      { timeout: 30000, maxWait: 30000 }
+    );
 
     const candidates = [
       ...buildAwardGrants(contestId, awards, ranking, selections),
