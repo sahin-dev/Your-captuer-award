@@ -376,19 +376,6 @@ const getContestPrizes = catchAsync(async (req:Request, res:Response) => {
     })
 })
 
-const getContestYCTopPicks = catchAsync(async (req:Request, res:Response)=> {
-
-    const {contestId} = req.params
-    const {page = "1", limit = "20"} = req.query as {page:string, limit:string}
-    const photos = await contestService.getContestYCTopPicks(contestId, Number(page), Number(limit))
-
-    sendResponse(res, {
-        statusCode:200,
-        success:true,
-        message:'yc top picks fetched successfully',
-        data:photos
-    })
-})
 export const contestController = {
     createContest,
     getCreateOptions,
@@ -411,7 +398,6 @@ export const contestController = {
     deleteContestPhoto,
     getContestPhotosSortedByVote,
     getContestPhotographers,
-    getContestYCTopPicks,
     selectAwardPhoto,
     getAwardSelections,
     getUploadedPhotosToVote,

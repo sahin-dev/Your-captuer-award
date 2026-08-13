@@ -257,11 +257,10 @@ test("all seeded prize definitions are exposed as contest prize choices", () => 
         rankLimit: definition.rankLimit,
     }));
 
-    assert.equal(prizeChoices.length, 12);
+    assert.equal(prizeChoices.length, 11);
     assert.ok(prizeChoices.some((prize) => prize.category === "TOP_PHOTO" && prize.type === "TOP_PHOTO"));
     assert.ok(prizeChoices.some((prize) => prize.category === "TOP_PHOTOGRAPHER" && prize.type === "TOP_PHOTOGRAPHER"));
     assert.ok(prizeChoices.some((prize) => prize.category === "WINNER" && prize.type === "WINNER"));
-    assert.ok(prizeChoices.some((prize) => prize.category === "YC_PICK" && prize.type === "YC_PICK"));
 
     for (const rankLimit of [10, 20, 50, 100]) {
         assert.ok(prizeChoices.some((prize) => prize.type === "TOP_RANK" && prize.target === "PHOTO" && prize.rankLimit === rankLimit));

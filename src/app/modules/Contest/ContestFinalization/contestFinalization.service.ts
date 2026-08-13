@@ -137,21 +137,6 @@ const awardRecipients = (award: AwardConfig, ranking: ContestRanking, selections
       : ranking.photographers.filter((photographer) => photographer.rank <= (identity.rankLimit || 0));
   }
 
-  if (identity.type === AwardType.YC_PICK) {
-    const slotKey = award.slotKey || getAwardSlotKey(identity);
-    const selection = selections.find((item) => item.slotKey === slotKey);
-    if (!selection) {
-      throw new Error("YC_PICK requires an admin-selected contest photo before finalization");
-    }
-
-    const selectedPhoto = ranking.photos.find((photo) => photo.photoId === selection.photoId);
-    if (!selectedPhoto) {
-      throw new Error("The selected YC_PICK photo is not eligible for this contest");
-    }
-
-    return [selectedPhoto];
-  }
-
   if (identity.type === AwardType.TOP_PHOTO) {
     return ranking.photos.slice(0, 1);
   }
@@ -309,13 +294,13 @@ const processGrant = async (grantId: string) => {
               key: grant.keyReward,
               boost: grant.boostReward,
               swap: grant.swapReward,
-              coin: grant.coinReward,
+              coins: grant.coinReward,
             },
             update: {
               key: { increment: grant.keyReward },
               boost: { increment: grant.boostReward },
               swap: { increment: grant.swapReward },
-              coin: { increment: grant.coinReward },
+              coins: { increment: grant.coinReward },
             },
           });
         }
@@ -466,8 +451,8 @@ const selectAwardPhoto = async (
   }
 
   const identity = normalizeAwardIdentity(award);
-  if (identity.type !== AwardType.YC_PICK) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "Only YC_PICK prizes support manual photo selection");
+  if (identity.type !== AwardType.TOP_PHOTO && identity.type !== AwardType.TOP_PHOTOGRAPHER) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "This award type does not support manual photo selection");
   }
 
   const photo = await prisma.contestPhoto.findFirst({

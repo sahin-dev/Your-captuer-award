@@ -55,7 +55,6 @@ export const LEVEL_RULES: LevelRule[] = [
         receivedVotes: 20000,
         promotedVotes: 1500,
         badges: [
-            { categories: [PrizeType.YC_PICK], required: 5 },
             { categories: [PrizeType.TOP_100_PHOTO, PrizeType.TOP_100_PHOTOGRAPHER], required: 1 },
         ],
     },

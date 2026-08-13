@@ -53,8 +53,8 @@ const chargeContestEntryFee = async (
     }
 
     const charged = await tx.userStore.updateMany({
-        where:{userId, coin:{gte:contest.entryFeeCoins}},
-        data:{coin:{decrement:contest.entryFeeCoins}}
+        where:{userId, coins:{gte:contest.entryFeeCoins}},
+        data:{coins:{decrement:contest.entryFeeCoins}}
     })
     if(charged.count !== 1){
         throw new ApiError(httpstatus.PAYMENT_REQUIRED, "Insufficient coins to enter this contest")
@@ -778,7 +778,7 @@ const getContestsByStatus = async (userId:string,status: ContestStatus) => {
     if(status === ContestStatus.CLOSED){
 
         const contests = await prisma.contest.findMany({
-            where:{status, participants:{none:{userId}}},
+            where:{status: ContestStatus.COMPLETED, participants:{none:{userId}}},
             include: { creator: contestListCreatorInclude },
             orderBy:{startDate:"desc"}
         });
@@ -1657,65 +1657,6 @@ const getContestTopPhotographers =  async (contestId:string, currentUserId:strin
 
 }
 
-const getContestYCTopPicks = async (contestId:string, page?:number, limit?:number) => {
-    const contest = await prisma.contest.findUnique({where:{id:contestId}})
-
-    if(!contest){
-        throw new ApiError(httpstatus.NOT_FOUND, "contest not found")
-    }
-
-    const ycPickAchievements = await prisma.contestAchievement.findMany({
-        where:{contestId, category:prizeTypes.YC_PICK, photoId:{not:null}},
-        include:{
-            photo:{
-                include:{
-                    photo:{select:{id:true, url:true, title:true}},
-                    participant:{include:{user:{select:{id:true, avatar:true, country:true, fullName:true, username:true}}}}
-                }
-            }
-        }
-    })
-
-    if(ycPickAchievements.length <= 0){
-        const rankedPhotos = await getContestPhotosSortedByVote(contestId, page, limit)
-        return {
-            ...rankedPhotos,
-            selectionType:'VOTE_RANKED_FALLBACK'
-        }
-    }
-
-    const ycPicks = await Promise.all(ycPickAchievements.map(async achievement => {
-        if(!achievement.photo || !achievement.photo.photo){
-            return null
-        }
-
-        const voteCount = await getContestPhotoVoteScore(achievement.photo)
-
-        return {
-            contestPhotoId:achievement.photo.id,
-            userPhotoId:achievement.photo.photo.id,
-            url:achievement.photo.photo.url,
-            title:achievement.photo.photo.title,
-            voteCount,
-            photographer:achievement.photo.participant.user,
-            pickedAt:achievement.createdAt
-        }
-    }))
-
-    const sortedPicks = ycPicks
-        .filter((pick): pick is NonNullable<typeof pick> => Boolean(pick))
-        .sort((a,b) => b.voteCount - a.voteCount)
-        .map((pick, idx) => ({rank:idx + 1, ...pick}))
-
-    const paginatedPicks = paginateRankedData(sortedPicks, page, limit)
-
-    return {
-        selectionType:'YC_PICK',
-        photos:paginatedPicks.data,
-        meta:paginatedPicks.meta
-    }
-}
-
 const getContestPhotoCount = async (contestId:string) => {
     const photoCount = await prisma.contestPhoto.count({where:{contestId:contestId}})
 
@@ -1753,7 +1694,6 @@ export const contestService = {
     deleteContestUploadById,
     getContestPhotosSortedByVote,
     getContestTopPhotographers,
-    getContestYCTopPicks,
     getContestByUserId,
     getContestUploadsToVote,
     getContestPhotoCount,

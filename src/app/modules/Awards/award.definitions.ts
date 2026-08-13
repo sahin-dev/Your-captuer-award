@@ -12,7 +12,6 @@ export const prizeTypes = {
   TALENTED: "TALENTED",
   SUPREME: "SUPREME",
   SUPERIOR: "SUPERIOR",
-  YC_PICK: "YC_PICK",
   TOP_100_PHOTO: "TOP_100_PHOTO",
   TOP_100_PHOTOGRAPHER: "TOP_100_PHOTOGRAPHER",
   TOP_50_PHOTO: "TOP_50_PHOTO",
@@ -30,7 +29,6 @@ export const awardTypes = {
   TOP_PHOTO: "TOP_PHOTO",
   TOP_PHOTOGRAPHER: "TOP_PHOTOGRAPHER",
   WINNER: "WINNER",
-  YC_PICK: "YC_PICK",
 } as const satisfies Record<AwardType, AwardType>;
 
 export const awardTargets = {
@@ -148,14 +146,13 @@ const categoryFromAward = (type: AwardType, rankLimit: number | null, target: Aw
     [awardTypes.TOP_PHOTO]: prizeTypes.TOP_PHOTO,
     [awardTypes.TOP_PHOTOGRAPHER]: prizeTypes.TOP_PHOTOGRAPHER,
     [awardTypes.WINNER]: prizeTypes.WINNER,
-    [awardTypes.YC_PICK]: prizeTypes.YC_PICK,
   };
 
   return categoryMap[type as Exclude<AwardType, typeof awardTypes.TOP_RANK>];
 };
 
 const defaultTargetForType = (type: AwardType) => {
-  if (type === awardTypes.TOP_PHOTO || type === awardTypes.YC_PICK) {
+  if (type === awardTypes.TOP_PHOTO) {
     return awardTargets.PHOTO;
   }
 
@@ -220,12 +217,6 @@ export const normalizeAwardIdentity = (input: AwardIdentityInput): AwardIdentity
       category: prizeTypes.WINNER,
       type: awardTypes.WINNER,
       target: awardTargets.PHOTOGRAPHER,
-      rankLimit: null,
-    },
-    [prizeTypes.YC_PICK]: {
-      category: prizeTypes.YC_PICK,
-      type: awardTypes.YC_PICK,
-      target: awardTargets.PHOTO,
       rankLimit: null,
     },
   };

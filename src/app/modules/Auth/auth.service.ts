@@ -58,7 +58,7 @@ export const handleRegister = async (body:UserRegistrationData)=>{
         //     }
         
         //create user store for every user register
-       await tx.userStore.create({data:{userId:user.id, key:0, boost:0, swap:0, coin:0}})
+       await tx.userStore.create({data:{userId:user.id, key:0, boost:0, swap:0, coins:0}})
 
         return user
     })

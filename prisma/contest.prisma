@@ -465,7 +465,6 @@ enum PrizeType {
   TALENTED
   SUPREME
   SUPERIOR
-  YC_PICK
   TOP_100_PHOTO
   TOP_100_PHOTOGRAPHER
   TOP_50_PHOTO
@@ -483,7 +482,6 @@ enum AwardType {
   TOP_PHOTO
   TOP_PHOTOGRAPHER
   WINNER
-  YC_PICK
 }
 
 enum AwardTarget {

@@ -25,7 +25,8 @@ const addStoreData = async (userId: string, data: {key:number, boost:number, swa
         userId,
         boost: data.boost || 0,
         key: data.key || 0,
-        swap: data.swap || 0
+        swap: data.swap || 0,
+        coins: 0
       }
     });
     return newStore;
@@ -44,7 +45,8 @@ const updateStoreData = async (userId: string, data: Partial<UserStore>) => {
       data:{
         boost: {increment:(data.boost || 0)},
         swap: {increment:(data.swap || 0)},
-        key: {increment: (data.key || 0)}    
+        key: {increment: (data.key || 0)},
+        coins: data.coins ? { increment: data.coins } : undefined
       }
     });
 
