@@ -45,7 +45,7 @@ const achievementBadgeImages: Record<PrizeType, string> = {
 const profileAchievementCatalog: ProfileAchievementBadgeDefinition[] = [
     { id: prizeTypes.TOP_PHOTO, category: prizeTypes.TOP_PHOTO, title: "Top Photo", imageUrl: achievementBadgeImages.TOP_PHOTO, group: "ultimate", order: 10 },
     { id: prizeTypes.TOP_PHOTOGRAPHER, category: prizeTypes.TOP_PHOTOGRAPHER, title: "Top Photographer", imageUrl: achievementBadgeImages.TOP_PHOTOGRAPHER, group: "ultimate", order: 20 },
-    { id: prizeTypes.WINNER, category: prizeTypes.WINNER, title: "Winner", imageUrl: achievementBadgeImages.WINNER, group: "ultimate", order: 30 },
+    // { id: prizeTypes.WINNER, category: prizeTypes.WINNER, title: "Winner", imageUrl: achievementBadgeImages.WINNER, group: "ultimate", order: 30 },
     { id: prizeTypes.TOP_10_PHOTO, category: prizeTypes.TOP_10_PHOTO, title: "Top 10 Photos", imageUrl: achievementBadgeImages.TOP_10_PHOTO, group: "ranking", order: 50 },
     { id: prizeTypes.TOP_10_PHOTOGRAPHER, category: prizeTypes.TOP_10_PHOTOGRAPHER, title: "Top 10 Photographers", imageUrl: achievementBadgeImages.TOP_10_PHOTOGRAPHER, group: "ranking", order: 60 },
     { id: prizeTypes.TOP_20_PHOTO, category: prizeTypes.TOP_20_PHOTO, title: "Top 20 Photos", imageUrl: achievementBadgeImages.TOP_20_PHOTO, group: "ranking", order: 70 },
