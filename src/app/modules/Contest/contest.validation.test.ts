@@ -5,6 +5,8 @@ import { contestRuleInputArraySchema } from "./ContestRules/contestRule.validati
 import { contestRuleKeys, getContestRuleDefinitionViews } from "./ContestRules/contestRule.definitions";
 import { contestPrizeInputArraySchema } from "../Prize/prize.validation";
 import { defaultPrizeDefinitions } from "../Prize/prize.definitions";
+import { prizeService } from "../Prize/prize.service";
+import prisma from "../../../shared/prisma";
 
 const futureDate = (hours:number) => new Date(Date.now() + hours * 60 * 60 * 1000).toISOString();
 
@@ -274,6 +276,53 @@ test("only Top Photo and Top Photographer are catalog defaults", () => {
         .map((definition) => definition.category);
 
     assert.deepEqual(defaults, ["TOP_PHOTO", "TOP_PHOTOGRAPHER"]);
+});
+
+test("contest prize definitions skip malformed prize rows instead of crashing the UI", async () => {
+    const originalFindMany = prisma.prize.findMany as any;
+
+    (prisma.prize as any).findMany = async () => [
+        {
+            id: "bad-top-rank",
+            category: "TOP_PHOTO",
+            type: "TOP_PHOTO",
+            target: "PHOTOGRAPHER",
+            rankLimit: null,
+            title: "Invalid top rank",
+            description: "Broken data",
+            boost: 0,
+            swap: 0,
+            key: 0,
+            coin: 0,
+            isDefault: false,
+            isActive: true,
+            order: 1,
+        },
+        {
+            id: "valid-prize",
+            category: "TOP_PHOTO",
+            type: "TOP_PHOTO",
+            target: "PHOTO",
+            rankLimit: null,
+            title: "Top Photo",
+            description: "Awarded to the highest-ranked photo",
+            boost: 10,
+            swap: 1,
+            key: 1,
+            coin: 500,
+            isDefault: true,
+            isActive: true,
+            order: 10,
+        },
+    ] as any;
+
+    try {
+        const definitions = await prizeService.getContestPrizeDefinitions();
+        assert.equal(definitions.length, 1);
+        assert.equal(definitions[0].prizeId, "valid-prize");
+    } finally {
+        (prisma.prize as any).findMany = originalFindMany;
+    }
 });
 
 test("contest updates cannot bypass the writable-field contract", () => {

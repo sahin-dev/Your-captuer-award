@@ -38,7 +38,14 @@ const config =  {
     reset_pass_link: process.env.RESET_PASS_LINK,
     emailSender: {
         email: process.env.EMAIL,
-        app_pass: process.env.APP_PASS
+        app_pass: process.env.APP_PASS,
+    },
+    smtp: {
+        host: process.env.SMTP_HOST || "smtp.gmail.com",
+        port: Number(process.env.SMTP_PORT || 587),
+        secure: process.env.SMTP_SECURE === "true",
+        user: process.env.SMTP_USER || process.env.EMAIL,
+        pass: process.env.SMTP_PASS || process.env.APP_PASS,
     },
     cloud:[{
         provider:"digitalOcean",

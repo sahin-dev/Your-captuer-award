@@ -242,13 +242,17 @@ const forgetPassword = async ( email:string)=>{
       <p>If you did not request this, please contact our support team immediately.</p>
     </div>`
 
-    setImmediate(() => {
-      mailer(email, html, "Your Capture Award")
-        .then((info) => console.log("Forget password email queued", info?.messageId))
-        .catch((error) => console.error("Forget password email send failed:", error));
-    });
+try {
+        await mailer(email, html, "Your Capture Award");
+    } catch (error) {
+        console.error("Forget password email send failed:", error);
+        throw new ApiError(
+            httpstatus.SERVICE_UNAVAILABLE,
+            "Unable to send password reset email right now. Please try again later."
+        );
+    }
 
-    return `Otp send successfully `
+    return "Otp send successfully"
 }
 
 const verifyOtp = async (email:string, otp:string)=>{

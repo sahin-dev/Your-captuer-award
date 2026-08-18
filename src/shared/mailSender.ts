@@ -2,27 +2,33 @@ import nodemailer from "nodemailer";
 import config from "../config";
 
 const mailer = async (email: string, html: string, subject: string) => {
-  if (!config.emailSender.email || !config.emailSender.app_pass) {
-    throw new Error("Email sender configuration is missing EMAIL or APP_PASS")
+  const smtpUser = config.smtp?.user || config.emailSender.email;
+  const smtpPass = config.smtp?.pass || config.emailSender.app_pass;
+
+  if (!smtpUser || !smtpPass) {
+    throw new Error("Email sender configuration is missing SMTP_USER/EMAIL or SMTP_PASS/APP_PASS");
   }
 
   const transporter = nodemailer.createTransport({
-    host: "smtp.gmail.com",
-    port: 587,
-    secure: false, 
+    host: config.smtp?.host || "smtp.gmail.com",
+    port: Number(config.smtp?.port || 587),
+    secure: Boolean(config.smtp?.secure ?? false),
     auth: {
-      user: config.emailSender.email,
-      pass: config.emailSender.app_pass,
+      user: smtpUser,
+      pass: smtpPass,
     },
-    connectionTimeout: 10000,
-    greetingTimeout: 10000,
-    socketTimeout: 10000,
+    connectionTimeout: 30000,
+    greetingTimeout: 30000,
+    socketTimeout: 30000,
+    tls: {
+      rejectUnauthorized: false,
+    },
   });
 
   const info = await transporter.sendMail({
-    from: `"Your Capture Award" <${config.emailSender.email}>`,
+    from: `"Your Capture Award" <${smtpUser}>`,
     to: email,
-    subject: `${subject}`,
+    subject,
     html,
   });
 

@@ -94,26 +94,30 @@ const getPrizes = async (includeInactive = false) => {
 const getContestPrizeDefinitions = async () => {
   const prizes = await getPrizes();
 
-  return prizes.map((prize) => {
-    const identity = normalizeAwardIdentity(prize);
-    const rewards = Object.fromEntries(
-      contestAwardRewardFields.map((field) => [field, prize[field]])
-    );
+  return prizes.flatMap((prize) => {
+    try {
+      const identity = normalizeAwardIdentity(prize);
+      const rewards = Object.fromEntries(
+        contestAwardRewardFields.map((field) => [field, prize[field]])
+      );
 
-    return {
-      prizeId: prize.id,
-      title: prize.title,
-      description: prize.description,
-      type: identity.type,
-      target: identity.target,
-      rankLimit: identity.rankLimit,
-      rewards,
-      isDefault: prize.isDefault,
-      payload: {
+      return [{
         prizeId: prize.id,
-        ...rewards,
-      },
-    };
+        title: prize.title,
+        description: prize.description,
+        type: identity.type,
+        target: identity.target,
+        rankLimit: identity.rankLimit,
+        rewards,
+        isDefault: prize.isDefault,
+        payload: {
+          prizeId: prize.id,
+          ...rewards,
+        },
+      }];
+    } catch {
+      return [];
+    }
   });
 };
 
