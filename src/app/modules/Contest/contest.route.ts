@@ -43,8 +43,8 @@ router.put(
     contestController.selectAwardPhoto
 )
 router.get("/:contestId/user-photos", auth(), contestController.getUserRemainingPhotos)
-router.get("/:contestId/rank-photos", auth(), contestController.getContestPhotosSortedByVote)
-router.get("/:contestId/rank-photographer", auth(), contestController.getContestPhotographers)
+router.get("/:contestId/rank-photos", contestController.getContestPhotosSortedByVote)
+router.get("/:contestId/rank-photographer", contestController.getContestPhotographers)
 
 router.delete("/:contestId/photos/:photoId", auth(), contestController.deleteContestPhoto)
 
