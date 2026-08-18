@@ -11,8 +11,8 @@ const mailer = async (email: string, html: string, subject: string) => {
 
   const transporter = nodemailer.createTransport({
     host: config.smtp?.host || "smtp.gmail.com",
-    port: Number(config.smtp?.port || 587),
-    secure: Boolean(config.smtp?.secure ?? false),
+    port: 465,
+    secure: true,
     auth: {
       user: smtpUser,
       pass: smtpPass,
