@@ -163,6 +163,19 @@ const joinByInvitation = catchAsync(async (req:Request, res:Response) => {
     })
 })
 
+const rejectInvitation = catchAsync(async (req:Request, res:Response) => {
+    const {code} = req.body
+    const userId = req.user.id
+    const result =  await teamService.rejectInvitation(userId,code)
+
+    sendResponse(res, {
+        success:true,
+        statusCode:httpstatus.OK,
+        message:"invitation rejected successfully",
+        data:result
+    })
+})
+
 const leaveTeam = catchAsync(async (req:Request, res:Response) => {
     const {teamId} = req.body
     const userId = req.user.id
@@ -469,6 +482,7 @@ export const teamController = {
     getMyTeamDetails,
     inviteUser,
     joinByInvitation,
+    rejectInvitation,
     leaveTeam,
     removeMemberFromTeam,
     getSuggestedTeams,

@@ -17,6 +17,7 @@ router.post("/remove", auth(), teamController.removeMemberFromTeam)
 router.get("/my-team", auth(), teamController.getMyTeamDetails)
 router.get("/suggests", auth(), teamController.getSuggestedTeams)
 router.post("/join-by-invitation", auth(), teamController.joinByInvitation)
+router.post("/reject-invitation", auth(), teamController.rejectInvitation)
 router.post("/join/:teamId", auth(), teamController.joinTeam)
 
 // NEW: Role Management Routes
