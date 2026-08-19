@@ -105,7 +105,7 @@ const uploadCover = upload.single("cover")
 const uploadBadge = upload.single("badge")
 const contestBanner = contestBannerUpload.single("banner");
 const userPhoto = contestImageUpload.single('photo')
-const tradePhoto = upload.single("tradePhoto")
+const tradePhoto = upload.single("file")
 
 // Upload multiple images
 const uploadMultipleImage = upload.fields([{ name: "images", maxCount: 15 }]);
