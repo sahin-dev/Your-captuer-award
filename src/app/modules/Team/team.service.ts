@@ -821,15 +821,29 @@ const getAvailableTeamContests = async (teamId:string,userId:string, page?:numbe
     const where = { status:ContestStatus.ACTIVE, id:{notIn:excludedContestIds} }
 
     const [contests, total] = await Promise.all([
-        prisma.contest.findMany({where, skip, take, select:{id:true, title:true, banner:true, startDate:true, endDate:true}}),
+        prisma.contest.findMany({where, skip, take, select:{id:true, title:true, description:true, banner:true, startDate:true, endDate:true, maxUpload:true}}),
         prisma.contest.count({where})
     ])
 
-    const mappedContest = await Promise.all(contests.map(async (contest:any) => {
-        const isJoined = await prisma.contestParticipant.findFirst({where:{contestId:contest.id, userId}})
+    const mappedContest = await Promise.all(contests.map(async (contest) => {
+        const participants = await prisma.contestParticipant.findMany({where:{contestId:contest.id}, select:{userId:true, id:true}})
 
-        contest.hasJoined = isJoined ? true : false
-        return contest;
+        const now = new Date()
+        const endDate = new Date(contest.endDate)
+        const hoursRemaining = Math.max(0, Math.floor((endDate.getTime() - now.getTime()) / (1000 * 60 * 60)))
+
+        return {
+            id: contest.id,
+            title: contest.title,
+            description: contest.description,
+            banner: contest.banner,
+            startDate: contest.startDate.toISOString(),
+            endDate: contest.endDate.toISOString(),
+            maxUpload: contest.maxUpload,
+            hoursRemaining,
+            totalParticipants: participants.length,
+            participantDetails: participants.map(p => ({ userId: p.userId, id: p.id })),
+        }
     }))
 
     return { data:mappedContest, meta:paginationHelper.getPaginationMetaData(currentPage, take, total) }
