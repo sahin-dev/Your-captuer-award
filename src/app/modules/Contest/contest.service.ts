@@ -1591,70 +1591,151 @@ const getContestPhotosSortedByVote = async (contestId:string, page?:number, limi
         meta:paginatedPhotos.meta
     }
 }
+const getContestTopPhotographers = async (
+    contestId: string,
+    currentUserId?: string,
+    page?: number,
+    limit?: number,
+    level?: string
+) => {
+    const contest = await prisma.contest.findUnique({
+        where: { id: contestId }
+    })
 
-const getContestTopPhotographers =  async (contestId:string, currentUserId:string, page?:number, limit?:number, level?:string)=>{
-
-    const contest = await prisma.contest.findUnique({where:{id:contestId}})
-
-    if(!contest){
+    if (!contest) {
         throw new ApiError(httpstatus.NOT_FOUND, "contest not found")
     }
 
     const activeLevel = normalizeRankLevel(level)
+
     const ranking = await contestRankingService.buildContestRanking(contestId)
+
     const contestParticipants = await prisma.contestParticipant.findMany({
-        where:{id:{in:ranking.photographers.map(photographer => photographer.participantId)}},
-        include:{
-            photos:{select:{photo:{select:{id:true, url:true, title:true}}, id:true}},
-            user:{select:{id:true, avatar:true, country:true, fullName:true, username:true}}
+        where: {
+            id: {
+                in: ranking.photographers.map(
+                    photographer => photographer.participantId
+                )
+            }
+        },
+        include: {
+            photos: {
+                select: {
+                    photo: {
+                        select: {
+                            id: true,
+                            url: true,
+                            title: true
+                        }
+                    },
+                    id: true
+                }
+            },
+            user: {
+                select: {
+                    id: true,
+                    avatar: true,
+                    country: true,
+                    fullName: true,
+                    username: true
+                }
+            }
         }
-    })
-    const participantById = new Map(contestParticipants.map(participant => [participant.id,participant]))
-    const photoVoteCountById = new Map(ranking.photos.map(photo => [photo.photoId,photo.voteCount]))
-    const participantWithVote = ranking.photographers.flatMap(photographer => {
-        const participant = participantById.get(photographer.participantId)
-        if(!participant){
-            return []
-        }
-        return [{
-            participantId:participant.id,
-            rank:photographer.rank,
-            level:getDesignLevelFromYCLevel(photographer.level),
-            user:participant.user,
-            photos:participant.photos.flatMap(photo => photo.photo ? [{
-                contestPhotoId:photo.id,
-                userPhotoId:photo.photo.id,
-                url:photo.photo.url,
-                title:photo.photo.title,
-                voteCount:photoVoteCountById.get(photo.id) || 0
-            }] : []).sort((a,b) => b.voteCount - a.voteCount),
-            totalVotes:photographer.voteCount
-        }]
     })
 
-    const contesttotalVotes = ranking.photographers.reduce((total, participant) => total + participant.voteCount, 0)
-    const followingIds = await getFollowedUserIds(currentUserId, participantWithVote.map(participant => participant.user.id))
+    const participantById = new Map(
+        contestParticipants.map(participant => [
+            participant.id,
+            participant
+        ])
+    )
+
+    const photoVoteCountById = new Map(
+        ranking.photos.map(photo => [
+            photo.photoId,
+            photo.voteCount
+        ])
+    )
+
+    const participantWithVote = ranking.photographers.flatMap(
+        photographer => {
+            const participant = participantById.get(
+                photographer.participantId
+            )
+
+            if (!participant) {
+                return []
+            }
+
+            return [
+                {
+                    participantId: participant.id,
+                    rank: photographer.rank,
+                    level: getDesignLevelFromYCLevel(photographer.level),
+                    user: participant.user,
+                    photos: participant.photos
+                        .flatMap(photo =>
+                            photo.photo
+                                ? [
+                                      {
+                                          contestPhotoId: photo.id,
+                                          userPhotoId: photo.photo.id,
+                                          url: photo.photo.url,
+                                          title: photo.photo.title,
+                                          voteCount:
+                                              photoVoteCountById.get(
+                                                  photo.id
+                                              ) || 0
+                                      }
+                                  ]
+                                : []
+                        )
+                        .sort((a, b) => b.voteCount - a.voteCount),
+                    totalVotes: photographer.voteCount
+                }
+            ]
+        }
+    )
+
+    const contestTotalVotes = ranking.photographers.reduce(
+        (total, participant) => total + participant.voteCount,
+        0
+    )
+
+    // Only fetch following information when a user is logged in
+    const followingIds = currentUserId
+        ? await getFollowedUserIds(
+              currentUserId,
+              participantWithVote.map(participant => participant.user.id)
+          )
+        : new Set<string>()
+
     const sortedParticipant = participantWithVote
         .filter(participant => participant.level === activeLevel)
         .map((participant, idx) => ({
             ...participant,
-            levelRank:idx + 1,
-            user:{
+            levelRank: idx + 1,
+            user: {
                 ...participant.user,
-                isFollowing:followingIds.has(participant.user.id)
+                isFollowing: currentUserId
+                    ? followingIds.has(participant.user.id)
+                    : false
             }
         }))
 
-    const paginatedParticipants = paginateRankedData(sortedParticipant, page, limit)
+    const paginatedParticipants = paginateRankedData(
+        sortedParticipant,
+        page,
+        limit
+    )
 
     return {
-        contestTotalVotes:contesttotalVotes,
-        levelTabs:rankLevelTabs,
+        contestTotalVotes,
+        levelTabs: rankLevelTabs,
         activeLevel,
         participants: paginatedParticipants.data,
-        meta:paginatedParticipants.meta
+        meta: paginatedParticipants.meta
     }
-
 }
 
 const getContestPhotoCount = async (contestId:string) => {
