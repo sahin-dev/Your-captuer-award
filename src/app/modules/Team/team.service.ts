@@ -434,12 +434,29 @@ const inviteUser = async (senderId:string, teamId:string, receiverId:string) => 
 
     const teamMember = await isTeamMemberExist(senderId, team.id)
 
-    if(!teamMember || (teamMember.level !== MemberLevel.LEADER)){
+    if(!teamMember){
         throw new ApiError(httpstatus.BAD_REQUEST, "you are not allowed to invite any user")
+    }
+
+    const memberCount = await prisma.teamMember.count({where:{teamId}})
+    if(memberCount >= team.member_slots){
+        throw new ApiError(httpstatus.BAD_REQUEST, "No member slots available")
+    }
+
+    const receiverAlreadyJoined = await isAlreaderJoinedTeam(receiverId)
+    if(receiverAlreadyJoined){
+        throw new ApiError(httpstatus.BAD_REQUEST, "User is already in a team")
+    }
+
+    const existingInvitation = await prisma.teamInvitation.findFirst({
+        where:{teamId, receiverId, expiredAt:{gt:new Date()}}
+    })
+    if(existingInvitation){
+        throw new ApiError(httpstatus.BAD_REQUEST, "User already has an active invitation for this team")
     }
    
     const teamInvitation = await prisma.teamInvitation.create({data:{teamId,senderId,receiverId,expiredAt: new Date(Date.now() + 30*60*1000)}})
-    await notificationService.postNotificationWithPayload("Team Invitation",`You recieve an invitatino to join ${team.name} team`,receiverId,{code:teamInvitation.id}, NotificationType.INVITATION)
+    await notificationService.postNotificationWithPayload("Team Invitation",`You receive an invitation to join ${team.name} team`,receiverId,{code:teamInvitation.id, teamId}, NotificationType.INVITATION)
     await notificationService.postNotification("Invitation Sent", "Your invitation sent successfully", senderId, NotificationType.DEFAULT)
     return teamInvitation
 }
@@ -455,6 +472,7 @@ const joinByInvitation = async (userId:string, invitationId:string) => {
     }
     try{
         const joinedTeam = await joinATeam(invitation.receiverId, invitation.teamId)
+        await prisma.teamInvitation.delete({where:{id:invitation.id}})
         await notificationService.postNotification("Invitation Accepted", "Your invitation accepted", invitation.senderId,NotificationType.DEFAULT)
         return joinedTeam
     }catch(err:any){
@@ -462,6 +480,25 @@ const joinByInvitation = async (userId:string, invitationId:string) => {
         throw new ApiError(httpstatus.BAD_REQUEST, err.message)
     }
     
+}
+
+const rejectInvitation = async (userId:string, invitationId:string) => {
+    const invitation = await prisma.teamInvitation.findUnique({where:{id:invitationId}})
+
+    if(!invitation || (invitation.expiredAt < new Date())){
+        throw new ApiError(httpstatus.BAD_REQUEST, "invitation expired")
+    }
+
+    if(invitation.receiverId !== userId){
+        throw new ApiError(httpstatus.FORBIDDEN, "This invitation does not belong to you")
+    }
+
+    const team = await prisma.team.findUnique({where:{id:invitation.teamId}, select:{name:true}})
+    const deletedInvitation = await prisma.teamInvitation.delete({where:{id:invitation.id}})
+
+    await notificationService.postNotification("Invitation Rejected", `Your invitation to join ${team?.name ?? 'the team'} was rejected`, invitation.senderId, NotificationType.DEFAULT)
+
+    return deletedInvitation
 }
 
 
@@ -484,7 +521,10 @@ const removeFromTeam = async (userId:string,memberId:string, teamId:string) => {
         throw new ApiError(httpstatus.BAD_REQUEST, 'Sorry, You are not allowed to remove member')
     }
 
-    return await prisma.teamMember.delete({where:{id:memberId}})
+    const removedMember = await prisma.teamMember.delete({where:{id:memberId}})
+    await prisma.team.update({where:{id:teamId}, data:{member_count:{decrement:1}}})
+
+    return removedMember
 }
 
 const getMyTeamMatches = async (userId:string ) => {
@@ -926,6 +966,7 @@ export const teamService = {
     startTeamMatch,
     inviteUser,
     joinByInvitation,
+    rejectInvitation,
     getMatchDetails,
     getMyTeamMatches,
     leaveATeam,
