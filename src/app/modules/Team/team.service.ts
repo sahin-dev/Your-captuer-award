@@ -33,7 +33,7 @@ export const createTeam = async (creatorId: string, body: ITeam, file:Express.Mu
 
     const {team, member} = await prisma.$transaction(async (tx) => {
         await userStoreService.deductCoinsFromStore(creatorId, 500)
-        const team = await prisma.team.create({
+        const team = await tx.team.create({
             data: {
                 creatorId,
                 name:body.name,
@@ -44,11 +44,12 @@ export const createTeam = async (creatorId: string, body: ITeam, file:Express.Mu
                 min_requirement: level?.order ?? 0,
                 min_requirement_str: level?.levelName ?? 'None',
                 accessibility: body.accessibility as TeamAccessibility,
+                member_count:1,
                 badge: badgeUrl.Location,
             },
         });
 
-        const member = await prisma.teamMember.create({data:{memberId:creatorId,teamId:team.id, level:MemberLevel.LEADER}})
+        const member = await tx.teamMember.create({data:{memberId:creatorId,teamId:team.id, level:MemberLevel.LEADER}})
         return {team, member}
     })
 

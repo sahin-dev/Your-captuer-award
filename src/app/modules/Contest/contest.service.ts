@@ -1431,7 +1431,6 @@ const tradePhoto = async (userId:string,contestId:string, contestPhotoId:string,
         include:{photo:true, participant:true}
     })
     
-
     if(!contestPhoto){
         throw new ApiError(httpstatus.NOT_FOUND, "contest photo not found")
     }
@@ -1443,16 +1442,56 @@ const tradePhoto = async (userId:string,contestId:string, contestPhotoId:string,
     if (!userStore || userStore.swap <= 0 ){
         throw new ApiError(httpstatus.BAD_REQUEST, "you does not have enough trade")
     }
-    const vote = await voteService.getVoteCount(contestPhoto.id)
-    await prisma.contestPhoto.delete({where:{id:contestPhoto.id}})
 
-    const uploadedPhoto = await uploadPhotoToContest(contestId,userId,[photoId], file)
-    //decrease trade by 1
-    await userStoreService.updateStoreData(userId,{swap:-1})
+    const replacedPhoto = await prisma.$transaction(async trx => {
+        const store = await trx.userStore.findUnique({where:{userId}})
+        if (!store || store.swap <= 0){
+            throw new ApiError(httpstatus.BAD_REQUEST, "you does not have enough trade")
+        }
 
-    return await prisma.contestPhoto.update({where:{id:uploadedPhoto[0].id}, data:{initialVotes:vote}})
+        await trx.userStore.update({
+            where:{userId},
+            data:{swap:{decrement:1}}
+        })
+
+        return await replaceContestPhoto(userId, contestId, contestPhotoId, photoId, file)
+    })
+
+    return replacedPhoto
     
 }
+
+const replaceContestPhoto = async (userId:string, contestId:string, contestPhotoId:string,userPhotoId:string, file:Express.Multer.File) => {
+    const contestPhoto = await prisma.contestPhoto.findUnique({where:{id:contestPhotoId, participant:{userId}},include:{participant:true}})
+    if(!contestPhoto){
+        throw new ApiError(httpstatus.NOT_FOUND, "contest photo not found")
+    }
+
+    if(userPhotoId){
+        return await replaceContestPhotoWithUserPhoto(userId, contestId, contestPhotoId, userPhotoId)
+    }
+
+    if(!file){
+        throw new ApiError(httpstatus.BAD_REQUEST, "file is required to replace contest photo")
+    }
+
+    const uploadedPhoto = await profileService.uploadUserPhoto(userId, file)
+    
+    return await replaceContestPhotoWithUserPhoto(userId, contestId, contestPhotoId, uploadedPhoto.id)
+
+}
+
+const replaceContestPhotoWithUserPhoto = async (userId:string, contestId:string, contestPhotoId:string, userPhotoId:string) => {
+    const contestPhoto = await prisma.contestPhoto.findUnique({where:{id:contestPhotoId, participant:{userId}},include:{participant:true}})
+    if(!contestPhoto){
+        throw new ApiError(httpstatus.NOT_FOUND, "contest photo not found")
+    }
+
+    const updatedContestPhoto = await prisma.contestPhoto.update({where:{id:contestPhotoId}, data:{photoId:userPhotoId}})
+
+    return updatedContestPhoto
+}
+
 
 const chargePhoto = async (userId:string, contestId:string, contestPhotoId:string) => {
     const contestPhoto = await prisma.contestPhoto.findUnique({where:{id:contestPhotoId},include:{participant:true}})
@@ -1474,13 +1513,27 @@ const chargePhoto = async (userId:string, contestId:string, contestPhotoId:strin
         throw new ApiError(httpstatus.NOT_FOUND, "participant not found")
     }
 
-    const newContestPhoto = await prisma.contestParticipant.update({where:{id:participant.id}, data:{exposure_bonus:100}})
+    await prisma.$transaction(async trx => {
+        const store = await trx.userStore.findUnique({where:{userId}})
+        if(!store || store.key <= 0){
+            throw new ApiError(httpstatus.NOT_FOUND, "you does not have enough charge")
+        }
 
-   
+        await trx.userStore.update({
+            where:{userId},
+            data:{key:{decrement:1}}
+        })
+
+        await trx.contestParticipant.update({
+            where:{id:contestPhoto.participant.id},
+            data:{exposure_bonus:100}
+        })
+    })
+
+    await agenda.cancel({name: "exposure:watcher", "data.contestPhotoId": contestPhotoId})
     agenda.every("1 minute", "exposure:watcher",{contestPhotoId:contestPhoto.id})
     
-    await userStoreService.updateStoreData(userId, {key:-1})
-    return newContestPhoto
+    return await prisma.contestParticipant.findUnique({where:{id:contestPhoto.participant.id}})
 }
 
 const rankLevelTabs = ['AMATEUR', 'TALENTED', 'SUPREME', 'SUPERIOR', 'TOP_NOTCH'] as const

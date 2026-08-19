@@ -121,7 +121,7 @@ const joinTeam = catchAsync( async (req:Request, res:Response)=>{
 const getAllTeamMembers = catchAsync(async (req:Request, res:Response)=>{
     const {teamId} = req.params
     const { page, limit } = req.query
-    console.log("members", teamId)
+
     const result = await teamService.getAllTeamMember(
         teamId,
         page ? Number(page) : undefined,

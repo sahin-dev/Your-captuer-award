@@ -35,9 +35,9 @@ router.post('/:teamId/members/:memberId/revoke-role', auth(), teamController.rev
 
 router.get('/', auth(),teamController.getTeams);
 router.get('/search/by-name', auth(), teamController.searchTeamsByName);
-router.get('/:teamId',auth(), teamController.getTeamDetails);
+router.get('/:teamId', teamController.getTeamDetails);
 
-router.get("/members/:teamId", auth(), teamController.getAllTeamMembers)
+router.get("/members/:teamId", teamController.getAllTeamMembers)
 router.put('/:teamId',auth(),fileUploader.filesystemUploadBadge, validateRequest(updateTeamValidationSchema), teamController.updateTeam);
 router.delete('/:teamId', auth(),teamController.deleteTeam);
 
