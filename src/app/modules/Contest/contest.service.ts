@@ -1158,9 +1158,9 @@ const uploadPhotoToContest = async (contestId:string,userId:string, photoIds:str
     if(isJoiningThroughUpload && contest.entryFeeCoins > 0){
         const store = await prisma.userStore.findUnique({
             where:{userId},
-            select:{coin:true}
+            select:{coins:true}
         })
-        if(!store || store.coin < contest.entryFeeCoins){
+        if(!store || store.coins < contest.entryFeeCoins){
             throw new ApiError(httpstatus.PAYMENT_REQUIRED, "Insufficient coins to enter this contest")
         }
     }
