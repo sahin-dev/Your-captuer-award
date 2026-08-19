@@ -810,7 +810,7 @@ const getActiveMatch = async (teamId:string) => {
 
 // ============ Auto-Rival Matchmaking ============
 
-const getAvailableTeamContests = async (teamId:string, page?:number, limit?:number) => {
+const getAvailableTeamContests = async (teamId:string,userId:string, page?:number, limit?:number) => {
     await getTeam(teamId)
 
     const { skip, limit:take, page:currentPage } = paginationHelper.calculatePagination({page, limit})
@@ -825,7 +825,14 @@ const getAvailableTeamContests = async (teamId:string, page?:number, limit?:numb
         prisma.contest.count({where})
     ])
 
-    return { data:contests, meta:paginationHelper.getPaginationMetaData(currentPage, take, total) }
+    const mappedContest = await Promise.all(contests.map(async (contest:any) => {
+        const isJoined = await prisma.contestParticipant.findFirst({where:{contestId:contest.id, userId}})
+
+        contest.hasJoined = isJoined ? true : false
+        return contest;
+    }))
+
+    return { data:mappedContest, meta:paginationHelper.getPaginationMetaData(currentPage, take, total) }
 }
 
 const findRivalTeam = async (teamId:string, skillLevel:LevelName) => {

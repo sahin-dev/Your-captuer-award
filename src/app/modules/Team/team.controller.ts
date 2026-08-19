@@ -385,9 +385,11 @@ const getActiveMatch = catchAsync(async (req: Request, res: Response) => {
 const getAvailableTeamContests = catchAsync(async (req: Request, res: Response) => {
     const { teamId } = req.params
     const { page, limit } = req.query
+    const userId = req.user.id
 
     const result = await teamService.getAvailableTeamContests(
         teamId,
+        userId,
         page ? Number(page) : undefined,
         limit ? Number(limit) : undefined
     )
