@@ -1801,20 +1801,45 @@ const findRivalTeam = async (
     ),
   ];
 
+  let bestRival: {
+    team: (typeof candidateTeams)[number];
+    members: Awaited<ReturnType<typeof getEligibleContestMembers>>;
+    matchedCount: number;
+  } | null = null;
+
   for (const candidateTeam of candidateTeams) {
     const eligibleMembers = await getEligibleContestMembers(
       candidateTeam.id,
       contestId,
     );
-    if (eligibleMembers.length >= participantCount) {
+
+    const matchedCount = Math.min(participantCount, eligibleMembers.length);
+    if (matchedCount <= 0) {
+      continue;
+    }
+
+    if (eligibleMembers.length === participantCount) {
       return {
         team: candidateTeam,
-        members: eligibleMembers.slice(0, participantCount),
+        members: eligibleMembers,
+      };
+    }
+
+    if (!bestRival || matchedCount > bestRival.matchedCount) {
+      bestRival = {
+        team: candidateTeam,
+        members: eligibleMembers.slice(0, matchedCount),
+        matchedCount,
       };
     }
   }
 
-  return null;
+  return bestRival
+    ? {
+        team: bestRival.team,
+        members: bestRival.members,
+      }
+    : null;
 };
 
 const startTeamMatchWithAutoRival = async (
@@ -1858,6 +1883,12 @@ const startTeamMatchWithAutoRival = async (
   }
 
   const ownMembers = await getEligibleContestMembers(teamId, contestId);
+  if (!ownMembers.length) {
+    throw new ApiError(
+      httpstatus.BAD_REQUEST,
+      "At least one team member must join the contest before starting a team match",
+    );
+  }
 
   const rival = await findRivalTeam(
     teamId,
@@ -1868,9 +1899,10 @@ const startTeamMatchWithAutoRival = async (
   if (!rival) {
     throw new ApiError(
       httpstatus.NOT_FOUND,
-      "No available rival team with enough joined contest members found right now",
+      "No available rival team with joined contest members found right now",
     );
   }
+  const matchedOwnMembers = ownMembers.slice(0, rival.members.length);
 
   const match = await prisma.$transaction(async (tx) => {
     const existingActiveMatch = await tx.teamMatch.findFirst({
@@ -1904,7 +1936,7 @@ const startTeamMatchWithAutoRival = async (
         contestId,
         team1Id: teamId,
         team2Id: rival.team.id,
-        team1_member_ids: ownMembers.map((member) => member.id),
+        team1_member_ids: matchedOwnMembers.map((member) => member.id),
         team2_member_ids: rival.members.map((member) => member.id),
         started_by_id: userId,
         endedAt: contest.endDate,
