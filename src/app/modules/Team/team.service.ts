@@ -1858,12 +1858,6 @@ const startTeamMatchWithAutoRival = async (
   }
 
   const ownMembers = await getEligibleContestMembers(teamId, contestId);
-  if (ownMembers.length < 3) {
-    throw new ApiError(
-      httpstatus.BAD_REQUEST,
-      "At least 3 team members must join the contest before starting a team match",
-    );
-  }
 
   const rival = await findRivalTeam(
     teamId,
