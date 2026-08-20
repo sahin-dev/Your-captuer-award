@@ -2,6 +2,7 @@ import { ContestOccurrenceStatus, ContestStatus, RecurringContest, RecurringCont
 import { Agenda, Job } from "agenda";
 import prisma from '../../../shared/prisma';
 import {contestService } from '../Contest/contest.service';
+import { teamService } from '../Team/team.service';
 import { calculateNextOccurance } from '../../../helpers/nextOccurance';
 import { ContestRuleConfigInput } from '../Contest/ContestRules/contestRules.type';
 import { contestRuleService } from '../Contest/ContestRules/contestRules.service';
@@ -277,6 +278,7 @@ agenda.define("contest:watcher", async (job: Job) => {
     }
 
     await contestService.identifyWinner(contestId)
+    await teamService.closeActiveMatchesForContest(contestId)
     console.log(`Contest has been finalized ${contestId}`)
 });
 
@@ -294,11 +296,19 @@ agenda.define("contest:watchEnded", async () => {
     for(const contest of contests){
         try{
             await contestService.identifyWinner(contest.id)
+            await teamService.closeActiveMatchesForContest(contest.id)
         }catch(error){
             console.error(`Failed to finalize contest ${contest.id}`, error)
         }
     }
 })
+
+agenda.define("teamMatch:watchStale", async () => {
+    const closedCount = await teamService.retryStaleTeamMatches()
+    if(closedCount > 0){
+        console.log(`Auto-closed ${closedCount} stale team match(es) whose contest had already ended`)
+    }
+});
 
 agenda.define("exposure:watcher", async (job:Job) => {
     const {contestPhotoId}  = job.attrs.data as {contestPhotoId:string}

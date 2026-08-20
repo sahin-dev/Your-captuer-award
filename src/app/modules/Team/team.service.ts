@@ -1613,34 +1613,16 @@ const getMatchScoreSnapshot = async (match: any) => {
   };
 };
 
-const recordMatchResult = async (
-  matchId: string,
+const closeMatchWithScores = async (
+  match: { id: string; team1Id: string; team2Id: string; contestId: string },
   team1Score: number,
   team2Score: number,
 ) => {
-  const match = await prisma.teamMatch.findUnique({ where: { id: matchId } });
-  if (!match) {
-    throw new ApiError(httpstatus.NOT_FOUND, "match not found");
-  }
-  if (match.status !== MatchStatus.ACTIVE) {
-    throw new ApiError(
-      httpstatus.BAD_REQUEST,
-      "This match has already been closed",
-    );
-  }
-  if (!match.team1Id || !match.team2Id) {
-    throw new ApiError(httpstatus.BAD_REQUEST, "This match has a deleted team");
-  }
+  const matchId = match.id;
   const team1Id = match.team1Id;
   const team2Id = match.team2Id;
-
-  const scoreSnapshot = await getMatchScoreSnapshot(match);
-  const resolvedTeam1Score = Number.isFinite(team1Score)
-    ? team1Score
-    : scoreSnapshot.team1Score;
-  const resolvedTeam2Score = Number.isFinite(team2Score)
-    ? team2Score
-    : scoreSnapshot.team2Score;
+  const resolvedTeam1Score = team1Score;
+  const resolvedTeam2Score = team2Score;
 
   return prisma.$transaction(async (tx) => {
     let result: MatchResult = MatchResult.DRAW;
@@ -1701,6 +1683,100 @@ const recordMatchResult = async (
 
     return updatedMatch;
   });
+};
+
+const recordMatchResult = async (
+  matchId: string,
+  team1Score: number,
+  team2Score: number,
+) => {
+  const match = await prisma.teamMatch.findUnique({ where: { id: matchId } });
+  if (!match) {
+    throw new ApiError(httpstatus.NOT_FOUND, "match not found");
+  }
+  if (match.status !== MatchStatus.ACTIVE) {
+    throw new ApiError(
+      httpstatus.BAD_REQUEST,
+      "This match has already been closed",
+    );
+  }
+  if (!match.team1Id || !match.team2Id) {
+    throw new ApiError(httpstatus.BAD_REQUEST, "This match has a deleted team");
+  }
+
+  const scoreSnapshot = await getMatchScoreSnapshot(match);
+  const resolvedTeam1Score = Number.isFinite(team1Score)
+    ? team1Score
+    : scoreSnapshot.team1Score;
+  const resolvedTeam2Score = Number.isFinite(team2Score)
+    ? team2Score
+    : scoreSnapshot.team2Score;
+
+  return closeMatchWithScores(
+    { id: match.id, team1Id: match.team1Id, team2Id: match.team2Id, contestId: match.contestId },
+    resolvedTeam1Score,
+    resolvedTeam2Score,
+  );
+};
+
+const closeTeamMatches = async (
+  matches: Awaited<ReturnType<typeof prisma.teamMatch.findMany>>,
+) => {
+  let closedCount = 0;
+  for (const match of matches) {
+    try {
+      if (!match.team1Id || !match.team2Id) {
+        await prisma.teamMatch.update({
+          where: { id: match.id },
+          data: { status: MatchStatus.CLOSED, endedAt: new Date() },
+        });
+        await prisma.team.updateMany({
+          where: { active_match_id: match.id },
+          data: { active_match_id: null },
+        });
+        closedCount += 1;
+        continue;
+      }
+
+      const { team1Score, team2Score } = await getMatchScoreSnapshot(match);
+      await closeMatchWithScores(
+        { id: match.id, team1Id: match.team1Id, team2Id: match.team2Id, contestId: match.contestId },
+        team1Score,
+        team2Score,
+      );
+      closedCount += 1;
+    } catch (error) {
+      console.error(`Failed to close team match ${match.id}`, error);
+    }
+  }
+  return closedCount;
+};
+
+// Called when a contest ends so team matches don't stay ACTIVE forever without stats/history being recorded.
+const closeActiveMatchesForContest = async (contestId: string) => {
+  const matches = await prisma.teamMatch.findMany({
+    where: { contestId, status: MatchStatus.ACTIVE },
+  });
+
+  return closeTeamMatches(matches);
+};
+
+// Safety-net retry: picks up any team match still ACTIVE after its contest has ended,
+// regardless of why it wasn't closed the first time (e.g. contest finalization crashed
+// before closeActiveMatchesForContest ran, or a transient error during closing).
+const retryStaleTeamMatches = async () => {
+  const matches = await prisma.teamMatch.findMany({
+    where: {
+      status: MatchStatus.ACTIVE,
+      contest: { endDate: { lte: new Date() } },
+    },
+  });
+
+  if (matches.length === 0) {
+    return 0;
+  }
+
+  return closeTeamMatches(matches);
 };
 
 const getActiveMatch = async (teamId: string, userId?: string) => {
@@ -2086,6 +2162,8 @@ export const teamService = {
   getTeamLeaderboard,
   getTeamHistory,
   recordMatchResult,
+  closeActiveMatchesForContest,
+  retryStaleTeamMatches,
   getActiveMatch,
   getAvailableTeamContests,
   startTeamMatchWithAutoRival,
