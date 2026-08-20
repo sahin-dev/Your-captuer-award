@@ -161,9 +161,9 @@ const getPendingInvitations = catchAsync(
 );
 
 const joinByInvitation = catchAsync(async (req: Request, res: Response) => {
-  const { code } = req.body;
+  const { code, notificationId } = req.body;
   const userId = req.user.id;
-  const result = await teamService.joinByInvitation(userId, code);
+  const result = await teamService.joinByInvitation(userId, code, notificationId);
 
   sendResponse(res, {
     success: true,
@@ -174,9 +174,9 @@ const joinByInvitation = catchAsync(async (req: Request, res: Response) => {
 });
 
 const rejectInvitation = catchAsync(async (req: Request, res: Response) => {
-  const { code } = req.body;
+  const { code, notificationId } = req.body;
   const userId = req.user.id;
-  const result = await teamService.rejectInvitation(userId, code);
+  const result = await teamService.rejectInvitation(userId, code, notificationId);
 
   sendResponse(res, {
     success: true,

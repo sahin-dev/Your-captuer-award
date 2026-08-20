@@ -26,10 +26,10 @@ type ProfileAchievementRecord = Awaited<ReturnType<typeof findProfileAchievement
 const achievementBadgeImages: Record<PrizeType, string> = {
     [prizeTypes.TOP_PHOTO]: "/icons/top-photo.png",
     [prizeTypes.TOP_PHOTOGRAPHER]: "/icons/top-photographer.png",
-    [prizeTypes.AMATEUR]: "/icons/award.png",
-    [prizeTypes.TALENTED]: "/icons/award.png",
-    [prizeTypes.SUPREME]: "/icons/award.png",
-    [prizeTypes.SUPERIOR]: "/icons/award.png",
+    [prizeTypes.AMATEUR]: "/icons/contest-level-amateur.svg",
+    [prizeTypes.TALENTED]: "/icons/contest-level-talented.svg",
+    [prizeTypes.SUPREME]: "/icons/contest-level-supreme.svg",
+    [prizeTypes.SUPERIOR]: "/icons/contest-level-superior.svg",
     [prizeTypes.TOP_100_PHOTO]: "/icons/top-photo.png",
     [prizeTypes.TOP_100_PHOTOGRAPHER]: "/icons/top-photographer.png",
     [prizeTypes.TOP_50_PHOTO]: "/icons/top-photo.png",
@@ -39,12 +39,17 @@ const achievementBadgeImages: Record<PrizeType, string> = {
     [prizeTypes.TOP_10_PHOTO]: "/icons/top-photo.png",
     [prizeTypes.TOP_10_PHOTOGRAPHER]: "/icons/top-photographer.png",
     [prizeTypes.WINNER]: "/icons/award.png",
-    [prizeTypes.TOP_NOTCH]: "/icons/award.png",
+    [prizeTypes.TOP_NOTCH]: "/icons/contest-level-top-notch.svg",
 };
 
 const profileAchievementCatalog: ProfileAchievementBadgeDefinition[] = [
     { id: prizeTypes.TOP_PHOTO, category: prizeTypes.TOP_PHOTO, title: "Top Photo", imageUrl: achievementBadgeImages.TOP_PHOTO, group: "ultimate", order: 10 },
     { id: prizeTypes.TOP_PHOTOGRAPHER, category: prizeTypes.TOP_PHOTOGRAPHER, title: "Top Photographer", imageUrl: achievementBadgeImages.TOP_PHOTOGRAPHER, group: "ultimate", order: 20 },
+    { id: prizeTypes.AMATEUR, category: prizeTypes.AMATEUR, title: "Amateur", imageUrl: achievementBadgeImages.AMATEUR, group: "ultimate", order: 30 },
+    { id: prizeTypes.TALENTED, category: prizeTypes.TALENTED, title: "Talented", imageUrl: achievementBadgeImages.TALENTED, group: "ultimate", order: 40 },
+    { id: prizeTypes.SUPREME, category: prizeTypes.SUPREME, title: "Supreme", imageUrl: achievementBadgeImages.SUPREME, group: "ultimate", order: 50 },
+    { id: prizeTypes.SUPERIOR, category: prizeTypes.SUPERIOR, title: "Superior", imageUrl: achievementBadgeImages.SUPERIOR, group: "ultimate", order: 60 },
+    { id: prizeTypes.TOP_NOTCH, category: prizeTypes.TOP_NOTCH, title: "Top Notch", imageUrl: achievementBadgeImages.TOP_NOTCH, group: "ultimate", order: 70 },
     // { id: prizeTypes.WINNER, category: prizeTypes.WINNER, title: "Winner", imageUrl: achievementBadgeImages.WINNER, group: "ultimate", order: 30 },
     { id: prizeTypes.TOP_10_PHOTO, category: prizeTypes.TOP_10_PHOTO, title: "Top 10 Photos", imageUrl: achievementBadgeImages.TOP_10_PHOTO, group: "ranking", order: 50 },
     { id: prizeTypes.TOP_10_PHOTOGRAPHER, category: prizeTypes.TOP_10_PHOTOGRAPHER, title: "Top 10 Photographers", imageUrl: achievementBadgeImages.TOP_10_PHOTOGRAPHER, group: "ranking", order: 60 },

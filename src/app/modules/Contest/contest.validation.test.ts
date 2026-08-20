@@ -2,7 +2,13 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { createContestSchema, updateContestSchema } from "./contest.validation";
 import { contestRuleInputArraySchema } from "./ContestRules/contestRule.validation";
-import { contestRuleKeys, getContestRuleDefinitionViews } from "./ContestRules/contestRule.definitions";
+import {
+    contestRuleKeys,
+    getContestRuleDefinitionViews,
+    LevelRequirementValue,
+} from "./ContestRules/contestRule.definitions";
+import { getContestLevelForScore } from "./ContestRanking/contestRanking.service";
+import { ycLevels } from "../Awards/award.definitions";
 import { contestPrizeInputArraySchema } from "../Prize/prize.validation";
 import { defaultPrizeDefinitions } from "../Prize/prize.definitions";
 import { prizeService } from "../Prize/prize.service";
@@ -98,6 +104,21 @@ test("submission formats are restricted to formats the runtime supports", () => 
         },
     }]);
     assert.equal(rejected.success, false);
+});
+
+test("contest level scoring keeps users NEW until AMATEUR threshold is reached", () => {
+    const requirements:LevelRequirementValue[] = [
+        { level:"AMATEUR", votes:50 },
+        { level:"TALENTED", votes:250 },
+        { level:"SUPREME", votes:900 },
+        { level:"SUPERIOR", votes:1900 },
+        { level:"TOP_NOTCH", votes:5000 },
+    ];
+
+    assert.equal(getContestLevelForScore(0, requirements), ycLevels.NEW);
+    assert.equal(getContestLevelForScore(49, requirements), ycLevels.NEW);
+    assert.equal(getContestLevelForScore(50, requirements), ycLevels.AMATEUR);
+    assert.equal(getContestLevelForScore(250, requirements), ycLevels.TALENTED);
 });
 
 test("all contest rule definitions include copyable creation payloads", () => {

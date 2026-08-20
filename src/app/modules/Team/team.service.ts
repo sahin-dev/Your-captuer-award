@@ -648,7 +648,46 @@ const getPendingInvitations = async (userId: string, teamId: string) => {
   });
 };
 
-const joinByInvitation = async (userId: string, invitationId: string) => {
+const markInvitationNotificationHandled = async (
+  userId: string,
+  invitationId: string,
+  notificationId: string | undefined,
+  invitationStatus: "accepted" | "rejected",
+) => {
+  if (!notificationId) {
+    return;
+  }
+
+  const notification = await prisma.notification.findFirst({
+    where: {
+      id: notificationId,
+      receiverId: userId,
+      type: NotificationType.INVITATION,
+    },
+  });
+  const data =
+    notification?.data && typeof notification.data === "object" && !Array.isArray(notification.data)
+      ? (notification.data as Prisma.JsonObject)
+      : null;
+
+  if (!notification || data?.code !== invitationId) {
+    return;
+  }
+
+  await prisma.notification.update({
+    where: { id: notification.id },
+    data: {
+      isRead: true,
+      data: { ...data, invitationStatus } as Prisma.InputJsonValue,
+    },
+  });
+};
+
+const joinByInvitation = async (
+  userId: string,
+  invitationId: string,
+  notificationId?: string,
+) => {
   const invitation = await prisma.teamInvitation.findUnique({
     where: { id: invitationId },
   });
@@ -678,6 +717,17 @@ const joinByInvitation = async (userId: string, invitationId: string) => {
         );
       }
 
+      const [team, memberCount] = await Promise.all([
+        tx.team.findUnique({
+          where: { id: activeInvitation.teamId },
+          select: { member_slots: true },
+        }),
+        tx.teamMember.count({ where: { teamId: activeInvitation.teamId } }),
+      ]);
+      if (!team || memberCount >= team.member_slots) {
+        throw new ApiError(httpstatus.BAD_REQUEST, "No member slots available");
+      }
+
       const existingTeam = await tx.teamMember.findFirst({
         where: { memberId: userId },
       });
@@ -698,10 +748,18 @@ const joinByInvitation = async (userId: string, invitationId: string) => {
         where: { id: activeInvitation.teamId },
         data: { member_count: { increment: 1 } },
       });
-      await tx.teamInvitation.delete({ where: { id: activeInvitation.id } });
+      await tx.teamInvitation.deleteMany({
+        where: { receiverId: activeInvitation.receiverId },
+      });
 
       return member;
     });
+    await markInvitationNotificationHandled(
+      userId,
+      invitationId,
+      notificationId,
+      "accepted",
+    );
     await notificationService.postNotification(
       "Invitation Accepted",
       "Your invitation accepted",
@@ -718,7 +776,11 @@ const joinByInvitation = async (userId: string, invitationId: string) => {
   }
 };
 
-const rejectInvitation = async (userId: string, invitationId: string) => {
+const rejectInvitation = async (
+  userId: string,
+  invitationId: string,
+  notificationId?: string,
+) => {
   const invitation = await prisma.teamInvitation.findUnique({
     where: { id: invitationId },
   });
@@ -747,6 +809,12 @@ const rejectInvitation = async (userId: string, invitationId: string) => {
     `Your invitation to join ${team?.name ?? "the team"} was rejected`,
     invitation.senderId,
     NotificationType.DEFAULT,
+  );
+  await markInvitationNotificationHandled(
+    userId,
+    invitationId,
+    notificationId,
+    "rejected",
   );
 
   return deletedInvitation;
