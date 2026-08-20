@@ -80,18 +80,23 @@ const addContestRules = async (
 
   const normalizedRules = normalizeContestRules(rules);
 
-  await prisma.contestRuleConfig.deleteMany({ where: { contestId } });
-  await prisma.contestRuleConfig.createMany({
-    data: normalizedRules.map((rule) => ({
-      contestId,
-      key: rule.key,
-      value: rule.value,
-      enabled: rule.enabled ?? true,
-      order: rule.order ?? contestRuleDefinitions[rule.key].order,
-    })),
-  });
+  return prisma.$transaction(async (tx) => {
+    await tx.contestRuleConfig.deleteMany({ where: { contestId } });
+    await tx.contestRuleConfig.createMany({
+      data: normalizedRules.map((rule) => ({
+        contestId,
+        key: rule.key,
+        value: rule.value,
+        enabled: rule.enabled ?? true,
+        order: rule.order ?? contestRuleDefinitions[rule.key].order,
+      })),
+    });
 
-  return getContestRuleConfigs(contestId);
+    return tx.contestRuleConfig.findMany({
+      where: { contestId },
+      orderBy: { order: "asc" },
+    }) as Promise<RuleConfigRecord[]>;
+  });
 };
 
 const getContestRuleConfigs = async (contestId: string): Promise<RuleConfigRecord[]> => {

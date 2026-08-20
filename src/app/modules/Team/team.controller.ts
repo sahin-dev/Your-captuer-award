@@ -150,6 +150,19 @@ const inviteUser = catchAsync(async (req:Request, res:Response) => {
     })
 })
 
+const getPendingInvitations = catchAsync(async (req:Request, res:Response) => {
+    const {teamId} = req.params
+    const userId = req.user.id
+    const invitations = await teamService.getPendingInvitations(userId,teamId)
+
+    sendResponse(res, {
+        success:true,
+        statusCode:httpstatus.OK,
+        message:"pending invitations fetched successfully",
+        data:invitations
+    })
+})
+
 const joinByInvitation = catchAsync(async (req:Request, res:Response) => {
     const {code} = req.body
     const userId = req.user.id
@@ -481,6 +494,7 @@ export const teamController = {
     getAllTeamMembers,
     getMyTeamDetails,
     inviteUser,
+    getPendingInvitations,
     joinByInvitation,
     rejectInvitation,
     leaveTeam,

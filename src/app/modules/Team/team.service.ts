@@ -3,13 +3,12 @@ import ApiError from '../../../errors/ApiError';
 import httpstatus from 'http-status';
 import { fileUploader } from '../../../helpers/fileUploader';
 import { ITeam } from './team.interface';
-import { ContestStatus, HistoryResult, JoinRequestStatus, LevelName, MatchResult, MatchStatus, MemberLevel, NotificationType, TeamAccessibility } from '../../../prismaClient';
+import { ContestStatus, HistoryResult, JoinRequestStatus, LevelName, MatchResult, MatchStatus, MemberLevel, NotificationType, Prisma, TeamAccessibility } from '../../../prismaClient';
 import { contestService } from '../Contest/contest.service';
 import { notificationService } from '../Notification/notification.service';
 import { levelService } from '../Level/level.service';
 import { voteService } from '../Vote/vote.service';
 import { userService } from '../User/user.service';
-import { profileService } from '../Profile/profile.service';
 import { paginationHelper } from '../../../helpers/paginationHelper';
 import { userStoreService } from '../User/UserStore/userStore.service';
 
@@ -32,7 +31,14 @@ export const createTeam = async (creatorId: string, body: ITeam, file:Express.Mu
 
 
     const {team, member} = await prisma.$transaction(async (tx) => {
-        await userStoreService.deductCoinsFromStore(creatorId, 500)
+        const charged = await tx.userStore.updateMany({
+            where:{userId:creatorId, coins:{gte:500}},
+            data:{coins:{decrement:500}}
+        })
+        if(charged.count !== 1){
+            throw new ApiError(httpstatus.BAD_REQUEST, "You need at least 500 coins to create a team")
+        }
+
         const team = await tx.team.create({
             data: {
                 creatorId,
@@ -335,10 +341,12 @@ const joinATeam = async (userId:string, teamId:string)=>{
     //     throw new ApiError(httpstatus.BAD_REQUEST, "Sorry, you can not join this team")
     // }
 
-    const newMemeber = await prisma.teamMember.create({data:{memberId:userId, teamId}})
-    if(newMemeber){
-        await prisma.team.update({where:{id:team.id}, data:{member_count:{increment:1}}})
-    }
+    const newMemeber = await prisma.$transaction(async tx => {
+        const member = await tx.teamMember.create({data:{memberId:userId, teamId}})
+        await tx.team.update({where:{id:team.id}, data:{member_count:{increment:1}}})
+
+        return member
+    })
 
     return newMemeber
 }
@@ -460,6 +468,19 @@ const inviteUser = async (senderId:string, teamId:string, receiverId:string) => 
     await notificationService.postNotification("Invitation Sent", "Your invitation sent successfully", senderId, NotificationType.DEFAULT)
     return teamInvitation
 }
+
+const getPendingInvitations = async (userId:string, teamId:string) => {
+    const teamMember = await isTeamMemberExist(userId, teamId)
+    if(!teamMember){
+        throw new ApiError(httpstatus.FORBIDDEN, "you are not allowed to view invitations for this team")
+    }
+
+    return await prisma.teamInvitation.findMany({
+        where:{teamId, expiredAt:{gt:new Date()}},
+        orderBy:{createdAt:"desc"}
+    })
+}
+
 const joinByInvitation = async (userId:string, invitationId:string) => {
     const invitation = await prisma.teamInvitation.findUnique({where:{id:invitationId}})
 
@@ -471,12 +492,33 @@ const joinByInvitation = async (userId:string, invitationId:string) => {
         throw new ApiError(httpstatus.FORBIDDEN, "This invitation does not belong to you")
     }
     try{
-        const joinedTeam = await joinATeam(invitation.receiverId, invitation.teamId)
-        await prisma.teamInvitation.delete({where:{id:invitation.id}})
+        const joinedTeam = await prisma.$transaction(async tx => {
+            const activeInvitation = await tx.teamInvitation.findUnique({where:{id:invitationId}})
+            if(!activeInvitation || activeInvitation.expiredAt < new Date()){
+                throw new ApiError(httpstatus.BAD_REQUEST, "invitation expired")
+            }
+            if(activeInvitation.receiverId !== userId){
+                throw new ApiError(httpstatus.FORBIDDEN, "This invitation does not belong to you")
+            }
+
+            const existingTeam = await tx.teamMember.findFirst({where:{memberId:userId}})
+            if(existingTeam){
+                throw new ApiError(httpstatus.BAD_REQUEST, "You are already joined a team!")
+            }
+
+            const member = await tx.teamMember.create({data:{memberId:activeInvitation.receiverId, teamId:activeInvitation.teamId}})
+            await tx.team.update({where:{id:activeInvitation.teamId}, data:{member_count:{increment:1}}})
+            await tx.teamInvitation.delete({where:{id:activeInvitation.id}})
+
+            return member
+        })
         await notificationService.postNotification("Invitation Accepted", "Your invitation accepted", invitation.senderId,NotificationType.DEFAULT)
         return joinedTeam
     }catch(err:any){
         console.log(err)
+        if(err instanceof ApiError){
+            throw err
+        }
         throw new ApiError(httpstatus.BAD_REQUEST, err.message)
     }
     
@@ -508,8 +550,10 @@ const leaveATeam = async (userId:string, teamId:string) => {
         throw new ApiError(httpstatus.NOT_FOUND, "member not found")
     }
 
-    await prisma.teamMember.delete({where:{id:member.id}})
-    await prisma.team.update({where:{id:teamId}, data:{member_count:{decrement:1}}})
+    await prisma.$transaction(async tx => {
+        await tx.teamMember.delete({where:{id:member.id}})
+        await tx.team.update({where:{id:teamId}, data:{member_count:{decrement:1}}})
+    })
 
 }
 
@@ -521,8 +565,17 @@ const removeFromTeam = async (userId:string,memberId:string, teamId:string) => {
         throw new ApiError(httpstatus.BAD_REQUEST, 'Sorry, You are not allowed to remove member')
     }
 
-    const removedMember = await prisma.teamMember.delete({where:{id:memberId}})
-    await prisma.team.update({where:{id:teamId}, data:{member_count:{decrement:1}}})
+    const removedMember = await prisma.$transaction(async tx => {
+        const targetMember = await tx.teamMember.findUnique({where:{id:memberId}})
+        if(!targetMember || targetMember.teamId !== teamId){
+            throw new ApiError(httpstatus.NOT_FOUND, "member not found")
+        }
+
+        const removedMember = await tx.teamMember.delete({where:{id:memberId}})
+        await tx.team.update({where:{id:teamId}, data:{member_count:{decrement:1}}})
+
+        return removedMember
+    })
 
     return removedMember
 }
@@ -689,8 +742,17 @@ const approveJoinRequest = async (joinRequestId:string, userId:string) => {
         throw new ApiError(httpstatus.BAD_REQUEST, "Requester already joined a team")
     }
 
-    await joinATeam(request.requesterId, request.teamId)
-    const updatedRequest = await prisma.teamJoinRequest.update({where:{id:joinRequestId}, data:{status:JoinRequestStatus.APPROVED}})
+    const updatedRequest = await prisma.$transaction(async tx => {
+        const pendingRequest = await tx.teamJoinRequest.findUnique({where:{id:joinRequestId}})
+        if(!pendingRequest || pendingRequest.status !== JoinRequestStatus.PENDING){
+            throw new ApiError(httpstatus.NOT_FOUND, "Join request not found")
+        }
+
+        const member = await tx.teamMember.create({data:{memberId:pendingRequest.requesterId, teamId:pendingRequest.teamId}})
+        await tx.team.update({where:{id:pendingRequest.teamId}, data:{member_count:{increment:1}}})
+
+        return tx.teamJoinRequest.update({where:{id:joinRequestId}, data:{status:JoinRequestStatus.APPROVED}})
+    })
 
     await notificationService.postNotification("Join Request Approved", "Your request to join the team was approved", request.requesterId, NotificationType.TEAM_JOIN_APPROVED)
 
@@ -776,10 +838,10 @@ const getTeamHistory = async (teamId:string, page?:number, limit?:number) => {
     return { data:history, meta:paginationHelper.getPaginationMetaData(currentPage, take, total) }
 }
 
-const updateTeamStatsForMatch = async (teamId:string, opponentTeamId:string, teamScore:number, opponentScore:number, result:HistoryResult, matchId:string, contestId:string) => {
+const updateTeamStatsForMatch = async (tx:Prisma.TransactionClient, teamId:string, opponentTeamId:string, teamScore:number, opponentScore:number, result:HistoryResult, matchId:string, contestId:string) => {
     const scoreDelta = result === HistoryResult.WIN ? 3 : result === HistoryResult.DRAW ? 1 : 0
 
-    await prisma.team.update({
+    await tx.team.update({
         where:{id:teamId},
         data:{
             total_matches:{increment:1},
@@ -790,53 +852,55 @@ const updateTeamStatsForMatch = async (teamId:string, opponentTeamId:string, tea
         }
     })
 
-    const existingHistory = await prisma.teamMatchHistory.findFirst({where:{teamId, matchId}})
+    const existingHistory = await tx.teamMatchHistory.findFirst({where:{teamId, matchId}})
     if(existingHistory){
-        await prisma.teamMatchHistory.update({
+        await tx.teamMatchHistory.update({
             where:{id:existingHistory.id},
             data:{opponent_team_id:opponentTeamId, team_score:teamScore, opponent_score:opponentScore, result, match_date:new Date(), contest_id:contestId}
         })
         return
     }
 
-    await prisma.teamMatchHistory.create({
+    await tx.teamMatchHistory.create({
         data:{teamId, matchId, opponent_team_id:opponentTeamId, team_score:teamScore, opponent_score:opponentScore, result, match_date:new Date(), contest_id:contestId}
     })
 }
 
 const recordMatchResult = async (matchId:string, team1Score:number, team2Score:number) => {
-    const match = await prisma.teamMatch.findUnique({where:{id:matchId}})
-    if(!match){
-        throw new ApiError(httpstatus.NOT_FOUND, "match not found")
-    }
-    if(match.status !== MatchStatus.ACTIVE){
-        throw new ApiError(httpstatus.BAD_REQUEST, "This match has already been closed")
-    }
-    if(!match.team1Id || !match.team2Id){
-        throw new ApiError(httpstatus.BAD_REQUEST, "This match has a deleted team")
-    }
+    return prisma.$transaction(async tx => {
+        const match = await tx.teamMatch.findUnique({where:{id:matchId}})
+        if(!match){
+            throw new ApiError(httpstatus.NOT_FOUND, "match not found")
+        }
+        if(match.status !== MatchStatus.ACTIVE){
+            throw new ApiError(httpstatus.BAD_REQUEST, "This match has already been closed")
+        }
+        if(!match.team1Id || !match.team2Id){
+            throw new ApiError(httpstatus.BAD_REQUEST, "This match has a deleted team")
+        }
 
-    let result:MatchResult = MatchResult.DRAW
-    let winnerId:string | undefined
-    if(team1Score > team2Score){
-        result = MatchResult.TEAM1_WIN
-        winnerId = match.team1Id
-    }else if(team2Score > team1Score){
-        result = MatchResult.TEAM2_WIN
-        winnerId = match.team2Id
-    }
+        let result:MatchResult = MatchResult.DRAW
+        let winnerId:string | undefined
+        if(team1Score > team2Score){
+            result = MatchResult.TEAM1_WIN
+            winnerId = match.team1Id
+        }else if(team2Score > team1Score){
+            result = MatchResult.TEAM2_WIN
+            winnerId = match.team2Id
+        }
 
-    const updatedMatch = await prisma.teamMatch.update({
-        where:{id:matchId},
-        data:{team1_score:team1Score, team2_score:team2Score, winner_id:winnerId, result, status:MatchStatus.CLOSED, endedAt:new Date()}
+        const updatedMatch = await tx.teamMatch.update({
+            where:{id:matchId},
+            data:{team1_score:team1Score, team2_score:team2Score, winner_id:winnerId, result, status:MatchStatus.CLOSED, endedAt:new Date()}
+        })
+
+        await updateTeamStatsForMatch(tx, match.team1Id, match.team2Id, team1Score, team2Score, result === MatchResult.TEAM1_WIN ? HistoryResult.WIN : result === MatchResult.TEAM2_WIN ? HistoryResult.LOSS : HistoryResult.DRAW, matchId, match.contestId)
+        await updateTeamStatsForMatch(tx, match.team2Id, match.team1Id, team2Score, team1Score, result === MatchResult.TEAM2_WIN ? HistoryResult.WIN : result === MatchResult.TEAM1_WIN ? HistoryResult.LOSS : HistoryResult.DRAW, matchId, match.contestId)
+
+        await tx.team.updateMany({where:{active_match_id:matchId}, data:{active_match_id:null}})
+
+        return updatedMatch
     })
-
-    await updateTeamStatsForMatch(match.team1Id, match.team2Id, team1Score, team2Score, result === MatchResult.TEAM1_WIN ? HistoryResult.WIN : result === MatchResult.TEAM2_WIN ? HistoryResult.LOSS : HistoryResult.DRAW, matchId, match.contestId)
-    await updateTeamStatsForMatch(match.team2Id, match.team1Id, team2Score, team1Score, result === MatchResult.TEAM2_WIN ? HistoryResult.WIN : result === MatchResult.TEAM1_WIN ? HistoryResult.LOSS : HistoryResult.DRAW, matchId, match.contestId)
-
-    await prisma.team.updateMany({where:{active_match_id:matchId}, data:{active_match_id:null}})
-
-    return updatedMatch
 }
 
 const getActiveMatch = async (teamId:string) => {
@@ -935,24 +999,45 @@ const startTeamMatchWithAutoRival = async (teamId:string, contestId:string, user
         throw new ApiError(httpstatus.NOT_FOUND, "No available rival team found right now")
     }
 
-    let participant = await prisma.contestParticipant.findUnique({where:{contestId_userId:{contestId, userId}}})
-    if(!participant){
-        participant = await prisma.contestParticipant.create({data:{contestId, userId, memberId:actingMember.id}})
-    }
+    const uploadedPhotos = await Promise.all(files.map(file => fileUploader.uploadToDigitalOcean(file)))
 
-    for(const file of files){
-        const uploadedPhoto = await profileService.uploadUserPhoto(userId, file)
-        await prisma.contestPhoto.create({data:{contestId, participantId:participant.id, photoId:uploadedPhoto.id}})
-    }
+    const match = await prisma.$transaction(async tx => {
+        const existingActiveMatch = await tx.teamMatch.findFirst({where:{OR:[{team1Id:teamId}, {team2Id:teamId}], status:MatchStatus.ACTIVE}})
+        if(existingActiveMatch){
+            throw new ApiError(httpstatus.BAD_REQUEST, "This team already has an active match")
+        }
 
-    const match = await startTeamMatch(contestId, teamId, rivalTeam.id)
+        const rivalActiveMatch = await tx.teamMatch.findFirst({where:{OR:[{team1Id:rivalTeam.id}, {team2Id:rivalTeam.id}], status:MatchStatus.ACTIVE}})
+        if(rivalActiveMatch){
+            throw new ApiError(httpstatus.BAD_REQUEST, "Selected rival team already has an active match")
+        }
 
-    await Promise.all([
-        prisma.team.update({where:{id:teamId}, data:{active_match_id:match.id}}),
-        prisma.team.update({where:{id:rivalTeam.id}, data:{active_match_id:match.id}}),
-        ensureTeamParticipation(teamId, contestId),
-        ensureTeamParticipation(rivalTeam.id, contestId)
-    ])
+        let participant = await tx.contestParticipant.findUnique({where:{contestId_userId:{contestId, userId}}})
+        if(!participant){
+            participant = await tx.contestParticipant.create({data:{contestId, userId, memberId:actingMember.id}})
+        }
+
+        for(const uploadedPhoto of uploadedPhotos){
+            const userPhoto = await tx.userPhoto.create({data:{url:uploadedPhoto.Location, userId}})
+            await tx.contestPhoto.create({data:{contestId, participantId:participant.id, photoId:userPhoto.id}})
+        }
+
+        const match = await tx.teamMatch.create({data:{contestId, team1Id:teamId, team2Id:rivalTeam.id, endedAt:contest.endDate}})
+
+        await tx.team.update({where:{id:teamId}, data:{active_match_id:match.id}})
+        await tx.team.update({where:{id:rivalTeam.id}, data:{active_match_id:match.id}})
+
+        const ownParticipation = await tx.teamParticipation.findFirst({where:{teamId, contestId}})
+        if(!ownParticipation){
+            await tx.teamParticipation.create({data:{teamId, contestId}})
+        }
+        const rivalParticipation = await tx.teamParticipation.findFirst({where:{teamId:rivalTeam.id, contestId}})
+        if(!rivalParticipation){
+            await tx.teamParticipation.create({data:{teamId:rivalTeam.id, contestId}})
+        }
+
+        return match
+    })
 
     return await prisma.teamMatch.findUnique({
         where:{id:match.id},
@@ -965,6 +1050,7 @@ export const teamService = {
     createTeam, getTeams, getTeamDetails, updateTeam, deleteTeam, joinATeam, isTeamExist, isTeamMemberExist, getAllTeamMember, getMyTeamDetails,
     startTeamMatch,
     inviteUser,
+    getPendingInvitations,
     joinByInvitation,
     rejectInvitation,
     getMatchDetails,

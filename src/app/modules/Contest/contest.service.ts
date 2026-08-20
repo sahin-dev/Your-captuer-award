@@ -311,29 +311,67 @@ const updateContest = async (contestId:string, contestData:updateContestData, ba
         updatePayload.banner = bannerUrl
     }
 
-    const updatedContest = await prisma.contest.update({
-        where:{id:contestId},
-        data:{
-            ...updatePayload,
-            startDate,
-            endDate,
-            isMoneyContest,
-            currency:isMoneyContest ? currency : null,
-            minPrize:isMoneyContest ? minPrize : 0,
-            maxPrize:isMoneyContest ? maxPrize : 0,
-            entryFeeCoins,
-            ...(rules !== undefined && {maxUpload:contestRuleService.getSubmissionLimitFromRules(contestRuleService.normalizeContestRules(rules))}),
-        }
-    })
+    const normalizedRules = rules !== undefined
+        ? contestRuleService.normalizeContestRules(rules)
+        : undefined
+    const awardRows = (prizeIds !== undefined || prizes !== undefined)
+        ? await prizeService.resolveAwardRows(
+            prizeIds || [],
+            prizes || [],
+            (prizeIds || []).length === 0 && (prizes || []).length === 0
+        )
+        : undefined
 
-    const [updatedRules, updatedAwards] = await Promise.all([
-        rules !== undefined
-            ? contestRuleService.addContestRules(contestId, rules)
-            : Promise.resolve(undefined),
-        (prizeIds !== undefined || prizes !== undefined)
-            ? prizeService.replaceContestAwards(contestId, prizeIds || [], prizes || [])
-            : Promise.resolve(undefined)
-    ])
+    const {updatedContest, updatedRules, updatedAwards} = await prisma.$transaction(async tx => {
+        const updatedContest = await tx.contest.update({
+            where:{id:contestId},
+            data:{
+                ...updatePayload,
+                startDate,
+                endDate,
+                isMoneyContest,
+                currency:isMoneyContest ? currency : null,
+                minPrize:isMoneyContest ? minPrize : 0,
+                maxPrize:isMoneyContest ? maxPrize : 0,
+                entryFeeCoins,
+                ...(normalizedRules !== undefined && {maxUpload:contestRuleService.getSubmissionLimitFromRules(normalizedRules)}),
+            }
+        })
+
+        let updatedRules
+        if(normalizedRules !== undefined){
+            await tx.contestRuleConfig.deleteMany({where:{contestId}})
+            await tx.contestRuleConfig.createMany({
+                data:normalizedRules.map(rule => ({
+                    contestId,
+                    key:rule.key,
+                    value:rule.value,
+                    enabled:rule.enabled ?? true,
+                    order:rule.order ?? contestRuleDefinitions[rule.key].order
+                }))
+            })
+            updatedRules = await tx.contestRuleConfig.findMany({
+                where:{contestId},
+                orderBy:{order:"asc"}
+            })
+        }
+
+        let updatedAwards
+        if(awardRows !== undefined){
+            await tx.contestAward.deleteMany({where:{contestId}})
+            if(awardRows.length > 0){
+                await tx.contestAward.createMany({
+                    data:awardRows.map(row => ({contestId, ...row}))
+                })
+            }
+            updatedAwards = await tx.contestAward.findMany({
+                where:{contestId, enabled:true},
+                orderBy:[{order:"asc"}, {createdAt:"asc"}]
+            })
+        }
+
+        return {updatedContest, updatedRules, updatedAwards}
+    })
 
     return {
         ...updatedContest,
@@ -800,13 +838,29 @@ const getContestsByStatus = async (userId:string,status: ContestStatus) => {
 //Get all uploads of a user
 
 const getContestUploadsByUserId = async (contestId:string, userId:string)=>{
-    const userUploads = await prisma.contestPhoto.findMany({where:{contestId:contestId, photo:{userId}}, include:{photo:{select:{url:true}}}})
-   const mappedPhotos  = userUploads.flatMap(upload => {
+    const userUploads = await prisma.contestPhoto.findMany({where:{contestId:contestId, photo:{userId}}, include:{photo:{select:{id:true, url:true}}}})
+   const mappedPhotos  = await Promise.all(userUploads.flatMap(upload => {
 
     const {photo, ...rest} = upload
 
-    return photo ? [{...rest,url:photo.url}] : []
-   })
+    return photo ? [async () => {
+        const voteCount = await voteService.getVoteCount(upload.id)
+        const totalVotes = voteCount + (upload.initialVotes || 0)
+        const traded = upload.updatedAt.getTime() > upload.createdAt.getTime() && !upload.promoted
+
+        return {
+            ...rest,
+            userPhotoId:photo.id,
+            url:photo.url,
+            voteCount,
+            totalVotes,
+            votes:totalVotes,
+            vote_count:voteCount,
+            total_votes:totalVotes,
+            traded
+        }
+    }] : []
+   }).map(getUpload => getUpload()))
 
     return mappedPhotos
 }
@@ -1443,10 +1497,35 @@ const tradePhoto = async (userId:string,contestId:string, contestPhotoId:string,
         throw new ApiError(httpstatus.BAD_REQUEST, "you does not have enough trade")
     }
 
+    let replacementPhotoId = photoId
+    if(!replacementPhotoId){
+        if(!file){
+            throw new ApiError(httpstatus.BAD_REQUEST, "file is required to replace contest photo")
+        }
+        const uploadedPhoto = await profileService.uploadUserPhoto(userId, file)
+        replacementPhotoId = uploadedPhoto.id
+    }
+
     const replacedPhoto = await prisma.$transaction(async trx => {
         const store = await trx.userStore.findUnique({where:{userId}})
         if (!store || store.swap <= 0){
             throw new ApiError(httpstatus.BAD_REQUEST, "you does not have enough trade")
+        }
+
+        const currentContestPhoto = await trx.contestPhoto.findUnique({
+            where:{id:contestPhotoId, contestId},
+            include:{participant:true}
+        })
+        if(!currentContestPhoto){
+            throw new ApiError(httpstatus.NOT_FOUND, "contest photo not found")
+        }
+        if(currentContestPhoto.participant.userId !== userId){
+            throw new ApiError(httpstatus.FORBIDDEN, "You are not allowed to trade this contest photo")
+        }
+
+        const replacementPhoto = await trx.userPhoto.findUnique({where:{id:replacementPhotoId, userId}})
+        if(!replacementPhoto){
+            throw new ApiError(httpstatus.BAD_REQUEST, "One or more photos do not belong to this user")
         }
 
         await trx.userStore.update({
@@ -1454,7 +1533,10 @@ const tradePhoto = async (userId:string,contestId:string, contestPhotoId:string,
             data:{swap:{decrement:1}}
         })
 
-        return await replaceContestPhoto(userId, contestId, contestPhotoId, photoId, file)
+        return trx.contestPhoto.update({
+            where:{id:contestPhotoId},
+            data:{photoId:replacementPhotoId}
+        })
     })
 
     return replacedPhoto
