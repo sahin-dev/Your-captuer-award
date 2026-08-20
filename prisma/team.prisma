@@ -1,35 +1,34 @@
-
 model Team {
-  id            String            @id @default(auto()) @map("_id") @db.ObjectId
-  name          String
-  level         String @default("Beginner")
-  language      String
-  country       String
-  description   String
-  accessibility TeamAccessibility   @default(PUBLIC)
-  member_count   Int  @default(0)
-  member_slots   Int  @default(22)
-  score         Int   @default(0)
-  win           Int   @default(0)
-  lost          Int   @default(0)
-  draw          Int   @default(0)
-  badge         String     @default("https://www.freepik.com/free-photo/businesspeople-having-good-time-meeting_861800.htm#fromView=keyword&page=1&position=6&uuid=59ca936a-5c54-464c-a5ed-b579a1cd4afe&query=Team")   //Image file
-  min_requirement   Int?
-  min_requirement_str  String @default("No minimum requirement")
-  active_match_id   String?  @db.ObjectId
-  leaderboard_rank  Int?
-  total_matches     Int  @default(0)
-  skill_level       LevelName  @default(APPRENTICE)
-  creatorId     String            @db.ObjectId
-  creator       User              @relation(fields: [creatorId], references: [id])
-  members       TeamMember[]
-  chat          Chat[]
-  participations    TeamParticipation[]
-  MatchesAsTeam1     TeamMatch[]  @relation(name: "team1")
-  MatchesAsTeam2     TeamMatch[]  @relation(name: "team2")
-  joinRequests      TeamJoinRequest[]
-  history           TeamMatchHistory[]
-  opponentHistory   TeamMatchHistory[] @relation("opponentTeam")
+  id                  String              @id @default(auto()) @map("_id") @db.ObjectId
+  name                String
+  level               String              @default("Beginner")
+  language            String
+  country             String
+  description         String
+  accessibility       TeamAccessibility   @default(PUBLIC)
+  member_count        Int                 @default(0)
+  member_slots        Int                 @default(22)
+  score               Int                 @default(0)
+  win                 Int                 @default(0)
+  lost                Int                 @default(0)
+  draw                Int                 @default(0)
+  badge               String              @default("https://www.freepik.com/free-photo/businesspeople-having-good-time-meeting_861800.htm#fromView=keyword&page=1&position=6&uuid=59ca936a-5c54-464c-a5ed-b579a1cd4afe&query=Team") //Image file
+  min_requirement     Int?
+  min_requirement_str String              @default("No minimum requirement")
+  active_match_id     String?             @db.ObjectId
+  leaderboard_rank    Int?
+  total_matches       Int                 @default(0)
+  skill_level         LevelName           @default(APPRENTICE)
+  creatorId           String              @db.ObjectId
+  creator             User                @relation(fields: [creatorId], references: [id])
+  members             TeamMember[]
+  chat                Chat[]
+  participations      TeamParticipation[]
+  MatchesAsTeam1      TeamMatch[]         @relation(name: "team1")
+  MatchesAsTeam2      TeamMatch[]         @relation(name: "team2")
+  joinRequests        TeamJoinRequest[]
+  history             TeamMatchHistory[]
+  opponentHistory     TeamMatchHistory[]  @relation("opponentTeam")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -38,40 +37,42 @@ model Team {
 }
 
 model TeamMatch {
-  id      String        @id  @default(auto())  @map("_id")  @db.ObjectId
-  contestId     String    @db.ObjectId
-  team1Id         String?    @db.ObjectId
-  team2Id         String?    @db.ObjectId
-  contest     Contest     @relation(references: [id], fields: [contestId])
-  team1    Team?         @relation(name: "team1",references: [id], fields: [team1Id], onDelete:SetNull)
-  team2     Team?        @relation(name: "team2",references: [id], fields: [team2Id], onDelete:SetNull)
-  
+  id               String   @id @default(auto()) @map("_id") @db.ObjectId
+  contestId        String   @db.ObjectId
+  team1Id          String?  @db.ObjectId
+  team2Id          String?  @db.ObjectId
+  team1_member_ids String[] @default([]) @db.ObjectId
+  team2_member_ids String[] @default([]) @db.ObjectId
+  started_by_id    String?  @db.ObjectId
+  contest          Contest  @relation(references: [id], fields: [contestId])
+  team1            Team?    @relation(name: "team1", references: [id], fields: [team1Id], onDelete: SetNull)
+  team2            Team?    @relation(name: "team2", references: [id], fields: [team2Id], onDelete: SetNull)
+
   // NEW: Scoring and Result Fields
-  team1_score   Int       @default(0)
-  team2_score   Int       @default(0)
-  winner_id     String?   @db.ObjectId
-  result        MatchResult  @default(PENDING)
-  
-  status      MatchStatus   @default(ACTIVE)
-  startedAt   DateTime    @default(now())
-  endedAt     DateTime?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime  @updatedAt
+  team1_score Int         @default(0)
+  team2_score Int         @default(0)
+  winner_id   String?     @db.ObjectId
+  result      MatchResult @default(PENDING)
+
+  status    MatchStatus @default(ACTIVE)
+  startedAt DateTime    @default(now())
+  endedAt   DateTime?
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
 
   @@map("team_mathces")
 }
 
-
 model TeamMember {
   id     String           @id @default(auto()) @map("_id") @db.ObjectId
   status TeamMemberStatus @default(ACTIVE)
-  level   MemberLevel   @default(MEMBER)
+  level  MemberLevel      @default(MEMBER)
 
-  teamId   String @db.ObjectId
-  memberId String @unique @db.ObjectId
-  team     Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  member   User   @relation(fields: [memberId], references: [id], onDelete: Cascade)
-  contestParticipant   ContestParticipant[]
+  teamId             String               @db.ObjectId
+  memberId           String               @unique @db.ObjectId
+  team               Team                 @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  member             User                 @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  contestParticipant ContestParticipant[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -80,70 +81,70 @@ model TeamMember {
 }
 
 model TeamParticipation {
-  id      String      @id  @map("_id")  @default(auto())  @db.ObjectId
+  id String @id @default(auto()) @map("_id") @db.ObjectId
 
-  teamId    String?    @db.ObjectId
-  contestId   String    @db.ObjectId
+  teamId    String? @db.ObjectId
+  contestId String  @db.ObjectId
 
-  team      Team?   @relation(references: [id], fields: [teamId], onDelete: SetNull)
-  contest Contest   @relation(references: [id], fields: [contestId])
+  team    Team?   @relation(references: [id], fields: [teamId], onDelete: SetNull)
+  contest Contest @relation(references: [id], fields: [contestId])
 
-  @@map("team_participations")
   @@index([teamId])
+  @@map("team_participations")
 }
 
 model TeamInvitation {
-  id    String    @id  @map("_id")  @default(auto())  @db.ObjectId
+  id String @id @default(auto()) @map("_id") @db.ObjectId
 
-  teamId  String    @db.ObjectId
-  receiverId   String     @db.ObjectId
-  senderId      String      @db.ObjectId
+  teamId     String @db.ObjectId
+  receiverId String @db.ObjectId
+  senderId   String @db.ObjectId
 
-  status  InvitationStatus  @default(ACTIVE)
-  expiredAt  DateTime
+  status    InvitationStatus @default(ACTIVE)
+  expiredAt DateTime
 
-  createdAt    DateTime   @default(now())
-  updatedAt   DateTime    @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("team_invitations")
 }
 
 // NEW: Team Join Request Model
 model TeamJoinRequest {
-  id    String    @id  @map("_id")  @default(auto())  @db.ObjectId
+  id String @id @default(auto()) @map("_id") @db.ObjectId
 
-  teamId  String    @db.ObjectId
-  requesterId   String     @db.ObjectId
+  teamId      String @db.ObjectId
+  requesterId String @db.ObjectId
 
-  team      Team   @relation(fields: [teamId], references: [id])
-  requester     User   @relation("sentJoinRequests", fields: [requesterId], references: [id])
+  team      Team @relation(fields: [teamId], references: [id])
+  requester User @relation("sentJoinRequests", fields: [requesterId], references: [id])
 
-  status  JoinRequestStatus  @default(PENDING)
+  status JoinRequestStatus @default(PENDING)
 
-  createdAt    DateTime   @default(now())
-  updatedAt   DateTime    @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("team_join_requests")
 }
 
 // NEW: Team Match History Model
 model TeamMatchHistory {
-  id      String        @id  @default(auto())  @map("_id")  @db.ObjectId
-  teamId        String?    @db.ObjectId
-  team          Team?      @relation(fields: [teamId], references: [id], onDelete: SetNull)
-  
-  matchId       String    @db.ObjectId
-  opponent_team_id    String?    @db.ObjectId
-  team_score    Int
-  opponent_score    Int
-  result        HistoryResult
-  match_date    DateTime
-  contest_id    String?   @db.ObjectId
+  id     String  @id @default(auto()) @map("_id") @db.ObjectId
+  teamId String? @db.ObjectId
+  team   Team?   @relation(fields: [teamId], references: [id], onDelete: SetNull)
 
-  opponent_team   Team?     @relation("opponentTeam", fields: [opponent_team_id], references: [id], onDelete: SetNull)
-  contest          Contest?   @relation(fields: [contest_id], references: [id])
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime  @updatedAt
+  matchId          String        @db.ObjectId
+  opponent_team_id String?       @db.ObjectId
+  team_score       Int
+  opponent_score   Int
+  result           HistoryResult
+  match_date       DateTime
+  contest_id       String?       @db.ObjectId
+
+  opponent_team Team?    @relation("opponentTeam", fields: [opponent_team_id], references: [id], onDelete: SetNull)
+  contest       Contest? @relation(fields: [contest_id], references: [id])
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   @@map("team_match_history")
 }
@@ -153,7 +154,7 @@ enum TeamAccessibility {
   PRIVATE
 }
 
-enum  InvitationStatus {
+enum InvitationStatus {
   ACTIVE
   EXPIRED
 }
