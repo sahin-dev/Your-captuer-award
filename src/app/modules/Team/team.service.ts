@@ -1761,14 +1761,14 @@ const closeActiveMatchesForContest = async (contestId: string) => {
   return closeTeamMatches(matches);
 };
 
-// Safety-net retry: picks up any team match still ACTIVE after its contest has ended,
-// regardless of why it wasn't closed the first time (e.g. contest finalization crashed
-// before closeActiveMatchesForContest ran, or a transient error during closing).
+// Safety-net retry: picks up any team match still ACTIVE whose contest has already
+// been finalized (status COMPLETED), regardless of why it wasn't closed the first time
+// (e.g. closeActiveMatchesForContest failed or was never reached during finalization).
 const retryStaleTeamMatches = async () => {
   const matches = await prisma.teamMatch.findMany({
     where: {
       status: MatchStatus.ACTIVE,
-      contest: { endDate: { lte: new Date() } },
+      contest: { status: ContestStatus.COMPLETED },
     },
   });
 
