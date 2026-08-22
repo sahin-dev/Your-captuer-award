@@ -150,8 +150,8 @@ const getPlansStats = catchAsync(async (req:Request, res:Response) => {
 })
 
 const getTransactions = catchAsync(async (req:Request, res:Response) => {
-    const {page, limit} = req.query as {page:string, limit:string}
-    const transactions = await dashboardService.getTransactions({page, limit})
+    const {page, limit, search} = req.query as {page:string, limit:string, search?:string}
+    const transactions = await dashboardService.getTransactions({page, limit, search})
     sendResponse(res, {
         success:true,
         statusCode:httpStatus.OK,

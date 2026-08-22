@@ -59,10 +59,10 @@ const calcIncomeDataByYear = async (year: string) => {
 
     const totalIncome = allPayments.reduce((acc, payment) => acc + payment.amount, 0);
     const totalProIncome = allPayments
-        .filter(payment => payment.method === 'SUBSCRIPTION' && payment.planName === SubscriptionPlanEnum.PRO)
+        .filter(payment => payment.type === PaymentType.SUBSCRIPTION && payment.planName === SubscriptionPlanEnum.PRO)
         .reduce((acc, payment) => acc + payment.amount, 0);
     const totalPremiumIncome = allPayments
-        .filter(payment => payment.method === 'SUBSCRIPTION' && payment.planName === SubscriptionPlanEnum.PREMIUM)
+        .filter(payment => payment.type === PaymentType.SUBSCRIPTION && payment.planName === SubscriptionPlanEnum.PREMIUM)
         .reduce((acc, payment) => acc + payment.amount, 0);
     let incomeByMonth: Record<string, number> = {};
     allPayments.forEach(payment => {
@@ -82,7 +82,7 @@ const getProPreminumIncomeByYear = async (year: string) => {
     const allPayments = await prisma.payment.findMany({
       where: {
         status: PaymentStatus.SUCCEEDED,
-        method: 'SUBSCRIPTION',
+        type: PaymentType.SUBSCRIPTION,
         createdAt: {
             gte: new Date(`${year}-01-01`),
             lt: new Date(`${Number(year) + 1}-01-01`)
@@ -118,11 +118,11 @@ const calcIncomeData = async () =>{
 
     const totalIncome = allPayments.reduce((acc, payment) => acc + payment.amount, 0);
     const totalProIncome = allPayments
-        .filter(payment => payment.method === 'SUBSCRIPTION' && payment.planName === SubscriptionPlanEnum.PRO)
+        .filter(payment => payment.type === PaymentType.SUBSCRIPTION && payment.planName === SubscriptionPlanEnum.PRO)
         .reduce((acc, payment) => acc + payment.amount, 0);
 
     const totalPremiumIncome = allPayments
-        .filter(payment => payment.method === 'SUBSCRIPTION' && payment.planName === SubscriptionPlanEnum.PREMIUM)
+        .filter(payment => payment.type === PaymentType.SUBSCRIPTION && payment.planName === SubscriptionPlanEnum.PREMIUM)
         .reduce((acc, payment) => acc + payment.amount, 0);
 
     let incomeByMonth: Record<string, number> = {};
@@ -209,8 +209,8 @@ const getRevenueByType = async (year: string) => {
     
     payments.forEach(payment => {
         const month = new Date(payment.createdAt).getMonth() + 1
-        const type = payment.method === 'SUBSCRIPTION' ? 'subscription' : 
-                     payment.method === 'STORE' ? 'store' : 'contest'
+        const type = payment.type === PaymentType.SUBSCRIPTION ? 'subscription' : 
+                     payment.type === PaymentType.STORE ? 'store' : 'contest'
         
         revenueByMonth[month][type] += payment.amount
         revenueByMonth[month].total += payment.amount
@@ -277,7 +277,7 @@ const getTotalStoreSalesRevenue = async () => {
     const storePayments = await prisma.payment.aggregate({
         where: {
             status: PaymentStatus.SUCCEEDED,
-            method: 'STORE'
+            type: PaymentType.STORE
         },
         _sum: { amount: true }
     })
@@ -322,7 +322,7 @@ const getDashboardOverview = async () => {
     const totalStoreSalesRevenue = await getTotalStoreSalesRevenue()
     
     // Calculate total revenue
-    const totalRevenue = totalIncomeData.totalIncome + totalStoreSalesRevenue
+    const totalRevenue = totalIncomeData.totalIncome
 
    
 
@@ -357,8 +357,9 @@ const getUserStats  = async () => {
     const totalUsers = await prisma.user.count()
     const active_user_count = await activeUsers()
     const inactive_user_count = await inactiveUsers()
+    const blocked_user_count = await prisma.user.count({where:{isBlocked:true}})
     const paid_members_count = await getpaidMembers()
-    return {totalUsers, active_user_count, inactive_user_count, paid_members_count}
+    return {totalUsers, active_user_count, inactive_user_count, blocked_user_count, paid_members_count}
 }
 
 const getAllUsers = async (pagination:{page:string, limit:string}) => {
@@ -379,8 +380,8 @@ const toggleBlockStatus = async (userId: string) => {
     
     const updatedUser = await prisma.user.update({
         where:{id:userId},
-        data:{isActive:!user.isActive},
-        select:{id:true, fullName:true, email:true, isActive:true}
+        data:{isBlocked:!user.isBlocked, isActive:user.isBlocked},
+        select:{id:true, fullName:true, email:true, isActive:true, isBlocked:true, isDeleted:true}
     })
     
     return updatedUser
@@ -389,10 +390,10 @@ const toggleBlockStatus = async (userId: string) => {
 const getStoreStats = async () => {
     const totalProducts = await prisma.product.count()
     const totalActiveProducts = await prisma.product.count({where:{status:"ACTIVE"}})
-    const totalPurchases = await prisma.payment.count({where:{method:'STORE', status:PaymentStatus.SUCCEEDED}})
+    const totalPurchases = await prisma.payment.count({where:{type:PaymentType.STORE, status:PaymentStatus.SUCCEEDED}})
     const totalRevenue = await prisma.payment.aggregate({
         where: {
-            method: 'STORE',
+            type: PaymentType.STORE,
             status: PaymentStatus.SUCCEEDED
         },
         _sum: { amount: true }
@@ -427,7 +428,7 @@ const getPlansStats = async () => {
             where:{
                 planName:plan.planName,
                 status:PaymentStatus.SUCCEEDED,
-                method:'SUBSCRIPTION'
+                type:PaymentType.SUBSCRIPTION
             },
             _sum:{amount:true}
         })
@@ -442,13 +443,32 @@ const getPlansStats = async () => {
     return plansWithStats
 }
 
-const getTransactions = async (query:{page:string, limit:string}) => {
+const getTransactions = async (query:{page:string, limit:string, search?:string}) => {
     const paginationData = {
         page: query.page ? parseInt(query.page) : 1,
         limit: query.limit ? parseInt(query.limit) : 10,
     }
 
+    const search = query.search?.trim()
+    const where = search ? {
+        OR: [
+            { currency: { contains: search, mode: 'insensitive' as const } },
+            { method: { contains: search, mode: 'insensitive' as const } },
+            { description: { contains: search, mode: 'insensitive' as const } },
+            ...(Object.values(PaymentStatus).includes(search.toUpperCase() as PaymentStatus)
+                ? [{ status: search.toUpperCase() as PaymentStatus }]
+                : []),
+            ...(Object.values(PaymentType).includes(search.toUpperCase() as PaymentType)
+                ? [{ type: search.toUpperCase() as PaymentType }]
+                : []),
+            ...(Object.values(SubscriptionPlanEnum).includes(search.toUpperCase() as SubscriptionPlanEnum)
+                ? [{ planName: search.toUpperCase() as SubscriptionPlanEnum }]
+                : []),
+        ]
+    } : {}
+
     const payments = await prisma.payment.findMany({
+        where,
         include:{user:{
             select:{id:true,avatar:true, fullName:true, email:true}
         }},
@@ -457,7 +477,7 @@ const getTransactions = async (query:{page:string, limit:string}) => {
         take:paginationData.limit
     })
 
-    const total = await prisma.payment.count()
+    const total = await prisma.payment.count({where})
 
     return {payments, total, page:paginationData.page, limit:paginationData.limit}
 }
@@ -472,6 +492,24 @@ const getTransactionStats = async () => {
         where:{status:PaymentStatus.SUCCEEDED},
         _sum:{amount:true}
     })
+    const now = new Date()
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
+    const nextMonthStart = new Date(now.getFullYear(), now.getMonth() + 1, 1)
+    const thisMonthRevenue = await prisma.payment.aggregate({
+        where:{
+            status:PaymentStatus.SUCCEEDED,
+            createdAt:{gte:monthStart, lt:nextMonthStart}
+        },
+        _sum:{amount:true}
+    })
+    const storeRevenue = await prisma.payment.aggregate({
+        where:{status:PaymentStatus.SUCCEEDED, type:PaymentType.STORE},
+        _sum:{amount:true}
+    })
+    const subscriptionRevenue = await prisma.payment.aggregate({
+        where:{status:PaymentStatus.SUCCEEDED, type:PaymentType.SUBSCRIPTION},
+        _sum:{amount:true}
+    })
     
     const allPayments = await prisma.payment.findMany({where:{status:PaymentStatus.SUCCEEDED}})
     const averageTransactionValue = allPayments.length > 0 
@@ -484,7 +522,11 @@ const getTransactionStats = async () => {
         failedTransactions,
         pendingTransactions,
         totalRevenue:totalRevenue._sum.amount || 0,
-        averageTransactionValue
+        averageTransactionValue,
+        totalSuccessfulPayments:successfulTransactions,
+        thisMonthTotalRevenue:thisMonthRevenue._sum.amount || 0,
+        totalStoreRevenue:storeRevenue._sum.amount || 0,
+        totalSubscriptionRevenue:subscriptionRevenue._sum.amount || 0
     }
 }
 
@@ -500,7 +542,7 @@ const getSubscriptionStats = async () => {
     // Total subscription revenue
     const totalSubscriptionRevenue = await prisma.payment.aggregate({
         where: {
-            method: 'SUBSCRIPTION',
+            type: PaymentType.SUBSCRIPTION,
             status: PaymentStatus.SUCCEEDED
         },
         _sum: { amount: true }
@@ -516,7 +558,7 @@ const getSubscriptionStats = async () => {
     
     const subscriptionPayments = await prisma.payment.findMany({
         where: {
-            method: 'SUBSCRIPTION',
+            type: PaymentType.SUBSCRIPTION,
             status: PaymentStatus.SUCCEEDED
         }
     })

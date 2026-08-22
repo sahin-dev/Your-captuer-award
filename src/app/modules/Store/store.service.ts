@@ -19,6 +19,7 @@ const addProduct = async (userId: string, productData: {
     amount: number;
     currency: string;
     description?: string;
+    status?: ProductStatus;
 }, file?: Express.Multer.File) => {
     const user = await prisma.user.findUnique({ where: { id: userId } });
 
@@ -44,6 +45,12 @@ const addProduct = async (userId: string, productData: {
     
     if (isNaN(parsedAmount) || parsedAmount < 0) {
         throw new ApiError(httpStatus.BAD_REQUEST, "Amount must be a non-negative number");
+    }
+    const status = productData.status
+        ? String(productData.status) as ProductStatus
+        : ProductStatus.ACTIVE;
+    if (!Object.values(ProductStatus).includes(status)) {
+        throw new ApiError(httpStatus.BAD_REQUEST, "Invalid product status");
     }
 
     let parsedItems: Array<{ type: ProductType; quantity: number }> = [];
@@ -95,7 +102,7 @@ const addProduct = async (userId: string, productData: {
             currency: productData.currency,
             description: productData.description || "",
             image: imageUrl,
-            status: ProductStatus.ACTIVE
+            status
         }
     });
 

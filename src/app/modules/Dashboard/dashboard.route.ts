@@ -25,6 +25,7 @@ route.get("/user-stats", auth(UserRole.ADMIN), dashboardController.getUserStats)
 
 // User Management Routes
 route.get("/all-users", auth(UserRole.ADMIN), dashboardController.getAllUsers)
+route.patch("/toggle-block", auth(UserRole.ADMIN), dashboardController.toggleBlockStatus)
 route.patch("/toggole-block", auth(UserRole.ADMIN), dashboardController.toggleBlockStatus)
 
 // Notifications Route

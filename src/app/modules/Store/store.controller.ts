@@ -5,11 +5,56 @@ import sendResponse from "../../../shared/ApiResponse";
 import httpStatus from 'http-status'
 import { Category } from "../../../prismaClient";
 
+const parseProductItems = (body: Record<string, any>) => {
+    if (Array.isArray(body.items)) {
+        return body.items.map((item: any) => ({
+            type: item.type,
+            quantity: Number(item.quantity)
+        }));
+    }
+
+    if (typeof body.items === "string") {
+        try {
+            const parsed = JSON.parse(body.items);
+            if (Array.isArray(parsed)) {
+                return parsed.map((item: any) => ({
+                    type: item.type,
+                    quantity: Number(item.quantity)
+                }));
+            }
+        } catch {
+            return body.items;
+        }
+    }
+
+    const indexedItems: Record<number, any> = {};
+    Object.entries(body).forEach(([key, value]) => {
+        const match = key.match(/^items\[(\d+)\]\[(type|quantity)\]$/);
+        if (!match) {
+            return;
+        }
+
+        const index = Number(match[1]);
+        indexedItems[index] = indexedItems[index] || {};
+        indexedItems[index][match[2]] = value;
+    });
+
+    const items = Object.keys(indexedItems)
+        .map(Number)
+        .sort((a, b) => a - b)
+        .map((index) => ({
+            type: indexedItems[index].type,
+            quantity: Number(indexedItems[index].quantity)
+        }));
+
+    return items.length ? items : body.items;
+};
+
 /**
  * Add a new product to the store (admin only)
  */
 const addStoreProduct = catchAsync(async (req: Request, res: Response) => {
-    const { title, category, items, quantity, amount, currency, description } = req.body;
+    const { title, category, quantity, amount, currency, description, status } = req.body;
     const userId = req.user.id;
     const file = req.file;
 
@@ -19,11 +64,7 @@ const addStoreProduct = catchAsync(async (req: Request, res: Response) => {
     const quantityNumber = Number(quantity);
     const amountNumber = Number(amount);
 
-    // Parse items quantities to numbers
-    const parsedItems = Array.isArray(items) ? items.map((item: any) => ({
-        type: item.type,
-        quantity: Number(item.quantity)
-    })) : items;
+    const parsedItems = parseProductItems(req.body);
 
     const addedProduct = await storeService.addProduct(userId, {
         title,
@@ -32,7 +73,8 @@ const addStoreProduct = catchAsync(async (req: Request, res: Response) => {
         quantity: quantityNumber,
         amount: amountNumber,
         currency,
-        description
+        description,
+        status
     }, file);
 
     sendResponse(res, {
@@ -85,7 +127,10 @@ const getProductDetails = catchAsync(async (req: Request, res: Response) => {
  */
 const updateStoreProduct = catchAsync(async (req: Request, res: Response) => {
     const { productId } = req.params;
-    const updateData = req.body;
+    const updateData = {
+        ...req.body,
+        items: parseProductItems(req.body)
+    };
     const file = req.file;
 
 
