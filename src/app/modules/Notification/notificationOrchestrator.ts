@@ -26,6 +26,7 @@ export enum NotificationEvent {
   // Contest-related
   CONTEST_PHOTO_UPLOADED = "CONTEST_PHOTO_UPLOADED",
   CONTEST_WINNER_ANNOUNCED = "CONTEST_WINNER_ANNOUNCED",
+  CONTEST_ENDED = "CONTEST_ENDED",
   
   // Achievement-related
   ACHIEVEMENT_UNLOCKED = "ACHIEVEMENT_UNLOCKED",
@@ -294,6 +295,30 @@ export async function notifyContestPhotoUploaded(
   }
 }
 
+/**
+ * Contest Ended Notification
+ * Sent to every participant once a contest has been finalized
+ */
+export async function notifyContestEnded(
+  userId: string,
+  contestName: string,
+  rank: number,
+  totalParticipants: number
+) {
+  await sendNotification({
+    event: NotificationEvent.CONTEST_ENDED,
+    userId,
+    title: "Contest Ended",
+    message: `"${contestName}" has ended! You finished rank #${rank} out of ${totalParticipants} participant(s).`,
+    type: NotificationType.DEFAULT,
+    data: {
+      contestName,
+      rank,
+      totalParticipants,
+    },
+  });
+}
+
 export const notificationOrchestrator = {
   sendNotification,
   notifyVoteReceived,
@@ -303,4 +328,5 @@ export const notificationOrchestrator = {
   notifyTeamInvitation,
   notifyAchievementUnlocked,
   notifyContestPhotoUploaded,
+  notifyContestEnded,
 };

@@ -4,6 +4,7 @@ import prisma from "../../../shared/prisma"
 import httpStatus from 'http-status'
 import { LEVEL_BADGE_TYPES, LEVEL_RULES, LevelRule } from "./level.config"
 import { getVoteWeightStats } from "../Vote/voteWeight.service"
+import { notificationOrchestrator } from "../Notification/notificationOrchestrator"
 
 
 
@@ -189,8 +190,9 @@ const persistUserLevel = async (userId:string, eligibleLevel:LevelRule | null) =
         throw new ApiError(httpStatus.NOT_FOUND, "user not found")
     }
 
+    const previousOrder = user.currentLevel ?? -1
     const eligibleOrder = eligibleLevel?.order ?? -1
-    const targetOrder = Math.max(user.currentLevel ?? -1, eligibleOrder)
+    const targetOrder = Math.max(previousOrder, eligibleOrder)
     const targetRule = getLevelRuleByOrder(targetOrder)
     const targetVotePower = targetRule?.votePower ?? user.voting_power ?? 1
 
@@ -219,7 +221,8 @@ const persistUserLevel = async (userId:string, eligibleLevel:LevelRule | null) =
     return {
         order:targetOrder,
         name:targetRule?.levelName ?? "NEW",
-        votingPower:targetVotePower
+        votingPower:targetVotePower,
+        leveledUp:targetOrder > previousOrder
     }
 }
 
@@ -228,8 +231,12 @@ const evaluateAndUpdateUserLevel = async (userId:string) => {
     const badgeCounts = await getBadgeCounts(userId)
     const stats = {...voteStats, badgeCounts}
     const eligibleLevel = getEligibleLevel(stats)
-    const currentStatus = await persistUserLevel(userId, eligibleLevel)
+    const { leveledUp, ...currentStatus } = await persistUserLevel(userId, eligibleLevel)
     const levels = LEVEL_RULES.map(rule => buildLevelProgress(rule, stats))
+
+    if(leveledUp){
+        await notificationOrchestrator.notifyLevelUp(userId, userId, currentStatus.name, voteStats.receivedVotes)
+    }
 
     return {
         currentStatus:{

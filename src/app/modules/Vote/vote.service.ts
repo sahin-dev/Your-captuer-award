@@ -9,6 +9,7 @@ import { levelService } from '../Level/level.service'
 import { contestRuleEngine } from '../Contest/ContestRules/contestRule.engine'
 import { getVoteWeightStats } from './voteWeight.service'
 import { contestProgressService } from '../Contest/ContestProgress/contestProgress.service'
+import { notificationOrchestrator } from '../Notification/notificationOrchestrator'
 
 const getVoteType = async (photoId:string)=>{
     const contestPhoto = await prisma.contestPhoto.findUnique({where:{id:photoId}})
@@ -52,6 +53,15 @@ export const addOneVote = async (userId:string, contestId:string, photoId:string
         globalEventHandler.publish(Events.NEW_VOTE,{photoId, contestId})
         await contestProgressService.evaluateParticipantLevel(contestId, contestPhoto.participantId)
         await levelService.evaluateAndUpdateUserLevel(contestPhoto.participant.userId)
+
+        const { count: totalVotes } = await getVoteWeightStats({photoId})
+        await notificationOrchestrator.notifyVoteReceived(
+            contestPhoto.participantId,
+            contestPhoto.participant.userId,
+            contestPhoto.id,
+            totalVotes,
+        )
+
         return vote
     }catch(error){
         if(error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002"){

@@ -17,6 +17,7 @@ import {
 } from "../../../prismaClient";
 import { contestService } from "../Contest/contest.service";
 import { notificationService } from "../Notification/notification.service";
+import { notificationOrchestrator } from "../Notification/notificationOrchestrator";
 import { levelService } from "../Level/level.service";
 import { voteService } from "../Vote/vote.service";
 import { userService } from "../User/user.service";
@@ -555,6 +556,19 @@ const startTeamMatch = async (
       endedAt: contest.endDate,
     },
   });
+
+  await notificationOrchestrator.notifyTeamMatchStarted(
+    ownTeamId,
+    teamMatch.id,
+    otherTeam?.name ?? "the rival team",
+    contest.title,
+  );
+  await notificationOrchestrator.notifyTeamMatchStarted(
+    otherTeamId,
+    teamMatch.id,
+    ownTeam?.name ?? "the rival team",
+    contest.title,
+  );
 
   return teamMatch;
 };
@@ -1624,7 +1638,7 @@ const closeMatchWithScores = async (
   const resolvedTeam1Score = team1Score;
   const resolvedTeam2Score = team2Score;
 
-  return prisma.$transaction(async (tx) => {
+  const updatedMatch = await prisma.$transaction(async (tx) => {
     let result: MatchResult = MatchResult.DRAW;
     let winnerId: string | undefined;
     if (resolvedTeam1Score > resolvedTeam2Score) {
@@ -1683,6 +1697,36 @@ const closeMatchWithScores = async (
 
     return updatedMatch;
   });
+
+  const team1Result =
+    updatedMatch.result === MatchResult.TEAM1_WIN
+      ? "WIN"
+      : updatedMatch.result === MatchResult.TEAM2_WIN
+        ? "LOSS"
+        : "DRAW";
+  const team2Result =
+    updatedMatch.result === MatchResult.TEAM2_WIN
+      ? "WIN"
+      : updatedMatch.result === MatchResult.TEAM1_WIN
+        ? "LOSS"
+        : "DRAW";
+
+  await notificationOrchestrator.notifyTeamMatchEnded(
+    team1Id,
+    matchId,
+    team1Result,
+    resolvedTeam1Score,
+    resolvedTeam2Score,
+  );
+  await notificationOrchestrator.notifyTeamMatchEnded(
+    team2Id,
+    matchId,
+    team2Result,
+    resolvedTeam2Score,
+    resolvedTeam1Score,
+  );
+
+  return updatedMatch;
 };
 
 const recordMatchResult = async (
@@ -2128,6 +2172,19 @@ const startTeamMatchWithAutoRival = async (
       },
     },
   });
+
+  await notificationOrchestrator.notifyTeamMatchStarted(
+    teamId,
+    match.id,
+    rival.team.name,
+    contest.title,
+  );
+  await notificationOrchestrator.notifyTeamMatchStarted(
+    rival.team.id,
+    match.id,
+    team.name,
+    contest.title,
+  );
 
   return formatActiveTeamMatch(createdMatch, teamId);
 };
