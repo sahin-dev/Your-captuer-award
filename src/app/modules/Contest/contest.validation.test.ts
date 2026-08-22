@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { createContestSchema, updateContestSchema } from "./contest.validation";
+import { RecurringType } from "../../../prismaClient";
+import { assertValidTimeZone, calculateNextOccurrence } from "../../../helpers/nextOccurance";
 import { contestRuleInputArraySchema } from "./ContestRules/contestRule.validation";
 import {
     contestRuleKeys,
@@ -80,6 +82,14 @@ test("recurrence accepts timezone and termination settings", () => {
 
     assert.equal(parsed.recurrence?.type, "WEEKLY");
     assert.equal(parsed.recurrence?.maxOccurrences, 12);
+});
+
+test("recurrence calculation preserves timezone wall-clock time", () => {
+    const beforeDst = new Date("2026-03-07T14:00:00.000Z");
+    const nextWeekly = calculateNextOccurrence(beforeDst, RecurringType.WEEKLY, "America/New_York");
+
+    assert.equal(nextWeekly.toISOString(), "2026-03-14T13:00:00.000Z");
+    assert.throws(() => assertValidTimeZone("Not/A_Timezone"), RangeError);
 });
 
 test("submission formats are restricted to formats the runtime supports", () => {

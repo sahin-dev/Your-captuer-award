@@ -169,7 +169,11 @@ async function scheduleContest(rContest:RecurringContest){
             : rContest.rules as ContestRuleConfigInput[]
         const rules = contestRuleService.normalizeContestRules(rawRules)
         const awards = await prisma.recurringContestAward.findMany({where:{recurringContestId:rContest.id}})
-        const next = calculateNextOccurance(nextOccurrence, rContest.recurring.recurringType)
+        const next = calculateNextOccurance(
+            nextOccurrence,
+            rContest.recurring.recurringType,
+            rContest.recurring.timezone
+        )
 
         const newContest = await prisma.$transaction(async tx => {
             const contest = await tx.contest.create({

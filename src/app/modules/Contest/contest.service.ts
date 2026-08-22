@@ -9,6 +9,7 @@ import { ContestRuleConfigInput } from './ContestRules/contestRules.type';
 import { profileService } from '../Profile/profile.service';
 import agenda from '../Agenda';
 import { validateContestDate } from '../../../helpers/validateDate';
+import { assertValidTimeZone } from '../../../helpers/nextOccurance';
 import { getTeammateUserIds } from '../../../helpers/teammate.helper';
 import { userStoreService } from '../User/UserStore/userStore.service';
 import { voteService } from '../Vote/vote.service';
@@ -210,6 +211,12 @@ const createRecurringContest  =  async (creatorId: string, body: contestData, ba
 
     const startDate = new Date(body.startDate)
     const endDate = new Date(body.endDate)
+    const timezone = body.recurrence?.timezone || "UTC";
+    try{
+        assertValidTimeZone(timezone);
+    }catch{
+        throw new ApiError(httpstatus.BAD_REQUEST, "Timezone must be a valid IANA timezone name");
+    }
 
     const normalizedRules = contestRuleService.normalizeContestRules(body.rules)
     const awardRows = await prizeService.resolveAwardRows(
@@ -244,7 +251,7 @@ const createRecurringContest  =  async (creatorId: string, body: contestData, ba
         previousOccurrence:null,
         nextOccurrence:startDate,
         duration:new Date(body.endDate).getTime() - new Date(body.startDate).getTime(),
-        timezone:body.recurrence?.timezone || "UTC",
+        timezone,
         endsAt:body.recurrence?.endsAt ? new Date(body.recurrence.endsAt) : null,
         maxOccurrences:body.recurrence?.maxOccurrences || null,
         generatedOccurrences:0

@@ -1,7 +1,7 @@
 import httpStatus from "http-status";
 import ApiError from "../../../errors/ApiError";
 import { RecurringContestStatus, RecurringType } from "../../../prismaClient";
-import { calculateNextOccurance } from "../../../helpers/nextOccurance";
+import { assertValidTimeZone, calculateNextOccurance } from "../../../helpers/nextOccurance";
 import prisma from "../../../shared/prisma";
 import { prizeService } from "../Prize/prize.service";
 import { ContestRuleConfigInput } from "../Contest/ContestRules/contestRules.type";
@@ -19,6 +19,14 @@ type RecurringUpdateData = {
   currency?: string | null;
   entryFeeCoins?: number;
   rules?: ContestRuleConfigInput[];
+};
+
+const validateTimeZone = (timeZone?: string | null) => {
+  try {
+    assertValidTimeZone(timeZone);
+  } catch {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Timezone must be a valid IANA timezone name");
+  }
 };
 
 const getRecurringContests = async (page = 1, limit = 20) => {
@@ -54,8 +62,11 @@ const updateRecurringContest = async (recurringContestId: string, data: Recurrin
   const startDate = data.startDate ? new Date(data.startDate) : recurringContest.startDate;
   const endDate = data.endDate ? new Date(data.endDate) : recurringContest.endDate;
 
-  if (startDate > endDate) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "Start date cannot be after end date");
+  if (data.startDate && startDate <= new Date()) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Start date must be in the future");
+  }
+  if (endDate <= startDate) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "End date must be after start date");
   }
 
   const duration = endDate.getTime() - startDate.getTime();
@@ -111,7 +122,12 @@ const pauseRecurringContest = async (recurringContestId: string) => {
 const resumeRecurringContest = async (recurringContestId: string) => {
   const recurringContest = await getRecurringContestById(recurringContestId);
   const now = new Date();
-  const nextOccurrence = calculateNextOccurance(now, recurringContest.recurring.recurringType);
+  validateTimeZone(recurringContest.recurring.timezone);
+  const nextOccurrence = calculateNextOccurance(
+    now,
+    recurringContest.recurring.recurringType,
+    recurringContest.recurring.timezone
+  );
 
   return prisma.recurringContest.update({
     where: { id: recurringContestId },
@@ -145,11 +161,13 @@ const updateRecurringInterval = async (
 ) => {
   const recurringContest = await getRecurringContestById(recurringContestId);
   const previousOccurrence = new Date();
+  const timeZone = options.timezone ?? recurringContest.recurring.timezone;
+  validateTimeZone(timeZone);
   const recalculatedNextOccurrence = nextOccurrence
     ? new Date(nextOccurrence)
-    : calculateNextOccurance(previousOccurrence, recurringType);
+    : calculateNextOccurance(previousOccurrence, recurringType, timeZone);
 
-  if (recalculatedNextOccurrence <= previousOccurrence) {
+  if (Number.isNaN(recalculatedNextOccurrence.getTime()) || recalculatedNextOccurrence <= previousOccurrence) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Next occurrence must be in the future");
   }
   if(options.endsAt && new Date(options.endsAt) <= recalculatedNextOccurrence){
@@ -165,7 +183,7 @@ const updateRecurringInterval = async (
           recurringType,
           previousOccurrence,
           nextOccurrence: recalculatedNextOccurrence,
-          timezone: options.timezone ?? recurringContest.recurring.timezone,
+          timezone: timeZone,
           endsAt: options.endsAt === null
             ? null
             : options.endsAt
