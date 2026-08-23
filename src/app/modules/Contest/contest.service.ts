@@ -34,6 +34,44 @@ const completedContestStatuses:ContestStatus[] = [ContestStatus.COMPLETED, Conte
 const isCompletedContest = (status:ContestStatus) => completedContestStatuses.includes(status)
 const contestListCreatorInclude = {omit:{password:true, accessToken:true}} as const
 
+const createRandomSeed = () => `${Date.now()}-${Math.random()}`
+
+const hashSeed = (seed:string) => {
+    let hash = 2166136261
+
+    for (let index = 0; index < seed.length; index++) {
+        hash ^= seed.charCodeAt(index)
+        hash = Math.imul(hash, 16777619)
+    }
+
+    return hash >>> 0
+}
+
+const seededRandom = (seed:string) => {
+    let state = hashSeed(seed) || 1
+
+    return () => {
+        state ^= state << 13
+        state ^= state >>> 17
+        state ^= state << 5
+        return ((state >>> 0) / 4294967296)
+    }
+}
+
+const shuffleWithSeed = <T>(items:T[], seed:string) => {
+    const shuffled = [...items]
+    const random = seededRandom(seed)
+
+    for (let index = shuffled.length - 1; index > 0; index--) {
+        const swapIndex = Math.floor(random() * (index + 1))
+        const current = shuffled[index]
+        shuffled[index] = shuffled[swapIndex]
+        shuffled[swapIndex] = current
+    }
+
+    return shuffled
+}
+
 const shouldUseDefaultAwards = (body:contestData) =>
     body.prizeIds === undefined && body.prizes === undefined
 
@@ -1067,7 +1105,7 @@ const isContestParticipantExist = async (userId:string, contestId:string)=>{
     return participantData? participantData: false;
 }
 
-const getContestUploadsToVote = async (userId:string, contestId:string, page?:number, limit?:number)=> {
+const getContestUploadsToVote = async (userId:string, contestId:string, page?:number, limit?:number, seed?:string)=> {
      const contest = await prisma.contest.findUnique({where:{id:contestId}})
     if(!contest){
         throw new ApiError(httpstatus.NOT_FOUND, "contest not found")
@@ -1081,28 +1119,32 @@ const getContestUploadsToVote = async (userId:string, contestId:string, page?:nu
     const teammateUserIds = await getTeammateUserIds(userId)
     const excludedUserIds = [userId, ...teammateUserIds]
     const {skip, limit:paginationLimit, page:currentPage} = paginationHelper.calculatePagination({page, limit})
+    const randomSeed = seed?.trim() || createRandomSeed()
     const where:Prisma.ContestPhotoWhereInput = {
         contestId,
         photoId:{not:null},
         participant:{userId:{notIn:excludedUserIds}},
         votes:{none:{providerId:participant.userId}}
     }
-    const orderBy:Prisma.ContestPhotoOrderByWithRelationInput[] = contest.status === ContestStatus.ACTIVE
-        ? [{promoted:"desc"}, {createdAt:"desc"}]
-        : [{createdAt:"desc"}]
 
-    const [contestUploads, total] = await Promise.all([
-        prisma.contestPhoto.findMany({
-            where,
-            skip,
-            take:paginationLimit,
-            orderBy,
-            include:{photo:{select:{id:true, url:true}}}
-        }),
-        prisma.contestPhoto.count({where})
-    ])
+    const contestUploads = await prisma.contestPhoto.findMany({
+        where,
+        orderBy:[{createdAt:"desc"}],
+        include:{photo:{select:{id:true, url:true}}}
+    })
+    const promotedUploads = contest.status === ContestStatus.ACTIVE
+        ? contestUploads.filter(upload => upload.promoted)
+        : []
+    const regularUploads = contest.status === ContestStatus.ACTIVE
+        ? contestUploads.filter(upload => !upload.promoted)
+        : contestUploads
+    const randomizedUploads = [
+        ...shuffleWithSeed(promotedUploads, `${randomSeed}:promoted`),
+        ...shuffleWithSeed(regularUploads, `${randomSeed}:regular`)
+    ]
+    const paginatedUploads = randomizedUploads.slice(skip, skip + paginationLimit)
 
-    const data = await Promise.all(contestUploads.flatMap(upload => {
+    const data = await Promise.all(paginatedUploads.flatMap(upload => {
         if(!upload.photo){
             return []
         }
@@ -1116,7 +1158,10 @@ const getContestUploadsToVote = async (userId:string, contestId:string, page?:nu
 
     return {
         data,
-        meta:paginationHelper.getPaginationMetaData(currentPage, paginationLimit, total)
+        meta:{
+            ...paginationHelper.getPaginationMetaData(currentPage, paginationLimit, contestUploads.length),
+            seed:randomSeed
+        }
     }
 }
 

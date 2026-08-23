@@ -150,9 +150,9 @@ const getUploadedPhotos =  catchAsync(async  (req:any, res: Response)=>{
 const getUploadedPhotosToVote =  catchAsync(async  (req:any, res: Response)=>{
     const {contestId} = req.params
     const user = req.user
-    const {page = "1", limit = "10"} = req.query as {page:string, limit:string}
+    const {page = "1", limit = "10", seed} = req.query as {page:string, limit:string, seed?:string}
 
-    const uploadedPhotos = await contestService.getContestUploadsToVote(user.id, contestId, Number(page), Number(limit))
+    const uploadedPhotos = await contestService.getContestUploadsToVote(user.id, contestId, Number(page), Number(limit), seed)
 
      sendResponse(res, {
         statusCode:200,
