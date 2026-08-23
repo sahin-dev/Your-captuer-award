@@ -6,6 +6,55 @@ import { NotificationType, PaymentStatus } from '../prismaClient';
 import { notificationService } from '../app/modules/Notification/notification.service';
 const stripe = require('stripe')(config.stripe_key as string, {apiVersion: "2025-08-27.basil"});
 
+const formatPaymentAmount = (amount: number, currency?: string | null) => {
+  const normalizedCurrency = (currency || "USD").toUpperCase();
+
+  try {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: normalizedCurrency,
+    }).format(amount);
+  } catch {
+    return `${amount.toFixed(2)} ${normalizedCurrency}`;
+  }
+};
+
+const getPayerName = (user?: {
+  fullName?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+  email?: string | null;
+}) => {
+  const fullName = user?.fullName?.trim();
+  const name = [user?.firstName, user?.lastName].filter(Boolean).join(" ").trim();
+
+  return fullName || name || user?.email || "A user";
+};
+
+const getPaymentPurpose = (payment: {
+  description?: string | null;
+  planName?: string | null;
+  type?: string | null;
+}) => {
+  if (payment.description?.trim()) {
+    return payment.description.trim();
+  }
+
+  if (payment.planName) {
+    return `${payment.planName} subscription`;
+  }
+
+  if (payment.type === "STORE") {
+    return "a store purchase";
+  }
+
+  if (payment.type === "CONTEST") {
+    return "a contest payment";
+  }
+
+  return "a payment";
+};
+
 const stripeWebhook =  async (req: Request, res: Response) => {
     const sig = req.headers['stripe-signature'] as string;
   
@@ -34,7 +83,19 @@ const stripeWebhook =  async (req: Request, res: Response) => {
             const userId = session.metadata?.userId;
             const productId = session.metadata?.product_id;
             
-            const payment = await prisma.payment.findFirst({where:{stripe_session_id:session.id}})
+            const payment = await prisma.payment.findFirst({
+              where:{stripe_session_id:session.id},
+              include: {
+                user: {
+                  select: {
+                    fullName: true,
+                    firstName: true,
+                    lastName: true,
+                    email: true,
+                  },
+                },
+              },
+            })
             
             if(!payment){
               console.log("Payment not found")
@@ -64,7 +125,15 @@ const stripeWebhook =  async (req: Request, res: Response) => {
               }
             }
 
-            await notificationService.postNotification("Payment Received",`You have received ${session.amount_total}$ from ${userId}`,"admin",NotificationType.PAYMENT)
+            const payerName = getPayerName(payment.user);
+            const amount = formatPaymentAmount(payment.amount, payment.currency);
+            const purpose = getPaymentPurpose(payment);
+            await notificationService.postNotification(
+              "Payment Received",
+              `${payerName} paid ${amount} for ${purpose}.`,
+              "admin",
+              NotificationType.PAYMENT
+            )
             console.log(`✅ Subscribed: ${subscriptionId}, Customer: ${customerId}, User: ${userId}`);
           break;
         case 'invoice.payment_succeeded':
