@@ -183,6 +183,7 @@ export const getTeamDetails = async (teamId: string) => {
               fullName: true,
               firstName: true,
               lastName: true,
+              location: true,
             },
           },
         },
