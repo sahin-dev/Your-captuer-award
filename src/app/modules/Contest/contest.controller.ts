@@ -150,14 +150,16 @@ const getUploadedPhotos =  catchAsync(async  (req:any, res: Response)=>{
 const getUploadedPhotosToVote =  catchAsync(async  (req:any, res: Response)=>{
     const {contestId} = req.params
     const user = req.user
+    const {page = "1", limit = "10"} = req.query as {page:string, limit:string}
 
-    const uploadedPhotos = await contestService.getContestUploadsToVote(user.id,contestId)
+    const uploadedPhotos = await contestService.getContestUploadsToVote(user.id, contestId, Number(page), Number(limit))
 
      sendResponse(res, {
         statusCode:200,
         success:true,
         message:"photos fetched successfully",
-        data:uploadedPhotos
+        meta:uploadedPhotos.meta,
+        data:uploadedPhotos.data
     })
 })
 

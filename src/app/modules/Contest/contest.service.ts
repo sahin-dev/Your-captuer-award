@@ -1067,7 +1067,7 @@ const isContestParticipantExist = async (userId:string, contestId:string)=>{
     return participantData? participantData: false;
 }
 
-const getContestUploadsToVote = async (userId:string, contestId:string)=> {
+const getContestUploadsToVote = async (userId:string, contestId:string, page?:number, limit?:number)=> {
      const contest = await prisma.contest.findUnique({where:{id:contestId}})
     if(!contest){
         throw new ApiError(httpstatus.NOT_FOUND, "contest not found")
@@ -1080,19 +1080,29 @@ const getContestUploadsToVote = async (userId:string, contestId:string)=> {
 
     const teammateUserIds = await getTeammateUserIds(userId)
     const excludedUserIds = [userId, ...teammateUserIds]
-
-    const contestUploads = await prisma.contestPhoto.findMany({where:{contestId, participant:{userId:{notIn:excludedUserIds}}, votes:{none:{providerId:participant.userId}}}, include:{photo:{select:{id:true, url:true}}}})
-
-    if(contest.status === ContestStatus.ACTIVE){
-        contestUploads.sort((a: ContestPhoto, b: ContestPhoto) => {
-
-            if (a.promoted && !b.promoted) return -1;
-            if (!a.promoted && b.promoted) return 1;
-
-            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-        })
+    const {skip, limit:paginationLimit, page:currentPage} = paginationHelper.calculatePagination({page, limit})
+    const where:Prisma.ContestPhotoWhereInput = {
+        contestId,
+        photoId:{not:null},
+        participant:{userId:{notIn:excludedUserIds}},
+        votes:{none:{providerId:participant.userId}}
     }
-    return Promise.all(contestUploads.flatMap(upload => {
+    const orderBy:Prisma.ContestPhotoOrderByWithRelationInput[] = contest.status === ContestStatus.ACTIVE
+        ? [{promoted:"desc"}, {createdAt:"desc"}]
+        : [{createdAt:"desc"}]
+
+    const [contestUploads, total] = await Promise.all([
+        prisma.contestPhoto.findMany({
+            where,
+            skip,
+            take:paginationLimit,
+            orderBy,
+            include:{photo:{select:{id:true, url:true}}}
+        }),
+        prisma.contestPhoto.count({where})
+    ])
+
+    const data = await Promise.all(contestUploads.flatMap(upload => {
         if(!upload.photo){
             return []
         }
@@ -1103,6 +1113,11 @@ const getContestUploadsToVote = async (userId:string, contestId:string)=> {
             return {id:upload.id, url:photo.url, voteCount}
         }]
     }).map(getUpload => getUpload()))
+
+    return {
+        data,
+        meta:paginationHelper.getPaginationMetaData(currentPage, paginationLimit, total)
+    }
 }
 
 
