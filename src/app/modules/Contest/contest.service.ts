@@ -568,8 +568,10 @@ const getAllContests = async (page:number = 1, limit:number = 20, search?:string
         prisma.contest.count({where})
     ])
 
+    const enrichedContests = await enrichContestListDetails(contests)
+
     return {
-        contests,
+        contests:enrichedContests,
         total,
         page:currentPage,
         limit:paginationLimit,
