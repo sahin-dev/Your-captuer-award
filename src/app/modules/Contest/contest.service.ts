@@ -185,7 +185,7 @@ const createContest = async (creatorId: string, body: contestData, banner:Expres
         ? (await fileUploader.uploadToDigitalOcean(banner)).Location
         : null
 
-    const normalizedRules = contestRuleService.normalizeContestRules(body.rules)
+    const normalizedRules = contestRuleService.normalizeContestRules(body.rules, body.rules === undefined)
     const awardRows = await prizeService.resolveAwardRows(
         body.prizeIds || [],
         body.prizes || [],
@@ -256,7 +256,7 @@ const createRecurringContest  =  async (creatorId: string, body: contestData, ba
         throw new ApiError(httpstatus.BAD_REQUEST, "Timezone must be a valid IANA timezone name");
     }
 
-    const normalizedRules = contestRuleService.normalizeContestRules(body.rules)
+    const normalizedRules = contestRuleService.normalizeContestRules(body.rules, body.rules === undefined)
     const awardRows = await prizeService.resolveAwardRows(
         body.prizeIds || [],
         body.prizes || [],
@@ -357,7 +357,7 @@ const updateContest = async (contestId:string, contestData:updateContestData, ba
     }
 
     const normalizedRules = rules !== undefined
-        ? contestRuleService.normalizeContestRules(rules)
+        ? contestRuleService.normalizeContestRules(rules, false)
         : undefined
     const awardRows = (prizeIds !== undefined || prizes !== undefined)
         ? await prizeService.resolveAwardRows(
@@ -602,8 +602,10 @@ const getPublicContests = async (
         prisma.contest.count({where})
     ])
 
+    const enrichedContests = await enrichContestListDetails(contests)
+
     return {
-        contests,
+        contests:enrichedContests,
         total,
         page:currentPage,
         limit:paginationLimit,
@@ -941,12 +943,14 @@ const getMyActiveContests = async (userId:string) => {
         include: { creator: {select:{id:true, avatar:true,fullName:true,cover:true, firstName:true, lastName:true}},}
     });
 
-    const contestDetails = contests.map (async (contest) => {
+    const enrichedContests = await enrichContestListDetails(contests)
+
+    const contestDetails = enrichedContests.map (async (contest) => {
         const levelData = await getParticipantLevelData(contest.id, userId)
         const photos = await getContestUploadsByUserId(contest.id,userId)
         
         
-        return {...contest, level_data:levelData, photos}
+        return {...contest, level_data:levelData, photos, uploadCount:photos.length}
     })
 
     return await Promise.all(contestDetails);

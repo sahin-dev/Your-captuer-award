@@ -36,13 +36,16 @@ const buildDefaultContestRules = (): ContestRuleConfigInput[] => {
 };
 
 const normalizeContestRules = (
-  rules?: ContestRuleConfigInput[]
+  rules?: ContestRuleConfigInput[],
+  includeDefaults = true
 ): ContestRuleConfigInput[] => {
   const ruleMap = new Map<ContestRuleKey, ContestRuleConfigInput>();
 
-  buildDefaultContestRules().forEach((rule) => {
-    ruleMap.set(rule.key, rule);
-  });
+  if (includeDefaults) {
+    buildDefaultContestRules().forEach((rule) => {
+      ruleMap.set(rule.key, rule);
+    });
+  }
 
   rules?.forEach((rule) => {
     ruleMap.set(rule.key, {

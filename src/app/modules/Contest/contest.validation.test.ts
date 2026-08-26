@@ -15,6 +15,7 @@ import { contestPrizeInputArraySchema } from "../Prize/prize.validation";
 import { defaultPrizeDefinitions } from "../Prize/prize.definitions";
 import { prizeService } from "../Prize/prize.service";
 import prisma from "../../../shared/prisma";
+import { contestRuleService } from "./ContestRules/contestRules.service";
 
 const futureDate = (hours:number) => new Date(Date.now() + hours * 60 * 60 * 1000).toISOString();
 
@@ -172,6 +173,36 @@ test("create contest accepts simplified rule definition payloads", () => {
     ]);
     assert.equal((rules.find((rule) => rule.key === "ELIGIBILITY")?.value as any).minAge, 21);
     assert.equal(rules.find((rule) => rule.key === "COPYRIGHT")?.enabled, false);
+});
+
+test("contest rule normalization keeps admin-selected rules without adding UI defaults", () => {
+    const selectedRules = contestRuleService.normalizeContestRules([
+        {
+            key: "SUBMISSION_LIMIT",
+            value: 8,
+            enabled: true,
+            order: 10,
+        },
+        {
+            key: "SUBMISSION_RULES",
+            value: ["Only street photography entries."],
+            enabled: true,
+            order: 20,
+        },
+    ], false);
+
+    assert.deepEqual(selectedRules.map((rule) => rule.key), [
+        "SUBMISSION_LIMIT",
+        "SUBMISSION_RULES",
+    ]);
+    assert.equal(selectedRules.find((rule) => rule.key === "SUBMISSION_LIMIT")?.value, 8);
+});
+
+test("contest rule normalization still provides defaults when no rules are submitted", () => {
+    const defaultRules = contestRuleService.normalizeContestRules(undefined, true);
+
+    assert.ok(defaultRules.length >= contestRuleKeys.length);
+    assert.ok(defaultRules.some((rule) => rule.key === "SUBMISSION_LIMIT"));
 });
 
 test("legacy submission rule object payload is normalized to an array of strings", () => {
