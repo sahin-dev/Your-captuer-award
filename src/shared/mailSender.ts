@@ -2,8 +2,8 @@ import nodemailer from "nodemailer";
 import config from "../config";
 
 const mailer = async (email: string, html: string, subject: string) => {
-  const smtpUser = config.smtp?.user || config.emailSender.email;
-  const smtpPass = config.smtp?.pass || config.emailSender.app_pass;
+  const smtpUser = config.smtp?.user
+  const smtpPass = config.smtp?.pass
 
   if (!smtpUser || !smtpPass) {
     throw new Error("Email sender configuration is missing SMTP_USER/EMAIL or SMTP_PASS/APP_PASS");
@@ -11,8 +11,8 @@ const mailer = async (email: string, html: string, subject: string) => {
 
   const transporter = nodemailer.createTransport({
     host: config.smtp?.host || "smtp.gmail.com",
-    port: 465,
-    secure: true,
+    port: config.smtp?.port || 465,
+    secure: config.smtp.secure,
     auth: {
       user: smtpUser,
       pass: smtpPass,

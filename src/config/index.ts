@@ -36,10 +36,10 @@ const config =  {
     web_redirect_success: process.env.SUCCESS_URL_WEB_USER,
     web_redirect_failure: process.env.FAILURE_URL_WEB,
     reset_pass_link: process.env.RESET_PASS_LINK,
-    emailSender: {
-        email: process.env.EMAIL,
-        app_pass: process.env.APP_PASS,
-    },
+    // emailSender: {
+    //     email: process.env.EMAIL,
+    //     app_pass: process.env.APP_PASS,
+    // },
     smtp: {
         host: process.env.SMTP_HOST || "smtp.gmail.com",
         port: Number(process.env.SMTP_PORT || 587),
