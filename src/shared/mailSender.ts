@@ -26,7 +26,7 @@ const mailer = async (email: string, html: string, subject: string) => {
   });
 
   const info = await transporter.sendMail({
-    from: `"Your Capture Award" <${smtpUser}>`,
+    from: "no-reply@yourcaptureawards.com",
     to: email,
     subject,
     html,
