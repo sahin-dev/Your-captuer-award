@@ -46,6 +46,7 @@ const config =  {
         secure: process.env.SMTP_SECURE === "true",
         user: process.env.SMTP_USER || process.env.EMAIL,
         pass: process.env.SMTP_PASS || process.env.APP_PASS,
+        from: process.env.SMTP_FROM || "no-reply@yourcaptureawards.org",
     },
     cloud:[{
         provider:"digitalOcean",
