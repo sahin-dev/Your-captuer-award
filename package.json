@@ -94,7 +94,7 @@
     "sanitize-html": "2.13.1",
     "socket.io": "^4.8.1",
     "streamifier": "^0.1.1",
-    "stripe": "^18.5.0",
+    "stripe": "^22.6.0",
     "ts-node-dev": "^2.0.0",
     "zod": "^3.24.3"
   }
