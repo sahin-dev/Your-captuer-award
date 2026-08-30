@@ -59,7 +59,8 @@ export class StripeProvider implements PaymentProvider {
       success_url,
       cancel_url,
       line_items:[{price:priceId, quantity:1}],
-      metadata:data
+      metadata:data,
+      payment_method_types:["card"]
     
     })
   }
@@ -80,7 +81,7 @@ export class StripeProvider implements PaymentProvider {
     let email = user.email
     let name = user.firstName+' '+user.lastName
 
-    const customer = await this.stripe.customers.create({email,name,metadata:{userId:user.id}})
+    const customer = await this.stripe.customers.create({email,name,metadata:{userId:user.id,},})
 
     await prisma.user.update({where:{id:userId}, data:{customerId: customer.id}})
     return customer
