@@ -34,6 +34,8 @@ const getTransporter = (): Transporter => {
 
   const { user, pass, host, port, secure } = config.smtp;
 
+  console.log(config.smtp)
+
   if (!user || !pass) {
     throw new Error(
       "Email sender configuration is missing SMTP_USER/EMAIL or SMTP_PASS/APP_PASS"
