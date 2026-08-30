@@ -68,6 +68,7 @@ export class StripeProvider implements PaymentProvider {
         },
       ],
       metadata: data,
+      payment_intent_data: data ? { metadata: data } : undefined,
       success_url: successUrl,
       cancel_url: cancelUrl,
     });
@@ -118,6 +119,12 @@ export class StripeProvider implements PaymentProvider {
       cancel_url: cancelUrl,
       line_items: [{ price: priceId, quantity: 1 }],
       metadata: data,
+      ...(data && mode === "payment"
+        ? { payment_intent_data: { metadata: data } }
+        : {}),
+      ...(data && mode === "subscription"
+        ? { subscription_data: { metadata: data } }
+        : {}),
     });
   }
 
