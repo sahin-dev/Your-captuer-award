@@ -68,7 +68,13 @@ export class StripeProvider implements PaymentProvider {
 
     const user = await userService.getUserDetails(userId)
     if(user.customerId){
-      return await this.stripe.customers.retrieve(user.customerId)
+      try{
+        return await this.stripe.customers.retrieve(user.customerId)
+      }catch(err) {
+        console.error("Error retrieving customer:", err)
+        console.log("Creating a new customer for user:", userId)
+      }
+      
     }
 
     let email = user.email
