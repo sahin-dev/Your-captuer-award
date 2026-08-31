@@ -47,6 +47,7 @@ export class StripeProvider implements PaymentProvider {
     successUrl: string,
     cancelUrl: string,
     data?: Stripe.MetadataParam,
+    title?: string,
   ): Promise<Stripe.Checkout.Session> {
     const customer = await this.createCustomer(userId);
 
@@ -61,7 +62,7 @@ export class StripeProvider implements PaymentProvider {
         {
           price_data: {
             currency: this.normalizeCurrency(currency),
-            product_data: { name: "Simple Product" },
+            product_data: { name: title || "Coin Product" },
             unit_amount: this.toMinorUnits(amount, currency),
           },
           quantity: 1,

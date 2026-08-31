@@ -203,7 +203,8 @@ import httpStatus from 'http-status';
         userId,
         payment_id: payment.id,
         product_id: product.id
-      }
+      },
+      product.title
     );
 
     // Update payment with Stripe session ID

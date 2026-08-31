@@ -12,7 +12,7 @@ export interface PaymentProvider {
     recurring?: Stripe.PriceCreateParams.Recurring,
   ): Promise<Stripe.Price>;
   createSession(userId:string, priceId:string, mode:'subscription' | 'payment',success_url:string, cancel_url:string, data?:Stripe.MetadataParam): Promise<Stripe.Checkout.Session>
-  initializePaymentSession(userId:string,amount: number, currency: string, success_url:string, cancel_url:string, data?:Stripe.MetadataParam):Promise<Stripe.Checkout.Session>
+  initializePaymentSession(userId:string,amount: number, currency: string, success_url:string, cancel_url:string, data?:Stripe.MetadataParam, title?:string):Promise<Stripe.Checkout.Session>
 }
 
 export type PaymentMethod = "CARD";
