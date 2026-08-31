@@ -403,7 +403,7 @@ const updateProduct = async (
 };
 
 /**
- * Delete product (soft delete by marking as DISCONTINUED)
+ * Delete product (permanently removes it from the database)
  */
 const deleteProduct = async (productId: string) => {
     if (!productId) {
@@ -418,10 +418,8 @@ const deleteProduct = async (productId: string) => {
         throw new ApiError(httpStatus.NOT_FOUND, "Product not found");
     }
 
-    // Soft delete: mark as DISCONTINUED
-    const deletedProduct = await prisma.product.update({
-        where: { id: productId },
-        data: { status: ProductStatus.DISCONTINUED }
+    const deletedProduct = await prisma.product.delete({
+        where: { id: productId }
     });
 
     return deletedProduct;
