@@ -1961,12 +1961,13 @@ const TEAM_MATCH_SEARCH_WINDOW_MS = 5 * 60 * 60 * 1000; // 5 hours
 
 const formatMatchQueueEntry = (
   queueEntry: { id: string; teamId: string; status: TeamMatchQueueStatus; createdAt: Date; expiresAt: Date },
-  contest: { id: string; title: string },
+  contest: { id: string; title: string; banner?: string | null },
 ) => ({
   id: queueEntry.id,
   teamId: queueEntry.teamId,
   contestId: contest.id,
   contestTitle: contest.title,
+  contestBanner: contest.banner ?? null,
   status: queueEntry.status,
   startedAt: queueEntry.createdAt,
   expiresAt: queueEntry.expiresAt,
@@ -2309,7 +2310,7 @@ const getTeamMatchSearchStatus = async (teamId: string, userId: string) => {
   const queueEntry = await prisma.teamMatchQueue.findFirst({
     where: { teamId, status: TeamMatchQueueStatus.SEARCHING },
     include: {
-      contest: { select: { id: true, title: true } },
+      contest: { select: { id: true, title: true, banner: true } },
     },
   });
 
