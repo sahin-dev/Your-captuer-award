@@ -21,7 +21,8 @@
     "seed:bots": "ts-node-dev src/seeder.ts seed:bots",
     "delete:bots": "ts-node-dev src/seeder.ts delete:bots",
     "seed:levels": "ts-node-dev src/seeder.ts seed:levels",
-    "delete:levels": "ts-node-dev src/seeder.ts delete:levels"
+    "delete:levels": "ts-node-dev src/seeder.ts delete:levels",
+    "backfill:contest-rules": "ts-node --transpile-only src/seeder.ts backfill:contest-rules"
   },
   "repository": {
     "type": "git",

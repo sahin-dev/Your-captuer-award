@@ -15,6 +15,7 @@ import {
 } from "./prismaClient"
 import { LEVEL_RULES, LevelRule } from "./app/modules/Level/level.config"
 import { contestRuleDefinitions } from "./app/modules/Contest/ContestRules/contestRule.definitions"
+import { contestRuleService } from "./app/modules/Contest/ContestRules/contestRules.service"
 import { getContestLevelBadge, getContestLevelOrder, isContestLevelPrizeType, normalizeAwardIdentity } from "./app/modules/Awards/award.definitions"
 import { defaultPrizeDefinitions } from "./app/modules/Prize/prize.definitions"
 
@@ -893,6 +894,32 @@ class DatabaseSeeder {
         seedUsers.forEach(user => console.log(`- ${user.email} (${user.targetLevel?.levelName || "NEW"})`))
     }
 
+    async backfillContestRuleDefaults(){
+        const contests = await this.db.contest.findMany({select:{id:true}})
+        const defaultRules = contestRuleService.normalizeContestRules()
+
+        let updatedCount = 0
+        for(const contest of contests){
+            const existingCount = await this.db.contestRuleConfig.count({where:{contestId:contest.id}})
+            if(existingCount > 0){
+                continue
+            }
+
+            await this.db.contestRuleConfig.createMany({
+                data:defaultRules.map(rule => ({
+                    contestId:contest.id,
+                    key:rule.key,
+                    value:rule.value,
+                    enabled:rule.enabled ?? true,
+                    order:rule.order ?? contestRuleDefinitions[rule.key].order
+                }))
+            })
+            updatedCount += 1
+        }
+
+        console.log(`Backfilled default contest rules for ${updatedCount} of ${contests.length} contest(s)`)
+    }
+
     async destroyClient(){
         await this.client?.$disconnect()
     }
@@ -935,8 +962,11 @@ async function SeederCLI (){
                 await seeder.seedAchievementsForUser(userId, email)
                 break
             }
+            case "backfill:contest-rules":
+                await seeder.backfillContestRuleDefaults()
+                break
             default:
-                console.log("Available commands: create:admin, seed:levels-demo, seed:contest-config, seed:prizes, seed:contest-categories, seed:achievements-for-user, -reset")
+                console.log("Available commands: create:admin, seed:levels-demo, seed:contest-config, seed:prizes, seed:contest-categories, seed:achievements-for-user, backfill:contest-rules, -reset")
         }
     }finally{
         await seeder.destroyClient()
