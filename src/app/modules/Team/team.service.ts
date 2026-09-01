@@ -1880,14 +1880,23 @@ const getAvailableTeamContests = async (
     page: currentPage,
   } = paginationHelper.calculatePagination({ page, limit });
 
-  const activeTeamMatches = await prisma.teamMatch.findMany({
-    where: {
-      OR: [{ team1Id: teamId }, { team2Id: teamId }],
-      status: MatchStatus.ACTIVE,
-    },
-    select: { contestId: true },
-  });
-  const excludedContestIds = activeTeamMatches.map((match) => match.contestId);
+  const [activeTeamMatches, searchingQueueEntries] = await Promise.all([
+    prisma.teamMatch.findMany({
+      where: {
+        OR: [{ team1Id: teamId }, { team2Id: teamId }],
+        status: MatchStatus.ACTIVE,
+      },
+      select: { contestId: true },
+    }),
+    prisma.teamMatchQueue.findMany({
+      where: { teamId, status: TeamMatchQueueStatus.SEARCHING },
+      select: { contestId: true },
+    }),
+  ]);
+  const excludedContestIds = [
+    ...activeTeamMatches.map((match) => match.contestId),
+    ...searchingQueueEntries.map((entry) => entry.contestId),
+  ];
 
   const where = {
     status: ContestStatus.ACTIVE,
@@ -2307,18 +2316,20 @@ const getTeamMatchSearchStatus = async (teamId: string, userId: string) => {
     );
   }
 
-  const queueEntry = await prisma.teamMatchQueue.findFirst({
+  // A team can search for multiple contests at once (the duplicate-search
+  // guard in startTeamMatchWithAutoRival only blocks re-searching the same
+  // contest), so every active search must be returned, not just one.
+  const queueEntries = await prisma.teamMatchQueue.findMany({
     where: { teamId, status: TeamMatchQueueStatus.SEARCHING },
     include: {
       contest: { select: { id: true, title: true, banner: true } },
     },
+    orderBy: { createdAt: "asc" },
   });
 
-  if (!queueEntry) {
-    return null;
-  }
-
-  return formatMatchQueueEntry(queueEntry, queueEntry.contest);
+  return queueEntries.map((queueEntry) =>
+    formatMatchQueueEntry(queueEntry, queueEntry.contest),
+  );
 };
 
 // Called every minute by the "teamMatch:watchQueueTimeouts" job to expire

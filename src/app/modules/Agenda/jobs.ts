@@ -24,17 +24,21 @@ agenda.define('contest:checkUpcoming', async () => {
 
     if (contests.length <= 0){
         console.log("There is no upcoming contest")
-    } 
-    contests.forEach(async(contest)=>{
-        const startDate = contest.startDate
-        const currentDate = new Date()
-        
-        if (startDate <= currentDate){
-            const updatedContest = await prisma.contest.update({where:{id:contest.id}, data:{status:ContestStatus.ACTIVE, startedAt:new Date(Date.now())}})
-            console.log(`Contest with id: ${contest.id} has started`)
-            agenda.schedule(contest.endDate, "contest:watcher",{contestId:updatedContest.id})
+    }
+    for (const contest of contests) {
+        try {
+            const startDate = contest.startDate
+            const currentDate = new Date()
+
+            if (startDate <= currentDate){
+                const updatedContest = await prisma.contest.update({where:{id:contest.id}, data:{status:ContestStatus.ACTIVE, startedAt:new Date(Date.now())}})
+                console.log(`Contest with id: ${contest.id} has started`)
+                await agenda.schedule(contest.endDate, "contest:watcher",{contestId:updatedContest.id})
+            }
+        } catch (error) {
+            console.error(`Failed to activate upcoming contest ${contest.id}`, error)
         }
-    })
+    }
 
 });
 

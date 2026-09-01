@@ -26,14 +26,32 @@ const logDatabaseConnectionHint = (error:unknown) => {
   }
 }
 
-async function startServer() {
-  try{
-      await prisma.$connect();
-  }catch(err){
-    // console.log(err)
-    throw new Error("Failed to connect to the database. Please check your DATABASE_URL and ensure the database is running.");
-  }
+const DB_CONNECT_MAX_ATTEMPTS = 5;
+const DB_CONNECT_RETRY_DELAY_MS = 3000;
 
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// A brief DNS/network blip reaching Atlas shouldn't crash the whole process on
+// its own attempt - retry a few times before giving up and letting the
+// process exit (at which point PM2's restart policy takes over).
+async function connectDatabaseWithRetry() {
+  for (let attempt = 1; attempt <= DB_CONNECT_MAX_ATTEMPTS; attempt++) {
+    try {
+      await prisma.$connect();
+      return;
+    } catch (err) {
+      logDatabaseConnectionHint(err);
+      if (attempt === DB_CONNECT_MAX_ATTEMPTS) {
+        throw new Error("Failed to connect to the database. Please check your DATABASE_URL and ensure the database is running.");
+      }
+      console.error(`Database connection attempt ${attempt}/${DB_CONNECT_MAX_ATTEMPTS} failed, retrying in ${DB_CONNECT_RETRY_DELAY_MS}ms...`);
+      await delay(DB_CONNECT_RETRY_DELAY_MS);
+    }
+  }
+}
+
+async function startServer() {
+  await connectDatabaseWithRetry();
 
   server = app.listen(PORT, () => {
     console.log("Server is listiening on port ", PORT);
