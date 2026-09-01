@@ -1449,9 +1449,18 @@ const getParticipantLevelData = async (contestId:string,userId:string)=>{
             return
         }
     })
-    
 
-    return {currentLevel, totalVotes, nextLevel:contestLevelRequirement[currentIdx+1], exposure_bonus: participant.exposure_bonus}
+    const ranking = await contestRankingService.buildContestRanking(contestId)
+    const photographerRanking = ranking.photographers.find(photographer => photographer.participantId === participant.id)
+
+    return {
+        currentLevel,
+        totalVotes,
+        nextLevel:contestLevelRequirement[currentIdx+1],
+        exposure_bonus: participant.exposure_bonus,
+        rank: photographerRanking?.rank ?? null,
+        totalParticipants: ranking.photographers.length
+    }
 
 }
 
