@@ -2111,6 +2111,7 @@ const startTeamMatchWithAutoRival = async (
         event: "TEAM_MATCH_SEARCH_STARTED",
         contestId,
         contestTitle: contest.title,
+        contestBanner: contest.banner,
         expiresAt,
       },
     );
@@ -2239,6 +2240,7 @@ const startTeamMatchWithAutoRival = async (
       matchId: match.id,
       contestId,
       contestTitle: contest.title,
+      contestBanner: contest.banner,
       team1Name: team.name,
       team2Name: rival.team.name,
     },
@@ -2252,6 +2254,7 @@ const startTeamMatchWithAutoRival = async (
       matchId: match.id,
       contestId,
       contestTitle: contest.title,
+      contestBanner: contest.banner,
       team1Name: rival.team.name,
       team2Name: team.name,
     },

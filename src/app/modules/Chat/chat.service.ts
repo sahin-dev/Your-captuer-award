@@ -31,12 +31,17 @@ const sendSystemMessage = async (
         data: { message, teamId, senderId: null, messageType, metadata },
     })
 
+    // Prisma omits relation fields on create(); the frontend expects `sender`
+    // to always be present (null for system messages) so it can render them
+    // without an author instead of crashing on a missing field.
+    const payload = { ...chat, sender: null }
+
     const io = getIO()
     if (io) {
-        io.to(`team_${teamId}`).emit("new_message", { event: "message", data: chat })
+        io.to(`team_${teamId}`).emit("new_message", { event: "message", data: payload })
     }
 
-    return chat
+    return payload
 }
 
 const getAllChats = async (userId: string, teamId: string, page: number = 1, limit: number = 20) => {
@@ -61,7 +66,7 @@ const getAllChats = async (userId: string, teamId: string, page: number = 1, lim
         skip,
         take: paginationLimit,
         orderBy: { createdAt: "desc" },
-        include: { sender: { select: { avatar: true, fullName: true } } }
+        include: { sender: { select: { id: true, firstName: true, lastName: true, fullName: true, avatar: true } } }
     })
 
     const total = await prisma.chat.count({ where: { teamId: team.id } });
