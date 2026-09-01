@@ -1648,30 +1648,28 @@ const replaceContestPhotoWithUserPhoto = async (userId:string, contestId:string,
 }
 
 
-const chargePhoto = async (userId:string, contestId:string, contestPhotoId:string) => {
-    const contestPhoto = await prisma.contestPhoto.findUnique({where:{id:contestPhotoId},include:{participant:true}})
+const chargePhoto = async (userId:string, contestId:string) => {
+    const contest = await prisma.contest.findUnique({where:{id:contestId, status:ContestStatus.ACTIVE}})
 
-    if(!contestPhoto){
-        throw new ApiError(httpstatus.NOT_FOUND, "contest photo not found")
+    if (!contest){
+        throw new ApiError(httpstatus.NOT_FOUND, "Contest not found")
     }
-    if(contestPhoto.participant.userId !== userId){
-        throw new ApiError(httpstatus.FORBIDDEN, "You are not allowed to charge this contest photo")
+
+    const participant = await prisma.contestParticipant.findUnique({where:{contestId_userId:{contestId,userId}}})
+    if(!participant){
+        throw new ApiError(httpstatus.NOT_FOUND, "You have not joined this contest")
     }
 
     const userStore = await userStoreService.getStoreData(userId)
 
     if(!userStore || userStore.key <= 0){
-        throw new ApiError(httpstatus.NOT_FOUND, "you does not have enough charge")
-    }
-    const participant = await prisma.contestParticipant.findUnique({where:{id:contestPhoto.participant.id}})
-    if(!participant){
-        throw new ApiError(httpstatus.NOT_FOUND, "participant not found")
+        throw new ApiError(httpstatus.NOT_FOUND, "You don't have enough charges")
     }
 
     await prisma.$transaction(async trx => {
         const store = await trx.userStore.findUnique({where:{userId}})
         if(!store || store.key <= 0){
-            throw new ApiError(httpstatus.NOT_FOUND, "you does not have enough charge")
+            throw new ApiError(httpstatus.NOT_FOUND, "You don't have enough charges")
         }
 
         await trx.userStore.update({
@@ -1680,15 +1678,19 @@ const chargePhoto = async (userId:string, contestId:string, contestPhotoId:strin
         })
 
         await trx.contestParticipant.update({
-            where:{id:contestPhoto.participant.id},
+            where:{id:participant.id},
             data:{exposure_bonus:100}
         })
     })
 
-    await agenda.cancel({name: "exposure:watcher", "data.contestPhotoId": contestPhotoId})
-    agenda.every("1 minute", "exposure:watcher",{contestPhotoId:contestPhoto.id})
-    
-    return await prisma.contestParticipant.findUnique({where:{id:contestPhoto.participant.id}})
+    // Exposure decays per contest photo, so reset every photo's decay clock for this entry
+    const contestPhotos = await prisma.contestPhoto.findMany({where:{participantId:participant.id}})
+    await Promise.all(contestPhotos.map(async (photo) => {
+        await agenda.cancel({name: "exposure:watcher", "data.contestPhotoId": photo.id})
+        await agenda.every("1 minute", "exposure:watcher", {contestPhotoId: photo.id})
+    }))
+
+    return await prisma.contestParticipant.findUnique({where:{id:participant.id}})
 }
 
 const rankLevelTabs = ['AMATEUR', 'TALENTED', 'SUPREME', 'SUPERIOR', 'TOP_NOTCH'] as const

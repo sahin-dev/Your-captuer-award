@@ -294,10 +294,10 @@ const tradePhoto = catchAsync(async (req:Request, res:Response) => {
 })
 
 const chargePhoto = catchAsync(async (req:Request, res:Response) => {
-    const {contestId, contestPhotoId} = req.body
+    const {contestId} = req.body
     const userId = req.user.id
 
-    const chargedPhoto = await contestService.chargePhoto(userId,contestId,contestPhotoId)
+    const chargedPhoto = await contestService.chargePhoto(userId,contestId)
 
     sendResponse(res, {
         success:true,
