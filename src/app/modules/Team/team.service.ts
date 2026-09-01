@@ -14,10 +14,12 @@ import {
   NotificationType,
   Prisma,
   TeamAccessibility,
+  TeamMatchQueueStatus,
 } from "../../../prismaClient";
 import { contestService } from "../Contest/contest.service";
 import { notificationService } from "../Notification/notification.service";
 import { notificationOrchestrator } from "../Notification/notificationOrchestrator";
+import { chatService } from "../Chat/chat.service";
 import { levelService } from "../Level/level.service";
 import { voteService } from "../Vote/vote.service";
 import { userService } from "../User/user.service";
@@ -1953,9 +1955,27 @@ const getAvailableTeamContests = async (
   };
 };
 
-const findRivalTeam = async (
+// ============ Team Match Queue (opponent search) ============
+
+const TEAM_MATCH_SEARCH_WINDOW_MS = 5 * 60 * 60 * 1000; // 5 hours
+
+const formatMatchQueueEntry = (
+  queueEntry: { id: string; teamId: string; status: TeamMatchQueueStatus; createdAt: Date; expiresAt: Date },
+  contest: { id: string; title: string },
+) => ({
+  id: queueEntry.id,
+  teamId: queueEntry.teamId,
+  contestId: contest.id,
+  contestTitle: contest.title,
+  status: queueEntry.status,
+  startedAt: queueEntry.createdAt,
+  expiresAt: queueEntry.expiresAt,
+});
+
+// Finds a rival among teams currently searching for the same contest, FIFO:
+// the longest-waiting eligible team is matched first, no skill/rank preference.
+const findRivalFromQueue = async (
   teamId: string,
-  skillLevel: LevelName,
   contestId: string,
   participantCount: number,
 ) => {
@@ -1973,62 +1993,32 @@ const findRivalTeam = async (
     }
   });
 
-  const sameSkillTeams = await prisma.team.findMany({
-    where: { id: { notIn: Array.from(busyTeamIds) }, skill_level: skillLevel },
-    orderBy: { score: "desc" },
-  });
-  const fallbackTeams = await prisma.team.findMany({
-    where: { id: { notIn: Array.from(busyTeamIds) } },
-    orderBy: { score: "desc" },
-  });
-
-  const candidateTeams = [
-    ...sameSkillTeams,
-    ...fallbackTeams.filter(
-      (team) =>
-        !sameSkillTeams.some((sameSkillTeam) => sameSkillTeam.id === team.id),
-    ),
-  ];
-
-  let bestRival: {
-    team: (typeof candidateTeams)[number];
-    members: Awaited<ReturnType<typeof getEligibleContestMembers>>;
-    matchedCount: number;
-  } | null = null;
-
-  for (const candidateTeam of candidateTeams) {
-    const eligibleMembers = await getEligibleContestMembers(
-      candidateTeam.id,
+  const searchingEntries = await prisma.teamMatchQueue.findMany({
+    where: {
       contestId,
-    );
+      status: TeamMatchQueueStatus.SEARCHING,
+      teamId: { notIn: Array.from(busyTeamIds) },
+    },
+    include: { team: true },
+    orderBy: { createdAt: "asc" },
+  });
+
+  for (const entry of searchingEntries) {
+    const eligibleMembers = await getEligibleContestMembers(entry.teamId, contestId);
 
     const matchedCount = Math.min(participantCount, eligibleMembers.length);
     if (matchedCount <= 0) {
       continue;
     }
 
-    if (eligibleMembers.length === participantCount) {
-      return {
-        team: candidateTeam,
-        members: eligibleMembers,
-      };
-    }
-
-    if (!bestRival || matchedCount > bestRival.matchedCount) {
-      bestRival = {
-        team: candidateTeam,
-        members: eligibleMembers.slice(0, matchedCount),
-        matchedCount,
-      };
-    }
+    return {
+      queueEntry: entry,
+      team: entry.team,
+      members: eligibleMembers.slice(0, matchedCount),
+    };
   }
 
-  return bestRival
-    ? {
-        team: bestRival.team,
-        members: bestRival.members,
-      }
-    : null;
+  return null;
 };
 
 const startTeamMatchWithAutoRival = async (
@@ -2063,6 +2053,16 @@ const startTeamMatchWithAutoRival = async (
     );
   }
 
+  const existingSearch = await prisma.teamMatchQueue.findFirst({
+    where: { teamId, contestId, status: TeamMatchQueueStatus.SEARCHING },
+  });
+  if (existingSearch) {
+    throw new ApiError(
+      httpstatus.BAD_REQUEST,
+      "This team is already searching for an opponent in this contest",
+    );
+  }
+
   const contest = await prisma.contest.findUnique({ where: { id: contestId } });
   if (!contest || contest.status !== ContestStatus.ACTIVE) {
     throw new ApiError(
@@ -2079,21 +2079,59 @@ const startTeamMatchWithAutoRival = async (
     );
   }
 
-  const rival = await findRivalTeam(
+  const rival = await findRivalFromQueue(
     teamId,
-    team.skill_level,
     contestId,
     ownMembers.length,
   );
+
   if (!rival) {
-    throw new ApiError(
-      httpstatus.NOT_FOUND,
-      "No available rival team with joined contest members found right now",
+    const expiresAt = new Date(
+      Math.min(
+        Date.now() + TEAM_MATCH_SEARCH_WINDOW_MS,
+        contest.endDate.getTime(),
+      ),
     );
+
+    const queueEntry = await prisma.teamMatchQueue.create({
+      data: {
+        teamId,
+        contestId,
+        started_by_id: userId,
+        skill_level: team.skill_level,
+        expiresAt,
+      },
+    });
+
+    await chatService.sendSystemMessage(
+      teamId,
+      `Searching for an opponent in "${contest.title}"... matching within 5 hours or by contest end (whichever is first).`,
+      "system",
+      {
+        event: "TEAM_MATCH_SEARCH_STARTED",
+        contestId,
+        contestTitle: contest.title,
+        expiresAt,
+      },
+    );
+
+    return { status: "SEARCHING" as const, queue: formatMatchQueueEntry(queueEntry, contest) };
   }
+
   const matchedOwnMembers = ownMembers.slice(0, rival.members.length);
 
   const match = await prisma.$transaction(async (tx) => {
+    const claimedQueueEntry = await tx.teamMatchQueue.updateMany({
+      where: { id: rival.queueEntry.id, status: TeamMatchQueueStatus.SEARCHING },
+      data: { status: TeamMatchQueueStatus.MATCHED },
+    });
+    if (claimedQueueEntry.count !== 1) {
+      throw new ApiError(
+        httpstatus.CONFLICT,
+        "Selected rival team was just matched by another team, please try again",
+      );
+    }
+
     const existingActiveMatch = await tx.teamMatch.findFirst({
       where: {
         OR: [{ team1Id: teamId }, { team2Id: teamId }],
@@ -2130,6 +2168,11 @@ const startTeamMatchWithAutoRival = async (
         started_by_id: userId,
         endedAt: contest.endDate,
       },
+    });
+
+    await tx.teamMatchQueue.update({
+      where: { id: rival.queueEntry.id },
+      data: { matchedTeamMatchId: match.id },
     });
 
     await tx.team.update({
@@ -2187,7 +2230,137 @@ const startTeamMatchWithAutoRival = async (
     contest.title,
   );
 
-  return formatActiveTeamMatch(createdMatch, teamId);
+  await chatService.sendSystemMessage(
+    teamId,
+    `Match found! ${team.name} vs ${rival.team.name} in "${contest.title}".`,
+    "system",
+    {
+      event: "TEAM_MATCH_FOUND",
+      matchId: match.id,
+      contestId,
+      contestTitle: contest.title,
+      team1Name: team.name,
+      team2Name: rival.team.name,
+    },
+  );
+  await chatService.sendSystemMessage(
+    rival.team.id,
+    `Match found! ${rival.team.name} vs ${team.name} in "${contest.title}".`,
+    "system",
+    {
+      event: "TEAM_MATCH_FOUND",
+      matchId: match.id,
+      contestId,
+      contestTitle: contest.title,
+      team1Name: rival.team.name,
+      team2Name: team.name,
+    },
+  );
+
+  return {
+    status: "MATCHED" as const,
+    match: await formatActiveTeamMatch(createdMatch, teamId),
+  };
+};
+
+const cancelTeamMatchSearch = async (teamId: string, userId: string) => {
+  const actingMember = await isTeamMemberExist(userId, teamId);
+  if (
+    !actingMember ||
+    (actingMember.level !== MemberLevel.LEADER &&
+      actingMember.level !== MemberLevel.MODERATOR)
+  ) {
+    throw new ApiError(
+      httpstatus.FORBIDDEN,
+      "Only the team leader or moderator can cancel a match search",
+    );
+  }
+
+  const queueEntry = await prisma.teamMatchQueue.findFirst({
+    where: { teamId, status: TeamMatchQueueStatus.SEARCHING },
+  });
+  if (!queueEntry) {
+    throw new ApiError(
+      httpstatus.NOT_FOUND,
+      "This team is not currently searching for a match",
+    );
+  }
+
+  const updated = await prisma.teamMatchQueue.update({
+    where: { id: queueEntry.id },
+    data: { status: TeamMatchQueueStatus.CANCELLED },
+  });
+
+  return updated;
+};
+
+const getTeamMatchSearchStatus = async (teamId: string, userId: string) => {
+  const actingMember = await isTeamMemberExist(userId, teamId);
+  if (!actingMember) {
+    throw new ApiError(
+      httpstatus.FORBIDDEN,
+      "You are not a member of this team",
+    );
+  }
+
+  const queueEntry = await prisma.teamMatchQueue.findFirst({
+    where: { teamId, status: TeamMatchQueueStatus.SEARCHING },
+    include: {
+      contest: { select: { id: true, title: true } },
+    },
+  });
+
+  if (!queueEntry) {
+    return null;
+  }
+
+  return formatMatchQueueEntry(queueEntry, queueEntry.contest);
+};
+
+// Called every minute by the "teamMatch:watchQueueTimeouts" job to expire
+// searches that never found a rival within the 5-hour / contest-end window.
+const timeoutExpiredTeamMatchQueues = async () => {
+  const expiredEntries = await prisma.teamMatchQueue.findMany({
+    where: { status: TeamMatchQueueStatus.SEARCHING, expiresAt: { lte: new Date() } },
+    include: { contest: { select: { id: true, title: true } } },
+  });
+
+  if (!expiredEntries.length) {
+    return 0;
+  }
+
+  let timedOutCount = 0;
+  for (const entry of expiredEntries) {
+    try {
+      const claimed = await prisma.teamMatchQueue.updateMany({
+        where: { id: entry.id, status: TeamMatchQueueStatus.SEARCHING },
+        data: { status: TeamMatchQueueStatus.TIMEOUT },
+      });
+      if (claimed.count !== 1) {
+        continue;
+      }
+
+      await chatService.sendSystemMessage(
+        entry.teamId,
+        `No opponent found for "${entry.contest.title}" within the search window. Search cancelled.`,
+        "system",
+        {
+          event: "TEAM_MATCH_SEARCH_TIMEOUT",
+          contestId: entry.contest.id,
+          contestTitle: entry.contest.title,
+        },
+      );
+      await notificationOrchestrator.notifyTeamMatchSearchTimeout(
+        entry.teamId,
+        entry.contest.title,
+      );
+      timedOutCount += 1;
+    } catch (error) {
+      console.error(`Failed to time out team match queue entry ${entry.id}`, error);
+    }
+  }
+
+  return timedOutCount;
 };
 
 export const teamService = {
@@ -2225,4 +2398,7 @@ export const teamService = {
   getActiveMatch,
   getAvailableTeamContests,
   startTeamMatchWithAutoRival,
+  cancelTeamMatchSearch,
+  getTeamMatchSearchStatus,
+  timeoutExpiredTeamMatchQueues,
 };

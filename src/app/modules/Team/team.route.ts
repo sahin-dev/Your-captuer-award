@@ -115,4 +115,24 @@ router.post(
   teamController.startTeamMatchWithAutoRival,
 );
 
+/**
+ * POST /api/teams/:teamId/cancel-match-search
+ * Cancel an in-progress opponent search started via start-match-auto
+ */
+router.post(
+  "/:teamId/cancel-match-search",
+  auth(),
+  teamController.cancelTeamMatchSearch,
+);
+
+/**
+ * GET /api/teams/:teamId/match-search-status
+ * Get the team's current opponent-search status, if any
+ */
+router.get(
+  "/:teamId/match-search-status",
+  auth(),
+  teamController.getTeamMatchSearchStatus,
+);
+
 export const teamRoutes = router;

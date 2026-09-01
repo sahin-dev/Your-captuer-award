@@ -8,16 +8,17 @@ model Room {
 model Chat {
     id        String      @id  @default(auto())  @map("_id") @db.ObjectId
     teamId    String?      @db.ObjectId
-    senderId  String      @db.ObjectId
+    senderId  String?      @db.ObjectId
     message   String
     messageType String    @default("text")
     fileUrl     String?
+    metadata    Json?
 
     team      Team?          @relation(fields: [teamId], references: [id], onDelete: SetNull)
-    sender    User          @relation(fields: [senderId], references: [id])
+    sender    User?          @relation(fields: [senderId], references: [id])
     createdAt DateTime    @default(now())
     updatedAt DateTime    @updatedAt
-    
+
 
     @@map("chats")
 }

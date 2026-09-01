@@ -3,6 +3,7 @@ import prisma from "../../../shared/prisma"
 import httpStatus from 'http-status'
 import { teamService } from "../Team/team.service"
 import { paginationHelper } from "../../../helpers/paginationHelper";
+import { getIO } from "../../../helpers/websocketSetUp";
 
 
 const sendMessage = async (senderId: string, teamId: string, message: string) => {
@@ -13,6 +14,27 @@ const sendMessage = async (senderId: string, teamId: string, message: string) =>
     }
 
     const chat = await prisma.chat.create({ data: { message, teamId: team.id, senderId } })
+
+    return chat
+}
+
+// Automated/system chat messages (matchmaking updates, etc.) with no human sender.
+// Rendered by the frontend without an author, centered in the chat, using
+// messageType to pick the presentation and metadata for structured details.
+const sendSystemMessage = async (
+    teamId: string,
+    message: string,
+    messageType: string,
+    metadata?: Record<string, any>,
+) => {
+    const chat = await prisma.chat.create({
+        data: { message, teamId, senderId: null, messageType, metadata },
+    })
+
+    const io = getIO()
+    if (io) {
+        io.to(`team_${teamId}`).emit("new_message", { event: "message", data: chat })
+    }
 
     return chat
 }
@@ -50,5 +72,6 @@ const getAllChats = async (userId: string, teamId: string, page: number = 1, lim
 
 export const chatService = {
     getAllChats,
-    sendMessage
+    sendMessage,
+    sendSystemMessage
 }

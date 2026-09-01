@@ -19,6 +19,7 @@ export enum NotificationEvent {
   // Team-related
   TEAM_MATCH_STARTED = "TEAM_MATCH_STARTED",
   TEAM_MATCH_ENDED = "TEAM_MATCH_ENDED",
+  TEAM_MATCH_SEARCH_TIMEOUT = "TEAM_MATCH_SEARCH_TIMEOUT",
   TEAM_MEMBER_JOINED = "TEAM_MEMBER_JOINED",
   TEAM_INVITATION_RECEIVED = "TEAM_INVITATION_RECEIVED",
   TEAM_INVITATION_ACCEPTED = "TEAM_INVITATION_ACCEPTED",
@@ -221,6 +222,31 @@ export async function notifyTeamMatchEnded(
 }
 
 /**
+ * Team Match Search Timeout Notification
+ * Sent to all team members when a match search expires without finding a rival
+ */
+export async function notifyTeamMatchSearchTimeout(
+  teamId: string,
+  contestName: string
+) {
+  const teamMembers = await notificationService.getTeamMembers(teamId);
+
+  for (const member of teamMembers) {
+    await sendNotification({
+      event: NotificationEvent.TEAM_MATCH_SEARCH_TIMEOUT,
+      userId: member.memberId,
+      title: "Match Search Ended",
+      message: `No opponent was found for "${contestName}" within the search window.`,
+      type: NotificationType.DEFAULT,
+      teamId,
+      data: {
+        contestName,
+      },
+    });
+  }
+}
+
+/**
  * Team Invitation Notification
  * Sent when user receives a team invitation
  */
@@ -325,6 +351,7 @@ export const notificationOrchestrator = {
   notifyLevelUp,
   notifyTeamMatchStarted,
   notifyTeamMatchEnded,
+  notifyTeamMatchSearchTimeout,
   notifyTeamInvitation,
   notifyAchievementUnlocked,
   notifyContestPhotoUploaded,

@@ -314,6 +314,14 @@ agenda.define("teamMatch:watchStale", async () => {
     }
 });
 
+// Expires opponent searches that hit the 5-hour / contest-end matchmaking window without pairing up.
+agenda.define("teamMatch:watchQueueTimeouts", async () => {
+    const timedOutCount = await teamService.timeoutExpiredTeamMatchQueues()
+    if(timedOutCount > 0){
+        console.log(`Timed out ${timedOutCount} team match search(es) with no opponent found`)
+    }
+});
+
 agenda.define("exposure:watcher", async (job:Job) => {
     const {contestPhotoId}  = job.attrs.data as {contestPhotoId:string}
 

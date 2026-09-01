@@ -460,17 +460,65 @@ const startTeamMatchWithAutoRival = catchAsync(
       throw new ApiError(httpstatus.BAD_REQUEST, "Contest ID is required");
     }
 
-    const match = await teamService.startTeamMatchWithAutoRival(
+    const result = await teamService.startTeamMatchWithAutoRival(
       teamId,
       contestId,
       userId,
     );
 
+    if (result.status === "SEARCHING") {
+      sendResponse(res, {
+        success: true,
+        statusCode: httpstatus.ACCEPTED,
+        message: "Searching for an opponent team",
+        data: result.queue,
+      });
+      return;
+    }
+
     sendResponse(res, {
       success: true,
       statusCode: httpstatus.CREATED,
       message: "Team match started successfully with auto-matched rival",
-      data: match,
+      data: result.match,
+    });
+  },
+);
+
+/**
+ * Cancel an in-progress opponent search started via start-match-auto
+ */
+const cancelTeamMatchSearch = catchAsync(
+  async (req: Request, res: Response) => {
+    const { teamId } = req.params;
+    const userId = req.user.id;
+
+    const queueEntry = await teamService.cancelTeamMatchSearch(teamId, userId);
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpstatus.OK,
+      message: "Match search cancelled",
+      data: queueEntry,
+    });
+  },
+);
+
+/**
+ * Get the team's current opponent-search status, if any
+ */
+const getTeamMatchSearchStatus = catchAsync(
+  async (req: Request, res: Response) => {
+    const { teamId } = req.params;
+    const userId = req.user.id;
+
+    const status = await teamService.getTeamMatchSearchStatus(teamId, userId);
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpstatus.OK,
+      message: "Match search status retrieved successfully",
+      data: status,
     });
   },
 );
@@ -533,4 +581,6 @@ export const teamController = {
   // NEW: Auto Match System
   getAvailableTeamContests,
   startTeamMatchWithAutoRival,
+  cancelTeamMatchSearch,
+  getTeamMatchSearchStatus,
 };
