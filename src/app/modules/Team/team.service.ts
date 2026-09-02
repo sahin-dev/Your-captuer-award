@@ -1976,7 +1976,7 @@ const MIN_TEAM_MATCH_MEMBERS = 3;
 
 const formatMatchQueueEntry = (
   queueEntry: { id: string; teamId: string; status: TeamMatchQueueStatus; createdAt: Date; expiresAt: Date },
-  contest: { id: string; title: string; banner?: string | null },
+  contest: { id: string; title: string; banner?: string | null; maxUpload?: number | null; endDate: Date },
   extra?: { joinedCount?: number; minMembers?: number; currentUserJoined?: boolean },
 ) => ({
   id: queueEntry.id,
@@ -1984,6 +1984,8 @@ const formatMatchQueueEntry = (
   contestId: contest.id,
   contestTitle: contest.title,
   contestBanner: contest.banner ?? null,
+  maxUpload: contest.maxUpload ?? null,
+  contestEndDate: contest.endDate,
   status: queueEntry.status,
   startedAt: queueEntry.createdAt,
   expiresAt: queueEntry.expiresAt,
@@ -2086,6 +2088,7 @@ const attemptOpponentSearch = async (params: {
         contestId,
         contestTitle: contest.title,
         contestBanner: contest.banner,
+        contestEndDate: contest.endDate,
         expiresAt: queueEntry.expiresAt,
       },
     );
@@ -2299,9 +2302,10 @@ const startTeamMatchWithAutoRival = async (
   const ownMembers = await getEligibleContestMembers(teamId, contestId);
 
   if (ownMembers.length < MIN_TEAM_MATCH_MEMBERS) {
-    const expiresAt = new Date(
-      Math.min(Date.now() + TEAM_MATCH_SEARCH_WINDOW_MS, contest.endDate.getTime()),
-    );
+    // No 5-hour search window applies while merely waiting for members —
+    // that window only starts once an actual opponent search begins (see
+    // checkAndAdvanceWaitingQueue). Waiting is bounded only by contest end.
+    const expiresAt = contest.endDate;
 
     const queueEntry = await prisma.teamMatchQueue.create({
       data: {
@@ -2323,6 +2327,7 @@ const startTeamMatchWithAutoRival = async (
         contestId,
         contestTitle: contest.title,
         contestBanner: contest.banner,
+        contestEndDate: contest.endDate,
         maxUpload: contest.maxUpload,
         joinedCount: ownMembers.length,
         minMembers: MIN_TEAM_MATCH_MEMBERS,
@@ -2448,7 +2453,7 @@ const getTeamMatchSearchStatus = async (teamId: string, userId: string) => {
       },
     },
     include: {
-      contest: { select: { id: true, title: true, banner: true } },
+      contest: { select: { id: true, title: true, banner: true, maxUpload: true, endDate: true } },
     },
     orderBy: { createdAt: "asc" },
   });
