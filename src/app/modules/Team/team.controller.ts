@@ -446,8 +446,10 @@ const getAvailableTeamContests = catchAsync(
 /**
  * Start team match with automatic rival finding
  * Only LEADER and MODERATOR can start matches
- * Admin selects a contest, system automatically finds a rival team and starts the match
- * Requires at least 3 team members who already joined the contest
+ * Admin selects a contest. If fewer than 3 team members have joined it yet,
+ * the system waits (WAITING_FOR_MEMBERS) instead of searching immediately;
+ * once 3+ members have joined, it automatically finds a rival team and
+ * starts the match.
  * @body { contestId: string }
  */
 const startTeamMatchWithAutoRival = catchAsync(
@@ -466,11 +468,14 @@ const startTeamMatchWithAutoRival = catchAsync(
       userId,
     );
 
-    if (result.status === "SEARCHING") {
+    if (result.status !== "MATCHED") {
       sendResponse(res, {
         success: true,
         statusCode: httpstatus.ACCEPTED,
-        message: "Searching for an opponent team",
+        message:
+          result.status === "WAITING_FOR_MEMBERS"
+            ? "Waiting for minimum team members to join the contest"
+            : "Searching for an opponent team",
         data: result.queue,
       });
       return;

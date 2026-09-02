@@ -188,6 +188,7 @@ enum MatchStatus {
 }
 
 enum TeamMatchQueueStatus {
+  WAITING_FOR_MEMBERS
   SEARCHING
   MATCHED
   TIMEOUT

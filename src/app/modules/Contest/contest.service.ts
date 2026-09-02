@@ -2,7 +2,7 @@ import prisma from '../../../shared/prisma';
 import ApiError from '../../../errors/ApiError';
 import httpstatus from 'http-status';
 import { fileUploader } from '../../../helpers/fileUploader';
-import { AchievementKind, ContestParticipant, ContestPhoto, ContestStatus, Prisma, PrizeType, RecurringType, YCLevel } from '../../../prismaClient';
+import { AchievementKind, ContestParticipant, ContestPhoto, ContestStatus, Prisma, PrizeType, RecurringType, TeamMemberStatus, YCLevel } from '../../../prismaClient';
 import { contestData, updateContestData } from './contest.type';
 import { contestRuleService } from './ContestRules/contestRules.service';
 import { ContestRuleConfigInput } from './ContestRules/contestRules.type';
@@ -33,6 +33,25 @@ import { paginationHelper } from '../../../helpers/paginationHelper';
 const completedContestStatuses:ContestStatus[] = [ContestStatus.COMPLETED, ContestStatus.CLOSED]
 const isCompletedContest = (status:ContestStatus) => completedContestStatuses.includes(status)
 const contestListCreatorInclude = {omit:{password:true, accessToken:true}} as const
+
+// Called after a user newly joins a contest. If they belong to a team that's
+// waiting for the minimum member count before searching for a team-match
+// opponent (see Team/team.service.ts), this may advance that wait into an
+// active opponent search. Dynamic import avoids a static require cycle, since
+// team.service.ts already statically imports contestService.
+const notifyTeamMatchQueueOfContestJoin = async (userId: string, contestId: string) => {
+    try {
+        const membership = await prisma.teamMember.findUnique({ where: { memberId: userId } })
+        if (!membership || membership.status !== TeamMemberStatus.ACTIVE) {
+            return
+        }
+
+        const { teamService } = await import('../Team/team.service.js')
+        await teamService.checkAndAdvanceWaitingQueue(membership.teamId, contestId)
+    } catch (error) {
+        console.error(`Failed to advance team match queue after contest join (userId=${userId}, contestId=${contestId})`, error)
+    }
+}
 
 const createRandomSeed = () => `${Date.now()}-${Math.random()}`
 
@@ -474,6 +493,8 @@ const joinContest = async (userId:string,contestId:string, acceptedRuleKeys?:unk
         await chargeContestEntryFee(tx, activeContest, userId)
         return tx.contestParticipant.create({data:{contestId,userId}})
     })
+
+    await notifyTeamMatchQueueOfContestJoin(userId, contestId)
 
     return {contest_id:contestId, participant_id:participant.id}
 
@@ -1343,6 +1364,10 @@ const uploadPhotoToContest = async (contestId:string,userId:string, photoIds:str
     })
 
     await Promise.all(images.map(image => agenda.every("1 minute", "exposure:watcher", {contestPhotoId:image.id})))
+
+    if(isJoiningThroughUpload){
+        await notifyTeamMatchQueueOfContestJoin(userId, contestId)
+    }
 
     return images
 }
