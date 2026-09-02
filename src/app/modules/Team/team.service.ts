@@ -1826,6 +1826,8 @@ const retryStaleTeamMatches = async () => {
   return closeTeamMatches(matches);
 };
 
+// A team can now have multiple active matches at once (one per contest at
+// most), so this returns all of them rather than a single match.
 const getActiveMatch = async (teamId: string, userId?: string) => {
   const viewerMember = userId ? await isTeamMemberExist(userId, teamId) : null;
   if (userId && !viewerMember) {
@@ -1835,11 +1837,12 @@ const getActiveMatch = async (teamId: string, userId?: string) => {
     );
   }
 
-  const match = await prisma.teamMatch.findFirst({
+  const matches = await prisma.teamMatch.findMany({
     where: {
       OR: [{ team1Id: teamId }, { team2Id: teamId }],
       status: MatchStatus.ACTIVE,
     },
+    orderBy: { startedAt: "desc" },
     include: {
       contest: {
         select: {
@@ -1853,7 +1856,7 @@ const getActiveMatch = async (teamId: string, userId?: string) => {
     },
   });
 
-  return match ? formatActiveTeamMatch(match, teamId) : null;
+  return Promise.all(matches.map((match) => formatActiveTeamMatch(match, teamId)));
 };
 
 // ============ Auto-Rival Matchmaking ============
@@ -2101,8 +2104,12 @@ const attemptOpponentSearch = async (params: {
       );
     }
 
+    // Scoped to this contest — a team can now run active matches on several
+    // contests at once, it just can't have two active matches for the same
+    // contest.
     const existingActiveMatch = await tx.teamMatch.findFirst({
       where: {
+        contestId,
         OR: [{ team1Id: teamId }, { team2Id: teamId }],
         status: MatchStatus.ACTIVE,
       },
@@ -2110,12 +2117,13 @@ const attemptOpponentSearch = async (params: {
     if (existingActiveMatch) {
       throw new ApiError(
         httpstatus.BAD_REQUEST,
-        "This team already has an active match",
+        "This team already has an active match for this contest",
       );
     }
 
     const rivalActiveMatch = await tx.teamMatch.findFirst({
       where: {
+        contestId,
         OR: [{ team1Id: rival.team.id }, { team2Id: rival.team.id }],
         status: MatchStatus.ACTIVE,
       },
@@ -2123,7 +2131,7 @@ const attemptOpponentSearch = async (params: {
     if (rivalActiveMatch) {
       throw new ApiError(
         httpstatus.BAD_REQUEST,
-        "Selected rival team already has an active match",
+        "Selected rival team already has an active match for this contest",
       );
     }
 
@@ -2253,8 +2261,11 @@ const startTeamMatchWithAutoRival = async (
     );
   }
 
+  // Scoped to this contest — a team can now run active matches on several
+  // contests at once, it just can't start a second one for the same contest.
   const existingActiveMatch = await prisma.teamMatch.findFirst({
     where: {
+      contestId,
       OR: [{ team1Id: teamId }, { team2Id: teamId }],
       status: MatchStatus.ACTIVE,
     },
@@ -2262,7 +2273,7 @@ const startTeamMatchWithAutoRival = async (
   if (existingActiveMatch) {
     throw new ApiError(
       httpstatus.BAD_REQUEST,
-      "This team already has an active match",
+      "This team already has an active match for this contest",
     );
   }
 
@@ -2488,7 +2499,7 @@ const getTeamContestMatchView = async (
     throw new ApiError(httpstatus.NOT_FOUND, "Contest not found");
   }
 
-  const [eligibleMembers, queueEntry, currentUserParticipant] = await Promise.all([
+  const [eligibleMembers, queueEntry, currentUserParticipant, activeTeamMatch] = await Promise.all([
     getEligibleContestMembers(teamId, contestId),
     prisma.teamMatchQueue.findFirst({
       where: {
@@ -2502,6 +2513,18 @@ const getTeamContestMatchView = async (
     }),
     prisma.contestParticipant.findUnique({
       where: { contestId_userId: { contestId, userId } },
+    }),
+    prisma.teamMatch.findFirst({
+      where: {
+        contestId,
+        OR: [{ team1Id: teamId }, { team2Id: teamId }],
+        status: MatchStatus.ACTIVE,
+      },
+      include: {
+        contest: {
+          select: { id: true, title: true, banner: true, endDate: true, maxUpload: true },
+        },
+      },
     }),
   ]);
 
@@ -2523,6 +2546,9 @@ const getTeamContestMatchView = async (
           currentUserJoined: Boolean(currentUserParticipant),
         })
       : null,
+    // Once the queue resolves into a real match, the "View Match" page
+    // switches from the waiting/searching view to this live match view.
+    activeMatch: activeTeamMatch ? await formatActiveTeamMatch(activeTeamMatch, teamId) : null,
   };
 };
 
