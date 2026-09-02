@@ -23,13 +23,15 @@ router.post("/register", validateRequest(userRegistrationSchema), registerUser)
 
 router.get("/google", passport.authenticate("google", {
   scope: ["profile", "email"],
+  session: false,
 }))
 
 
 router.get("/google/callback", socialLogin.googleCallback);
 
 router.get("/facebook", passport.authenticate("facebook", {
-  scope: ["email"]
+  scope: ["email"],
+  session: false,
 }))
 
 router.get("/facebook/callback", socialLogin.facebookCallback)

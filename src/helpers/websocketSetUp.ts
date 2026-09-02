@@ -11,6 +11,10 @@ interface AuthenticatedSocket extends Socket {
 }
 
 type Message = { event: string; token?: string; teamId?: string; message?: string };
+type Acknowledgement = (response: {
+  success: boolean;
+  message: string;
+}) => void;
 export const onlineUsers = new Set<string>();
 export const userSockets = new Map<string, AuthenticatedSocket>();
 
@@ -118,10 +122,16 @@ export function setupWebSocket(server: HTTPServer) {
       }
     });
 
-    socket.on("leave_team", (teamId: string, callback) => {
+    socket.on("leave_team", (teamId: string, callback?: Acknowledgement) => {
+      const acknowledge = (response: Parameters<Acknowledgement>[0]) => {
+        if (typeof callback === "function") {
+          callback(response);
+        }
+      };
+
       try {
         if (!socket.userId) {
-          callback({ success: false, message: "User not authenticated" });
+          acknowledge({ success: false, message: "User not authenticated" });
           return;
         }
 
@@ -135,11 +145,11 @@ export function setupWebSocket(server: HTTPServer) {
           timestamp: new Date(),
         });
 
-        callback({ success: true, message: "Left team room" });
+        acknowledge({ success: true, message: "Left team room" });
         console.log(`User ${socket.userId} left team ${teamId}`);
       } catch (error) {
         console.error("Leave team error:", error);
-        callback({ success: false, message: "Failed to leave team" });
+        acknowledge({ success: false, message: "Failed to leave team" });
       }
     });
 

@@ -4,7 +4,6 @@ import path from "path";
 import httpStatus from "http-status";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import session from 'express-session'
 import passport from 'passport'
 
 import router from "./app/routes";
@@ -17,14 +16,7 @@ import v2Router from "./app/routes/v2";
 
 const app: Application = express();
 
-app.use(session({
-  secret: "secret123#ABC",
-  resave: false,
-  saveUninitialized: false
-}))
-
 app.use(passport.initialize())
-app.use(passport.session())
 
 declare module "express-serve-static-core" {
   interface Request {
