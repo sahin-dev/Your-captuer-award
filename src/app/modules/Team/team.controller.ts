@@ -528,6 +528,27 @@ const getTeamMatchSearchStatus = catchAsync(
   },
 );
 
+/**
+ * Full "View Match" details for a single contest: contest info, the roster
+ * of team members who've joined it, and the team's current queue status
+ * (waiting for members / searching), if any.
+ */
+const getTeamContestMatchView = catchAsync(
+  async (req: Request, res: Response) => {
+    const { teamId, contestId } = req.params;
+    const userId = req.user.id;
+
+    const view = await teamService.getTeamContestMatchView(teamId, contestId, userId);
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpstatus.OK,
+      message: "Match view retrieved successfully",
+      data: view,
+    });
+  },
+);
+
 const searchTeamsByName = catchAsync(async (req: Request, res: Response) => {
   const { name, page, limit } = req.query;
 
@@ -588,4 +609,5 @@ export const teamController = {
   startTeamMatchWithAutoRival,
   cancelTeamMatchSearch,
   getTeamMatchSearchStatus,
+  getTeamContestMatchView,
 };

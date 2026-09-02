@@ -135,4 +135,15 @@ router.get(
   teamController.getTeamMatchSearchStatus,
 );
 
+/**
+ * GET /api/teams/:teamId/match-view/:contestId
+ * "View Match" details for one contest: contest info, joined-member roster,
+ * and the team's current queue status (waiting for members / searching).
+ */
+router.get(
+  "/:teamId/match-view/:contestId",
+  auth(),
+  teamController.getTeamContestMatchView,
+);
+
 export const teamRoutes = router;

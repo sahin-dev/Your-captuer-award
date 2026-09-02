@@ -1880,28 +1880,19 @@ const getAvailableTeamContests = async (
     page: currentPage,
   } = paginationHelper.calculatePagination({ page, limit });
 
-  const [activeTeamMatches, searchingQueueEntries] = await Promise.all([
-    prisma.teamMatch.findMany({
-      where: {
-        OR: [{ team1Id: teamId }, { team2Id: teamId }],
-        status: MatchStatus.ACTIVE,
-      },
-      select: { contestId: true },
-    }),
-    prisma.teamMatchQueue.findMany({
-      where: {
-        teamId,
-        status: {
-          in: [TeamMatchQueueStatus.WAITING_FOR_MEMBERS, TeamMatchQueueStatus.SEARCHING],
-        },
-      },
-      select: { contestId: true },
-    }),
-  ]);
-  const excludedContestIds = [
-    ...activeTeamMatches.map((match) => match.contestId),
-    ...searchingQueueEntries.map((entry) => entry.contestId),
-  ];
+  // Contests already SEARCHING/WAITING_FOR_MEMBERS are NOT excluded here —
+  // they still need to appear so the team can open their "View Match" status
+  // (see getTeamContestMatchView). Only a contest with a fully-formed ACTIVE
+  // TeamMatch is excluded, since that one is shown via the live-match view
+  // instead of the browse list.
+  const activeTeamMatches = await prisma.teamMatch.findMany({
+    where: {
+      OR: [{ team1Id: teamId }, { team2Id: teamId }],
+      status: MatchStatus.ACTIVE,
+    },
+    select: { contestId: true },
+  });
+  const excludedContestIds = activeTeamMatches.map((match) => match.contestId);
 
   const where = {
     status: ContestStatus.ACTIVE,
@@ -2476,6 +2467,65 @@ const getTeamMatchSearchStatus = async (teamId: string, userId: string) => {
   );
 };
 
+// Full details for the "View Match" page: the contest itself, the roster of
+// team members who've joined it, and the team's current queue status for it
+// (if any) — used both while WAITING_FOR_MEMBERS and while SEARCHING.
+const getTeamContestMatchView = async (
+  teamId: string,
+  contestId: string,
+  userId: string,
+) => {
+  const actingMember = await isTeamMemberExist(userId, teamId);
+  if (!actingMember) {
+    throw new ApiError(
+      httpstatus.FORBIDDEN,
+      "You are not a member of this team",
+    );
+  }
+
+  const contest = await prisma.contest.findUnique({ where: { id: contestId } });
+  if (!contest) {
+    throw new ApiError(httpstatus.NOT_FOUND, "Contest not found");
+  }
+
+  const [eligibleMembers, queueEntry, currentUserParticipant] = await Promise.all([
+    getEligibleContestMembers(teamId, contestId),
+    prisma.teamMatchQueue.findFirst({
+      where: {
+        teamId,
+        contestId,
+        status: {
+          in: [TeamMatchQueueStatus.WAITING_FOR_MEMBERS, TeamMatchQueueStatus.SEARCHING],
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    }),
+    prisma.contestParticipant.findUnique({
+      where: { contestId_userId: { contestId, userId } },
+    }),
+  ]);
+
+  return {
+    contest: {
+      id: contest.id,
+      title: contest.title,
+      description: contest.description,
+      banner: contest.banner,
+      maxUpload: contest.maxUpload,
+      startDate: contest.startDate,
+      endDate: contest.endDate,
+    },
+    eligibleMembers,
+    queue: queueEntry
+      ? formatMatchQueueEntry(queueEntry, contest, {
+          joinedCount: eligibleMembers.length,
+          minMembers: MIN_TEAM_MATCH_MEMBERS,
+          currentUserJoined: Boolean(currentUserParticipant),
+        })
+      : null,
+  };
+};
+
 // Called every minute by the "teamMatch:watchQueueTimeouts" job to expire
 // searches that never found a rival within the 5-hour / contest-end window.
 const timeoutExpiredTeamMatchQueues = async () => {
@@ -2569,5 +2619,6 @@ export const teamService = {
   checkAndAdvanceWaitingQueue,
   cancelTeamMatchSearch,
   getTeamMatchSearchStatus,
+  getTeamContestMatchView,
   timeoutExpiredTeamMatchQueues,
 };
