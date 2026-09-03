@@ -53,8 +53,20 @@ const markAllRead = catchAsync(async (req:Request, res:Response) => {
         data:notifications
     })
 })
+
+const markOneRead = catchAsync(async (req:Request, res:Response) => {
+    const notification = await notificationService.markOneRead(req.params.notificationId, req.user.id)
+
+    sendResponse(res, {
+        success:true,
+        statusCode:httpStatus.OK,
+        message:"notification marked as read",
+        data:notification
+    })
+})
 export const notificationController = {
     getUserNotifications,
     getAdminNotification,
-    markAllRead
+    markAllRead,
+    markOneRead
 }

@@ -87,6 +87,25 @@ const markAllRead = async (userId:string) => {
     return await prisma.notification.updateMany({where:{OR:[{receiverId:userId}, {receiverId: 'admin'}]}, data:{isRead:true}})
 }
 
+const markOneRead = async (notificationId: string, userId: string) => {
+    const notification = await prisma.notification.findFirst({
+        where: { id: notificationId, receiverId: userId }
+    })
+
+    if(!notification){
+        throw new ApiError(httpStatus.NOT_FOUND, "notification not found")
+    }
+
+    if(notification.isRead){
+        return notification
+    }
+
+    return await prisma.notification.update({
+        where: { id: notificationId },
+        data: { isRead: true }
+    })
+}
+
 /**
  * Get all team members by team ID
  * Used for broadcasting notifications to entire teams
@@ -113,6 +132,7 @@ export const notificationService = {
     postNotificationWithPayload,
     getAdminNotification,
     markAllRead,
+    markOneRead,
     getTeamMembers
     
 }

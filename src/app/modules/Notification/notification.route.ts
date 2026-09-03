@@ -7,5 +7,6 @@ const router = Router()
 router.get("/users", auth(), notificationController.getUserNotifications)
 router.get("/admins", auth(), notificationController.getAdminNotification)
 router.patch("/read", auth(), notificationController.markAllRead)
+router.patch("/:notificationId/read", auth(), notificationController.markOneRead)
 
 export const notificationRoutes = router
