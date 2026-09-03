@@ -82,8 +82,8 @@ const humanizeEnumValue = (value: string) =>
 const notifyGrantRecipients = async (grants: { userId: string; kind: AchievementKind; category: PrizeType; levelBadge: string | null; keyReward: number; boostReward: number; swapReward: number; coinReward: number }[]) => {
   for (const grant of grants) {
     const prizeParts: string[] = [];
-    if (grant.keyReward > 0) prizeParts.push(`${grant.keyReward} charge${grant.keyReward > 1 ? "s" : ""}`);
-    if (grant.boostReward > 0) prizeParts.push(`${grant.boostReward} promote${grant.boostReward > 1 ? "s" : ""}`);
+    if (grant.keyReward > 0) prizeParts.push(`${grant.keyReward} promote${grant.keyReward > 1 ? "s" : ""}`);
+    if (grant.boostReward > 0) prizeParts.push(`${grant.boostReward} charge${grant.boostReward > 1 ? "s" : ""}`);
     if (grant.swapReward > 0) prizeParts.push(`${grant.swapReward} trade${grant.swapReward > 1 ? "s" : ""}`);
     if (grant.coinReward > 0) prizeParts.push(`${grant.coinReward} coin${grant.coinReward > 1 ? "s" : ""}`);
     const prizeText = prizeParts.length > 0 ? prizeParts.join(", ") : "a new achievement";
