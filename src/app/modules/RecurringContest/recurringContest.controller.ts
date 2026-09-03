@@ -131,6 +131,31 @@ const replaceRecurringAwards = catchAsync(async (req: Request, res: Response) =>
   });
 });
 
+const getRecurringLevelAwards = catchAsync(async (req: Request, res: Response) => {
+  const result = await recurringContestService.getRecurringLevelAwards(req.params.recurringContestId);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "Recurring contest level awards fetched successfully",
+    data: result,
+  });
+});
+
+const replaceRecurringLevelAwards = catchAsync(async (req: Request, res: Response) => {
+  const result = await recurringContestService.replaceRecurringLevelAwards(
+    req.params.recurringContestId,
+    req.body.levelAwards
+  );
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "Recurring contest level awards updated successfully",
+    data: result,
+  });
+});
+
 export const recurringContestController = {
   getRecurringContests,
   getRecurringContestById,
@@ -142,5 +167,7 @@ export const recurringContestController = {
   getGeneratedContests,
   getRecurringAwards,
   replaceRecurringAwards,
+  getRecurringLevelAwards,
+  replaceRecurringLevelAwards,
 };
 

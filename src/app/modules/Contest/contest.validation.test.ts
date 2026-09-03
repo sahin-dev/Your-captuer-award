@@ -10,8 +10,9 @@ import {
     LevelRequirementValue,
 } from "./ContestRules/contestRule.definitions";
 import { getContestLevelForScore } from "./ContestRanking/contestRanking.service";
-import { ycLevels } from "../Awards/award.definitions";
+import { getRankBandLowerBound, ycLevels } from "../Awards/award.definitions";
 import { contestPrizeInputArraySchema } from "../Prize/prize.validation";
+import { contestLevelAwardArraySchema } from "./contestLevelAward.validation";
 import { defaultPrizeDefinitions } from "../Prize/prize.definitions";
 import { prizeService } from "../Prize/prize.service";
 import prisma from "../../../shared/prisma";
@@ -321,23 +322,67 @@ test("all seeded prize definitions are exposed as contest prize choices", () => 
         rankLimit: definition.rankLimit,
     }));
 
-    assert.equal(prizeChoices.length, 11);
+    assert.equal(prizeChoices.length, 13);
     assert.ok(prizeChoices.some((prize) => prize.category === "TOP_PHOTO" && prize.type === "TOP_PHOTO"));
     assert.ok(prizeChoices.some((prize) => prize.category === "TOP_PHOTOGRAPHER" && prize.type === "TOP_PHOTOGRAPHER"));
     assert.ok(prizeChoices.some((prize) => prize.category === "WINNER" && prize.type === "WINNER"));
 
-    for (const rankLimit of [10, 20, 50, 100]) {
+    for (const rankLimit of [10, 20, 50, 100, 200]) {
         assert.ok(prizeChoices.some((prize) => prize.type === "TOP_RANK" && prize.target === "PHOTO" && prize.rankLimit === rankLimit));
         assert.ok(prizeChoices.some((prize) => prize.type === "TOP_RANK" && prize.target === "PHOTOGRAPHER" && prize.rankLimit === rankLimit));
     }
 });
 
-test("only Top Photo and Top Photographer are catalog defaults", () => {
+test("rank tier bands are exclusive, not cumulative, so a rank-3 photo only wins Top 10 and not also Top 20/50/100/200", () => {
+    assert.equal(getRankBandLowerBound(10), 2, "Top 10 excludes rank 1, which belongs to the standalone Top Photo award");
+    assert.equal(getRankBandLowerBound(20), 11, "Top 20 starts right after Top 10 ends");
+    assert.equal(getRankBandLowerBound(50), 21, "Top 50 starts right after Top 20 ends");
+    assert.equal(getRankBandLowerBound(100), 51, "Top 100 starts right after Top 50 ends");
+    assert.equal(getRankBandLowerBound(200), 101, "Top 200 starts right after Top 100 ends");
+
+    const bandFor = (rank: number) => {
+        for (const rankLimit of [10, 20, 50, 100, 200]) {
+            if (rank >= getRankBandLowerBound(rankLimit) && rank <= rankLimit) {
+                return rankLimit;
+            }
+        }
+        return null;
+    };
+
+    assert.equal(bandFor(1), null, "rank 1 belongs to Top Photo, not a tier band");
+    assert.equal(bandFor(2), 10);
+    assert.equal(bandFor(10), 10);
+    assert.equal(bandFor(11), 20);
+    assert.equal(bandFor(20), 20);
+    assert.equal(bandFor(21), 50);
+    assert.equal(bandFor(50), 50);
+    assert.equal(bandFor(51), 100);
+    assert.equal(bandFor(100), 100);
+    assert.equal(bandFor(101), 200);
+    assert.equal(bandFor(200), 200);
+    assert.equal(bandFor(201), null, "ranks beyond 200 don't qualify for any tier");
+});
+
+test("Top Photo, Top Photographer, and every rank tier are catalog defaults so awards are always automatic", () => {
     const defaults = defaultPrizeDefinitions
         .filter((definition) => definition.isDefault)
         .map((definition) => definition.category);
 
-    assert.deepEqual(defaults, ["TOP_PHOTO", "TOP_PHOTOGRAPHER"]);
+    assert.deepEqual(defaults, [
+        "TOP_PHOTO",
+        "TOP_PHOTOGRAPHER",
+        "TOP_10_PHOTO",
+        "TOP_10_PHOTOGRAPHER",
+        "TOP_20_PHOTO",
+        "TOP_20_PHOTOGRAPHER",
+        "TOP_50_PHOTO",
+        "TOP_50_PHOTOGRAPHER",
+        "TOP_100_PHOTO",
+        "TOP_100_PHOTOGRAPHER",
+        "TOP_200_PHOTO",
+        "TOP_200_PHOTOGRAPHER",
+    ]);
+    assert.ok(!defaults.includes("WINNER"));
 });
 
 test("contest prize definitions skip malformed prize rows instead of crashing the UI", async () => {
@@ -402,4 +447,45 @@ test("contest updates cannot bypass the writable-field contract", () => {
 
     const categoryIdUpdate = updateContestSchema.safeParse({categoryId:"674b00000000000000000001"});
     assert.equal(categoryIdUpdate.success, false);
+});
+
+test("contest level awards are optional but all-or-nothing across the 5 levels", () => {
+    const disabled = contestLevelAwardArraySchema.safeParse([]);
+    assert.equal(disabled.success, true, "an empty array (feature off) is valid");
+
+    const partial = contestLevelAwardArraySchema.safeParse([
+        { level: "AMATEUR", boost: 1, swap: 0, key: 0, coin: 10 },
+        { level: "TALENTED", boost: 2, swap: 0, key: 0, coin: 20 },
+    ]);
+    assert.equal(partial.success, false, "configuring only some levels must be rejected");
+
+    const duplicate = contestLevelAwardArraySchema.safeParse([
+        { level: "AMATEUR", boost: 1, swap: 0, key: 0, coin: 10 },
+        { level: "AMATEUR", boost: 2, swap: 0, key: 0, coin: 20 },
+        { level: "TALENTED", boost: 0, swap: 0, key: 0, coin: 0 },
+        { level: "SUPREME", boost: 0, swap: 0, key: 0, coin: 0 },
+        { level: "SUPERIOR", boost: 0, swap: 0, key: 0, coin: 0 },
+    ]);
+    assert.equal(duplicate.success, false, "duplicate levels must be rejected");
+
+    const complete = contestLevelAwardArraySchema.safeParse([
+        { level: "AMATEUR", boost: 1, swap: 0, key: 0, coin: 10 },
+        { level: "TALENTED", boost: 2, swap: 0, key: 1, coin: 20 },
+        { level: "SUPREME", boost: 3, swap: 1, key: 1, coin: 40 },
+        { level: "SUPERIOR", boost: 4, swap: 1, key: 2, coin: 80 },
+        { level: "TOP_NOTCH", boost: 5, swap: 2, key: 3, coin: 150 },
+    ]);
+    assert.equal(complete.success, true, "all 5 levels configured together is valid");
+
+    const createWithLevelAwards = createContestSchema.safeParse({
+        title: "Level award contest",
+        description: "A".repeat(30),
+        category: "nature",
+        startDate: futureDate(1),
+        endDate: futureDate(25),
+        levelAwards: JSON.stringify([
+            { level: "AMATEUR", boost: 1, swap: 0, key: 0, coin: 10 },
+        ]),
+    });
+    assert.equal(createWithLevelAwards.success, false, "createContestSchema must enforce the same all-or-nothing rule");
 });

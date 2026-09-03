@@ -173,6 +173,7 @@ async function scheduleContest(rContest:RecurringContest){
             : rContest.rules as ContestRuleConfigInput[]
         const rules = contestRuleService.normalizeContestRules(rawRules)
         const awards = await prisma.recurringContestAward.findMany({where:{recurringContestId:rContest.id}})
+        const levelAwards = await prisma.recurringContestLevelAward.findMany({where:{recurringContestId:rContest.id}})
         const next = calculateNextOccurance(
             nextOccurrence,
             rContest.recurring.recurringType,
@@ -230,6 +231,19 @@ async function scheduleContest(rContest:RecurringContest){
                         coin:award.coin,
                         enabled:award.enabled,
                         order:award.order
+                    }))
+                })
+            }
+
+            if(levelAwards.length > 0){
+                await tx.contestLevelAward.createMany({
+                    data:levelAwards.map(award => ({
+                        contestId:contest.id,
+                        level:award.level,
+                        boost:award.boost,
+                        swap:award.swap,
+                        key:award.key,
+                        coin:award.coin
                     }))
                 })
             }

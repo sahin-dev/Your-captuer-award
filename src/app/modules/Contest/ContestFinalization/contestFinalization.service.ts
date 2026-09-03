@@ -4,6 +4,7 @@ import {
   AwardType,
   ContestFinalizationStatus,
   ContestGrantStatus,
+  ContestLevelBadge,
   ContestStatus,
 } from "../../../../prismaClient";
 import type { PrizeType, YCLevel } from "../../../../prismaClient";
@@ -17,6 +18,7 @@ import {
   ycLevels,
   getAwardSlotKey,
   getContestLevelOrder,
+  getRankBandLowerBound,
   normalizeAwardIdentity,
 } from "../../Awards/award.definitions";
 import { levelService } from "../../Level/level.service";
@@ -80,9 +82,9 @@ const humanizeEnumValue = (value: string) =>
 const notifyGrantRecipients = async (grants: { userId: string; kind: AchievementKind; category: PrizeType; levelBadge: string | null; keyReward: number; boostReward: number; swapReward: number; coinReward: number }[]) => {
   for (const grant of grants) {
     const prizeParts: string[] = [];
-    if (grant.keyReward > 0) prizeParts.push(`${grant.keyReward} key${grant.keyReward > 1 ? "s" : ""}`);
-    if (grant.boostReward > 0) prizeParts.push(`${grant.boostReward} boost${grant.boostReward > 1 ? "s" : ""}`);
-    if (grant.swapReward > 0) prizeParts.push(`${grant.swapReward} swap${grant.swapReward > 1 ? "s" : ""}`);
+    if (grant.keyReward > 0) prizeParts.push(`${grant.keyReward} charge${grant.keyReward > 1 ? "s" : ""}`);
+    if (grant.boostReward > 0) prizeParts.push(`${grant.boostReward} promote${grant.boostReward > 1 ? "s" : ""}`);
+    if (grant.swapReward > 0) prizeParts.push(`${grant.swapReward} trade${grant.swapReward > 1 ? "s" : ""}`);
     if (grant.coinReward > 0) prizeParts.push(`${grant.coinReward} coin${grant.coinReward > 1 ? "s" : ""}`);
     const prizeText = prizeParts.length > 0 ? prizeParts.join(", ") : "a new achievement";
 
@@ -164,9 +166,11 @@ const awardRecipients = (award: AwardConfig, ranking: ContestRanking, selections
   const identity = normalizeAwardIdentity(award);
 
   if (identity.type === AwardType.TOP_RANK) {
+    const rankLimit = identity.rankLimit || 0;
+    const lowerBound = getRankBandLowerBound(rankLimit);
     return identity.target === AwardTarget.PHOTO
-      ? ranking.photos.filter((photo) => photo.rank <= (identity.rankLimit || 0))
-      : ranking.photographers.filter((photographer) => photographer.rank <= (identity.rankLimit || 0));
+      ? ranking.photos.filter((photo) => photo.rank >= lowerBound && photo.rank <= rankLimit)
+      : ranking.photographers.filter((photographer) => photographer.rank >= lowerBound && photographer.rank <= rankLimit);
   }
 
   if (identity.type === AwardType.TOP_PHOTO) {
@@ -212,7 +216,25 @@ const buildAwardGrants = (
   });
 };
 
-const buildLevelGrants = (contestId: string, ranking: ContestRanking): GrantCandidate[] => {
+type LevelAwardConfig = {
+  level: ContestLevelBadge;
+  boost: number;
+  swap: number;
+  key: number;
+  coin: number;
+};
+
+// Contest level rewards are optional - admins configure a payout for reaching Amateur/Talented/
+// Supreme/Superior/Top Notch, or configure nothing at all, in which case leveling up in a contest
+// remains a badge-only achievement (rewardByLevel lookup misses and every reward stays 0), exactly
+// matching the pre-existing behavior before this feature existed.
+const buildLevelGrants = (
+  contestId: string,
+  ranking: ContestRanking,
+  levelAwards: LevelAwardConfig[]
+): GrantCandidate[] => {
+  const rewardByLevel = new Map(levelAwards.map((award) => [award.level, award]));
+
   return ranking.photographers.flatMap((photographer) => {
     const levelAchievement = levelAchievementByYCLevel[photographer.level];
     if (!levelAchievement) {
@@ -224,6 +246,8 @@ const buildLevelGrants = (contestId: string, ranking: ContestRanking): GrantCand
       return [];
     }
 
+    const reward = rewardByLevel.get(levelAchievement.badge);
+
     return [{
       grantKey: `${contestId}:LEVEL:${photographer.participantId}`,
       contestId,
@@ -234,10 +258,10 @@ const buildLevelGrants = (contestId: string, ranking: ContestRanking): GrantCand
       levelBadge: levelAchievement.badge,
       levelOrder,
       rank: photographer.rank,
-      keyReward: 0,
-      boostReward: 0,
-      swapReward: 0,
-      coinReward: 0,
+      keyReward: reward?.key ?? 0,
+      boostReward: reward?.boost ?? 0,
+      swapReward: reward?.swap ?? 0,
+      coinReward: reward?.coin ?? 0,
     }];
   });
 };
@@ -377,13 +401,14 @@ const finalizeContest = async (contestId: string) => {
   });
 
   try {
-    const [ranking, awards, selections] = await Promise.all([
+    const [ranking, awards, selections, levelAwards] = await Promise.all([
       contestRankingService.buildContestRanking(contestId),
       loadAwardConfigs(contestId),
       prisma.contestAwardSelection.findMany({
         where: { contestId },
         select: { slotKey: true, photoId: true },
       }),
+      prisma.contestLevelAward.findMany({ where: { contestId } }),
     ]);
 
     await prisma.$transaction(
@@ -393,7 +418,7 @@ const finalizeContest = async (contestId: string) => {
 
     const candidates = [
       ...buildAwardGrants(contestId, awards, ranking, selections),
-      ...buildLevelGrants(contestId, ranking),
+      ...buildLevelGrants(contestId, ranking, levelAwards),
     ];
     const grants:Awaited<ReturnType<typeof ensureGrant>>[] = [];
     for (const candidate of candidates) {

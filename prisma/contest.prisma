@@ -33,6 +33,7 @@ model Contest {
   contestRules ContestRule[] 
   ruleConfigs ContestRuleConfig[]
   contestAwards ContestAward[]
+  levelAwards ContestLevelAward[]
   achievements ContestAchievement[]
   entryFeeTransactions ContestEntryFeeTransaction[]
   teamMatch    TeamMatch[]
@@ -71,9 +72,10 @@ model RecurringContest {
   recurring RecurringData
   lastGeneratedContestId String? @db.ObjectId
 
-  rules Json 
+  rules Json
   prizes Json?
   contestAwards RecurringContestAward[]
+  levelAwards RecurringContestLevelAward[]
   contestInstances Contest[]
   createdAt    DateTime             @default(now())
   updatedAt    DateTime             @updatedAt
@@ -316,6 +318,46 @@ model RecurringContestAward {
   @@map("recurring_contest_awards")
 }
 
+// Optional per-contest reward for reaching a contest level (Amateur/Talented/Supreme/Superior/Top
+// Notch), paid out at finalization alongside rank-based awards. Either unset (no reward for
+// leveling up in this contest) or fully configured for all 5 levels - enforced at the validation
+// layer, not the schema, since Prisma/Mongo can't express "all-or-none of these rows exist".
+model ContestLevelAward {
+  id        String            @id @default(auto()) @map("_id") @db.ObjectId
+  contestId String            @db.ObjectId
+  level     ContestLevelBadge
+  boost     Int               @default(0)
+  swap      Int               @default(0)
+  key       Int               @default(0)
+  coin      Int               @default(0)
+
+  contest Contest @relation(fields: [contestId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([contestId, level])
+  @@map("contest_level_awards")
+}
+
+model RecurringContestLevelAward {
+  id                 String            @id @default(auto()) @map("_id") @db.ObjectId
+  recurringContestId String            @db.ObjectId
+  level              ContestLevelBadge
+  boost              Int               @default(0)
+  swap               Int               @default(0)
+  key                Int               @default(0)
+  coin               Int               @default(0)
+
+  recurringContest RecurringContest @relation(fields: [recurringContestId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([recurringContestId, level])
+  @@map("recurring_contest_level_awards")
+}
+
 model ContestAchievement {
   id            String           @id @default(auto()) @map("_id") @db.ObjectId
   category          PrizeType
@@ -466,6 +508,8 @@ enum PrizeType {
   TALENTED
   SUPREME
   SUPERIOR
+  TOP_200_PHOTO
+  TOP_200_PHOTOGRAPHER
   TOP_100_PHOTO
   TOP_100_PHOTOGRAPHER
   TOP_50_PHOTO

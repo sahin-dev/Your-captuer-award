@@ -5,6 +5,7 @@ import { UserRole } from "../../../prismaClient";
 import { recurringContestController } from "./recurringContest.controller";
 import {
   replaceRecurringAwardsSchema,
+  replaceRecurringLevelAwardsSchema,
   updateRecurringContestSchema,
   updateRecurringIntervalSchema,
 } from "./recurringContest.validation";
@@ -27,6 +28,10 @@ router
   .route("/:recurringContestId/awards")
   .get(auth(UserRole.ADMIN), recurringContestController.getRecurringAwards)
   .put(auth(UserRole.ADMIN), validateRequest(replaceRecurringAwardsSchema), recurringContestController.replaceRecurringAwards);
+router
+  .route("/:recurringContestId/level-awards")
+  .get(auth(UserRole.ADMIN), recurringContestController.getRecurringLevelAwards)
+  .put(auth(UserRole.ADMIN), validateRequest(replaceRecurringLevelAwardsSchema), recurringContestController.replaceRecurringLevelAwards);
 
 router
   .route("/:recurringContestId")

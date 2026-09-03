@@ -30,6 +30,8 @@ const achievementBadgeImages: Record<PrizeType, string> = {
     [prizeTypes.TALENTED]: "/icons/contest-level-talented.svg",
     [prizeTypes.SUPREME]: "/icons/contest-level-supreme.svg",
     [prizeTypes.SUPERIOR]: "/icons/contest-level-superior.svg",
+    [prizeTypes.TOP_200_PHOTO]: "/icons/top-photo.png",
+    [prizeTypes.TOP_200_PHOTOGRAPHER]: "/icons/top-photographer.png",
     [prizeTypes.TOP_100_PHOTO]: "/icons/top-photo.png",
     [prizeTypes.TOP_100_PHOTOGRAPHER]: "/icons/top-photographer.png",
     [prizeTypes.TOP_50_PHOTO]: "/icons/top-photo.png",
@@ -59,6 +61,8 @@ const profileAchievementCatalog: ProfileAchievementBadgeDefinition[] = [
     { id: prizeTypes.TOP_50_PHOTOGRAPHER, category: prizeTypes.TOP_50_PHOTOGRAPHER, title: "Top 50 Photographers", imageUrl: achievementBadgeImages.TOP_50_PHOTOGRAPHER, group: "ranking", order: 100 },
     { id: prizeTypes.TOP_100_PHOTO, category: prizeTypes.TOP_100_PHOTO, title: "Top 100 Photos", imageUrl: achievementBadgeImages.TOP_100_PHOTO, group: "ranking", order: 110 },
     { id: prizeTypes.TOP_100_PHOTOGRAPHER, category: prizeTypes.TOP_100_PHOTOGRAPHER, title: "Top 100 Photographers", imageUrl: achievementBadgeImages.TOP_100_PHOTOGRAPHER, group: "ranking", order: 120 },
+    { id: prizeTypes.TOP_200_PHOTO, category: prizeTypes.TOP_200_PHOTO, title: "Top 200 Photos", imageUrl: achievementBadgeImages.TOP_200_PHOTO, group: "ranking", order: 130 },
+    { id: prizeTypes.TOP_200_PHOTOGRAPHER, category: prizeTypes.TOP_200_PHOTOGRAPHER, title: "Top 200 Photographers", imageUrl: achievementBadgeImages.TOP_200_PHOTOGRAPHER, group: "ranking", order: 140 },
 ];
 
 type AchievementMetadata = {

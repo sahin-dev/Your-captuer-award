@@ -28,7 +28,7 @@ export const contestAwardOverrideFields = [
 ] as const;
 
 const topRankDefinition = (
-  rankLimit: 10 | 20 | 50 | 100,
+  rankLimit: 10 | 20 | 50 | 100 | 200,
   target: AwardTarget,
   rewards: Pick<PrizeDefinition, "boost" | "swap" | "key" | "coin">,
   isDefault: boolean,
@@ -92,12 +92,14 @@ export const defaultPrizeDefinitions: PrizeDefinition[] = [
     isDefault: false,
     order: 30,
   },
-  topRankDefinition(10, awardTargets.PHOTO, { boost: 5, swap: 0, key: 1, coin: 500 }, false, 50),
-  topRankDefinition(10, awardTargets.PHOTOGRAPHER, { boost: 10, swap: 1, key: 2, coin: 1000 }, false, 60),
-  topRankDefinition(20, awardTargets.PHOTO, { boost: 4, swap: 0, key: 1, coin: 300 }, false, 70),
-  topRankDefinition(20, awardTargets.PHOTOGRAPHER, { boost: 8, swap: 1, key: 1, coin: 600 }, false, 80),
-  topRankDefinition(50, awardTargets.PHOTO, { boost: 3, swap: 0, key: 1, coin: 150 }, false, 90),
-  topRankDefinition(50, awardTargets.PHOTOGRAPHER, { boost: 6, swap: 0, key: 1, coin: 300 }, false, 100),
-  topRankDefinition(100, awardTargets.PHOTO, { boost: 2, swap: 0, key: 0, coin: 75 }, false, 110),
-  topRankDefinition(100, awardTargets.PHOTOGRAPHER, { boost: 4, swap: 0, key: 1, coin: 150 }, false, 120),
+  topRankDefinition(10, awardTargets.PHOTO, { boost: 5, swap: 0, key: 1, coin: 500 }, true, 50),
+  topRankDefinition(10, awardTargets.PHOTOGRAPHER, { boost: 10, swap: 1, key: 2, coin: 1000 }, true, 60),
+  topRankDefinition(20, awardTargets.PHOTO, { boost: 4, swap: 0, key: 1, coin: 300 }, true, 70),
+  topRankDefinition(20, awardTargets.PHOTOGRAPHER, { boost: 8, swap: 1, key: 1, coin: 600 }, true, 80),
+  topRankDefinition(50, awardTargets.PHOTO, { boost: 3, swap: 0, key: 1, coin: 150 }, true, 90),
+  topRankDefinition(50, awardTargets.PHOTOGRAPHER, { boost: 6, swap: 0, key: 1, coin: 300 }, true, 100),
+  topRankDefinition(100, awardTargets.PHOTO, { boost: 2, swap: 0, key: 0, coin: 75 }, true, 110),
+  topRankDefinition(100, awardTargets.PHOTOGRAPHER, { boost: 4, swap: 0, key: 1, coin: 150 }, true, 120),
+  topRankDefinition(200, awardTargets.PHOTO, { boost: 1, swap: 0, key: 0, coin: 25 }, true, 130),
+  topRankDefinition(200, awardTargets.PHOTOGRAPHER, { boost: 2, swap: 0, key: 0, coin: 50 }, true, 140),
 ];

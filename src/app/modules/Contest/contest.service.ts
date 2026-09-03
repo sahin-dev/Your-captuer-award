@@ -210,6 +210,7 @@ const createContest = async (creatorId: string, body: contestData, banner:Expres
         body.prizes || [],
         shouldUseDefaultAwards(body)
     )
+    const levelAwards = body.levelAwards || []
 
     const contestData:any = {
         creatorId,
@@ -247,7 +248,13 @@ const createContest = async (creatorId: string, body: contestData, banner:Expres
             data:awardRows.map(award => ({contestId:contest.id, ...award}))
         })
 
-        return {...contest, rules:normalizedRules, prizes:awardRows.filter(prize => prize.enabled)}
+        if(levelAwards.length > 0){
+            await tx.contestLevelAward.createMany({
+                data:levelAwards.map(award => ({contestId:contest.id, ...award}))
+            })
+        }
+
+        return {...contest, rules:normalizedRules, prizes:awardRows.filter(prize => prize.enabled), levelAwards}
     })
 };
 
@@ -281,6 +288,7 @@ const createRecurringContest  =  async (creatorId: string, body: contestData, ba
         body.prizes || [],
         shouldUseDefaultAwards(body)
     )
+    const levelAwards = body.levelAwards || []
     const contestData:any = {
         creatorId,
         title: body.title,
@@ -320,7 +328,14 @@ const createRecurringContest  =  async (creatorId: string, body: contestData, ba
         await tx.recurringContestAward.createMany({
             data:awardRows.map(award => ({recurringContestId:recurringContest.id, ...award}))
         })
-        return {...recurringContest, prizes:awardRows}
+
+        if(levelAwards.length > 0){
+            await tx.recurringContestLevelAward.createMany({
+                data:levelAwards.map(award => ({recurringContestId:recurringContest.id, ...award}))
+            })
+        }
+
+        return {...recurringContest, prizes:awardRows, levelAwards}
     })
 }
 
@@ -366,7 +381,7 @@ const updateContest = async (contestId:string, contestData:updateContestData, ba
         throw new ApiError(httpstatus.BAD_REQUEST, "A positive entryFeeCoins value is required when coinRequirement is enabled")
     }
 
-    const { prizeIds, prizes, rules, coinRequirement, ...updatePayload } = contestData as any
+    const { prizeIds, prizes, levelAwards, rules, coinRequirement, ...updatePayload } = contestData as any
 
     const bannerUrl = await (
         banner ? fileUploader.uploadToDigitalOcean(banner).then(upload => upload.Location) : Promise.resolve(undefined)
@@ -386,7 +401,7 @@ const updateContest = async (contestId:string, contestData:updateContestData, ba
         )
         : undefined
 
-    const {updatedContest, updatedRules, updatedAwards} = await prisma.$transaction(async tx => {
+    const {updatedContest, updatedRules, updatedAwards, updatedLevelAwards} = await prisma.$transaction(async tx => {
         const updatedContest = await tx.contest.update({
             where:{id:contestId},
             data:{
@@ -434,13 +449,25 @@ const updateContest = async (contestId:string, contestData:updateContestData, ba
             })
         }
 
-        return {updatedContest, updatedRules, updatedAwards}
+        let updatedLevelAwards
+        if(levelAwards !== undefined){
+            await tx.contestLevelAward.deleteMany({where:{contestId}})
+            if(levelAwards.length > 0){
+                await tx.contestLevelAward.createMany({
+                    data:levelAwards.map((award:any) => ({contestId, ...award}))
+                })
+            }
+            updatedLevelAwards = await tx.contestLevelAward.findMany({where:{contestId}})
+        }
+
+        return {updatedContest, updatedRules, updatedAwards, updatedLevelAwards}
     })
 
     return {
         ...updatedContest,
         ...(updatedRules !== undefined && {rules:updatedRules}),
-        ...(updatedAwards !== undefined && {prizes:updatedAwards})
+        ...(updatedAwards !== undefined && {prizes:updatedAwards}),
+        ...(updatedLevelAwards !== undefined && {levelAwards:updatedLevelAwards})
     }
 }
 
@@ -512,14 +539,15 @@ const getContestByUserId = async ( userId:string, contestId: string) => {
         throw new ApiError(httpstatus.NOT_FOUND, "contest not found")
     }
 
-    const [rules, prizes, totalVotes, finalization, awardSelections] = await Promise.all([
+    const [rules, prizes, levelAwards, totalVotes, finalization, awardSelections] = await Promise.all([
         contestRuleService.getContestRules(contestId),
         prizeService.getContestAwards(contestId),
+        prisma.contestLevelAward.findMany({where:{contestId}}),
         voteService.getContestTotalVotes(contestId),
         prisma.contestFinalization.findUnique({where:{contestId}}),
         contestFinalizationService.getContestAwardSelections(contestId)
     ])
-    const baseContestDetails = {...contest, rules, prizes, totalVotes, finalization, awardSelections}
+    const baseContestDetails = {...contest, rules, prizes, levelAwards, totalVotes, finalization, awardSelections}
 
     if(isCompletedContest(contest.status)){
         const winners = await getContestWinners(contestId)
@@ -550,14 +578,15 @@ const getContestById = async ( contestId: string) => {
         throw new ApiError(httpstatus.NOT_FOUND, "contest not found")
     }
 
-    const [rules, prizes, totalVotes, finalization, awardSelections] = await Promise.all([
+    const [rules, prizes, levelAwards, totalVotes, finalization, awardSelections] = await Promise.all([
         contestRuleService.getContestRules(contestId),
         prizeService.getContestAwards(contestId),
+        prisma.contestLevelAward.findMany({where:{contestId}}),
         voteService.getContestTotalVotes(contestId),
         prisma.contestFinalization.findUnique({where:{contestId}}),
         contestFinalizationService.getContestAwardSelections(contestId)
     ])
-    const baseContestDetails = {...contest, rules, prizes, totalVotes, finalization, awardSelections}
+    const baseContestDetails = {...contest, rules, prizes, levelAwards, totalVotes, finalization, awardSelections}
 
     if(isCompletedContest(contest.status)){
         const winners = await getContestWinners(contestId)

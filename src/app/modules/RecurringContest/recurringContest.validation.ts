@@ -2,6 +2,7 @@ import { z } from "zod";
 import { RecurringType } from "../../../prismaClient";
 import { contestRuleInputArraySchema } from "../Contest/ContestRules/contestRule.validation";
 import { contestAwardInputArraySchema } from "../Prize/prize.validation";
+import { contestLevelAwardArraySchema } from "../Contest/contestLevelAward.validation";
 import { getRichTextLength, sanitizeContestRichText } from "../Contest/contestContent";
 
 const parseJsonArray = (value: unknown) => {
@@ -46,5 +47,9 @@ export const updateRecurringIntervalSchema = z.object({
 export const replaceRecurringAwardsSchema = z.object({
   awardPrizeIds: z.preprocess(parseJsonArray, z.array(z.string()).default([])).optional(),
   awards: z.preprocess(parseJsonArray, contestAwardInputArraySchema).optional(),
+});
+
+export const replaceRecurringLevelAwardsSchema = z.object({
+  levelAwards: z.preprocess(parseJsonArray, contestLevelAwardArraySchema).default([]),
 });
 

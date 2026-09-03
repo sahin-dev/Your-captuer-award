@@ -10,6 +10,7 @@ import {
     Prize,
     PrismaClient,
     PrizeType,
+    RecurringContestStatus,
     UserRole,
     VoteType
 } from "./prismaClient"
@@ -18,6 +19,7 @@ import { contestRuleDefinitions } from "./app/modules/Contest/ContestRules/conte
 import { contestRuleService } from "./app/modules/Contest/ContestRules/contestRules.service"
 import { getContestLevelBadge, getContestLevelOrder, isContestLevelPrizeType, normalizeAwardIdentity } from "./app/modules/Awards/award.definitions"
 import { defaultPrizeDefinitions } from "./app/modules/Prize/prize.definitions"
+import { prizeService } from "./app/modules/Prize/prize.service"
 
 type SeedUserDefinition = {
     email:string;
@@ -923,6 +925,112 @@ class DatabaseSeeder {
         console.log(`Backfilled default contest rules for ${updatedCount} of ${contests.length} contest(s)`)
     }
 
+    private buildLadderRows(baseRows: Awaited<ReturnType<typeof prizeService.resolveAwardRows>>, existingBySlot: Map<string, {title:string|null; description:string|null; icon:string|null; boost:number; swap:number; key:number; coin:number; enabled:boolean}>){
+        return baseRows.map(row => {
+            const existing = existingBySlot.get(row.slotKey)
+            return {
+                prizeId:row.prizeId,
+                category:row.category,
+                type:row.type,
+                target:row.target,
+                rankLimit:row.rankLimit,
+                slotKey:row.slotKey,
+                title:existing?.title ?? row.title,
+                description:existing?.description ?? row.description,
+                icon:existing?.icon ?? row.icon,
+                boost:existing?.boost ?? row.boost,
+                swap:existing?.swap ?? row.swap,
+                key:existing?.key ?? row.key,
+                coin:existing?.coin ?? row.coin,
+                enabled:existing?.enabled ?? row.enabled,
+                order:row.order
+            }
+        })
+    }
+
+    private ladderMatchesExisting(mergedRows: ReturnType<DatabaseSeeder["buildLadderRows"]>, existingAwards: {slotKey:string|null; type:string|null; target:string|null; boost:number; swap:number; key:number; coin:number}[]){
+        const existingBySlot = new Map(existingAwards.map(a => [a.slotKey || `${a.type}:${a.target}`, a]))
+
+        if(existingBySlot.size !== mergedRows.length){
+            return false
+        }
+
+        return mergedRows.every(row => {
+            const existing = existingBySlot.get(row.slotKey)
+            return existing
+                && existing.boost === row.boost
+                && existing.swap === row.swap
+                && existing.key === row.key
+                && existing.coin === row.coin
+        })
+    }
+
+    async backfillContestAwardLadder(apply = false){
+        const contests = await this.db.contest.findMany({
+            where:{status:{not:ContestStatus.COMPLETED}},
+            select:{id:true, title:true, status:true}
+        })
+
+        const baseRows = await prizeService.resolveAwardRows([], [])
+        let changedCount = 0
+
+        for(const contest of contests){
+            const existingAwards = await this.db.contestAward.findMany({where:{contestId:contest.id}})
+            const existingBySlot = new Map(existingAwards.map(a => [a.slotKey || `${a.type}:${a.target}`, a]))
+            const mergedRows = this.buildLadderRows(baseRows, existingBySlot)
+
+            if(this.ladderMatchesExisting(mergedRows, existingAwards)){
+                continue
+            }
+
+            changedCount += 1
+            console.log(`${apply ? "" : "[DRY RUN] "}${contest.status} ${contest.id} "${contest.title}": ${existingAwards.length} -> ${mergedRows.length} award slot(s)`)
+
+            if(apply){
+                await this.db.$transaction(async tx => {
+                    await tx.contestAward.deleteMany({where:{contestId:contest.id}})
+                    await tx.contestAward.createMany({data:mergedRows.map(row => ({contestId:contest.id, ...row}))})
+                })
+            }
+        }
+
+        console.log(`${apply ? "" : "[DRY RUN] "}Contest award ladder: ${changedCount} of ${contests.length} non-completed contest(s) ${apply ? "updated" : "would be updated"}`)
+        return {total:contests.length, changed:changedCount}
+    }
+
+    async backfillRecurringContestAwardLadder(apply = false){
+        const recurringContests = await this.db.recurringContest.findMany({
+            where:{status:{not:RecurringContestStatus.ENDED}},
+            select:{id:true, title:true, status:true}
+        })
+
+        const baseRows = await prizeService.resolveAwardRows([], [])
+        let changedCount = 0
+
+        for(const recurringContest of recurringContests){
+            const existingAwards = await this.db.recurringContestAward.findMany({where:{recurringContestId:recurringContest.id}})
+            const existingBySlot = new Map(existingAwards.map(a => [a.slotKey || `${a.type}:${a.target}`, a]))
+            const mergedRows = this.buildLadderRows(baseRows, existingBySlot)
+
+            if(this.ladderMatchesExisting(mergedRows, existingAwards)){
+                continue
+            }
+
+            changedCount += 1
+            console.log(`${apply ? "" : "[DRY RUN] "}${recurringContest.status} ${recurringContest.id} "${recurringContest.title}": ${existingAwards.length} -> ${mergedRows.length} award slot(s)`)
+
+            if(apply){
+                await this.db.$transaction(async tx => {
+                    await tx.recurringContestAward.deleteMany({where:{recurringContestId:recurringContest.id}})
+                    await tx.recurringContestAward.createMany({data:mergedRows.map(row => ({recurringContestId:recurringContest.id, ...row}))})
+                })
+            }
+        }
+
+        console.log(`${apply ? "" : "[DRY RUN] "}Recurring contest award ladder: ${changedCount} of ${recurringContests.length} non-ended recurring contest(s) ${apply ? "updated" : "would be updated"}`)
+        return {total:recurringContests.length, changed:changedCount}
+    }
+
     async destroyClient(){
         await this.client?.$disconnect()
     }
@@ -968,8 +1076,17 @@ async function SeederCLI (){
             case "backfill:contest-rules":
                 await seeder.backfillContestRuleDefaults()
                 break
+            case "backfill:contest-awards": {
+                const apply = process.argv[3] === "--apply"
+                await seeder.backfillContestAwardLadder(apply)
+                await seeder.backfillRecurringContestAwardLadder(apply)
+                if(!apply){
+                    console.log("Dry run only - re-run with --apply to write these changes")
+                }
+                break
+            }
             default:
-                console.log("Available commands: create:admin, seed:levels-demo, seed:contest-config, seed:prizes, seed:contest-categories, seed:achievements-for-user, backfill:contest-rules, -reset")
+                console.log("Available commands: create:admin, seed:levels-demo, seed:contest-config, seed:prizes, seed:contest-categories, seed:achievements-for-user, backfill:contest-rules, backfill:contest-awards [--apply], -reset")
         }
     }finally{
         await seeder.destroyClient()

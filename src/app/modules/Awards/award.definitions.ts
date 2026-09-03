@@ -12,6 +12,8 @@ export const prizeTypes = {
   TALENTED: "TALENTED",
   SUPREME: "SUPREME",
   SUPERIOR: "SUPERIOR",
+  TOP_200_PHOTO: "TOP_200_PHOTO",
+  TOP_200_PHOTOGRAPHER: "TOP_200_PHOTOGRAPHER",
   TOP_100_PHOTO: "TOP_100_PHOTO",
   TOP_100_PHOTOGRAPHER: "TOP_100_PHOTOGRAPHER",
   TOP_50_PHOTO: "TOP_50_PHOTO",
@@ -64,6 +66,7 @@ const topRankCategoryByLimit: Record<number, Record<AwardTarget, PrizeType>> = {
   20: { PHOTO: prizeTypes.TOP_20_PHOTO, PHOTOGRAPHER: prizeTypes.TOP_20_PHOTOGRAPHER },
   50: { PHOTO: prizeTypes.TOP_50_PHOTO, PHOTOGRAPHER: prizeTypes.TOP_50_PHOTOGRAPHER },
   100: { PHOTO: prizeTypes.TOP_100_PHOTO, PHOTOGRAPHER: prizeTypes.TOP_100_PHOTOGRAPHER },
+  200: { PHOTO: prizeTypes.TOP_200_PHOTO, PHOTOGRAPHER: prizeTypes.TOP_200_PHOTOGRAPHER },
 };
 
 const topRankLimitByCategory: Partial<Record<PrizeType, number>> = {
@@ -75,6 +78,8 @@ const topRankLimitByCategory: Partial<Record<PrizeType, number>> = {
   [prizeTypes.TOP_50_PHOTOGRAPHER]: 50,
   [prizeTypes.TOP_100_PHOTO]: 100,
   [prizeTypes.TOP_100_PHOTOGRAPHER]: 100,
+  [prizeTypes.TOP_200_PHOTO]: 200,
+  [prizeTypes.TOP_200_PHOTOGRAPHER]: 200,
 };
 
 const topRankTargetByCategory: Partial<Record<PrizeType, AwardTarget>> = {
@@ -86,6 +91,8 @@ const topRankTargetByCategory: Partial<Record<PrizeType, AwardTarget>> = {
   [prizeTypes.TOP_50_PHOTOGRAPHER]: awardTargets.PHOTOGRAPHER,
   [prizeTypes.TOP_100_PHOTO]: awardTargets.PHOTO,
   [prizeTypes.TOP_100_PHOTOGRAPHER]: awardTargets.PHOTOGRAPHER,
+  [prizeTypes.TOP_200_PHOTO]: awardTargets.PHOTO,
+  [prizeTypes.TOP_200_PHOTOGRAPHER]: awardTargets.PHOTOGRAPHER,
 };
 
 export const contestLevelBadges = {
@@ -136,7 +143,7 @@ export const getContestLevelOrder = (category: PrizeType) => {
 const categoryFromAward = (type: AwardType, rankLimit: number | null, target: AwardTarget) => {
   if (type === awardTypes.TOP_RANK) {
     if (!rankLimit || !topRankCategoryByLimit[rankLimit]) {
-      throw new Error("TOP_RANK awards require rankLimit 10, 20, 50, or 100");
+      throw new Error("TOP_RANK awards require rankLimit 10, 20, 50, 100, or 200");
     }
 
     return topRankCategoryByLimit[rankLimit][target];
@@ -239,7 +246,24 @@ export const getAwardKey = (input: AwardIdentityInput) => {
 
 export const getAwardSlotKey = (input: AwardIdentityInput) => {
   const identity = normalizeAwardIdentity(input);
-  return `${identity.type}:${identity.target}`;
+  // Includes rankLimit so each rank tier (Top 10/20/50/100/200) gets its own
+  // slot per target instead of colliding under a single "TOP_RANK" slot -
+  // the ladder now awards every tier simultaneously rather than one admin-picked tier.
+  return `${identity.type}:${identity.target}:${identity.rankLimit ?? "NONE"}`;
 };
 
-export const topRankLimits = [100, 50, 20, 10] as const;
+export const topRankLimits = [200, 100, 50, 20, 10] as const;
+
+const ascendingTopRankLimits: number[] = [...topRankLimits].sort((a, b) => a - b);
+
+// Rank bands are exclusive, not cumulative: rank 1 belongs to the standalone
+// TOP_PHOTO/TOP_PHOTOGRAPHER award, so the Top 10 tier starts at rank 2, Top 20
+// starts where Top 10 ends (rank 11), and so on. Without a lower bound every
+// rank <= 10 would also match Top 20/50/100/200 and collect every tier's reward.
+export const getRankBandLowerBound = (rankLimit: number): number => {
+  const index = ascendingTopRankLimits.indexOf(rankLimit);
+  if (index <= 0) {
+    return 2;
+  }
+  return ascendingTopRankLimits[index - 1] + 1;
+};

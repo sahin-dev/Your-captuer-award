@@ -4,6 +4,7 @@ import { RecurringContestStatus, RecurringType } from "../../../prismaClient";
 import { assertValidTimeZone, calculateNextOccurance } from "../../../helpers/nextOccurance";
 import prisma from "../../../shared/prisma";
 import { prizeService } from "../Prize/prize.service";
+import { contestLevelAwardService } from "../Contest/contestLevelAward.service";
 import { ContestRuleConfigInput } from "../Contest/ContestRules/contestRules.type";
 import { contestRuleService } from "../Contest/ContestRules/contestRules.service";
 
@@ -229,6 +230,19 @@ const replaceRecurringAwards = async (
   return prizeService.replaceRecurringContestAwards(recurringContestId, awardPrizeIds, awards);
 };
 
+const getRecurringLevelAwards = async (recurringContestId: string) => {
+  await getRecurringContestById(recurringContestId);
+  return contestLevelAwardService.getRecurringContestLevelAwards(recurringContestId);
+};
+
+const replaceRecurringLevelAwards = async (
+  recurringContestId: string,
+  levelAwards: Parameters<typeof contestLevelAwardService.replaceRecurringContestLevelAwards>[1]
+) => {
+  await getRecurringContestById(recurringContestId);
+  return contestLevelAwardService.replaceRecurringContestLevelAwards(recurringContestId, levelAwards);
+};
+
 export const recurringContestService = {
   getRecurringContests,
   getRecurringContestById,
@@ -240,5 +254,7 @@ export const recurringContestService = {
   getGeneratedContests,
   getRecurringAwards,
   replaceRecurringAwards,
+  getRecurringLevelAwards,
+  replaceRecurringLevelAwards,
 };
 

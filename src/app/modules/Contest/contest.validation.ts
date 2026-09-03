@@ -3,6 +3,7 @@ import { RecurringType } from "../../../prismaClient";
 import { z } from "zod";
 import { contestRuleInputArraySchema } from "./ContestRules/contestRule.validation";
 import { contestPrizeInputArraySchema } from "../Prize/prize.validation";
+import { contestLevelAwardArraySchema } from "./contestLevelAward.validation";
 import { getRichTextLength, sanitizeContestRichText } from "./contestContent";
 
 const parseJsonValue = (value: unknown) => {
@@ -82,6 +83,7 @@ const createContestObjectSchema = z.object({
 
     prizeIds: z.preprocess(parseJsonValue, z.array(z.string())).optional(),
     prizes: z.preprocess(parseJsonValue, contestPrizeInputArraySchema).optional(),
+    levelAwards: z.preprocess(parseJsonValue, contestLevelAwardArraySchema).optional(),
 
     rules: z.preprocess(parseJsonValue, contestRuleInputArraySchema).optional(),
     startDate: z.string().datetime({
@@ -177,6 +179,7 @@ const updateContestObjectSchema = z.object({
     ),
     prizeIds: z.preprocess(parseJsonValue, z.array(z.string())).optional(),
     prizes: z.preprocess(parseJsonValue, contestPrizeInputArraySchema).optional(),
+    levelAwards: z.preprocess(parseJsonValue, contestLevelAwardArraySchema).optional(),
     rules: z.preprocess(parseJsonValue, contestRuleInputArraySchema).optional(),
 }).strict();
 
