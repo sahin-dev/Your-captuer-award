@@ -2,14 +2,15 @@ import prisma from '../../../shared/prisma';
 import ApiError from '../../../errors/ApiError';
 import httpstatus from 'http-status';
 import { fileUploader } from '../../../helpers/fileUploader';
-import { AchievementKind, ContestParticipant, ContestPhoto, ContestStatus, Prisma, PrizeType, RecurringType, TeamMemberStatus, YCLevel } from '../../../prismaClient';
+import { AchievementKind, ContestOccurrenceStatus, ContestParticipant, ContestPhoto, ContestStatus, Prisma, PrizeType, RecurringContest, RecurringContestStatus, RecurringType, TeamMemberStatus, YCLevel } from '../../../prismaClient';
 import { contestData, updateContestData } from './contest.type';
 import { contestRuleService } from './ContestRules/contestRules.service';
 import { ContestRuleConfigInput } from './ContestRules/contestRules.type';
 import { profileService } from '../Profile/profile.service';
 import agenda from '../Agenda';
 import { validateContestDate } from '../../../helpers/validateDate';
-import { assertValidTimeZone } from '../../../helpers/nextOccurance';
+import { assertValidTimeZone, calculateNextOccurance } from '../../../helpers/nextOccurance';
+import { getAwardSlotKey } from '../Awards/award.definitions';
 import { getTeammateUserIds } from '../../../helpers/teammate.helper';
 import { userStoreService } from '../User/UserStore/userStore.service';
 import { voteService } from '../Vote/vote.service';
@@ -274,6 +275,196 @@ const createContest = async (creatorId: string, body: contestData, banner:Expres
 
 //manage recurring contest separately
 
+const isSameCalendarDay = (a:Date, b:Date, timeZone?:string | null) => {
+    const fmt = new Intl.DateTimeFormat("en-CA", {
+        timeZone: timeZone || "UTC",
+        year:"numeric",
+        month:"2-digit",
+        day:"2-digit"
+    })
+    return fmt.format(a) === fmt.format(b)
+}
+
+// Materializes a recurring contest template's next occurrence into a real Contest row.
+// Normally gated by a lead-time window (20% of the gap since the previous occurrence,
+// capped at 24h) so instances don't appear too far ahead of time - pass force:true to
+// bypass that gate (used when the first occurrence starts the same day it's created,
+// so the admin sees an Upcoming contest immediately instead of waiting on the cron
+// window). Idempotent either way via the RecurringContestOccurrence claim below, so
+// calling this and then letting the normal cron run too is always safe.
+const materializeRecurringOccurrence = async (rContest:RecurringContest, options?:{force?:boolean}) => {
+    const previousOccurrence = rContest.recurring.previousOccurrence || rContest.createdAt;
+    const nextOccurrence = rContest.recurring.nextOccurrence;
+    const generatedOccurrences = rContest.recurring.generatedOccurrences || 0
+    if(
+        (rContest.recurring.endsAt && nextOccurrence > rContest.recurring.endsAt) ||
+        (rContest.recurring.maxOccurrences && generatedOccurrences >= rContest.recurring.maxOccurrences)
+    ){
+        await prisma.recurringContest.update({
+            where:{id:rContest.id},
+            data:{status:RecurringContestStatus.ENDED}
+        })
+        return
+    }
+
+    if(!options?.force){
+        const totalTimeSpan = nextOccurrence.getTime() - previousOccurrence.getTime();
+        const generationLeadTime = Math.min(Math.max(totalTimeSpan * 0.2, 0), 24 * 60 * 60 * 1000)
+        const generationAt = nextOccurrence.getTime() - generationLeadTime
+
+        if(Date.now() < generationAt){
+            return
+        }
+    }
+
+    const occurrenceKey = `${rContest.id}:${nextOccurrence.toISOString()}`
+    const occurrence = await prisma.recurringContestOccurrence.upsert({
+        where:{occurrenceKey},
+        update:{},
+        create:{occurrenceKey, recurringContestId:rContest.id, scheduledAt:nextOccurrence}
+    })
+
+    if(occurrence.status === ContestOccurrenceStatus.MATERIALIZED){
+        return
+    }
+
+    const staleBefore = new Date(Date.now() - 15 * 60 * 1000)
+    const claimed = await prisma.recurringContestOccurrence.updateMany({
+        where:{
+            occurrenceKey,
+            OR:[
+                {status:{in:[ContestOccurrenceStatus.PENDING, ContestOccurrenceStatus.FAILED]}},
+                {status:ContestOccurrenceStatus.MATERIALIZING, startedAt:{lte:staleBefore}}
+            ]
+        },
+        data:{status:ContestOccurrenceStatus.MATERIALIZING, startedAt:new Date(), error:null}
+    })
+    if(claimed.count !== 1){
+        return
+    }
+
+    try{
+        const duration = rContest.recurring.duration || (rContest.endDate.getTime() - rContest.startDate.getTime())
+        const endDate = new Date(nextOccurrence.getTime() + duration)
+        const initialStatus = nextOccurrence <= new Date() ? ContestStatus.ACTIVE : ContestStatus.UPCOMING
+        const rawRules = typeof rContest.rules === "string"
+            ? JSON.parse(rContest.rules) as ContestRuleConfigInput[]
+            : rContest.rules as ContestRuleConfigInput[]
+        const rules = contestRuleService.normalizeContestRules(rawRules)
+        const awards = await prisma.recurringContestAward.findMany({where:{recurringContestId:rContest.id}})
+        const levelAwards = await prisma.recurringContestLevelAward.findMany({where:{recurringContestId:rContest.id}})
+        const next = calculateNextOccurance(
+            nextOccurrence,
+            rContest.recurring.recurringType,
+            rContest.recurring.timezone
+        )
+
+        const newContest = await prisma.$transaction(async tx => {
+            const contest = await tx.contest.create({
+                data:{
+                    title:rContest.title,
+                    banner:rContest.banner,
+                    isMoneyContest:rContest.isMoneyContest,
+                    maxPrize:rContest.maxPrize,
+                    minPrize:rContest.minPrize,
+                    currency:rContest.currency,
+                    entryFeeCoins:rContest.entryFeeCoins,
+                    category:rContest.category,
+                    description:rContest.description,
+                    creatorId:rContest.creatorId,
+                    recurringContestId:rContest.id,
+                    startDate:nextOccurrence,
+                    endDate,
+                    status:initialStatus,
+                    maxUpload:contestRuleService.getSubmissionLimitFromRules(rules),
+                    ...(initialStatus === ContestStatus.ACTIVE && {startedAt:new Date()})
+                }
+            })
+
+            await tx.contestRuleConfig.createMany({
+                data:rules.map(rule => ({
+                    contestId:contest.id,
+                    key:rule.key,
+                    value:rule.value,
+                    enabled:rule.enabled ?? true,
+                    order:rule.order ?? 0
+                }))
+            })
+
+            if(awards.length > 0){
+                await tx.contestAward.createMany({
+                    data:awards.map(award => ({
+                        contestId:contest.id,
+                        prizeId:award.prizeId,
+                        category:award.category,
+                        type:award.type,
+                        target:award.target,
+                        rankLimit:award.rankLimit,
+                        slotKey:award.slotKey || getAwardSlotKey(award),
+                        title:award.title,
+                        description:award.description,
+                        icon:award.icon,
+                        key:award.key,
+                        boost:award.boost,
+                        swap:award.swap,
+                        coin:award.coin,
+                        enabled:award.enabled,
+                        order:award.order
+                    }))
+                })
+            }
+
+            if(levelAwards.length > 0){
+                await tx.contestLevelAward.createMany({
+                    data:levelAwards.map(award => ({
+                        contestId:contest.id,
+                        level:award.level,
+                        boost:award.boost,
+                        swap:award.swap,
+                        key:award.key,
+                        coin:award.coin
+                    }))
+                })
+            }
+
+            await tx.recurringContestOccurrence.update({
+                where:{occurrenceKey},
+                data:{status:ContestOccurrenceStatus.MATERIALIZED, contestId:contest.id, error:null}
+            })
+            await tx.recurringContest.update({
+                where:{id:rContest.id},
+                data:{
+                    lastGeneratedContestId:contest.id,
+                    status:(
+                        (rContest.recurring.endsAt && next > rContest.recurring.endsAt) ||
+                        (rContest.recurring.maxOccurrences && generatedOccurrences + 1 >= rContest.recurring.maxOccurrences)
+                    ) ? RecurringContestStatus.ENDED : RecurringContestStatus.ACTIVE,
+                    recurring:{set:{
+                        ...rContest.recurring,
+                        previousOccurrence:nextOccurrence,
+                        nextOccurrence:next,
+                        generatedOccurrences:generatedOccurrences + 1
+                    }}
+                }
+            })
+
+            return contest
+        })
+
+        if(initialStatus === ContestStatus.ACTIVE){
+            await agenda.schedule(endDate, "contest:watcher", {contestId:newContest.id})
+        }
+        console.log(`Generated recurring contest instance ${newContest.id} from template ${rContest.id}`)
+        return newContest
+    }catch(error){
+        await prisma.recurringContestOccurrence.update({
+            where:{occurrenceKey},
+            data:{status:ContestOccurrenceStatus.FAILED, error:error instanceof Error ? error.message : String(error)}
+        })
+        throw error
+    }
+}
+
 const createRecurringContest  =  async (creatorId: string, body: contestData, banner:Express.Multer.File)=>{
     if(!body.recurring){
         throw new Error("Contest is not a recurring contest!")
@@ -336,7 +527,7 @@ const createRecurringContest  =  async (creatorId: string, body: contestData, ba
     }
     }
 
-    return prisma.$transaction(async tx => {
+    const created = await prisma.$transaction(async tx => {
         const recurringContest = await tx.recurringContest.create({data:contestData})
         await tx.recurringContestAward.createMany({
             data:awardRows.map(award => ({recurringContestId:recurringContest.id, ...award}))
@@ -348,8 +539,22 @@ const createRecurringContest  =  async (creatorId: string, body: contestData, ba
             })
         }
 
-        return {...recurringContest, prizes:awardRows, levelAwards}
+        return recurringContest
     })
+
+    // If the first occurrence starts today, don't make the admin wait on the
+    // cron's lead-time window - materialize it right away so it shows up as
+    // Upcoming (or Active) immediately. Every later occurrence still follows
+    // the normal cron-driven schedule.
+    if(isSameCalendarDay(startDate, new Date(), timezone)){
+        try{
+            await materializeRecurringOccurrence(created, {force:true})
+        }catch(error){
+            console.error(`Failed to immediately materialize first occurrence for recurring contest ${created.id}`, error)
+        }
+    }
+
+    return {...created, prizes:awardRows, levelAwards}
 }
 
 
@@ -2134,6 +2339,7 @@ const getContestRanking = async (
 
 export const contestService = {
     createContest,
+    materializeRecurringOccurrence,
     updateContest,
     joinContest,
     getContestById,
