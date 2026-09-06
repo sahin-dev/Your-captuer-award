@@ -15,6 +15,8 @@ import {
   Prisma,
   TeamAccessibility,
   TeamMatchQueueStatus,
+  TeamMemberStatus,
+  TeamRewardPeriod,
 } from "../../../prismaClient";
 import { contestService } from "../Contest/contest.service";
 import { notificationService } from "../Notification/notification.service";
@@ -143,6 +145,7 @@ export const getTeams = async (
       include: { creator: true, members: { include: { member: true } } },
       skip,
       take,
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
     }),
     prisma.team.count({ where }),
   ]);
@@ -298,7 +301,12 @@ const getSuggestedTeams = async (
   };
 
   const [teams, total] = await Promise.all([
-    prisma.team.findMany({ where, skip, take }),
+    prisma.team.findMany({
+      where,
+      skip,
+      take,
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+    }),
     prisma.team.count({ where }),
   ]);
 
@@ -523,6 +531,7 @@ const getAllTeamMember = async (
       },
       skip,
       take,
+      orderBy: [{ createdAt: "asc" }, { id: "asc" }],
     }),
     prisma.teamMember.count({ where: { teamId } }),
   ]);
@@ -1329,7 +1338,7 @@ const getJoinRequests = async (
       },
       skip,
       take,
-      orderBy: { createdAt: "desc" },
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
     }),
     prisma.teamJoinRequest.count({ where }),
   ]);
@@ -1514,6 +1523,105 @@ const getTeamLeaderboard = async (
     meta: paginationHelper.getPaginationMetaData(currentPage, take, total),
     period,
   };
+};
+
+// Weekly/monthly top-3 team coin payout. Uses fixed calendar windows (not the
+// rolling PERIOD_DAYS cutoff above) so each run has a well-defined periodKey to
+// guard idempotency with - re-running the same window never double-pays.
+const WEEKLY_REWARD_COINS = [1000, 750, 500];
+const MONTHLY_REWARD_COINS = [10000, 5000, 2500];
+
+const getPreviousWeekWindow = (now = new Date()) => {
+  // Start-of-day (UTC) for `now`, then walk back 7 days for the window start.
+  const end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+  const start = new Date(end);
+  start.setUTCDate(start.getUTCDate() - 7);
+  return { start, end, periodKey: start.toISOString().slice(0, 10) };
+};
+
+const getPreviousMonthWindow = (now = new Date()) => {
+  const end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+  const start = new Date(Date.UTC(end.getUTCFullYear(), end.getUTCMonth() - 1, 1));
+  const periodKey = `${start.getUTCFullYear()}-${String(start.getUTCMonth() + 1).padStart(2, "0")}`;
+  return { start, end, periodKey };
+};
+
+const computeTeamStandingsForWindow = async (start: Date, end: Date) => {
+  const history = await prisma.teamMatchHistory.findMany({
+    where: { match_date: { gte: start, lt: end } },
+  });
+
+  const statsByTeam = new Map<string, { score: number; wins: number }>();
+  history.forEach((entry) => {
+    if (!entry.teamId) {
+      return;
+    }
+    const existing = statsByTeam.get(entry.teamId) ?? { score: 0, wins: 0 };
+    existing.score += entry.team_score;
+    if (entry.result === HistoryResult.WIN) existing.wins += 1;
+    statsByTeam.set(entry.teamId, existing);
+  });
+
+  return Array.from(statsByTeam.entries())
+    .sort((a, b) => b[1].wins - a[1].wins || b[1].score - a[1].score)
+    .map(([teamId, stats], index) => ({ teamId, rank: index + 1, ...stats }));
+};
+
+const payoutPeriodRewards = async (period: "WEEKLY" | "MONTHLY") => {
+  const window = period === "WEEKLY" ? getPreviousWeekWindow() : getPreviousMonthWindow();
+  const rewards = period === "WEEKLY" ? WEEKLY_REWARD_COINS : MONTHLY_REWARD_COINS;
+  const standings = await computeTeamStandingsForWindow(window.start, window.end);
+  const topTeams = standings.slice(0, rewards.length);
+
+  for (const entry of topTeams) {
+    const coins = rewards[entry.rank - 1];
+    const team = await prisma.team.findUnique({ where: { id: entry.teamId }, select: { id: true, name: true } });
+    if (!team) {
+      continue;
+    }
+
+    const members = await prisma.teamMember.findMany({
+      where: { teamId: team.id, status: TeamMemberStatus.ACTIVE },
+      select: { memberId: true },
+    });
+
+    for (const member of members) {
+      const existingTransaction = await prisma.teamRewardTransaction.findUnique({
+        where: {
+          teamId_userId_period_periodKey: {
+            teamId: team.id,
+            userId: member.memberId,
+            period: TeamRewardPeriod[period],
+            periodKey: window.periodKey,
+          },
+        },
+      });
+      if (existingTransaction) {
+        continue; // already paid for this window - safe to re-run
+      }
+
+      await prisma.teamRewardTransaction.create({
+        data: {
+          teamId: team.id,
+          userId: member.memberId,
+          period: TeamRewardPeriod[period],
+          periodKey: window.periodKey,
+          rank: entry.rank,
+          coins,
+        },
+      });
+
+      await prisma.userStore.upsert({
+        where: { userId: member.memberId },
+        create: { userId: member.memberId, coins },
+        update: { coins: { increment: coins } },
+      });
+
+      await notificationOrchestrator.notifyTeamRewardGranted(member.memberId, team.name, period, entry.rank, coins);
+    }
+  }
+
+  return { period, periodKey: window.periodKey, teamsRewarded: topTeams.length };
 };
 
 const getTeamHistory = async (
@@ -2635,6 +2743,7 @@ export const teamService = {
   approveJoinRequest,
   rejectJoinRequest,
   getTeamLeaderboard,
+  payoutPeriodRewards,
   getTeamHistory,
   recordMatchResult,
   closeActiveMatchesForContest,

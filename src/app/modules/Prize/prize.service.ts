@@ -1,7 +1,7 @@
 import httpStatus from "http-status";
 import ApiError from "../../../errors/ApiError";
 import prisma from "../../../shared/prisma";
-import { AwardIdentity, contestLevelPrizeTypes, getAwardKey, getAwardSlotKey, normalizeAwardIdentity } from "../Awards/award.definitions";
+import { AwardIdentity, awardTypes, contestLevelPrizeTypes, getAwardKey, getAwardSlotKey, normalizeAwardIdentity } from "../Awards/award.definitions";
 import { z } from "zod";
 import { contestAwardInputSchema, createPrizeSchema, updatePrizeSchema } from "./prize.validation";
 import { contestAwardRewardFields } from "./prize.definitions";
@@ -251,6 +251,10 @@ const buildAwardRows = (prizes: Awaited<ReturnType<typeof getActivePrizesByIds>>
   return prizes.map((prize) => {
     const identity = normalizeAwardIdentity(prize);
     const awardConfig = awardConfigByPrizeId.get(prize.id) || awardConfigByKey.get(getAwardKey(identity));
+    // Top-rank tiers (Top 10-200) are badge-only: no currency reward is ever
+    // persisted for them, regardless of what the catalog prize or an admin
+    // override requests.
+    const isTopRank = identity.type === awardTypes.TOP_RANK;
 
     return {
       prizeId: prize.id,
@@ -262,10 +266,10 @@ const buildAwardRows = (prizes: Awaited<ReturnType<typeof getActivePrizesByIds>>
       title: awardConfig?.title ?? prize.title,
       description: awardConfig?.description ?? prize.description,
       icon: awardConfig?.icon ?? prize.icon,
-      key: awardConfig?.key ?? prize.key,
-      boost: awardConfig?.boost ?? prize.boost,
-      swap: awardConfig?.swap ?? prize.swap,
-      coin: awardConfig?.coin ?? prize.coin,
+      key: isTopRank ? 0 : awardConfig?.key ?? prize.key,
+      boost: isTopRank ? 0 : awardConfig?.boost ?? prize.boost,
+      swap: isTopRank ? 0 : awardConfig?.swap ?? prize.swap,
+      coin: isTopRank ? 0 : awardConfig?.coin ?? prize.coin,
       enabled: awardConfig?.enabled ?? true,
       order: awardConfig?.order ?? prize.order,
     };

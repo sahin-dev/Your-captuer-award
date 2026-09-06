@@ -9,11 +9,10 @@ import { followService } from "../Follow/followe.service"
 import { paginationHelper } from "../../../helpers/paginationHelper"
 
 const fetchUserUploads = async (targetUserId:string, pagination:{page?:number, limit?:number}, viewerId?:string)=>{
-    let page = pagination.page || 1
-
-    let limit = pagination.limit || 20
-
-    let skip = (page - 1) * limit
+    const {page, limit, skip} = paginationHelper.calculatePagination({
+        page:pagination.page,
+        limit:pagination.limit || 20
+    })
 
     const totalUploads = await prisma.userPhoto.count({where:{userId:targetUserId}})
 
@@ -22,7 +21,9 @@ const fetchUserUploads = async (targetUserId:string, pagination:{page?:number, l
             contestUpload:{select:{achievements:{orderBy:{createdAt:'desc'}, take:1,
             select:{category:true},},
             id:true}},_count:{select:{likes:true}}},
-            take:limit, skip
+            take:limit,
+            skip,
+            orderBy:[{createdAt:'desc'}, {id:'desc'}]
     })
 
     const likedPhotoIds = viewerId

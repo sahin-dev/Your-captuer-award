@@ -129,7 +129,7 @@ const getAllProductByCategory = async (
         },
         skip,
         take: paginationLimit,
-        orderBy: { createdAt: 'desc' }
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }]
     });
 
     const total = await prisma.product.count({
@@ -215,7 +215,9 @@ const getAllActiveProducts = async (
         orderBy: { createdAt: 'desc' }
     });
 
-    const total = await prisma.product.count();
+    const total = await prisma.product.count({
+        where: { status: ProductStatus.ACTIVE }
+    });
 
     const totalPages = Math.ceil(total / paginationLimit);
 

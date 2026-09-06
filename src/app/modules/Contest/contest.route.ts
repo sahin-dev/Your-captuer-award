@@ -45,8 +45,11 @@ router.put(
 router.get("/:contestId/user-photos", auth(), contestController.getUserRemainingPhotos)
 router.get("/:contestId/rank-photos", contestController.getContestPhotosSortedByVote)
 router.get("/:contestId/rank-photographer", contestController.getContestPhotographers)
+router.get("/:contestId/ranking", contestController.getContestRanking)
 
 router.delete("/:contestId/photos/:photoId", auth(), contestController.deleteContestPhoto)
+router.delete("/photos/:photoId/admin", auth(UserRole.ADMIN), contestController.adminDeleteContestPhoto)
+router.get("/:contestId/participants", auth(UserRole.ADMIN), contestController.getContestParticipants)
 
 router.post("/:contestId/upload", auth(), fileUploader.userPhoto, contestController.uploadPhoto)
 router.route("/:contestId")

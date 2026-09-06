@@ -19,6 +19,7 @@ model Contest {
   startedAt DateTime?
   endedAt   DateTime?
   finalizedAt DateTime?
+  deletedAt DateTime? // soft delete: kept for historical/admin records instead of a hard delete
   recurringContestId String? @db.ObjectId
   configVersion Int @default(1)
   scoringVersion Int @default(1)
@@ -47,6 +48,7 @@ model Contest {
   @@index([status, endDate])
   @@index([recurringContestId, startDate])
   @@index([category, status, startDate])
+  @@index([deletedAt])
   @@map("contests")
 
 }
@@ -183,10 +185,11 @@ model ContestPhoto {
   contestId     String  @db.ObjectId
   participantId String  @db.ObjectId
   photoId       String?  @db.ObjectId
+  originalPhotoId String? @db.ObjectId // the photo this slot launched with; initialVotes only ever applies while photoId still matches this
   rank          Int?    @default(0)
   promoted     Boolean @default(false)
   promotionExpiresAt DateTime?
-  initialVotes  Int  @default(0)  
+  initialVotes  Int  @default(0)
   // contest   Contest @relation(fields: [contestId],references: [id])
   participant  ContestParticipant   @relation(fields: [participantId], references: [id], onDelete: Cascade)
   votes        Vote[]

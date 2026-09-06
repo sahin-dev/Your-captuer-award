@@ -29,10 +29,19 @@ import {
 } from './ContestRules/contestRule.definitions';
 import { prizeTypes, ycLevels } from '../Awards/award.definitions';
 import { paginationHelper } from '../../../helpers/paginationHelper';
+import { sendMail } from '../../../shared/mailSender';
+import { notificationOrchestrator } from '../Notification/notificationOrchestrator';
+import { reportService } from '../Report/report.service';
 
 const completedContestStatuses:ContestStatus[] = [ContestStatus.COMPLETED, ContestStatus.CLOSED]
 const isCompletedContest = (status:ContestStatus) => completedContestStatuses.includes(status)
 const contestListCreatorInclude = {omit:{password:true, accessToken:true}} as const
+const PROMOTION_DURATION_MS = 24 * 60 * 60 * 1000 // promoted photos stay boosted for ~24 hours
+// "Active" tab = anything not yet concluded; "Ended" tab = finished (successfully or not).
+const activeTabStatuses:ContestStatus[] = [ContestStatus.NEW, ContestStatus.UPCOMING, ContestStatus.OPEN, ContestStatus.JOINED, ContestStatus.ACTIVE, ContestStatus.FINALIZING]
+const endedTabStatuses:ContestStatus[] = [ContestStatus.COMPLETED, ContestStatus.CLOSED, ContestStatus.FINALIZATION_FAILED]
+type ContestTab = "active" | "ended"
+const notDeleted = {deletedAt:null} as const
 
 // Called after a user newly joins a contest. If they belong to a team that's
 // waiting for the minimum member count before searching for a team-match
@@ -472,16 +481,19 @@ const updateContest = async (contestId:string, contestData:updateContestData, ba
 }
 
 
-//delete a contest by the contest id
+//soft-delete a contest by the contest id, keeping it for historical/admin records
 const deleteContestByContestId =async (contestId:string)=>{
     const contest = await prisma.contest.findUnique({where:{id:contestId}})
     if(!contest){
         throw new ApiError(httpstatus.NOT_FOUND, "contest not found!")
     }
+    if(contest.deletedAt){
+        throw new ApiError(httpstatus.BAD_REQUEST, "contest already deleted!")
+    }
 
-    await prisma.contest.delete({where:{id:contestId}})
+    await prisma.contest.update({where:{id:contestId}, data:{deletedAt:new Date()}})
     return "contest deleted!"
-}  
+}
 
 
 // add a user to the contest participant list
@@ -600,12 +612,22 @@ const getContestById = async ( contestId: string) => {
 
 
 //Return all the contests
-const getAllContests = async (page:number = 1, limit:number = 20, search?:string) => {
+const getAllContests = async (
+    page:number = 1,
+    limit:number = 20,
+    search?:string,
+    status?:ContestStatus,
+    includeArchived = false,
+    tab?:ContestTab
+) => {
 
     const {skip, limit:paginationLimit, page:currentPage} = paginationHelper.calculatePagination({page, limit})
-    const where = search
-        ? {title:{contains:search, mode:"insensitive" as const}}
-        : {}
+    const where:Prisma.ContestWhereInput = {
+        ...(status && {status}),
+        ...(tab && {status:{in: tab === "active" ? activeTabStatuses : endedTabStatuses}}),
+        ...(search && {title:{contains:search, mode:"insensitive" as const}}),
+        ...(includeArchived ? {} : notDeleted)
+    }
 
     const [contests, total] = await Promise.all([
         prisma.contest.findMany({    
@@ -613,7 +635,7 @@ const getAllContests = async (page:number = 1, limit:number = 20, search?:string
             include: { creator: {omit:{password:true, accessToken:true}}},
             skip,
             take:paginationLimit,
-            orderBy:{startDate:"desc"}
+            orderBy:[{startDate:"desc"}, {id:"desc"}]
         }),
         prisma.contest.count({where})
     ])
@@ -633,12 +655,15 @@ const getPublicContests = async (
     status?:ContestStatus,
     page:number = 1,
     limit:number = 20,
-    search?:string
+    search?:string,
+    tab?:ContestTab
 ) => {
     const {skip, limit:paginationLimit, page:currentPage} = paginationHelper.calculatePagination({page, limit})
     const where:Prisma.ContestWhereInput = {
         ...(status && {status}),
-        ...(search && {title:{contains:search, mode:"insensitive" as const}})
+        ...(tab && {status:{in: tab === "active" ? activeTabStatuses : endedTabStatuses}}),
+        ...(search && {title:{contains:search, mode:"insensitive" as const}}),
+        ...notDeleted
     }
 
     const [contests, total] = await Promise.all([
@@ -647,7 +672,7 @@ const getPublicContests = async (
             include:{creator:{omit:{password:true, accessToken:true}}},
             skip,
             take:paginationLimit,
-            orderBy:{startDate:"desc"}
+            orderBy:[{startDate:"desc"}, {id:"desc"}]
         }),
         prisma.contest.count({where})
     ])
@@ -904,7 +929,7 @@ const getContestsByStatus = async (userId:string,status: ContestStatus) => {
     if(status === ContestStatus.ACTIVE){
 
         const contests = await prisma.contest.findMany({
-            where:{status, participants:{none:{userId}}},
+            where:{status, participants:{none:{userId}}, ...notDeleted},
             include: { creator: contestListCreatorInclude },
             orderBy:{startDate:"desc"}
         });
@@ -915,7 +940,7 @@ const getContestsByStatus = async (userId:string,status: ContestStatus) => {
     if(status === ContestStatus.CLOSED){
 
         const contests = await prisma.contest.findMany({
-            where:{status: ContestStatus.COMPLETED, participants:{none:{userId}}},
+            where:{status: ContestStatus.COMPLETED, participants:{none:{userId}}, ...notDeleted},
             include: { creator: contestListCreatorInclude },
             orderBy:{startDate:"desc"}
         });
@@ -923,9 +948,23 @@ const getContestsByStatus = async (userId:string,status: ContestStatus) => {
         return enrichContestListDetails(contests);
     }
 
-    
+
     const contests = await prisma.contest.findMany({
-        where:{status},
+        where:{status, ...notDeleted},
+        include: { creator: contestListCreatorInclude },
+        orderBy:{startDate:"desc"}
+    });
+
+    return enrichContestListDetails(contests);
+};
+
+// Active/Ended tabs for the contest list screen - a coarser grouping than a single
+// exact ContestStatus, used alongside (not instead of) getContestsByStatus.
+const getContestsByTab = async (tab:ContestTab) => {
+    const statuses = tab === "active" ? activeTabStatuses : endedTabStatuses
+
+    const contests = await prisma.contest.findMany({
+        where:{status:{in:statuses}, ...notDeleted},
         include: { creator: contestListCreatorInclude },
         orderBy:{startDate:"desc"}
     });
@@ -944,7 +983,10 @@ const getContestUploadsByUserId = async (contestId:string, userId:string)=>{
 
     return photo ? [async () => {
         const voteCount = await voteService.getVoteCount(upload.id)
-        const totalVotes = voteCount + (upload.initialVotes || 0)
+        // initialVotes is a baseline for the photo this slot originally launched with -
+        // it shouldn't follow a later swapped-in photo (see originalPhotoId/photoRefId).
+        const stillOriginalPhoto = !upload.originalPhotoId || upload.originalPhotoId === upload.photoId
+        const totalVotes = voteCount + (stillOriginalPhoto ? (upload.initialVotes || 0) : 0)
         const traded = upload.updatedAt.getTime() > upload.createdAt.getTime() && !upload.promoted
 
         return {
@@ -965,7 +1007,7 @@ const getContestUploadsByUserId = async (contestId:string, userId:string)=>{
 }
 
 
-const deleteContestUploadById = async (contestId:string, userId:string, photoId:string)=>{  
+const deleteContestUploadById = async (contestId:string, userId:string, photoId:string)=>{
 
     const contestUpload = await prisma.contestPhoto.findUnique({where:{id:photoId, contestId}, include:{participant:true}})
     if(!contestUpload){
@@ -975,8 +1017,57 @@ const deleteContestUploadById = async (contestId:string, userId:string, photoId:
         throw new ApiError(httpstatus.FORBIDDEN, "You are not allowed to delete this contest upload")
     }
     await prisma.contestPhoto.delete({where:{id:photoId}})
-    return "Contest upload deleted successfully"    
+    return "Contest upload deleted successfully"
  }
+
+// Admin moderation delete: unlike deleteContestUploadById this has no owner check,
+// always emails the photo's owner, and never touches the user's block status -
+// banning stays a separate, manual admin action (Dashboard toggle-block).
+const adminDeleteContestPhoto = async (photoId:string, adminId:string, reason?:string, reportId?:string) => {
+    const contestUpload = await prisma.contestPhoto.findUnique({
+        where:{id:photoId},
+        include:{
+            participant:{include:{user:{select:{id:true, email:true, fullName:true, username:true}}}}
+        }
+    })
+
+    if(!contestUpload){
+        throw new ApiError(httpstatus.NOT_FOUND, "Contest upload not found")
+    }
+
+    const contest = await prisma.contest.findUnique({where:{id:contestUpload.contestId}, select:{title:true}})
+
+    await prisma.contestPhoto.delete({where:{id:photoId}})
+
+    const owner = contestUpload.participant.user
+    const contestTitle = contest?.title || "the contest"
+
+    const emailHtml = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <div style="text-align: center; border-bottom: 2px solid #0056b3; padding-bottom: 15px;">
+          <h2 style="color: #0056b3; margin: 0;">Contest Photo Removed</h2>
+        </div>
+        <div style="padding: 20px 0; line-height: 1.6; color: #333;">
+          <p>Dear <strong>${owner.fullName || owner.username || "user"}</strong>,</p>
+          <p>Your submission to <strong>"${contestTitle}"</strong> has been removed by an admin.</p>
+          ${reason ? `<p><strong>Reason:</strong> ${reason}</p>` : ""}
+          <p>This does not affect your account status. If you have questions, please contact support.</p>
+        </div>
+      </div>
+    `
+
+    sendMail({to:owner.email, subject:`Your contest photo was removed`, html:emailHtml}).catch((err) => {
+        console.error("Failed to send contest photo removal email:", err)
+    })
+
+    await notificationOrchestrator.notifyContestPhotoRemoved(owner.id, contestTitle, reason)
+
+    if(reportId){
+        await reportService.markActionTaken(reportId, adminId, reason)
+    }
+
+    return "Contest photo removed successfully"
+}
 
 
 
@@ -1027,7 +1118,7 @@ const getMyCompletedContest = async (userId:string) => {
         throw new ApiError(httpstatus.NOT_FOUND, "User not found")
     }
 
-    const myParticipatedContest = await prisma.contest.findMany({where:{status:{in:completedContestStatuses}, participants:{some:{userId}}}})
+    const myParticipatedContest = await prisma.contest.findMany({where:{status:{in:completedContestStatuses}, participants:{some:{userId}}, ...notDeleted}})
 
     const mappetdCompletedContest =await Promise.all( myParticipatedContest.map(async contest => {
         const details = await getContestById(contest.id)
@@ -1185,7 +1276,7 @@ const getContestUploadsToVote = async (userId:string, contestId:string, page?:nu
 
     const contestUploads = await prisma.contestPhoto.findMany({
         where,
-        orderBy:[{createdAt:"desc"}],
+        orderBy:[{createdAt:"desc"}, {id:"desc"}],
         include:{photo:{select:{id:true, url:true}}}
     })
     const promotedUploads = contest.status === ContestStatus.ACTIVE
@@ -1385,14 +1476,14 @@ const uploadPhotoToContest = async (contestId:string,userId:string, photoIds:str
         const createdPhotos:ContestPhoto[] = []
         for(const photoId of selectedPhotoIds){
             createdPhotos.push(await tx.contestPhoto.create({
-                data:{contestId,participantId:participant.id,photoId},
+                data:{contestId,participantId:participant.id,photoId,originalPhotoId:photoId},
                 include:{photo:true}
             }))
         }
         return createdPhotos
     })
 
-    await Promise.all(images.map(image => agenda.every("1 minute", "exposure:watcher", {contestPhotoId:image.id})))
+    await Promise.all(images.map(image => agenda.every("30 minutes", "exposure:watcher", {contestPhotoId:image.id})))
 
     if(isJoiningThroughUpload){
         await notifyTeamMatchQueueOfContestJoin(userId, contestId)
@@ -1535,13 +1626,12 @@ const promoteContestPhoto = async (contestId:string, photoId:string, userId:stri
         throw new ApiError(httpstatus.BAD_REQUEST, "Contest photo is already charged.")
     }
 
-   
 
     if (contestPhoto.participant.userId !== userId){
         throw new ApiError(httpstatus.FORBIDDEN, "You are not allowed to promote this contest photo")
     }
 
-    const promotionExpiresAt = new Date(Date.now() + 30 * 60 * 1000) //30 minutes from now
+    const promotionExpiresAt = new Date(Date.now() + PROMOTION_DURATION_MS)
     const userStore = await userStoreService.getStoreData(userId)
 
     if ( !userStore || userStore.boost <= 0){
@@ -1562,8 +1652,8 @@ const promoteContestPhoto = async (contestId:string, photoId:string, userId:stri
     });
 
 
-    // Shcedule a job to remove promotion after 30 minutes
-    agenda.schedule('in 30 minutes', 'promotion:remove', {
+    // Schedule a job to remove promotion once it expires
+    agenda.schedule(promotionExpiresAt, 'promotion:remove', {
         photoId: photoId
     });
 
@@ -1591,14 +1681,29 @@ const promoteContestPhoto = async (contestId:string, photoId:string, userId:stri
 // }
 
 
-const getContestParticipants = async (contestId:string)=>{
+const getContestParticipants = async (contestId:string, search?:string)=>{
     const contest = await prisma.contest.findUnique({where:{id:contestId}})
 
     if(!contest){
         throw new ApiError(httpstatus.NOT_FOUND, "Contest not found")
     }
 
-    return await prisma.contestParticipant.findMany({where:{contestId}})
+    return await prisma.contestParticipant.findMany({
+        where:{
+            contestId,
+            ...(search && {
+                user:{
+                    OR:[
+                        {username:{contains:search, mode:"insensitive"}},
+                        {fullName:{contains:search, mode:"insensitive"}}
+                    ]
+                }
+            })
+        },
+        include:{
+            user:{select:{id:true, username:true, fullName:true, avatar:true, email:true}}
+        }
+    })
 
 }
 
@@ -1750,7 +1855,7 @@ const chargePhoto = async (userId:string, contestId:string) => {
     const contestPhotos = await prisma.contestPhoto.findMany({where:{participantId:participant.id}})
     await Promise.all(contestPhotos.map(async (photo) => {
         await agenda.cancel({name: "exposure:watcher", "data.contestPhotoId": photo.id})
-        await agenda.every("1 minute", "exposure:watcher", {contestPhotoId: photo.id})
+        await agenda.every("30 minutes", "exposure:watcher", {contestPhotoId: photo.id})
     }))
 
     return await prisma.contestParticipant.findUnique({where:{id:participant.id}})
@@ -1778,8 +1883,10 @@ const getDesignLevelFromYCLevel = (level?: YCLevel | null): RankLevelTab => {
 }
 
 const getPagination = (page?:number, limit?:number) => {
-    const safePage = page && page > 0 ? page : 1
-    const safeLimit = limit && limit > 0 ? limit : 20
+    const safePage = Number.isFinite(page) && Number(page) > 0 ? Math.floor(Number(page)) : 1
+    const safeLimit = Number.isFinite(limit) && Number(limit) > 0
+        ? Math.min(Math.floor(Number(limit)), 100)
+        : 20
     const skip = (safePage - 1) * safeLimit
 
     return {page:safePage, limit:safeLimit, skip}
@@ -1791,17 +1898,18 @@ const paginateRankedData = <T>(data:T[], page?:number, limit?:number) => {
 
     return {
         data:paginatedData,
-        meta:{
-            page:pagination.page,
-            limit:pagination.limit,
-            total:data.length
-        }
+        meta:paginationHelper.getPaginationMetaData(
+            pagination.page,
+            pagination.limit,
+            data.length
+        )
     }
 }
 
-const getContestPhotoVoteScore = async (contestPhoto:{id:string; initialVotes?:number | null}) => {
+const getContestPhotoVoteScore = async (contestPhoto:{id:string; photoId?:string | null; originalPhotoId?:string | null; initialVotes?:number | null}) => {
     const voteCount = await voteService.getVoteCount(contestPhoto.id)
-    return voteCount + (contestPhoto.initialVotes || 0)
+    const stillOriginalPhoto = !contestPhoto.originalPhotoId || contestPhoto.originalPhotoId === contestPhoto.photoId
+    return voteCount + (stillOriginalPhoto ? (contestPhoto.initialVotes || 0) : 0)
 }
 
 const getFollowedUserIds = async (currentUserId:string, followingIds:string[]) => {
@@ -2017,6 +2125,24 @@ const getContestPhotoCount = async (contestId:string) => {
     return photoCount
 }
 
+// Single "Ranking" button destination: combines the photo and photographer
+// leaderboards that were previously two separate calls (/rank-photos,
+// /rank-photographer) into one response.
+const getContestRanking = async (
+    contestId:string,
+    currentUserId?:string,
+    page?:number,
+    limit?:number,
+    level?:string
+) => {
+    const [photos, photographers] = await Promise.all([
+        getContestPhotosSortedByVote(contestId, page, limit),
+        getContestTopPhotographers(contestId, currentUserId, page, limit, level)
+    ])
+
+    return {photos, photographers}
+}
+
 
 
 
@@ -2029,6 +2155,7 @@ export const contestService = {
     getAllContests,
     getMyActiveContests,
     getContestsByStatus,
+    getContestsByTab,
     getUpcomingContest,
     getMyCompletedContest,
     getClosedContestsWithWinner,
@@ -2046,8 +2173,11 @@ export const contestService = {
     tradePhoto,
     chargePhoto,
     deleteContestUploadById,
+    adminDeleteContestPhoto,
+    getContestParticipants,
     getContestPhotosSortedByVote,
     getContestTopPhotographers,
+    getContestRanking,
     getContestByUserId,
     getContestUploadsToVote,
     getContestPhotoCount,

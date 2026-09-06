@@ -282,6 +282,7 @@ class DatabaseSeeder {
                 contestId,
                 participantId,
                 photoId,
+                originalPhotoId:photoId,
                 title,
                 promoted,
                 promotionExpiresAt:promoted ? new Date(Date.now() + 24 * 60 * 60 * 1000) : null
@@ -349,11 +350,13 @@ class DatabaseSeeder {
     }
 
     private async createVote(providerId:string, contestId:string, photoId:string, type:VoteType, power:number){
+        const contestPhoto = await this.db.contestPhoto.findUnique({where:{id:photoId}, select:{photoId:true}})
         await this.db.vote.create({
             data:{
                 providerId,
                 contestId,
                 photoId,
+                photoRefId:contestPhoto?.photoId,
                 type,
                 power,
                 weight:power
@@ -475,6 +478,7 @@ class DatabaseSeeder {
                 contestId:contest.id,
                 participantId:participant.id,
                 photoId:photo.id,
+                originalPhotoId:photo.id,
                 title:photo.title,
                 promoted:true,
                 promotionExpiresAt:new Date(Date.now() + 24 * 60 * 60 * 1000)
@@ -1031,6 +1035,83 @@ class DatabaseSeeder {
         return {total:recurringContests.length, changed:changedCount}
     }
 
+    async backfillZeroTopRankRewards(apply = false){
+        const zeroRewards = {boost:0, swap:0, key:0, coin:0}
+
+        const [contestAwards, recurringAwards] = await Promise.all([
+            this.db.contestAward.findMany({
+                where:{type:"TOP_RANK", OR:[{boost:{gt:0}}, {swap:{gt:0}}, {key:{gt:0}}, {coin:{gt:0}}]}
+            }),
+            this.db.recurringContestAward.findMany({
+                where:{type:"TOP_RANK", OR:[{boost:{gt:0}}, {swap:{gt:0}}, {key:{gt:0}}, {coin:{gt:0}}]}
+            })
+        ])
+
+        console.log(`${apply ? "" : "[DRY RUN] "}Found ${contestAwards.length} contest award(s) and ${recurringAwards.length} recurring contest award(s) with a non-zero Top Rank reward`)
+
+        if(apply){
+            if(contestAwards.length > 0){
+                await this.db.contestAward.updateMany({
+                    where:{id:{in:contestAwards.map(a => a.id)}},
+                    data:zeroRewards
+                })
+            }
+            if(recurringAwards.length > 0){
+                await this.db.recurringContestAward.updateMany({
+                    where:{id:{in:recurringAwards.map(a => a.id)}},
+                    data:zeroRewards
+                })
+            }
+            console.log("Zeroed boost/swap/key/coin on all Top Rank award rows")
+        }
+
+        return {contestAwards:contestAwards.length, recurringAwards:recurringAwards.length}
+    }
+
+    // One-time backfill for the swap-photo vote-preservation feature: every
+    // ContestPhoto/Vote row created before this feature shipped only ever had one
+    // photo, so "current photoId" is the accurate historical originalPhotoId/photoRefId
+    // for all of them. Contest photos that were already swapped in the past (via
+    // tradePhoto) have no record of their true original photo, so this backfill can
+    // only approximate those as "the photo currently in the slot" - a known, disclosed
+    // limitation for data swapped before this feature existed.
+    async backfillVotePhotoRef(apply = false){
+        // Mongo documents written before these fields existed simply lack the key,
+        // and Prisma's `field: null` filter does not reliably match "absent" on
+        // Mongo - so fetch everything and filter for nullish in JS instead.
+        const [allContestPhotos, allVotes] = await Promise.all([
+            this.db.contestPhoto.findMany({select:{id:true, photoId:true, originalPhotoId:true}}),
+            this.db.vote.findMany({select:{id:true, photoId:true, photoRefId:true}})
+        ])
+        const contestPhotosToUpdate = allContestPhotos.filter(p => p.originalPhotoId == null)
+        const votesToUpdate = allVotes.filter(v => v.photoRefId == null)
+
+        console.log(`${apply ? "" : "[DRY RUN] "}Found ${contestPhotosToUpdate.length} contest photo(s) missing originalPhotoId and ${votesToUpdate.length} vote(s) missing photoRefId`)
+
+        if(!apply){
+            return {contestPhotos:contestPhotosToUpdate.length, votes:votesToUpdate.length}
+        }
+
+        for(const photo of contestPhotosToUpdate){
+            await this.db.contestPhoto.update({where:{id:photo.id}, data:{originalPhotoId:photo.photoId}})
+        }
+
+        const contestPhotoById = new Map(
+            (await this.db.contestPhoto.findMany({select:{id:true, photoId:true}})).map(p => [p.id, p.photoId])
+        )
+
+        for(const vote of votesToUpdate){
+            const liveImage = contestPhotoById.get(vote.photoId)
+            if(liveImage === undefined){
+                continue
+            }
+            await this.db.vote.update({where:{id:vote.id}, data:{photoRefId:liveImage}})
+        }
+
+        console.log(`Backfilled originalPhotoId on ${contestPhotosToUpdate.length} contest photo(s) and photoRefId on ${votesToUpdate.length} vote(s)`)
+        return {contestPhotos:contestPhotosToUpdate.length, votes:votesToUpdate.length}
+    }
+
     async destroyClient(){
         await this.client?.$disconnect()
     }
@@ -1085,8 +1166,24 @@ async function SeederCLI (){
                 }
                 break
             }
+            case "backfill:zero-top-rank-rewards": {
+                const apply = process.argv[3] === "--apply"
+                await seeder.backfillZeroTopRankRewards(apply)
+                if(!apply){
+                    console.log("Dry run only - re-run with --apply to write these changes")
+                }
+                break
+            }
+            case "backfill:vote-photo-ref": {
+                const apply = process.argv[3] === "--apply"
+                await seeder.backfillVotePhotoRef(apply)
+                if(!apply){
+                    console.log("Dry run only - re-run with --apply to write these changes")
+                }
+                break
+            }
             default:
-                console.log("Available commands: create:admin, seed:levels-demo, seed:contest-config, seed:prizes, seed:contest-categories, seed:achievements-for-user, backfill:contest-rules, backfill:contest-awards [--apply], -reset")
+                console.log("Available commands: create:admin, seed:levels-demo, seed:contest-config, seed:prizes, seed:contest-categories, seed:achievements-for-user, backfill:contest-rules, backfill:contest-awards [--apply], backfill:zero-top-rank-rewards [--apply], backfill:vote-photo-ref [--apply], -reset")
         }
     }finally{
         await seeder.destroyClient()

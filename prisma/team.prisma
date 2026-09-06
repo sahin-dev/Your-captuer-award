@@ -172,6 +172,31 @@ model TeamMatchHistory {
   @@map("team_match_history")
 }
 
+// Weekly/monthly top-3 team coin payout ledger - one row per (team, member, period,
+// periodKey), used both as the payout record and as an idempotency guard so a
+// cron re-run for the same window never double-pays.
+model TeamRewardTransaction {
+  id        String            @id @default(auto()) @map("_id") @db.ObjectId
+  teamId    String            @db.ObjectId
+  userId    String            @db.ObjectId
+  period    TeamRewardPeriod
+  periodKey String // e.g. "2026-W36" (weekly) or "2026-09" (monthly)
+  rank      Int
+  coins     Int
+
+  createdAt DateTime @default(now())
+
+  @@unique([teamId, userId, period, periodKey])
+  @@index([period, periodKey])
+  @@map("team_reward_transactions")
+}
+
+enum TeamRewardPeriod {
+  WEEKLY
+  MONTHLY
+  YEARLY
+}
+
 enum TeamAccessibility {
   PUBLIC
   PRIVATE

@@ -26,11 +26,15 @@ export enum NotificationEvent {
   
   // Contest-related
   CONTEST_PHOTO_UPLOADED = "CONTEST_PHOTO_UPLOADED",
+  CONTEST_PHOTO_REMOVED = "CONTEST_PHOTO_REMOVED",
   CONTEST_WINNER_ANNOUNCED = "CONTEST_WINNER_ANNOUNCED",
   CONTEST_ENDED = "CONTEST_ENDED",
-  
+
   // Achievement-related
   ACHIEVEMENT_UNLOCKED = "ACHIEVEMENT_UNLOCKED",
+
+  // Team reward-related
+  TEAM_REWARD_GRANTED = "TEAM_REWARD_GRANTED",
 }
 
 interface NotificationPayload {
@@ -345,6 +349,56 @@ export async function notifyContestEnded(
   });
 }
 
+/**
+ * Contest Photo Removed Notification
+ * Sent to the owner when an admin removes their contest submission
+ */
+export async function notifyContestPhotoRemoved(
+  userId: string,
+  contestName: string,
+  reason?: string
+) {
+  await sendNotification({
+    event: NotificationEvent.CONTEST_PHOTO_REMOVED,
+    userId,
+    title: "Your contest photo was removed",
+    message: reason
+      ? `Your submission to "${contestName}" was removed by an admin. Reason: ${reason}`
+      : `Your submission to "${contestName}" was removed by an admin.`,
+    type: NotificationType.DEFAULT,
+    data: {
+      contestName,
+      reason,
+    },
+  });
+}
+
+/**
+ * Team Reward Granted Notification
+ * Sent to each member when their team earns a weekly/monthly leaderboard payout
+ */
+export async function notifyTeamRewardGranted(
+  userId: string,
+  teamName: string,
+  period: "WEEKLY" | "MONTHLY",
+  rank: number,
+  coins: number
+) {
+  await sendNotification({
+    event: NotificationEvent.TEAM_REWARD_GRANTED,
+    userId,
+    title: "Team Reward Earned! 🏆",
+    message: `Your team "${teamName}" finished #${rank} this ${period === "WEEKLY" ? "week" : "month"} and earned you ${coins} coins!`,
+    type: NotificationType.DEFAULT,
+    data: {
+      teamName,
+      period,
+      rank,
+      coins,
+    },
+  });
+}
+
 export const notificationOrchestrator = {
   sendNotification,
   notifyVoteReceived,
@@ -356,4 +410,6 @@ export const notificationOrchestrator = {
   notifyAchievementUnlocked,
   notifyContestPhotoUploaded,
   notifyContestEnded,
+  notifyContestPhotoRemoved,
+  notifyTeamRewardGranted,
 };

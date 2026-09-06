@@ -60,13 +60,24 @@ export const handleGetMyFollowers = async (userId:string, page: number = 1, limi
         skip,
         take: paginationLimit,
         include:{follower:{select:{id:true, avatar:true, fullName:true, firstName:true, lastName:true}}},
-        orderBy: { createdAt: 'desc' }
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }]
     })
+
+    const followerIds = followers.map(follow => follow.follower.id)
+    const followedByMe = await prisma.follow.findMany({
+        where:{followerId:userId, followingId:{in:followerIds}},
+        select:{followingId:true}
+    })
+    const followedByMeIds = new Set(followedByMe.map(follow => follow.followingId))
+    const data = followers.map(follow => ({
+        ...follow,
+        isFollowedByMe:followedByMeIds.has(follow.follower.id)
+    }))
 
     const total = await prisma.follow.count({where:{followingId:userId}});
     const meta = paginationHelper.getPaginationMetaData(page, paginationLimit, total);
 
-    return { data: followers, meta };
+    return { data, meta };
 }
 
 export const handleGetMyFollowings = async (userId:string, page: number = 1, limit: number = 10) => {
@@ -77,7 +88,7 @@ export const handleGetMyFollowings = async (userId:string, page: number = 1, lim
         skip,
         take: paginationLimit,
         include:{following:{select:{id:true, avatar:true, fullName:true, firstName:true, lastName:true}}},
-        orderBy: { createdAt: 'desc' }
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }]
     })
 
     const total = await prisma.follow.count({where:{followerId:userId}});
@@ -94,7 +105,7 @@ export const handleGetOtherUserFollowers = async (myId: string, targetUserId: st
         skip,
         take: paginationLimit,
         include: { follower: { select: { id: true, avatar: true, fullName: true, firstName: true, lastName: true } } },
-        orderBy: { createdAt: 'desc' }
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }]
     });
 
     const followerIds = followers.map(f => f.follower.id);
@@ -127,7 +138,7 @@ export const handleGetOtherUserFollowings = async (myId: string, targetUserId: s
         skip,
         take: paginationLimit,
         include: { following: { select: { id: true, avatar: true, fullName: true, firstName: true, lastName: true } } },
-        orderBy: { createdAt: 'desc' }
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }]
     });
 
     const followingIds = followings.map(f => f.following.id);

@@ -39,12 +39,19 @@ const getCreateOptions = catchAsync(async (_req:Request, res:Response) => {
 
 const getAllContests = catchAsync(async (req:any, res:Response)=>{
 
-    const {page, limit, search} = req.query  as {page:string, limit:string, search?:string}
+    const {page, limit, search, status, includeArchived, tab} = req.query as {
+        page?:string,
+        limit?:string,
+        search?:string,
+        status?:ContestStatus,
+        includeArchived?:string,
+        tab?:"active"|"ended"
+    }
     const pageNum = Number(page) || 1
     const limitNum = Number(limit) || 20
 
-    
-    const contests = await contestService.getAllContests(pageNum, limitNum, search)
+
+    const contests = await contestService.getAllContests(pageNum, limitNum, search, status, includeArchived === "true", tab)
 
     sendResponse(res, {
         statusCode:200,
@@ -55,18 +62,20 @@ const getAllContests = catchAsync(async (req:any, res:Response)=>{
 })
 
 const getPublicContests = catchAsync(async (req:Request, res:Response) => {
-    const {status, page = "1", limit = "20", search} = req.query as {
+    const {status, page = "1", limit = "20", search, tab} = req.query as {
         status?:ContestStatus,
         page?:string,
         limit?:string,
-        search?:string
+        search?:string,
+        tab?:"active"|"ended"
     }
 
     const contests = await contestService.getPublicContests(
         status,
         Number(page) || 1,
         Number(limit) || 20,
-        search
+        search,
+        tab
     )
 
     sendResponse(res, {
@@ -196,10 +205,12 @@ const deleteContest = catchAsync(async (req:any, res:Response)=>{
 })
 
 const getContestsByStatus = catchAsync (async (req:Request, res:Response) => {
-    const {status} = req.query as {status:ContestStatus}
+    const {status, tab} = req.query as {status:ContestStatus; tab?:"active"|"ended"}
     const userId = req.user.id
 
-    const contests = await contestService.getContestsByStatus(userId,status)
+    const contests = tab === "active" || tab === "ended"
+        ? await contestService.getContestsByTab(tab)
+        : await contestService.getContestsByStatus(userId,status)
 
     sendResponse(res, {
         success:true,
@@ -231,6 +242,33 @@ const deleteContestPhoto = catchAsync(async (req:Request, res:Response) => {
         success:true,
         statusCode:httpStatus.OK,
         message:"photo deleted successfully",
+        data:result
+    })
+})
+
+const adminDeleteContestPhoto = catchAsync(async (req:Request, res:Response) => {
+    const {photoId} = req.params
+    const adminId = req.user.id
+    const {reason, reportId} = req.body as {reason?:string, reportId?:string}
+    const result = await contestService.adminDeleteContestPhoto(photoId, adminId, reason, reportId)
+
+    sendResponse(res, {
+        success:true,
+        statusCode:httpStatus.OK,
+        message:"photo removed successfully",
+        data:result
+    })
+})
+
+const getContestParticipants = catchAsync(async (req:Request, res:Response) => {
+    const {contestId} = req.params
+    const {search} = req.query as {search?:string}
+    const result = await contestService.getContestParticipants(contestId, search)
+
+    sendResponse(res, {
+        success:true,
+        statusCode:httpStatus.OK,
+        message:"participants fetched successfully",
         data:result
     })
 })
@@ -338,6 +376,21 @@ const getContestPhotographers = catchAsync(async (req:Request, res:Response)=> {
     })
 })
 
+const getContestRanking = catchAsync(async (req:Request, res:Response)=> {
+
+    const {contestId} = req.params
+    const userId = req.user?.id
+    const {page = "1", limit = "20", level} = req.query as {page:string, limit:string, level?:string}
+    const ranking = await contestService.getContestRanking(contestId, userId, Number(page), Number(limit), level)
+
+    sendResponse(res, {
+        statusCode:200,
+        success:true,
+        message:'ranking fetched successfully',
+        data:ranking
+    })
+})
+
 const selectAwardPhoto = catchAsync(async (req:Request, res:Response) => {
     const {contestId, awardId} = req.params
     const selection = await contestService.selectAwardPhoto(
@@ -398,8 +451,11 @@ export const contestController = {
     tradePhoto,
     chargePhoto,
     deleteContestPhoto,
+    adminDeleteContestPhoto,
+    getContestParticipants,
     getContestPhotosSortedByVote,
     getContestPhotographers,
+    getContestRanking,
     selectAwardPhoto,
     getAwardSelections,
     getUploadedPhotosToVote,

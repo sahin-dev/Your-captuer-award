@@ -65,7 +65,7 @@ const getAllChats = async (userId: string, teamId: string, page: number = 1, lim
         where: { teamId: team.id },
         skip,
         take: paginationLimit,
-        orderBy: { createdAt: "desc" },
+        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
         include: { sender: { select: { id: true, firstName: true, lastName: true, fullName: true, avatar: true } } }
     })
 

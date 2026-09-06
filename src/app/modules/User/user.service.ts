@@ -313,7 +313,7 @@ const attachStoreToUser = async (userId:string)=>{
 }
 
 const searchUserByUserName = async (queryString:string, page:number = 1, limit:number = 10, currentUserId?:string) => {
-    const { skip, limit:take } = paginationHelper.calculatePagination({page, limit})
+    const { skip, limit:take, page:currentPage } = paginationHelper.calculatePagination({page, limit})
 
     const [total, users] = await Promise.all([
         prisma.user.count({
@@ -332,17 +332,17 @@ const searchUserByUserName = async (queryString:string, page:number = 1, limit:n
                 ]
             },
             select:{id:true, avatar:true, firstName:true, username:true, lastName:true, fullName:true},
-            skip, take
+            skip,
+            take,
+            orderBy:[{fullName:'asc'}, {id:'asc'}]
         })
     ])
 
     return {
         users,
         meta:{
-            total,
-            hasNextPage: total > page * limit,
-            hasPreviousPage: page > 1,
-            currentPage: page,
+            ...paginationHelper.getPaginationMetaData(currentPage, take, total),
+            currentPage
         }
     }
 }

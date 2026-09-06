@@ -155,6 +155,7 @@ model Vote {
   id         String @id @default(auto()) @map("_id") @db.ObjectId
   providerId String? @db.ObjectId
   photoId    String @db.ObjectId
+  photoRefId String? @db.ObjectId // the ContestPhoto.photoId (actual image) live when this vote was cast - lets swap/trade preserve per-image vote counts
   contestId  String @db.ObjectId
   type       VoteType
   power      Int @default(1)
@@ -170,6 +171,7 @@ model Vote {
   @@unique([providerId, contestId, photoId])
   @@index([contestId, photoId])
   @@index([contestId, providerId])
+  @@index([photoId, photoRefId])
   @@map("votes")
 }
 

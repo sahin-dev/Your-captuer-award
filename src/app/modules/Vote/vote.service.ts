@@ -46,7 +46,9 @@ export const addOneVote = async (userId:string, contestId:string, photoId:string
 
     const weight = Math.max(1, user.voting_power ?? 1)
     try{
-        const vote = await prisma.vote.create({data:{providerId:userId, contestId, photoId, type, power:weight, weight}})
+        // Stamp the image live in this slot right now, so a later swap doesn't
+        // silently move this vote onto a different photo's tally - see getVoteCount.
+        const vote = await prisma.vote.create({data:{providerId:userId, contestId, photoId, photoRefId:contestPhoto.photoId, type, power:weight, weight}})
         if(voterParticipant){
             await prisma.contestParticipant.update({where:{id:voterParticipant.id}, data:{exposure_bonus:{increment:2}}})
         }
@@ -54,7 +56,7 @@ export const addOneVote = async (userId:string, contestId:string, photoId:string
         await contestProgressService.evaluateParticipantLevel(contestId, contestPhoto.participantId)
         await levelService.evaluateAndUpdateUserLevel(contestPhoto.participant.userId)
 
-        const { count: totalVotes } = await getVoteWeightStats({photoId})
+        const totalVotes = await getVoteCount(photoId)
         await notificationOrchestrator.notifyVoteReceived(
             contestPhoto.participantId,
             contestPhoto.participant.userId,
@@ -95,9 +97,17 @@ export const addVotes = async (userId:string,contestId:string, photoIds:string[]
 }
 
 
+// Counts only votes cast while the photo currently in this contest slot was live,
+// so swapping to a different photo and back restores that photo's own vote count
+// instead of inheriting whatever was voted on in between. A null photoRefId is a
+// legacy (pre-swap-tracking) vote and is treated as belonging to whatever photo
+// is live now - see backfill:vote-photo-ref for reconciling those explicitly.
 export const getVoteCount = async (photoId:string)=>{
-
-    const { count } = await getVoteWeightStats({photoId})
+    const contestPhoto = await prisma.contestPhoto.findUnique({where:{id:photoId}, select:{photoId:true}})
+    const { count } = await getVoteWeightStats({
+        photoId,
+        OR:[{photoRefId:contestPhoto?.photoId ?? null}, {photoRefId:null}]
+    })
 
     return count
 }

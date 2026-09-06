@@ -5,6 +5,7 @@ import httpStatus from 'http-status'
 import { LEVEL_BADGE_TYPES, LEVEL_RULES, LevelRule } from "./level.config"
 import { getVoteWeightStats } from "../Vote/voteWeight.service"
 import { notificationOrchestrator } from "../Notification/notificationOrchestrator"
+import { paginationHelper } from "../../../helpers/paginationHelper"
 
 
 
@@ -53,7 +54,7 @@ const deleteLevl  =async (levelId:string)=> {
 
 const getLevels = async (page = 1, limit = 20)=>{
     const safePage = Number.isFinite(page) && page > 0 ? Math.floor(page) : 1
-    const safeLimit = Number.isFinite(limit) && limit > 0 ? Math.floor(limit) : 20
+    const safeLimit = Number.isFinite(limit) && limit > 0 ? Math.min(Math.floor(limit), 100) : 20
     const skip = (safePage - 1) * safeLimit
 
     const [levels, total] = await Promise.all([
@@ -63,7 +64,7 @@ const getLevels = async (page = 1, limit = 20)=>{
 
     return {
         data:levels,
-        meta:{page:safePage, limit:safeLimit, total}
+        meta:paginationHelper.getPaginationMetaData(safePage, safeLimit, total)
     }
 }
 

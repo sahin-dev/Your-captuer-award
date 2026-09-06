@@ -24,10 +24,15 @@ type IPaginationMetaData = {
 }
 
 const calculatePagination = (options: IOptions): IOptionsResult => {
-
-    const page: number = Number(options.page) || 1;
-    const limit: number = Number(options.limit) || 10;
-    const skip: number = (Number(page) - 1) * limit;
+    const requestedPage = Number(options.page);
+    const requestedLimit = Number(options.limit);
+    const page = Number.isFinite(requestedPage) && requestedPage > 0
+        ? Math.floor(requestedPage)
+        : 1;
+    const limit = Number.isFinite(requestedLimit) && requestedLimit > 0
+        ? Math.min(Math.floor(requestedLimit), 100)
+        : 10;
+    const skip: number = (page - 1) * limit;
 
     const sortBy: string = options.sortBy || 'createdAt';
     const sortOrder: string = options.sortOrder || 'desc';
@@ -42,16 +47,22 @@ const calculatePagination = (options: IOptions): IOptionsResult => {
 }
 
 const getPaginationMetaData = (page: number, limit: number, total: number): IPaginationMetaData => {
-    const totalPage = Math.ceil(total / limit);
+    const safePage = Number.isFinite(Number(page)) && Number(page) > 0
+        ? Math.floor(Number(page))
+        : 1;
+    const safeLimit = Number.isFinite(Number(limit)) && Number(limit) > 0
+        ? Math.min(Math.floor(Number(limit)), 100)
+        : 10;
+    const totalPage = Math.ceil(total / safeLimit);
 
     return {
-        page,
-        limit,
+        page:safePage,
+        limit:safeLimit,
         total,
         totalPage,
         totalPages: totalPage,
-        hasNextPage: page < totalPage,
-        hasPreviousPage: page > 1
+        hasNextPage: safePage < totalPage,
+        hasPreviousPage: safePage > 1
     }
 }
 

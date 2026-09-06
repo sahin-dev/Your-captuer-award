@@ -102,7 +102,7 @@ export const handleGetLikedPhotos = async (userId:string, page: number = 1, limi
         include:{
             photo:true
         },
-        orderBy: { createdAt: 'desc' }
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }]
     });
 
     const total = await prisma.like.count({where:{providerId:userId}});

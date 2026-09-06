@@ -340,6 +340,18 @@ agenda.define("teamMatch:watchQueueTimeouts", async () => {
     }
 });
 
+// Pays out coins to the top-3 teams' current members for the week/month that just ended.
+// Idempotent per (team, member, period, periodKey) - safe if this fires more than once.
+agenda.define("team:weeklyPayout", async () => {
+    const result = await teamService.payoutPeriodRewards("WEEKLY")
+    console.log(`Weekly team payout for period ${result.periodKey}: ${result.teamsRewarded} team(s) rewarded`)
+});
+
+agenda.define("team:monthlyPayout", async () => {
+    const result = await teamService.payoutPeriodRewards("MONTHLY")
+    console.log(`Monthly team payout for period ${result.periodKey}: ${result.teamsRewarded} team(s) rewarded`)
+});
+
 agenda.define("exposure:watcher", async (job:Job) => {
     const {contestPhotoId}  = job.attrs.data as {contestPhotoId:string}
 
@@ -350,7 +362,8 @@ agenda.define("exposure:watcher", async (job:Job) => {
         return
     }
 
-    const updatedBonus = Math.max(0, contestPhoto.participant.exposure_bonus - 10)
+    // Exposure bonus decays 7% (compounding) every 30 minutes this job runs.
+    const updatedBonus = Math.max(0, Math.round(contestPhoto.participant.exposure_bonus * 0.93))
     await prisma.contestParticipant.update({where:{id:contestPhoto.participant.id}, data:{exposure_bonus:updatedBonus}})
 })
 

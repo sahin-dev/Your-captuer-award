@@ -1,0 +1,32 @@
+model Report {
+  id             String       @id @default(auto()) @map("_id") @db.ObjectId
+  reporterId     String       @db.ObjectId
+  reportedUserId String       @db.ObjectId
+  contestPhotoId String?      @db.ObjectId // optional context: which submission prompted the report
+  reason         ReportReason
+  details        String?
+  status         ReportStatus @default(PENDING)
+  reviewedById   String?      @db.ObjectId
+  reviewedAt     DateTime?
+  resolutionNote String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([reportedUserId, status])
+  @@index([status, createdAt])
+  @@map("reports")
+}
+
+enum ReportReason {
+  OFF_TOPIC
+  COPYRIGHT
+  AI_GENERATED
+  INAPPROPRIATE_CONTENT
+}
+
+enum ReportStatus {
+  PENDING
+  ACTION_TAKEN
+  DISMISSED
+}

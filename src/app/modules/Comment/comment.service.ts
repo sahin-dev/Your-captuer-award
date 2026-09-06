@@ -42,7 +42,7 @@ export const handleGetUserComments = async (photoId: string, page: number = 1, l
         take: paginationLimit,
         include: { provider: {select:{avatar:true, fullName:true, firstName:true, lastName:true}} ,commentReplies:
     {include:{commentReplies:{include:{provider:{select:{avatar:true, firstName:true,lastName:true, fullName:true}}}}, provider:{select:{avatar:true, fullName:true, firstName:true, lastName:true}}},}},
-        orderBy:{createdAt:"desc"}
+        orderBy:[{createdAt:"desc"}, {id:"desc"}]
     });
     
     const total = await prisma.comment.count({where: { photoId }});

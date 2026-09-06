@@ -89,6 +89,7 @@ const buildContestRanking = async (contestId: string): Promise<ContestRanking> =
           select: {
             id: true,
             photoId: true,
+            originalPhotoId: true,
             initialVotes: true,
             createdAt: true,
           },
@@ -97,30 +98,52 @@ const buildContestRanking = async (contestId: string): Promise<ContestRanking> =
     }),
     prisma.vote.findMany({
       where: { contestId },
-      select: { photoId: true, weight: true, power: true },
+      select: { photoId: true, photoRefId: true, weight: true, power: true },
     }),
     contestRuleEngine.getLevelRequirements(contestId),
   ]);
 
+  // The image currently occupying each contest-photo slot - a vote only counts
+  // toward a photo's score if it was cast while that same image was live there,
+  // so swapping away and back restores the photo's own count instead of
+  // inheriting whatever was voted on in between (see Vote.photoRefId).
+  const currentPhotoIdBySlot = new Map<string, string | null>();
+  participants.forEach((participant) => {
+    participant.photos.forEach((photo) => currentPhotoIdBySlot.set(photo.id, photo.photoId));
+  });
+
   const voteScoreByPhoto = new Map<string, number>();
   const voteCountByPhoto = new Map<string, number>();
   votes.forEach((vote) => {
+    const liveImage = currentPhotoIdBySlot.get(vote.photoId);
+    // A null photoRefId is a legacy vote cast before swap-tracking existed -
+    // treat it as belonging to whichever photo is live now.
+    if (vote.photoRefId !== null && vote.photoRefId !== liveImage) {
+      return;
+    }
     voteScoreByPhoto.set(vote.photoId, (voteScoreByPhoto.get(vote.photoId) || 0) + getVoteWeight(vote));
     voteCountByPhoto.set(vote.photoId, (voteCountByPhoto.get(vote.photoId) || 0) + 1);
   });
 
   const photos = participants
-    .flatMap((participant) => participant.photos.map((photo) => ({
-      photoId: photo.id,
-      userPhotoId: photo.photoId,
-      participantId: participant.id,
-      userId: participant.userId,
-      score: (voteScoreByPhoto.get(photo.id) || 0) + (photo.initialVotes || 0),
-      // Raw vote count for display, independent of each voter's weight.
-      voteCount: (voteCountByPhoto.get(photo.id) || 0) + (photo.initialVotes || 0),
-      createdAt: photo.createdAt,
-      tieBreakKey: photo.id,
-    })))
+    .flatMap((participant) => participant.photos.map((photo) => {
+      // initialVotes is a baseline for the photo this slot originally launched
+      // with - it shouldn't follow a later swapped-in photo.
+      const stillOriginalPhoto = !photo.originalPhotoId || photo.originalPhotoId === photo.photoId;
+      const initialVotes = stillOriginalPhoto ? (photo.initialVotes || 0) : 0;
+
+      return {
+        photoId: photo.id,
+        userPhotoId: photo.photoId,
+        participantId: participant.id,
+        userId: participant.userId,
+        score: (voteScoreByPhoto.get(photo.id) || 0) + initialVotes,
+        // Raw vote count for display, independent of each voter's weight.
+        voteCount: (voteCountByPhoto.get(photo.id) || 0) + initialVotes,
+        createdAt: photo.createdAt,
+        tieBreakKey: photo.id,
+      };
+    }))
     .sort(compareByScoreAndTieBreak)
     .map((photo, index) => ({ ...photo, rank: index + 1 }));
 

@@ -34,12 +34,19 @@ const postNotificationWithPayload = async (title:string, message:string, receive
 const getUserNotifications = async (receiverId:string, page: number = 1, limit: number = 10)=>{
     const { skip, limit: paginationLimit } = paginationHelper.calculatePagination({ page, limit });
     
-    const notifications = await prisma.notification.findMany({where:{receiverId}, skip, take: paginationLimit, orderBy: { createdAt: 'desc' }})
-
-    const total = await prisma.notification.count({where:{receiverId}});
+    const [notifications, total, unreadCount] = await Promise.all([
+        prisma.notification.findMany({
+            where:{receiverId},
+            skip,
+            take:paginationLimit,
+            orderBy:[{createdAt:'desc'}, {id:'desc'}]
+        }),
+        prisma.notification.count({where:{receiverId}}),
+        prisma.notification.count({where:{receiverId, isRead:false}})
+    ]);
     const paginationMetaData = paginationHelper.getPaginationMetaData(page, paginationLimit, total);
     
-    return { data: notifications, meta: paginationMetaData };
+    return { data: notifications, meta: {...paginationMetaData, unreadCount} };
 }
 
 const getNotificationDetails = async (notificationId:string)=>{

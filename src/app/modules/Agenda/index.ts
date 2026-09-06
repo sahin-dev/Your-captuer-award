@@ -32,6 +32,8 @@ export const startAgenda = async () => {
     await scheduler.every("30 seconds", "contest:watchEnded");
     await scheduler.every("1 minute", "teamMatch:watchStale");
     await scheduler.every("1 minute", "teamMatch:watchQueueTimeouts");
+    await scheduler.every("0 0 * * 1", "team:weeklyPayout"); // every Monday 00:00
+    await scheduler.every("0 0 1 * *", "team:monthlyPayout"); // 1st of each month, 00:00
     console.log("Agenda scheduler started");
 
     return scheduler;
