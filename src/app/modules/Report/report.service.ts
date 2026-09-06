@@ -66,9 +66,23 @@ const enrichReports = async <T extends { reporterId: string; reportedUserId: str
     }),
   ]);
 
+  // Admin needs to see which contest a reported photo belongs to (banner/title/
+  // description) to sanity-check the report - contestPhoto has no direct Contest
+  // relation, so look these up separately by contestId.
+  const contestIds = [...new Set(contestPhotos.map((p) => p.contestId))];
+  const contests = contestIds.length
+    ? await prisma.contest.findMany({
+        where: { id: { in: contestIds } },
+        select: { id: true, title: true, description: true, banner: true },
+      })
+    : [];
+  const contestById = new Map(contests.map((c) => [c.id, c]));
+
   const reporterById = new Map(reporters.map((u) => [u.id, u]));
   const reportedUserById = new Map(reportedUsers.map((u) => [u.id, u]));
-  const contestPhotoById = new Map(contestPhotos.map((p) => [p.id, p]));
+  const contestPhotoById = new Map(
+    contestPhotos.map((p) => [p.id, { ...p, contest: contestById.get(p.contestId) || null }])
+  );
 
   return reports.map((report) => ({
     ...report,
