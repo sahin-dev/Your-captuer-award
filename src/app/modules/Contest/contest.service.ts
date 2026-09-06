@@ -41,7 +41,11 @@ const PROMOTION_DURATION_MS = 24 * 60 * 60 * 1000 // promoted photos stay booste
 const activeTabStatuses:ContestStatus[] = [ContestStatus.NEW, ContestStatus.UPCOMING, ContestStatus.OPEN, ContestStatus.JOINED, ContestStatus.ACTIVE, ContestStatus.FINALIZING]
 const endedTabStatuses:ContestStatus[] = [ContestStatus.COMPLETED, ContestStatus.CLOSED, ContestStatus.FINALIZATION_FAILED]
 type ContestTab = "active" | "ended"
-const notDeleted = {deletedAt:null} as const
+// Mongo docs created before `deletedAt` existed have the field missing entirely
+// (not null) - Prisma's {deletedAt: null} filter does not match "missing" on this
+// connector/version, so it must also accept isSet:false or every pre-existing
+// contest gets silently excluded from every list.
+const notDeleted:Prisma.ContestWhereInput = {OR:[{deletedAt:null}, {deletedAt:{isSet:false}}]}
 
 // Called after a user newly joins a contest. If they belong to a team that's
 // waiting for the minimum member count before searching for a team-match
