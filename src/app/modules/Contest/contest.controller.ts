@@ -62,20 +62,18 @@ const getAllContests = catchAsync(async (req:any, res:Response)=>{
 })
 
 const getPublicContests = catchAsync(async (req:Request, res:Response) => {
-    const {status, page = "1", limit = "20", search, tab} = req.query as {
+    const {status, page = "1", limit = "20", search} = req.query as {
         status?:ContestStatus,
         page?:string,
         limit?:string,
-        search?:string,
-        tab?:"active"|"ended"
+        search?:string
     }
 
     const contests = await contestService.getPublicContests(
         status,
         Number(page) || 1,
         Number(limit) || 20,
-        search,
-        tab
+        search
     )
 
     sendResponse(res, {
@@ -205,12 +203,10 @@ const deleteContest = catchAsync(async (req:any, res:Response)=>{
 })
 
 const getContestsByStatus = catchAsync (async (req:Request, res:Response) => {
-    const {status, tab} = req.query as {status:ContestStatus; tab?:"active"|"ended"}
+    const {status} = req.query as {status:ContestStatus}
     const userId = req.user.id
 
-    const contests = tab === "active" || tab === "ended"
-        ? await contestService.getContestsByTab(tab)
-        : await contestService.getContestsByStatus(userId,status)
+    const contests = await contestService.getContestsByStatus(userId,status)
 
     sendResponse(res, {
         success:true,

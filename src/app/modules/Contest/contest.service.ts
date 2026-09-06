@@ -655,13 +655,11 @@ const getPublicContests = async (
     status?:ContestStatus,
     page:number = 1,
     limit:number = 20,
-    search?:string,
-    tab?:ContestTab
+    search?:string
 ) => {
     const {skip, limit:paginationLimit, page:currentPage} = paginationHelper.calculatePagination({page, limit})
     const where:Prisma.ContestWhereInput = {
         ...(status && {status}),
-        ...(tab && {status:{in: tab === "active" ? activeTabStatuses : endedTabStatuses}}),
         ...(search && {title:{contains:search, mode:"insensitive" as const}}),
         ...notDeleted
     }
@@ -957,21 +955,6 @@ const getContestsByStatus = async (userId:string,status: ContestStatus) => {
 
     return enrichContestListDetails(contests);
 };
-
-// Active/Ended tabs for the contest list screen - a coarser grouping than a single
-// exact ContestStatus, used alongside (not instead of) getContestsByStatus.
-const getContestsByTab = async (tab:ContestTab) => {
-    const statuses = tab === "active" ? activeTabStatuses : endedTabStatuses
-
-    const contests = await prisma.contest.findMany({
-        where:{status:{in:statuses}, ...notDeleted},
-        include: { creator: contestListCreatorInclude },
-        orderBy:{startDate:"desc"}
-    });
-
-    return enrichContestListDetails(contests);
-};
-
 
 //Get all uploads of a user
 
@@ -2155,7 +2138,6 @@ export const contestService = {
     getAllContests,
     getMyActiveContests,
     getContestsByStatus,
-    getContestsByTab,
     getUpcomingContest,
     getMyCompletedContest,
     getClosedContestsWithWinner,

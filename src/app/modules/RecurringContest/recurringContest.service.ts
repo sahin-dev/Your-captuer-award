@@ -30,16 +30,26 @@ const validateTimeZone = (timeZone?: string | null) => {
   }
 };
 
-const getRecurringContests = async (page = 1, limit = 20) => {
+// "Active" tab = still generating or pausable (ACTIVE/PAUSED); "Ended" tab = ENDED.
+const activeRecurringStatuses: RecurringContestStatus[] = [
+  RecurringContestStatus.ACTIVE,
+  RecurringContestStatus.PAUSED,
+];
+
+const getRecurringContests = async (page = 1, limit = 20, tab?: "active" | "ended") => {
   const skip = (page - 1) * limit;
+  const where = tab
+    ? { status: tab === "active" ? { in: activeRecurringStatuses } : RecurringContestStatus.ENDED }
+    : {};
 
   const [recurringContests, total] = await Promise.all([
     prisma.recurringContest.findMany({
+      where,
       skip,
       take: limit,
       orderBy: { createdAt: "desc" },
     }),
-    prisma.recurringContest.count(),
+    prisma.recurringContest.count({ where }),
   ]);
 
   return { recurringContests, total, page, limit };
