@@ -141,13 +141,16 @@ export const handleAdminSignIn = async(body:UserSignInData)=>{
 }
 
 export const getAutheticatedUser = async (userId:string)=>{
-    const user = await prisma.user.findUnique({where:{id:userId}})
+    const user = await prisma.user.findUnique({
+        where:{id:userId},
+        include:{joinedTeam:{include:{team:{select:{id:true, name:true, badge:true}}}}}
+    })
 
     if (!user){
         throw new ApiError(httpstatus.NOT_FOUND, "user not found")
     }
 
-    return UserDto(user)
+    return UserDto(user, user.joinedTeam ? {team:user.joinedTeam.team} : null)
 }
 
 export const handleSignout = async (userId:string)=>{

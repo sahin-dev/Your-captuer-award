@@ -1610,9 +1610,8 @@ const promoteContestPhoto = async (contestId:string, photoId:string, userId:stri
     }
 
     if (contestPhoto.promoted){
-        throw new ApiError(httpstatus.BAD_REQUEST, "Contest photo is already charged.")
+        throw new ApiError(httpstatus.BAD_REQUEST, "Contest photo is already promoted.")
     }
-
 
     if (contestPhoto.participant.userId !== userId){
         throw new ApiError(httpstatus.FORBIDDEN, "You are not allowed to promote this contest photo")

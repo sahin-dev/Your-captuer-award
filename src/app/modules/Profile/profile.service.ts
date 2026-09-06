@@ -209,7 +209,13 @@ const isFollowedByViewer = async (targetUserId:string, viewerId?:string)=>{
 }
 
 const getUserProfileDetails = async (userId:string, viewerId?:string)=>{
-    const user = await prisma.user.findUnique({where:{id:userId}, select:{id:true,avatar:true,username:true, location:true,fullName:true, cover:true}})
+    const user = await prisma.user.findUnique({
+        where:{id:userId},
+        select:{
+            id:true,avatar:true,username:true, location:true,fullName:true, cover:true,
+            joinedTeam:{select:{team:{select:{id:true, name:true, badge:true}}}}
+        }
+    })
     if(!user){
         throw new ApiError(httpStatus.NOT_FOUND, "User not found")
     }
