@@ -36,11 +36,12 @@ const activeRecurringStatuses: RecurringContestStatus[] = [
   RecurringContestStatus.PAUSED,
 ];
 
-const getRecurringContests = async (page = 1, limit = 20, tab?: "active" | "ended") => {
+const getRecurringContests = async (page = 1, limit = 20, tab?: "active" | "ended", search?: string) => {
   const skip = (page - 1) * limit;
-  const where = tab
-    ? { status: tab === "active" ? { in: activeRecurringStatuses } : RecurringContestStatus.ENDED }
-    : {};
+  const where = {
+    ...(tab && { status: tab === "active" ? { in: activeRecurringStatuses } : RecurringContestStatus.ENDED }),
+    ...(search?.trim() && { title: { contains: search.trim(), mode: "insensitive" as const } }),
+  };
 
   const [recurringContests, total] = await Promise.all([
     prisma.recurringContest.findMany({

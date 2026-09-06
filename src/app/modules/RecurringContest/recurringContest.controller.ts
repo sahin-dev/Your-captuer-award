@@ -8,7 +8,8 @@ const getRecurringContests = catchAsync(async (req: Request, res: Response) => {
   const page = Number(req.query.page) || 1;
   const limit = Number(req.query.limit) || 20;
   const tab = req.query.tab as "active" | "ended" | undefined;
-  const result = await recurringContestService.getRecurringContests(page, limit, tab);
+  const search = req.query.search as string | undefined;
+  const result = await recurringContestService.getRecurringContests(page, limit, tab, search);
 
   sendResponse(res, {
     success: true,
