@@ -209,6 +209,13 @@ model ContestPhoto {
   // before this field existed - treated as this row's createdAt (i.e. every
   // vote ever cast on the slot counts, matching the old untraded behavior).
   stintStartedAt DateTime?
+  // A temporary spotlight window - set to 1 hour from now on a fresh submission
+  // or a trade-in, nothing else. While still in the future, this photo's
+  // vote-serving weight is boosted well above the normal
+  // ContestParticipant.exposure_bonus-driven weight (see getContestUploadsToVote);
+  // once it passes, the photo just falls back to that participant-level weight
+  // like any other photo. Not affected by votes or Charge either way.
+  exposureBoostExpiresAt DateTime?
   // contest   Contest @relation(fields: [contestId],references: [id])
   participant  ContestParticipant   @relation(fields: [participantId], references: [id], onDelete: Cascade)
   votes        Vote[]
@@ -264,7 +271,10 @@ model ContestParticipant {
   memberId    String?                   @db.ObjectId
   level     YCLevel                  @default(NEW)
   rank      Int?                     @default(0)
-  exposure_bonus  Int     @default(100)
+  // Increases when THIS participant casts a vote (not when they receive one) -
+  // a reward for voting activity, reset to 100 by "Charge". Separate from
+  // ContestPhoto.exposure_bonus, which is per-photo and drives vote-serving.
+  exposure_bonus Int @default(100)
 
   contest            Contest              @relation(fields: [contestId], references: [id], onDelete: Cascade)
   user               User                @relation(fields: [userId], references: [id])

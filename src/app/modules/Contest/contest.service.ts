@@ -38,6 +38,8 @@ const completedContestStatuses:ContestStatus[] = [ContestStatus.COMPLETED, Conte
 const isCompletedContest = (status:ContestStatus) => completedContestStatuses.includes(status)
 const contestListCreatorInclude = {omit:{password:true, accessToken:true}} as const
 const PROMOTION_DURATION_MS = 24 * 60 * 60 * 1000 // promoted photos stay boosted for ~24 hours
+const EXPOSURE_BOOST_DURATION_MS = 60 * 60 * 1000 // a fresh submission/trade stays spotlighted for 1 hour
+const EXPOSURE_BOOST_WEIGHT_MULTIPLIER = 20 // how much more likely a spotlighted photo is to surface vs. its participant-level weight alone
 // "Active" tab = anything not yet concluded; "Ended" tab = finished (successfully or not).
 const activeTabStatuses:ContestStatus[] = [ContestStatus.NEW, ContestStatus.UPCOMING, ContestStatus.OPEN, ContestStatus.JOINED, ContestStatus.ACTIVE, ContestStatus.FINALIZING]
 const endedTabStatuses:ContestStatus[] = [ContestStatus.COMPLETED, ContestStatus.CLOSED, ContestStatus.FINALIZATION_FAILED]
@@ -91,18 +93,24 @@ const seededRandom = (seed:string) => {
     }
 }
 
-const shuffleWithSeed = <T>(items:T[], seed:string) => {
-    const shuffled = [...items]
+// Randomized order for vote-serving, biased by each photo's exposure_bonus: a
+// higher-exposure photo is more likely (not guaranteed) to sort earlier. Uses
+// the standard "weighted reservoir" sampling key (random() ** (1/weight)) so it
+// stays a true shuffle - not a strict exposure-descending sort - while still
+// giving higher-exposure photos meaningfully better odds of early placement.
+// getWeight defaults to a flat 1 (a plain unweighted shuffle) for callers that
+// don't care about exposure.
+const shuffleWithSeed = <T>(items:T[], seed:string, getWeight:(item:T) => number = () => 1) => {
     const random = seededRandom(seed)
 
-    for (let index = shuffled.length - 1; index > 0; index--) {
-        const swapIndex = Math.floor(random() * (index + 1))
-        const current = shuffled[index]
-        shuffled[index] = shuffled[swapIndex]
-        shuffled[swapIndex] = current
-    }
-
-    return shuffled
+    return items
+        .map(item => {
+            const weight = Math.max(getWeight(item), 1)
+            const key = Math.pow(random(), 1 / weight)
+            return {item, key}
+        })
+        .sort((a, b) => b.key - a.key)
+        .map(entry => entry.item)
 }
 
 const shouldUseDefaultAwards = (body:contestData) =>
@@ -1542,7 +1550,10 @@ const getContestUploadsToVote = async (userId:string, contestId:string, page?:nu
     const contestUploads = await prisma.contestPhoto.findMany({
         where,
         orderBy:[{createdAt:"desc"}, {id:"desc"}],
-        include:{photo:{select:{id:true, url:true}}}
+        include:{
+            photo:{select:{id:true, url:true}},
+            participant:{select:{exposure_bonus:true}}
+        }
     })
     const promotedUploads = contest.status === ContestStatus.ACTIVE
         ? contestUploads.filter(upload => upload.promoted)
@@ -1550,9 +1561,20 @@ const getContestUploadsToVote = async (userId:string, contestId:string, page?:nu
     const regularUploads = contest.status === ContestStatus.ACTIVE
         ? contestUploads.filter(upload => !upload.promoted)
         : contestUploads
+    // Base weight comes from the participant's own exposure_bonus (their
+    // voting-activity reward, always in effect). A photo still within its
+    // 1-hour post-submission/trade spotlight window (exposureBoostExpiresAt)
+    // gets that weight multiplied way up, so fresh/traded-in photos dominate
+    // the queue for a while regardless of the photographer's own history -
+    // once the window passes, it's back to just the participant-level weight.
+    const exposureWeight = (upload:(typeof contestUploads)[number]) => {
+        const participantWeight = Math.max(upload.participant?.exposure_bonus ?? 100, 1)
+        const isSpotlighted = Boolean(upload.exposureBoostExpiresAt && upload.exposureBoostExpiresAt.getTime() > Date.now())
+        return isSpotlighted ? participantWeight * EXPOSURE_BOOST_WEIGHT_MULTIPLIER : participantWeight
+    }
     const randomizedUploads = [
-        ...shuffleWithSeed(promotedUploads, `${randomSeed}:promoted`),
-        ...shuffleWithSeed(regularUploads, `${randomSeed}:regular`)
+        ...shuffleWithSeed<(typeof contestUploads)[number]>(promotedUploads, `${randomSeed}:promoted`, exposureWeight),
+        ...shuffleWithSeed<(typeof contestUploads)[number]>(regularUploads, `${randomSeed}:regular`, exposureWeight)
     ]
     const paginatedUploads = randomizedUploads.slice(skip, skip + paginationLimit)
 
@@ -1741,14 +1763,18 @@ const uploadPhotoToContest = async (contestId:string,userId:string, photoIds:str
         const createdPhotos:ContestPhoto[] = []
         for(const photoId of selectedPhotoIds){
             createdPhotos.push(await tx.contestPhoto.create({
-                data:{contestId,participantId:participant.id,photoId,originalPhotoId:photoId},
+                data:{
+                    contestId,
+                    participantId:participant.id,
+                    photoId,
+                    originalPhotoId:photoId,
+                    exposureBoostExpiresAt:new Date(Date.now() + EXPOSURE_BOOST_DURATION_MS)
+                },
                 include:{photo:true}
             }))
         }
         return createdPhotos
     })
-
-    await Promise.all(images.map(image => agenda.every("30 minutes", "exposure:watcher", {contestPhotoId:image.id})))
 
     if(isJoiningThroughUpload){
         await notifyTeamMatchQueueOfContestJoin(userId, contestId)
@@ -2073,7 +2099,10 @@ const tradePhoto = async (userId:string,contestId:string, contestPhotoId:string,
             data:{
                 photoId:replacementPhotoId,
                 stintStartedAt:new Date(),
-                bankedVotes:restorableRecord?.frozenVoteCount ?? 0
+                bankedVotes:restorableRecord?.frozenVoteCount ?? 0,
+                // A trade is a fresh start for this slot's spotlight too, same as a
+                // brand-new submission.
+                exposureBoostExpiresAt:new Date(Date.now() + EXPOSURE_BOOST_DURATION_MS)
             }
         })
     })
@@ -2174,13 +2203,6 @@ const chargePhoto = async (userId:string, contestId:string) => {
             data:{exposure_bonus:100}
         })
     })
-
-    // Exposure decays per contest photo, so reset every photo's decay clock for this entry
-    const contestPhotos = await prisma.contestPhoto.findMany({where:{participantId:participant.id}})
-    await Promise.all(contestPhotos.map(async (photo) => {
-        await agenda.cancel({name: "exposure:watcher", "data.contestPhotoId": photo.id})
-        await agenda.every("30 minutes", "exposure:watcher", {contestPhotoId: photo.id})
-    }))
 
     return await prisma.contestParticipant.findUnique({where:{id:participant.id}})
 }

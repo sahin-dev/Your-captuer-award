@@ -49,6 +49,9 @@ export const addOneVote = async (userId:string, contestId:string, photoId:string
         // Stamp the image live in this slot right now, so a later swap doesn't
         // silently move this vote onto a different photo's tally - see getVoteCount.
         const vote = await prisma.vote.create({data:{providerId:userId, contestId, photoId, photoRefId:contestPhoto.photoId, type, power:weight, weight}})
+        // Casting a vote rewards the voter's own participation - their exposure
+        // goes up, not the photo they voted for (that's driven separately by
+        // submission/trade + decay, see ContestPhoto.exposure_bonus).
         if(voterParticipant){
             await prisma.contestParticipant.update({where:{id:voterParticipant.id}, data:{exposure_bonus:{increment:2}}})
         }

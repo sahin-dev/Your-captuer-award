@@ -188,20 +188,8 @@ agenda.define("team:yearlyPayout", async () => {
     console.log(`Yearly team payout for period ${result.periodKey}: ${result.teamsRewarded} team(s) rewarded`)
 });
 
-agenda.define("exposure:watcher", async (job:Job) => {
-    const {contestPhotoId}  = job.attrs.data as {contestPhotoId:string}
-
-    const contestPhoto = await prisma.contestPhoto.findUnique({where:{id:contestPhotoId},include:{participant:true}})
-    if(!contestPhoto){
-        console.log("photo not found")
-        await agenda.cancel({name: "exposure:watcher", "data.contestPhotoId": contestPhotoId})
-        return
-    }
-
-    // Exposure bonus decays 7% (compounding) every 30 minutes this job runs.
-    const updatedBonus = Math.max(0, Math.round(contestPhoto.participant.exposure_bonus * 0.93))
-    await prisma.contestParticipant.update({where:{id:contestPhoto.participant.id}, data:{exposure_bonus:updatedBonus}})
-})
+// Photo-level exposure is now a plain expiry timestamp (ContestPhoto.exposureBoostExpiresAt),
+// checked live wherever it's read - no recurring decay job needed to maintain it.
 
 
 agenda.define("promotion:remove", async (job: Job) => {
