@@ -110,23 +110,34 @@ function sendSocketNotification(payload: NotificationPayload) {
 
 /**
  * Vote Received Notification
- * Triggered when a user receives a vote on their photo
+ * Triggered when a user receives a vote on their photo. Carries both the
+ * voter's and the contest's identity so the frontend can render each as its
+ * own clickable link within the message (profile / contest details).
  */
 export async function notifyVoteReceived(
   participantId: string,
   userId: string,
-  photoUploader: string,
+  contestId: string,
+  contestTitle: string,
+  contestPhotoId: string,
+  voterId: string,
+  voterName: string,
   totalVotes: number
 ) {
   await sendNotification({
     event: NotificationEvent.VOTE_RECEIVED,
     userId,
     title: "You Received a Vote!",
-    message: `Your photo received a vote! Total votes: ${totalVotes}`,
+    message: `${voterName} voted for your photo in "${contestTitle}"! Total votes: ${totalVotes}`,
     type: NotificationType.DEFAULT,
     data: {
       participantId,
       totalVotes,
+      contestId,
+      contestTitle,
+      contestPhotoId,
+      voterId,
+      voterName,
     },
   });
 }
@@ -177,6 +188,7 @@ export async function notifyTeamMatchStarted(
       type: NotificationType.DEFAULT,
       teamId,
       data: {
+        teamId,
         matchId,
         rivalTeamName,
         contestName,
@@ -215,6 +227,7 @@ export async function notifyTeamMatchEnded(
       type: NotificationType.VOTE,
       teamId,
       data: {
+        teamId,
         matchId,
         result,
         teamScore,
@@ -244,6 +257,7 @@ export async function notifyTeamMatchSearchTimeout(
       type: NotificationType.DEFAULT,
       teamId,
       data: {
+        teamId,
         contestName,
       },
     });
@@ -257,6 +271,7 @@ export async function notifyTeamMatchSearchTimeout(
 export async function notifyTeamInvitation(
   userId: string,
   inviterId: string,
+  teamId: string,
   teamName: string,
   invitationId: string
 ) {
@@ -269,6 +284,7 @@ export async function notifyTeamInvitation(
     data: {
       invitationId,
       inviterId,
+      teamId,
       teamName,
     },
   });
@@ -280,6 +296,7 @@ export async function notifyTeamInvitation(
  */
 export async function notifyAchievementUnlocked(
   userId: string,
+  contestId: string,
   achievementTitle: string,
   prize: string
 ) {
@@ -290,6 +307,7 @@ export async function notifyAchievementUnlocked(
     message: `You won "${achievementTitle}" and earned ${prize}!`,
     type: NotificationType.DEFAULT,
     data: {
+      contestId,
       achievementTitle,
       prize,
     },
@@ -303,6 +321,7 @@ export async function notifyAchievementUnlocked(
 export async function notifyContestPhotoUploaded(
   teamId: string,
   uploaderName: string,
+  contestId: string,
   contestName: string,
   photoCount: number
 ) {
@@ -318,6 +337,7 @@ export async function notifyContestPhotoUploaded(
       teamId,
       data: {
         uploaderName,
+        contestId,
         contestName,
         photoCount,
       },
@@ -331,6 +351,7 @@ export async function notifyContestPhotoUploaded(
  */
 export async function notifyContestEnded(
   userId: string,
+  contestId: string,
   contestName: string,
   rank: number,
   totalParticipants: number
@@ -342,6 +363,7 @@ export async function notifyContestEnded(
     message: `"${contestName}" has ended! You finished rank #${rank} out of ${totalParticipants} participant(s).`,
     type: NotificationType.DEFAULT,
     data: {
+      contestId,
       contestName,
       rank,
       totalParticipants,
@@ -355,6 +377,7 @@ export async function notifyContestEnded(
  */
 export async function notifyContestPhotoRemoved(
   userId: string,
+  contestId: string,
   contestName: string,
   reason?: string
 ) {
@@ -367,6 +390,7 @@ export async function notifyContestPhotoRemoved(
       : `Your submission to "${contestName}" was removed by an admin.`,
     type: NotificationType.DEFAULT,
     data: {
+      contestId,
       contestName,
       reason,
     },
@@ -379,6 +403,7 @@ export async function notifyContestPhotoRemoved(
  */
 export async function notifyTeamRewardGranted(
   userId: string,
+  teamId: string,
   teamName: string,
   period: "WEEKLY" | "MONTHLY" | "YEARLY",
   rank: number,
@@ -392,6 +417,7 @@ export async function notifyTeamRewardGranted(
     message: `Your team "${teamName}" finished #${rank} this ${periodLabel} and earned you ${coins} coins!`,
     type: NotificationType.DEFAULT,
     data: {
+      teamId,
       teamName,
       period,
       rank,

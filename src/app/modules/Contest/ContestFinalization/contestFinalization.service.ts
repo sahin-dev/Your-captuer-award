@@ -79,7 +79,7 @@ const getErrorMessage = (error: unknown) => error instanceof Error ? error.messa
 const humanizeEnumValue = (value: string) =>
   value.split("_").map((word) => word.charAt(0) + word.slice(1).toLowerCase()).join(" ");
 
-const notifyGrantRecipients = async (grants: { userId: string; kind: AchievementKind; category: PrizeType; levelBadge: string | null; keyReward: number; boostReward: number; swapReward: number; coinReward: number }[]) => {
+const notifyGrantRecipients = async (contestId: string, grants: { userId: string; kind: AchievementKind; category: PrizeType; levelBadge: string | null; keyReward: number; boostReward: number; swapReward: number; coinReward: number }[]) => {
   for (const grant of grants) {
     const prizeParts: string[] = [];
     if (grant.keyReward > 0) prizeParts.push(`${grant.keyReward} promote${grant.keyReward > 1 ? "s" : ""}`);
@@ -92,14 +92,15 @@ const notifyGrantRecipients = async (grants: { userId: string; kind: Achievement
       ? `${humanizeEnumValue(grant.levelBadge)} Level`
       : `${humanizeEnumValue(grant.category)} Award`;
 
-    await notificationOrchestrator.notifyAchievementUnlocked(grant.userId, achievementTitle, prizeText);
+    await notificationOrchestrator.notifyAchievementUnlocked(grant.userId, contestId, achievementTitle, prizeText);
   }
 };
 
-const notifyContestParticipants = async (contestName: string, ranking: ContestRanking) => {
+const notifyContestParticipants = async (contestId: string, contestName: string, ranking: ContestRanking) => {
   for (const photographer of ranking.photographers) {
     await notificationOrchestrator.notifyContestEnded(
       photographer.userId,
+      contestId,
       contestName,
       photographer.rank,
       ranking.photographers.length,
@@ -458,8 +459,8 @@ const finalizeContest = async (contestId: string) => {
       }),
     ]);
 
-    await notifyGrantRecipients(grants);
-    await notifyContestParticipants(contest.title, ranking);
+    await notifyGrantRecipients(contestId, grants);
+    await notifyContestParticipants(contestId, contest.title, ranking);
 
     return prisma.contestFinalization.findUnique({ where: { contestId } });
   } catch (error) {

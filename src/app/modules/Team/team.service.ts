@@ -1675,7 +1675,7 @@ const payoutPeriodRewards = async (period: "WEEKLY" | "MONTHLY" | "YEARLY") => {
         update: { coins: { increment: coins } },
       });
 
-      await notificationOrchestrator.notifyTeamRewardGranted(member.memberId, team.name, period, entry.rank, coins);
+      await notificationOrchestrator.notifyTeamRewardGranted(member.memberId, team.id, team.name, period, entry.rank, coins);
     }
   }
 

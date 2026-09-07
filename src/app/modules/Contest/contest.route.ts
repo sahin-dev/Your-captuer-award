@@ -44,6 +44,7 @@ router.put(
     contestController.selectAwardPhoto
 )
 router.get("/:contestId/user-photos", auth(), contestController.getUserRemainingPhotos)
+router.get("/:contestId/tradeable-history", auth(), contestController.getTradeableHistory)
 router.get("/:contestId/rank-photos", contestController.getContestPhotosSortedByVote)
 router.get("/:contestId/rank-photographer", contestController.getContestPhotographers)
 router.get("/:contestId/ranking", contestController.getContestRanking)

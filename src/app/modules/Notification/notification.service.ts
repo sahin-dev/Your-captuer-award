@@ -1,5 +1,4 @@
 import ApiError from "../../../errors/ApiError"
-import { getIO } from "../../../helpers/websocketSetUp"
 import { paginationHelper } from "../../../helpers/paginationHelper"
 import { NotificationType, UserRole } from "../../../prismaClient"
 import prisma from "../../../shared/prisma"
@@ -12,21 +11,13 @@ const postNotification = async (title:string, message:string, receiverId:string,
     return notification
 }
 
+// Persists the notification only - the real-time Socket.IO push is handled
+// exclusively by notificationOrchestrator.sendNotification (it needs to control
+// whether the emit goes to the user's own room or a team room), so emitting
+// here too would double-push every notification.
 const postNotificationWithPayload = async (title:string, message:string, receiverId:string, payload:Record<string, any>,type?:NotificationType,) => {
 
     const notification = await prisma.notification.create({data:{title, message, receiverId, data:payload, ...(type && { type })}})
-
-    // Send through Socket.IO if available
-    const io = getIO()
-    if(io){
-        io.to(receiverId).emit("notification", {
-            event: payload.event || "notification",
-            title,
-            message,
-            data: notification,
-            timestamp: new Date()
-        })
-    }
 
     return notification
 }

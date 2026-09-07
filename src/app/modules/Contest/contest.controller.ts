@@ -323,6 +323,20 @@ const getUserRemainingPhotos = catchAsync(async (req:Request, res:Response) => {
     })
 })
 
+const getTradeableHistory = catchAsync(async (req:Request, res:Response) => {
+    const {contestId} = req.params
+    const userId = req.user.id
+
+    const history = await contestService.getTradeableHistory(userId, contestId)
+
+    sendResponse(res, {
+        success:true,
+        statusCode:httpStatus.OK,
+        message:"tradeable photo history fetched successfully",
+        data:history
+    })
+})
+
 const tradePhoto = catchAsync(async (req:Request, res:Response) => {
 
     const {contestId, contestPhotoId, newPhotoId} = req.body
@@ -443,6 +457,7 @@ export const contestController = {
     createContest,
     getCreateOptions,
     getBannerCandidates,
+    getTradeableHistory,
     uploadPhoto,
     getUploadedPhotos,
     deleteContest,

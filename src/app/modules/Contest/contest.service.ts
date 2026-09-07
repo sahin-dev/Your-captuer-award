@@ -1324,7 +1324,7 @@ const adminDeleteContestPhoto = async (photoId:string, adminId:string, reason?:s
         console.error("Failed to send contest photo removal email:", err)
     })
 
-    await notificationOrchestrator.notifyContestPhotoRemoved(owner.id, contestTitle, reason)
+    await notificationOrchestrator.notifyContestPhotoRemoved(owner.id, contestUpload.contestId, contestTitle, reason)
 
     if(reportId){
         await reportService.markActionTaken(reportId, adminId, reason)
@@ -2038,14 +2038,74 @@ const tradePhoto = async (userId:string,contestId:string, contestPhotoId:string,
             data:{swap:{decrement:1}}
         })
 
+        // Freeze the outgoing photo's current vote count (including anything it
+        // already had banked from an earlier stint) so it can be restored later
+        // if the photographer brings it back into any slot in this contest.
+        if(currentContestPhoto.photoId){
+            const outgoingVoteCount = await voteService.getVoteCount(contestPhotoId)
+            await trx.contestPhotoTradeRecord.create({
+                data:{
+                    contestId,
+                    participantId:currentContestPhoto.participantId,
+                    photoId:currentContestPhoto.photoId,
+                    fromContestPhotoId:contestPhotoId,
+                    frozenVoteCount:outgoingVoteCount,
+                    active:true
+                }
+            })
+        }
+
+        // If the incoming photo was itself previously traded out of this contest
+        // (any slot), restore the votes it had banked instead of starting at zero.
+        const restorableRecord = await trx.contestPhotoTradeRecord.findFirst({
+            where:{participantId:currentContestPhoto.participantId, contestId, photoId:replacementPhotoId, active:true},
+            orderBy:{createdAt:"desc"}
+        })
+        if(restorableRecord){
+            await trx.contestPhotoTradeRecord.update({
+                where:{id:restorableRecord.id},
+                data:{active:false, toContestPhotoId:contestPhotoId}
+            })
+        }
+
         return trx.contestPhoto.update({
             where:{id:contestPhotoId},
-            data:{photoId:replacementPhotoId}
+            data:{
+                photoId:replacementPhotoId,
+                stintStartedAt:new Date(),
+                bankedVotes:restorableRecord?.frozenVoteCount ?? 0
+            }
         })
     })
 
     return replacedPhoto
-    
+
+}
+
+// Photos this user has previously traded out of any slot in this contest and
+// hasn't brought back yet - offered as a "swap back" option alongside a fresh
+// upload/gallery pick when starting a new trade. Bringing one of these back in
+// resumes its frozenVoteCount instead of starting at zero (see tradePhoto).
+const getTradeableHistory = async (userId:string, contestId:string) => {
+    const participant = await prisma.contestParticipant.findUnique({where:{contestId_userId:{contestId, userId}}})
+    if(!participant){
+        return []
+    }
+
+    const records = await prisma.contestPhotoTradeRecord.findMany({
+        where:{participantId:participant.id, contestId, active:true},
+        include:{photo:{select:{id:true, url:true, title:true}}},
+        orderBy:{createdAt:"desc"}
+    })
+
+    return records.map(record => ({
+        tradeRecordId:record.id,
+        photoId:record.photoId,
+        url:record.photo.url,
+        title:record.photo.title,
+        frozenVoteCount:record.frozenVoteCount,
+        tradedOutAt:record.createdAt
+    }))
 }
 
 const replaceContestPhoto = async (userId:string, contestId:string, contestPhotoId:string,userPhotoId:string, file:Express.Multer.File) => {
@@ -2415,6 +2475,7 @@ export const contestService = {
     materializeRecurringOccurrence,
     updateContest,
     getBannerCandidates,
+    getTradeableHistory,
     joinContest,
     getContestById,
     getPublicContests,

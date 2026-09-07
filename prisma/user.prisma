@@ -82,6 +82,7 @@ model UserPhoto {
 
   user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   contestUpload ContestPhoto[]
+  tradeRecords  ContestPhotoTradeRecord[]
   likes         Like[]
 
   createdAt     DateTime @default(now())

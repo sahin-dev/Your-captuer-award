@@ -57,10 +57,15 @@ export const addOneVote = async (userId:string, contestId:string, photoId:string
         await levelService.evaluateAndUpdateUserLevel(contestPhoto.participant.userId)
 
         const totalVotes = await getVoteCount(photoId)
+        const voterName = user.fullName || [user.firstName, user.lastName].filter(Boolean).join(" ") || user.username || "Someone"
         await notificationOrchestrator.notifyVoteReceived(
             contestPhoto.participantId,
             contestPhoto.participant.userId,
+            contestId,
+            contest.title,
             contestPhoto.id,
+            userId,
+            voterName,
             totalVotes,
         )
 
@@ -97,19 +102,27 @@ export const addVotes = async (userId:string,contestId:string, photoIds:string[]
 }
 
 
-// Counts only votes cast while the photo currently in this contest slot was live,
-// so swapping to a different photo and back restores that photo's own vote count
-// instead of inheriting whatever was voted on in between. A null photoRefId is a
-// legacy (pre-swap-tracking) vote and is treated as belonging to whatever photo
-// is live now - see backfill:vote-photo-ref for reconciling those explicitly.
+// Counts only votes cast while the photo currently in this contest slot was live
+// AND since it started this particular stint in the slot (stintStartedAt) - a
+// trade always starts the new photo's live count at zero (or bankedVotes, if
+// it's a photo being restored from an earlier stint - see
+// ContestPhotoTradeRecord) instead of inheriting whatever was voted on before
+// the trade, even if the exact same photo is later re-selected into this same
+// slot. A null photoRefId is a legacy (pre-swap-tracking) vote and is treated
+// as belonging to whatever photo is live now.
 export const getVoteCount = async (photoId:string)=>{
-    const contestPhoto = await prisma.contestPhoto.findUnique({where:{id:photoId}, select:{photoId:true}})
+    const contestPhoto = await prisma.contestPhoto.findUnique({
+        where:{id:photoId},
+        select:{photoId:true, bankedVotes:true, stintStartedAt:true, createdAt:true}
+    })
+    const stintStartedAt = contestPhoto?.stintStartedAt ?? contestPhoto?.createdAt ?? new Date(0)
     const { count } = await getVoteWeightStats({
         photoId,
+        createdAt:{gte:stintStartedAt},
         OR:[{photoRefId:contestPhoto?.photoId ?? null}, {photoRefId:null}]
     })
 
-    return count
+    return count + (contestPhoto?.bankedVotes ?? 0)
 }
 
 const getUserPhotoVoteCount = async (userPhotoId:string) => {

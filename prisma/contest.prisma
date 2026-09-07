@@ -40,6 +40,7 @@ model Contest {
   contestAwards ContestAward[]
   levelAwards ContestLevelAward[]
   achievements ContestAchievement[]
+  photoTradeRecords ContestPhotoTradeRecord[]
   entryFeeTransactions ContestEntryFeeTransaction[]
   teamMatch    TeamMatch[]
   teamMatchHistory TeamMatchHistory[]
@@ -198,12 +199,24 @@ model ContestPhoto {
   promoted     Boolean @default(false)
   promotionExpiresAt DateTime?
   initialVotes  Int  @default(0)
+  // Votes carried over from a previous stint of the currently-assigned photo in
+  // this contest (see ContestPhotoTradeRecord) - added on top of live votes.
+  bankedVotes    Int?      @default(0)
+  // When the currently-assigned photo started occupying this slot - live vote
+  // counting only considers votes cast on/after this moment, so a trade always
+  // starts the new photo at bankedVotes (0 for a fresh photo) instead of
+  // inheriting whatever was voted on before the trade. Null on rows created
+  // before this field existed - treated as this row's createdAt (i.e. every
+  // vote ever cast on the slot counts, matching the old untraded behavior).
+  stintStartedAt DateTime?
   // contest   Contest @relation(fields: [contestId],references: [id])
   participant  ContestParticipant   @relation(fields: [participantId], references: [id], onDelete: Cascade)
   votes        Vote[]
   photo        UserPhoto?            @relation(fields: [photoId], references: [id], onDelete: SetNull)
   comments     Comment[]
   achievements ContestAchievement[]
+  tradeRecordsOut ContestPhotoTradeRecord[] @relation("TradeRecordFromSlot")
+  tradeRecordsIn  ContestPhotoTradeRecord[] @relation("TradeRecordToSlot")
   createdAt    DateTime             @default(now())
   updatedAt    DateTime             @updatedAt
 
@@ -214,6 +227,34 @@ model ContestPhoto {
 
 }
 
+// Ledger of photos swapped out of a contest entry. Each row freezes the vote
+// count a photo had at the moment it was traded away, so bringing it back later
+// (into any slot in the same contest) can resume from that count instead of
+// starting cold. `active:true` means it's still "benched" and available to
+// restore; a restore flips it to `active:false` and stamps `toContestPhotoId`.
+model ContestPhotoTradeRecord {
+  id                  String  @id @default(auto()) @map("_id") @db.ObjectId
+  contestId           String  @db.ObjectId
+  participantId       String  @db.ObjectId
+  photoId             String  @db.ObjectId
+  fromContestPhotoId  String  @db.ObjectId
+  toContestPhotoId    String? @db.ObjectId
+  frozenVoteCount     Int     @default(0)
+  active              Boolean @default(true)
+
+  contest         Contest            @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  participant     ContestParticipant @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  photo           UserPhoto          @relation(fields: [photoId], references: [id], onDelete: Cascade)
+  fromContestPhoto ContestPhoto      @relation("TradeRecordFromSlot", fields: [fromContestPhotoId], references: [id], onDelete: Cascade)
+  toContestPhoto   ContestPhoto?     @relation("TradeRecordToSlot", fields: [toContestPhotoId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([participantId, contestId, active])
+  @@index([contestId, photoId, active])
+  @@map("contest_photo_trade_records")
+}
 
 model ContestParticipant {
   id        String                   @id @default(auto()) @map("_id") @db.ObjectId
@@ -230,6 +271,7 @@ model ContestParticipant {
   member                TeamMember?                @relation(fields: [memberId], references: [id], onDelete: SetNull)
   photos             ContestPhoto[]
   contestAchievement ContestAchievement[]
+  photoTradeRecords  ContestPhotoTradeRecord[]
   
 
   createdAt DateTime @default(now())

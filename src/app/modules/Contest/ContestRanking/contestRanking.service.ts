@@ -91,6 +91,8 @@ const buildContestRanking = async (contestId: string): Promise<ContestRanking> =
             photoId: true,
             originalPhotoId: true,
             initialVotes: true,
+            bankedVotes: true,
+            stintStartedAt: true,
             createdAt: true,
           },
         },
@@ -98,18 +100,25 @@ const buildContestRanking = async (contestId: string): Promise<ContestRanking> =
     }),
     prisma.vote.findMany({
       where: { contestId },
-      select: { photoId: true, photoRefId: true, weight: true, power: true },
+      select: { photoId: true, photoRefId: true, weight: true, power: true, createdAt: true },
     }),
     contestRuleEngine.getLevelRequirements(contestId),
   ]);
 
-  // The image currently occupying each contest-photo slot - a vote only counts
-  // toward a photo's score if it was cast while that same image was live there,
-  // so swapping away and back restores the photo's own count instead of
-  // inheriting whatever was voted on in between (see Vote.photoRefId).
+  // The image currently occupying each contest-photo slot, and when its current
+  // stint started - a vote only counts toward a photo's score if it was cast
+  // while that same image was live there AND on/after the stint start, so a
+  // trade always starts the new photo's live count at zero even if the exact
+  // same photo is later re-selected into this same slot. Any votes from an
+  // earlier stint are instead captured in bankedVotes (see
+  // ContestPhotoTradeRecord / contest.service.ts tradePhoto).
   const currentPhotoIdBySlot = new Map<string, string | null>();
+  const stintStartedAtBySlot = new Map<string, Date>();
   participants.forEach((participant) => {
-    participant.photos.forEach((photo) => currentPhotoIdBySlot.set(photo.id, photo.photoId));
+    participant.photos.forEach((photo) => {
+      currentPhotoIdBySlot.set(photo.id, photo.photoId);
+      stintStartedAtBySlot.set(photo.id, photo.stintStartedAt ?? photo.createdAt);
+    });
   });
 
   const voteScoreByPhoto = new Map<string, number>();
@@ -119,6 +128,10 @@ const buildContestRanking = async (contestId: string): Promise<ContestRanking> =
     // A null photoRefId is a legacy vote cast before swap-tracking existed -
     // treat it as belonging to whichever photo is live now.
     if (vote.photoRefId !== null && vote.photoRefId !== liveImage) {
+      return;
+    }
+    const stintStartedAt = stintStartedAtBySlot.get(vote.photoId);
+    if (stintStartedAt && vote.createdAt < stintStartedAt) {
       return;
     }
     voteScoreByPhoto.set(vote.photoId, (voteScoreByPhoto.get(vote.photoId) || 0) + getVoteWeight(vote));
@@ -131,15 +144,16 @@ const buildContestRanking = async (contestId: string): Promise<ContestRanking> =
       // with - it shouldn't follow a later swapped-in photo.
       const stillOriginalPhoto = !photo.originalPhotoId || photo.originalPhotoId === photo.photoId;
       const initialVotes = stillOriginalPhoto ? (photo.initialVotes || 0) : 0;
+      const bankedVotes = photo.bankedVotes || 0;
 
       return {
         photoId: photo.id,
         userPhotoId: photo.photoId,
         participantId: participant.id,
         userId: participant.userId,
-        score: (voteScoreByPhoto.get(photo.id) || 0) + initialVotes,
+        score: (voteScoreByPhoto.get(photo.id) || 0) + initialVotes + bankedVotes,
         // Raw vote count for display, independent of each voter's weight.
-        voteCount: (voteCountByPhoto.get(photo.id) || 0) + initialVotes,
+        voteCount: (voteCountByPhoto.get(photo.id) || 0) + initialVotes + bankedVotes,
         createdAt: photo.createdAt,
         tieBreakKey: photo.id,
       };
