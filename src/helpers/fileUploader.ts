@@ -48,22 +48,45 @@ const filesystemStorage = multer.diskStorage({
 // Multer configuration using memoryStorage (for DigitalOcean & Cloudinary)
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
+
+// Photos submitted from a user's device (contest uploads, profile photo pool, trade-ins)
+// are capped at 25MB.
+const MAX_PHOTO_UPLOAD_SIZE = 25 * 1024 * 1024;
+
+const photoImageFileFilter: multer.Options["fileFilter"] = (_req, file, callback) => {
+  const allowed = supportedContestImageMimeTypes.includes(
+    file.mimetype.toLowerCase() as typeof supportedContestImageMimeTypes[number]
+  );
+  if (allowed) {
+    callback(null, true);
+    return;
+  }
+  callback(new ApiError(httpStatus.UNSUPPORTED_MEDIA_TYPE, "Unsupported contest image format"));
+};
+
 const contestImageUpload = multer({
   storage,
   limits: {
     files: 1,
-    fileSize: 100 * 1024 * 1024,
+    fileSize: MAX_PHOTO_UPLOAD_SIZE,
   },
-  fileFilter: (_req, file, callback) => {
-    const allowed = supportedContestImageMimeTypes.includes(
-      file.mimetype.toLowerCase() as typeof supportedContestImageMimeTypes[number]
-    );
-    if (allowed) {
-      callback(null, true);
-      return;
-    }
-    callback(new ApiError(httpStatus.UNSUPPORTED_MEDIA_TYPE, "Unsupported contest image format"));
+  fileFilter: photoImageFileFilter,
+});
+const profilePhotoUpload = multer({
+  storage,
+  limits: {
+    files: 1,
+    fileSize: MAX_PHOTO_UPLOAD_SIZE,
   },
+  fileFilter: photoImageFileFilter,
+});
+const tradePhotoUpload = multer({
+  storage,
+  limits: {
+    files: 1,
+    fileSize: MAX_PHOTO_UPLOAD_SIZE,
+  },
+  fileFilter: photoImageFileFilter,
 });
 const contestBannerUpload = multer({
   storage,
@@ -105,7 +128,7 @@ const uploadCover = upload.single("cover")
 const uploadBadge = upload.single("badge")
 const contestBanner = contestBannerUpload.single("banner");
 const userPhoto = contestImageUpload.single('photo')
-const tradePhoto = upload.single("file")
+const tradePhoto = tradePhotoUpload.single("file")
 
 // Upload multiple images
 const uploadMultipleImage = upload.fields([{ name: "images", maxCount: 15 }]);
@@ -117,7 +140,7 @@ const uploadTeamMatchPhotos = upload.array('files', 4);
 // Filesystem storage single file uploads
 const filesystemUploadBadge = filesystemUpload.single("badge");
 const filesystemUploadContestBanner = filesystemUpload.single("banner");
-const filesystemUploadUserPhoto = filesystemUpload.single('photo');
+const filesystemUploadUserPhoto = profilePhotoUpload.single('photo');
 const filesystemUploadTradePhoto = filesystemUpload.single("file");
 const filesystemUploadAvatar = filesystemUpload.single("avatar");
 const filesystemUploadCover = filesystemUpload.single("cover");
