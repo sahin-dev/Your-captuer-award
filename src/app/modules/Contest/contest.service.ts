@@ -1230,7 +1230,7 @@ const getContestsByStatus = async (userId:string,status: ContestStatus) => {
 
     const contests = await prisma.contest.findMany({
         where:{status, ...notDeleted},
-        include: { creator: contestListCreatorInclude },
+        include: { creator: contestListCreatorInclude, bannerUploader: {select:{id:true, fullName:true}} },
         orderBy:{startDate:"desc"}
     });
 
@@ -1448,6 +1448,7 @@ const getClosedContestsWithWinner = async () => {
         where: { status: {in:completedContestStatuses} },
         include: {
             creator: true,
+            bannerUploader: {select:{id:true, fullName:true}},
             participants: {
                 include: {
                     user: true,
