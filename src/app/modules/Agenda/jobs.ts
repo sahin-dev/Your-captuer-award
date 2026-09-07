@@ -112,10 +112,10 @@ agenda.define("contest:checkRecurring", async ()=>{
 });
 
 
-// Materialization logic (including the lead-time gate and the immediate same-day
-// bypass) now lives in contestService.materializeRecurringOccurrence, shared with
-// createRecurringContest so a same-day first occurrence appears right away instead
-// of waiting on this cron.
+// Materialization logic (including the active-instance-progress gate and the forced
+// immediate materialization of the first occurrence) now lives in
+// contestService.materializeRecurringOccurrence, shared with createRecurringContest
+// so the first occurrence appears right away instead of waiting on this cron.
 
 //contest closed if the contest endtime has passed.
 //closed status means contest is ended
@@ -181,6 +181,11 @@ agenda.define("team:weeklyPayout", async () => {
 agenda.define("team:monthlyPayout", async () => {
     const result = await teamService.payoutPeriodRewards("MONTHLY")
     console.log(`Monthly team payout for period ${result.periodKey}: ${result.teamsRewarded} team(s) rewarded`)
+});
+
+agenda.define("team:yearlyPayout", async () => {
+    const result = await teamService.payoutPeriodRewards("YEARLY")
+    console.log(`Yearly team payout for period ${result.periodKey}: ${result.teamsRewarded} team(s) rewarded`)
 });
 
 agenda.define("exposure:watcher", async (job:Job) => {

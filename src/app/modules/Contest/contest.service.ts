@@ -108,6 +108,23 @@ const shuffleWithSeed = <T>(items:T[], seed:string) => {
 const shouldUseDefaultAwards = (body:contestData) =>
     body.prizeIds === undefined && body.prizes === undefined
 
+// When the admin picks an existing user-submitted photo as the banner instead of
+// uploading a fresh image, resolve its URL and credit the uploading user so the
+// website can show attribution on the contest card.
+const resolveBannerFromUserPhoto = async (userPhotoId?:string) => {
+    if(!userPhotoId){
+        return null
+    }
+    const userPhoto = await prisma.userPhoto.findUnique({
+        where:{id:userPhotoId},
+        select:{url:true, userId:true}
+    })
+    if(!userPhoto){
+        throw new ApiError(httpstatus.NOT_FOUND, "Selected user photo not found")
+    }
+    return {banner:userPhoto.url, bannerUploaderId:userPhoto.userId}
+}
+
 const chargeContestEntryFee = async (
     tx:Prisma.TransactionClient,
     contest:{id:string; entryFeeCoins:number},
@@ -154,6 +171,46 @@ const getContestCreateOptions = async () => {
         rules:ruleDefinitions,
         prizes:prizeDefinitions,
         supportedImageMimeTypes:supportedContestImageMimeTypes
+    }
+}
+
+// Lists user-submitted photos for the admin banner picker (dashboard: "choose from
+// submissions" instead of uploading a fresh image).
+const getBannerCandidates = async (page:number = 1, limit:number = 20, search?:string) => {
+    const {skip, limit:paginationLimit, page:currentPage} = paginationHelper.calculatePagination({page, limit})
+    const where:Prisma.UserPhotoWhereInput = {
+        adult:false,
+        ...(search && {
+            OR:[
+                {title:{contains:search, mode:"insensitive" as const}},
+                {user:{fullName:{contains:search, mode:"insensitive" as const}}}
+            ]
+        })
+    }
+
+    const [photos, total] = await Promise.all([
+        prisma.userPhoto.findMany({
+            where,
+            select:{
+                id:true,
+                url:true,
+                title:true,
+                createdAt:true,
+                user:{select:{id:true, fullName:true, username:true, avatar:true}}
+            },
+            skip,
+            take:paginationLimit,
+            orderBy:{createdAt:"desc"}
+        }),
+        prisma.userPhoto.count({where})
+    ])
+
+    return {
+        photos,
+        total,
+        page:currentPage,
+        limit:paginationLimit,
+        meta:paginationHelper.getPaginationMetaData(currentPage, paginationLimit, total)
     }
 }
 
@@ -214,7 +271,8 @@ const createContest = async (creatorId: string, body: contestData, banner:Expres
        return createRecurringContest(creatorId, body, banner)
     }
 
-    const bannerUrl = banner
+    const bannerFromUserPhoto = await resolveBannerFromUserPhoto(body.bannerUserPhotoId)
+    const bannerUrl = !bannerFromUserPhoto && banner
         ? (await fileUploader.uploadToDigitalOcean(banner)).Location
         : null
 
@@ -238,7 +296,9 @@ const createContest = async (creatorId: string, body: contestData, banner:Expres
         maxPrize:body.isMoneyContest ? body.maxPrize : 0,
         entryFeeCoins:body.coinRequirement === false ? 0 : (body.entryFeeCoins || 0),
         maxUpload:contestRuleService.getSubmissionLimitFromRules(normalizedRules),
-        ...(bannerUrl && {banner:bannerUrl})
+        ...(bannerFromUserPhoto
+            ? {banner:bannerFromUserPhoto.banner, bannerUploaderId:bannerFromUserPhoto.bannerUploaderId}
+            : (bannerUrl && {banner:bannerUrl}))
     }
     // If contest is money contest, add money contest data like max prize and min prize for the paerticipants
     // If isMoneyContest is not provided, it will default to false
@@ -275,25 +335,15 @@ const createContest = async (creatorId: string, body: contestData, banner:Expres
 
 //manage recurring contest separately
 
-const isSameCalendarDay = (a:Date, b:Date, timeZone?:string | null) => {
-    const fmt = new Intl.DateTimeFormat("en-CA", {
-        timeZone: timeZone || "UTC",
-        year:"numeric",
-        month:"2-digit",
-        day:"2-digit"
-    })
-    return fmt.format(a) === fmt.format(b)
-}
-
 // Materializes a recurring contest template's next occurrence into a real Contest row.
-// Normally gated by a lead-time window (20% of the gap since the previous occurrence,
-// capped at 24h) so instances don't appear too far ahead of time - pass force:true to
-// bypass that gate (used when the first occurrence starts the same day it's created,
-// so the admin sees an Upcoming contest immediately instead of waiting on the cron
-// window). Idempotent either way via the RecurringContestOccurrence claim below, so
-// calling this and then letting the normal cron run too is always safe.
+// Normally gated on the *currently active* instance's own progress: the next occurrence
+// only appears (as Upcoming) once the active instance has burned through 80% of its
+// runtime (i.e. 20% remains before it closes) - pass force:true to bypass that gate
+// (used for the very first occurrence, which materializes immediately on creation so
+// the admin sees an Upcoming contest right away instead of waiting on the cron window).
+// Idempotent either way via the RecurringContestOccurrence claim below, so calling this
+// and then letting the normal cron run too is always safe.
 const materializeRecurringOccurrence = async (rContest:RecurringContest, options?:{force?:boolean}) => {
-    const previousOccurrence = rContest.recurring.previousOccurrence || rContest.createdAt;
     const nextOccurrence = rContest.recurring.nextOccurrence;
     const generatedOccurrences = rContest.recurring.generatedOccurrences || 0
     if(
@@ -308,13 +358,26 @@ const materializeRecurringOccurrence = async (rContest:RecurringContest, options
     }
 
     if(!options?.force){
-        const totalTimeSpan = nextOccurrence.getTime() - previousOccurrence.getTime();
-        const generationLeadTime = Math.min(Math.max(totalTimeSpan * 0.2, 0), 24 * 60 * 60 * 1000)
-        const generationAt = nextOccurrence.getTime() - generationLeadTime
+        const previousInstance = rContest.lastGeneratedContestId
+            ? await prisma.contest.findUnique({
+                where:{id:rContest.lastGeneratedContestId},
+                select:{startDate:true, endDate:true, status:true}
+            })
+            : null
 
-        if(Date.now() < generationAt){
+        if(previousInstance?.status === ContestStatus.UPCOMING){
+            // Previous occurrence hasn't even started yet - nothing to do.
             return
         }
+        if(previousInstance?.status === ContestStatus.ACTIVE){
+            const duration = previousInstance.endDate.getTime() - previousInstance.startDate.getTime()
+            const readyAt = previousInstance.startDate.getTime() + duration * 0.8
+            if(Date.now() < readyAt){
+                return
+            }
+        }
+        // Any other status (CLOSED/COMPLETED/FINALIZING/FINALIZATION_FAILED), or no
+        // previous instance at all, means it's already past due - proceed below.
     }
 
     const occurrenceKey = `${rContest.id}:${nextOccurrence.toISOString()}`
@@ -364,6 +427,7 @@ const materializeRecurringOccurrence = async (rContest:RecurringContest, options
                 data:{
                     title:rContest.title,
                     banner:rContest.banner,
+                    bannerUploaderId:rContest.bannerUploaderId,
                     isMoneyContest:rContest.isMoneyContest,
                     maxPrize:rContest.maxPrize,
                     minPrize:rContest.minPrize,
@@ -509,10 +573,12 @@ const createRecurringContest  =  async (creatorId: string, body: contestData, ba
     }
 
     contestData.rules = normalizedRules
-    let bannerUrl:string
-    if (banner){
-        bannerUrl = (await fileUploader.uploadToDigitalOcean(banner)).Location;
-        contestData.banner = bannerUrl
+    const bannerFromUserPhoto = await resolveBannerFromUserPhoto(body.bannerUserPhotoId)
+    if(bannerFromUserPhoto){
+        contestData.banner = bannerFromUserPhoto.banner
+        contestData.bannerUploaderId = bannerFromUserPhoto.bannerUploaderId
+    }else if(banner){
+        contestData.banner = (await fileUploader.uploadToDigitalOcean(banner)).Location
     }
 
     contestData.recurring ={set: {
@@ -542,16 +608,13 @@ const createRecurringContest  =  async (creatorId: string, body: contestData, ba
         return recurringContest
     })
 
-    // If the first occurrence starts today, don't make the admin wait on the
-    // cron's lead-time window - materialize it right away so it shows up as
-    // Upcoming (or Active) immediately. Every later occurrence still follows
-    // the normal cron-driven schedule.
-    if(isSameCalendarDay(startDate, new Date(), timezone)){
-        try{
-            await materializeRecurringOccurrence(created, {force:true})
-        }catch(error){
-            console.error(`Failed to immediately materialize first occurrence for recurring contest ${created.id}`, error)
-        }
+    // Always materialize the first occurrence immediately, regardless of how far out
+    // startDate is, so the admin sees it as Upcoming (or Active) right away. Every
+    // later occurrence follows the normal cron-driven, active-instance-relative schedule.
+    try{
+        await materializeRecurringOccurrence(created, {force:true})
+    }catch(error){
+        console.error(`Failed to immediately materialize first occurrence for recurring contest ${created.id}`, error)
     }
 
     return {...created, prizes:awardRows, levelAwards}
@@ -599,13 +662,20 @@ const updateContest = async (contestId:string, contestData:updateContestData, ba
         throw new ApiError(httpstatus.BAD_REQUEST, "A positive entryFeeCoins value is required when coinRequirement is enabled")
     }
 
-    const { prizeIds, prizes, levelAwards, rules, coinRequirement, ...updatePayload } = contestData as any
+    const { prizeIds, prizes, levelAwards, rules, coinRequirement, bannerUserPhotoId, ...updatePayload } = contestData as any
 
+    const bannerFromUserPhoto = await resolveBannerFromUserPhoto(bannerUserPhotoId)
     const bannerUrl = await (
-        banner ? fileUploader.uploadToDigitalOcean(banner).then(upload => upload.Location) : Promise.resolve(undefined)
+        !bannerFromUserPhoto && banner
+            ? fileUploader.uploadToDigitalOcean(banner).then(upload => upload.Location)
+            : Promise.resolve(undefined)
     )
-    if(bannerUrl){
+    if(bannerFromUserPhoto){
+        updatePayload.banner = bannerFromUserPhoto.banner
+        updatePayload.bannerUploaderId = bannerFromUserPhoto.bannerUploaderId
+    }else if(bannerUrl){
         updatePayload.banner = bannerUrl
+        updatePayload.bannerUploaderId = null
     }
 
     const normalizedRules = rules !== undefined
@@ -753,7 +823,8 @@ const getContestByUserId = async ( userId:string, contestId: string) => {
     const contest = await prisma.contest.findUnique({
         where: { id: contestId },
         include: {
-            creator: {omit:{password:true, accessToken:true}}
+            creator: {omit:{password:true, accessToken:true}},
+            bannerUploader: {select:{id:true, fullName:true}}
         }
     });
     if(!contest){
@@ -792,7 +863,8 @@ const getContestById = async ( contestId: string) => {
     const contest = await prisma.contest.findUnique({
         where: { id: contestId },
         include: {
-            creator: {omit:{password:true, accessToken:true}}
+            creator: {omit:{password:true, accessToken:true}},
+            bannerUploader: {select:{id:true, fullName:true}}
         }
     });
     if(!contest){
@@ -841,7 +913,7 @@ const getAllContests = async (
     const [contests, total] = await Promise.all([
         prisma.contest.findMany({    
             where,
-            include: { creator: {omit:{password:true, accessToken:true}}},
+            include: { creator: {omit:{password:true, accessToken:true}}, bannerUploader: {select:{id:true, fullName:true}}},
             skip,
             take:paginationLimit,
             orderBy:[{startDate:"desc"}, {id:"desc"}]
@@ -876,7 +948,7 @@ const getPublicContests = async (
     const [contests, total] = await Promise.all([
         prisma.contest.findMany({
             where,
-            include:{creator:{omit:{password:true, accessToken:true}}},
+            include:{creator:{omit:{password:true, accessToken:true}}, bannerUploader:{select:{id:true, fullName:true}}},
             skip,
             take:paginationLimit,
             orderBy:[{startDate:"desc"}, {id:"desc"}]
@@ -1137,7 +1209,7 @@ const getContestsByStatus = async (userId:string,status: ContestStatus) => {
 
         const contests = await prisma.contest.findMany({
             where:{status, participants:{none:{userId}}, ...notDeleted},
-            include: { creator: contestListCreatorInclude },
+            include: { creator: contestListCreatorInclude, bannerUploader: {select:{id:true, fullName:true}} },
             orderBy:{startDate:"desc"}
         });
 
@@ -1148,7 +1220,7 @@ const getContestsByStatus = async (userId:string,status: ContestStatus) => {
 
         const contests = await prisma.contest.findMany({
             where:{status: ContestStatus.COMPLETED, participants:{none:{userId}}, ...notDeleted},
-            include: { creator: contestListCreatorInclude },
+            include: { creator: contestListCreatorInclude, bannerUploader: {select:{id:true, fullName:true}} },
             orderBy:{startDate:"desc"}
         });
 
@@ -1273,7 +1345,7 @@ const getMyActiveContests = async (userId:string) => {
 
     const contests = await prisma.contest.findMany({
         where:{status:ContestStatus.ACTIVE, participants:{some:{userId}}},
-        include: { creator: {select:{id:true, avatar:true,fullName:true,cover:true, firstName:true, lastName:true}},}
+        include: { creator: {select:{id:true, avatar:true,fullName:true,cover:true, firstName:true, lastName:true}}, bannerUploader: {select:{id:true, fullName:true}}}
     });
 
     const enrichedContests = await enrichContestListDetails(contests)
@@ -1292,7 +1364,7 @@ const getMyActiveContests = async (userId:string) => {
 const getUpcomingContest = async () => {
     const contests = await prisma.contest.findMany({
         where: { status: ContestStatus.UPCOMING },
-        include: { creator: {select:{id:true, avatar:true,fullName:true,cover:true, firstName:true, lastName:true}}}
+        include: { creator: {select:{id:true, avatar:true,fullName:true,cover:true, firstName:true, lastName:true}}, bannerUploader: {select:{id:true, fullName:true}}}
     });
     return contests;
 };
@@ -2341,6 +2413,7 @@ export const contestService = {
     createContest,
     materializeRecurringOccurrence,
     updateContest,
+    getBannerCandidates,
     joinContest,
     getContestById,
     getPublicContests,

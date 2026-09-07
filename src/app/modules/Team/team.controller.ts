@@ -113,6 +113,20 @@ const joinTeam = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const switchTeam = catchAsync(async (req: Request, res: Response) => {
+  const { teamId } = req.params;
+  const userId = req.user.id;
+
+  const result = await teamService.switchTeam(userId, teamId);
+
+  sendResponse(res, {
+    statusCode: httpstatus.CREATED,
+    success: true,
+    message: "switched team successfully",
+    data: result,
+  });
+});
+
 const getAllTeamMembers = catchAsync(async (req: Request, res: Response) => {
   const { teamId } = req.params;
   const { page, limit } = req.query;
@@ -582,6 +596,7 @@ export const teamController = {
   updateTeam,
   deleteTeam,
   joinTeam,
+  switchTeam,
   getAllTeamMembers,
   getMyTeamDetails,
   inviteUser,

@@ -375,20 +375,21 @@ export async function notifyContestPhotoRemoved(
 
 /**
  * Team Reward Granted Notification
- * Sent to each member when their team earns a weekly/monthly leaderboard payout
+ * Sent to each member when their team earns a weekly/monthly/yearly leaderboard payout
  */
 export async function notifyTeamRewardGranted(
   userId: string,
   teamName: string,
-  period: "WEEKLY" | "MONTHLY",
+  period: "WEEKLY" | "MONTHLY" | "YEARLY",
   rank: number,
   coins: number
 ) {
+  const periodLabel = period === "WEEKLY" ? "week" : period === "MONTHLY" ? "month" : "year";
   await sendNotification({
     event: NotificationEvent.TEAM_REWARD_GRANTED,
     userId,
     title: "Team Reward Earned! 🏆",
-    message: `Your team "${teamName}" finished #${rank} this ${period === "WEEKLY" ? "week" : "month"} and earned you ${coins} coins!`,
+    message: `Your team "${teamName}" finished #${rank} this ${periodLabel} and earned you ${coins} coins!`,
     type: NotificationType.DEFAULT,
     data: {
       teamName,

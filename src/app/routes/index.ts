@@ -22,6 +22,7 @@ import { recurringContestRoutes } from "../modules/RecurringContest/recurringCon
 import { supportRoutes } from "../modules/Support/support.route";
 import { statsRoutes } from "../modules/Stats/stats.route";
 import { reportRoutes } from "../modules/Report/report.route";
+import { socialLinkRoutes } from "../modules/SocialLink/socialLink.route";
 
 
 
@@ -50,7 +51,8 @@ const moduleRoutes = [
     {path:"/recurring-contests", route:recurringContestRoutes},
     {path:"/support", route:supportRoutes},
     {path:"/stats", route:statsRoutes},
-    {path:"/reports", route:reportRoutes}
+    {path:"/reports", route:reportRoutes},
+    {path:"/social-links", route:socialLinkRoutes}
 
 ]
 

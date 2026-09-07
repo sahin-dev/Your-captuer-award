@@ -1,0 +1,25 @@
+model SocialLink {
+  id        String         @id @default(auto()) @map("_id") @db.ObjectId
+  platform  SocialPlatform
+  url       String
+  order     Int            @default(0)
+  isActive  Boolean        @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("social_links")
+}
+
+enum SocialPlatform {
+  FACEBOOK
+  INSTAGRAM
+  X
+  YOUTUBE
+  TIKTOK
+  LINKEDIN
+  PINTEREST
+  WHATSAPP
+  EMAIL
+  WEBSITE
+}

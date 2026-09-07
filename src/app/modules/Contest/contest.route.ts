@@ -14,6 +14,7 @@ const router = Router()
 router.route("/").post(auth(UserRole.ADMIN), fileUploader.contestBanner, validateRequest(createContestSchema), contestController.createContest).get(auth(), contestController.getContestsByStatus)
 router.get("/all", auth(UserRole.ADMIN), contestController.getAllContests)
 router.get("/create-options", auth(UserRole.ADMIN), contestController.getCreateOptions)
+router.get("/banner-candidates", auth(UserRole.ADMIN), contestController.getBannerCandidates)
 
 router.get("/my-active-contests", auth(), contestController.getMyActiveContests)
 router.get("/ucontests", contestController.getPublicContests)

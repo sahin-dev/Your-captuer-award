@@ -36,6 +36,18 @@ const getCreateOptions = catchAsync(async (_req:Request, res:Response) => {
     })
 })
 
+const getBannerCandidates = catchAsync(async (req:Request, res:Response) => {
+    const {page, limit, search} = req.query as {page?:string, limit?:string, search?:string}
+    const candidates = await contestService.getBannerCandidates(Number(page) || 1, Number(limit) || 20, search)
+
+    sendResponse(res, {
+        statusCode:httpStatus.OK,
+        success:true,
+        message:"Banner candidates fetched successfully",
+        data:candidates
+    })
+})
+
 
 const getAllContests = catchAsync(async (req:any, res:Response)=>{
 
@@ -430,6 +442,7 @@ const getContestPrizes = catchAsync(async (req:Request, res:Response) => {
 export const contestController = {
     createContest,
     getCreateOptions,
+    getBannerCandidates,
     uploadPhoto,
     getUploadedPhotos,
     deleteContest,

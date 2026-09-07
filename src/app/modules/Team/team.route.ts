@@ -32,6 +32,7 @@ router.get(
 router.post("/join-by-invitation", auth(), teamController.joinByInvitation);
 router.post("/reject-invitation", auth(), teamController.rejectInvitation);
 router.post("/join/:teamId", auth(), teamController.joinTeam);
+router.post("/switch/:teamId", auth(), teamController.switchTeam);
 
 // NEW: Role Management Routes
 /**

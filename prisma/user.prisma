@@ -32,6 +32,8 @@ model User {
   joinedTeam         TeamMember?
   sentJoinRequests   TeamJoinRequest[] @relation("sentJoinRequests")
   createdContests    Contest[]
+  bannerCreditedContests Contest[] @relation("ContestBannerUploader")
+  bannerCreditedRecurringContests RecurringContest[] @relation("RecurringContestBannerUploader")
   commentProvides    Comment[]            @relation("provider")
   followers          Follow[]             @relation(name: "follower")
   followings         Follow[]             @relation(name: "following")

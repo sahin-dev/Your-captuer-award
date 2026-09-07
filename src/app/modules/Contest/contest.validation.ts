@@ -49,6 +49,10 @@ const richTextField = (label: string, maxLength: number) =>
 
 const optionalIsoDate = z.string().datetime({ offset: true }).optional();
 
+const bannerUserPhotoIdField = z.string().trim()
+    .refine(checkObjectId, { message: "Invalid user photo ID" })
+    .optional();
+
 const recurrenceSchema = z.object({
     type: z.nativeEnum(RecurringType).optional(),
     timezone: z.string().trim().min(1).max(100).default("UTC"),
@@ -80,6 +84,9 @@ const createContestObjectSchema = z.object({
 
     recurring: z.preprocess(parseBooleanField, z.boolean()).optional().default(false),
     recurrence: z.preprocess(parseJsonValue, recurrenceSchema).optional(),
+    // When set, the banner is sourced from this existing UserPhoto instead of the
+    // uploaded file - the two are mutually exclusive at the service layer.
+    bannerUserPhotoId: bannerUserPhotoIdField,
 
     prizeIds: z.preprocess(parseJsonValue, z.array(z.string())).optional(),
     prizes: z.preprocess(parseJsonValue, contestPrizeInputArraySchema).optional(),
@@ -165,6 +172,7 @@ const updateContestObjectSchema = z.object({
     category: z.string().trim().min(1).max(100).optional(),
     startDate: optionalIsoDate,
     endDate: optionalIsoDate,
+    bannerUserPhotoId: bannerUserPhotoIdField,
     isMoneyContest: z.preprocess(parseBooleanField, z.boolean()).optional(),
     currency: z.union([
         z.string().trim().toUpperCase().regex(/^[A-Z]{3}$/, "Currency must be a 3-letter ISO code"),

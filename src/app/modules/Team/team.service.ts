@@ -863,6 +863,48 @@ const leaveATeam = async (userId: string, teamId: string) => {
   });
 };
 
+// Leaves the caller's current team and joins a different one atomically, so a user
+// can never end up in both (or neither) if this fails partway through. Used by the
+// "you're already in a team - leave and join this one instead?" confirmation flow.
+const switchTeam = async (userId: string, newTeamId: string) => {
+  const newTeam = await getTeam(newTeamId);
+
+  const currentMembership = await prisma.teamMember.findFirst({
+    where: { memberId: userId },
+  });
+  if (!currentMembership) {
+    throw new ApiError(httpstatus.BAD_REQUEST, "You are not currently in a team");
+  }
+  if (currentMembership.teamId === newTeamId) {
+    throw new ApiError(httpstatus.BAD_REQUEST, "You are already a member of this team");
+  }
+
+  const memberCount = await prisma.teamMember.count({ where: { teamId: newTeamId } });
+  if (memberCount >= newTeam.member_slots) {
+    throw new ApiError(httpstatus.BAD_REQUEST, "No member slots available in that team");
+  }
+
+  const newMember = await prisma.$transaction(async (tx) => {
+    await tx.teamMember.delete({ where: { id: currentMembership.id } });
+    await tx.team.update({
+      where: { id: currentMembership.teamId },
+      data: { member_count: { decrement: 1 } },
+    });
+
+    const member = await tx.teamMember.create({
+      data: { memberId: userId, teamId: newTeamId },
+    });
+    await tx.team.update({
+      where: { id: newTeamId },
+      data: { member_count: { increment: 1 } },
+    });
+
+    return member;
+  });
+
+  return newMember;
+};
+
 const removeFromTeam = async (
   userId: string,
   memberId: string,
@@ -1525,11 +1567,12 @@ const getTeamLeaderboard = async (
   };
 };
 
-// Weekly/monthly top-3 team coin payout. Uses fixed calendar windows (not the
-// rolling PERIOD_DAYS cutoff above) so each run has a well-defined periodKey to
+// Weekly/monthly/yearly top-3 team coin payout. Uses fixed calendar windows (not
+// the rolling PERIOD_DAYS cutoff above) so each run has a well-defined periodKey to
 // guard idempotency with - re-running the same window never double-pays.
 const WEEKLY_REWARD_COINS = [1000, 750, 500];
 const MONTHLY_REWARD_COINS = [10000, 5000, 2500];
+const YEARLY_REWARD_COINS = [15000, 10000, 5000];
 
 const getPreviousWeekWindow = (now = new Date()) => {
   // Start-of-day (UTC) for `now`, then walk back 7 days for the window start.
@@ -1543,6 +1586,13 @@ const getPreviousMonthWindow = (now = new Date()) => {
   const end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
   const start = new Date(Date.UTC(end.getUTCFullYear(), end.getUTCMonth() - 1, 1));
   const periodKey = `${start.getUTCFullYear()}-${String(start.getUTCMonth() + 1).padStart(2, "0")}`;
+  return { start, end, periodKey };
+};
+
+const getPreviousYearWindow = (now = new Date()) => {
+  const end = new Date(Date.UTC(now.getUTCFullYear(), 0, 1));
+  const start = new Date(Date.UTC(end.getUTCFullYear() - 1, 0, 1));
+  const periodKey = `${start.getUTCFullYear()}`;
   return { start, end, periodKey };
 };
 
@@ -1567,9 +1617,17 @@ const computeTeamStandingsForWindow = async (start: Date, end: Date) => {
     .map(([teamId, stats], index) => ({ teamId, rank: index + 1, ...stats }));
 };
 
-const payoutPeriodRewards = async (period: "WEEKLY" | "MONTHLY") => {
-  const window = period === "WEEKLY" ? getPreviousWeekWindow() : getPreviousMonthWindow();
-  const rewards = period === "WEEKLY" ? WEEKLY_REWARD_COINS : MONTHLY_REWARD_COINS;
+const payoutPeriodRewards = async (period: "WEEKLY" | "MONTHLY" | "YEARLY") => {
+  const window = period === "WEEKLY"
+    ? getPreviousWeekWindow()
+    : period === "MONTHLY"
+      ? getPreviousMonthWindow()
+      : getPreviousYearWindow();
+  const rewards = period === "WEEKLY"
+    ? WEEKLY_REWARD_COINS
+    : period === "MONTHLY"
+      ? MONTHLY_REWARD_COINS
+      : YEARLY_REWARD_COINS;
   const standings = await computeTeamStandingsForWindow(window.start, window.end);
   const topTeams = standings.slice(0, rewards.length);
 
@@ -2734,6 +2792,7 @@ export const teamService = {
   getMatchDetails,
   getMyTeamMatches,
   leaveATeam,
+  switchTeam,
   removeFromTeam,
   getSuggestedTeams,
   assignMemberRole,

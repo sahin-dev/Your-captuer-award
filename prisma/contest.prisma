@@ -26,8 +26,12 @@ model Contest {
 
   creatorId String @db.ObjectId
   category String?
+  // Set when the admin picks an existing user-submitted photo as the banner
+  // (instead of uploading a fresh image) - lets the website credit that user.
+  bannerUploaderId String? @db.ObjectId
 
   creator      User                 @relation(fields: [creatorId], references: [id])
+  bannerUploader User?              @relation("ContestBannerUploader", fields: [bannerUploaderId], references: [id])
   participants ContestParticipant[]
   teamParticipations    TeamParticipation[]
   votes        Vote[]
@@ -73,6 +77,10 @@ model RecurringContest {
   status RecurringContestStatus @default(ACTIVE)
   recurring RecurringData
   lastGeneratedContestId String? @db.ObjectId
+  // Propagated onto every generated instance's bannerUploaderId when the template's
+  // own banner was picked from an existing user-submitted photo.
+  bannerUploaderId String? @db.ObjectId
+  bannerUploader User? @relation("RecurringContestBannerUploader", fields: [bannerUploaderId], references: [id])
 
   rules Json
   prizes Json?
