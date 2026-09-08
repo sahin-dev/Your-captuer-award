@@ -1112,6 +1112,32 @@ class DatabaseSeeder {
         return {contestPhotos:contestPhotosToUpdate.length, votes:votesToUpdate.length}
     }
 
+    // One-time repair for a bug where the websocket layer wrote live online/offline
+    // presence onto `isActive` (the account-status field also used for block/soft-delete)
+    // - every user whose last socket disconnect landed after this bug shipped is stuck
+    // with isActive:false forever, even though they were never blocked or deleted, since
+    // nothing else flips it back to true for a plain email/password login. Presence now
+    // writes to the separate `isOnline` field instead; this repairs the accounts that
+    // were incorrectly marked inactive by the old code.
+    async backfillUserActiveStatus(apply = false){
+        const candidates = await this.db.user.findMany({
+            where:{isActive:false, isBlocked:false, isDeleted:false},
+            select:{id:true, email:true}
+        })
+
+        console.log(`${apply ? "" : "[DRY RUN] "}Found ${candidates.length} user(s) marked inactive despite not being blocked or deleted`)
+
+        if(apply && candidates.length > 0){
+            await this.db.user.updateMany({
+                where:{id:{in:candidates.map(u => u.id)}},
+                data:{isActive:true}
+            })
+            console.log("Restored isActive:true for those accounts")
+        }
+
+        return {users:candidates.length}
+    }
+
     async destroyClient(){
         await this.client?.$disconnect()
     }
@@ -1182,8 +1208,16 @@ async function SeederCLI (){
                 }
                 break
             }
+            case "backfill:user-active-status": {
+                const apply = process.argv[3] === "--apply"
+                await seeder.backfillUserActiveStatus(apply)
+                if(!apply){
+                    console.log("Dry run only - re-run with --apply to write these changes")
+                }
+                break
+            }
             default:
-                console.log("Available commands: create:admin, seed:levels-demo, seed:contest-config, seed:prizes, seed:contest-categories, seed:achievements-for-user, backfill:contest-rules, backfill:contest-awards [--apply], backfill:zero-top-rank-rewards [--apply], backfill:vote-photo-ref [--apply], -reset")
+                console.log("Available commands: create:admin, seed:levels-demo, seed:contest-config, seed:prizes, seed:contest-categories, seed:achievements-for-user, backfill:contest-rules, backfill:contest-awards [--apply], backfill:zero-top-rank-rewards [--apply], backfill:vote-photo-ref [--apply], backfill:user-active-status [--apply], -reset")
         }
     }finally{
         await seeder.destroyClient()

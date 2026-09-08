@@ -18,7 +18,8 @@ model User {
   customerId         String?
   role               UserRole             @default(USER)         
   accessToken        String?
-  isActive          Boolean              @default(true) 
+  isActive          Boolean              @default(true)
+  isOnline          Boolean?             @default(false)
   isBlocked         Boolean               @default(false)
   isDeleted         Boolean               @default(false)
   currentLevel       Int @default(-1)

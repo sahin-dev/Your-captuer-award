@@ -1,6 +1,6 @@
 import catchAsync from "../../../shared/catchAsync";
 import { Response } from "express";
-import { addOneVote, addVotes } from "./vote.service";
+import { addOneVote, addVotes, voteService } from "./vote.service";
 import sendResponse from "../../../shared/ApiResponse";
 
 const addContestVote = catchAsync(async (req:any, res:Response)=>{
@@ -33,6 +33,20 @@ const addContestVote = catchAsync(async (req:any, res:Response)=>{
     }
 })
 
+const getVoteCounts = catchAsync(async (req:any, res:Response)=>{
+    const { contestPhotoIds } = req.body
+
+    const counts = await voteService.getVoteCountsByPhotoIds(contestPhotoIds)
+
+    sendResponse(res, {
+        success:true,
+        message:"Vote counts fetched successfully",
+        statusCode:200,
+        data:counts
+    })
+})
+
 export const voteController = {
-    addContestVote
+    addContestVote,
+    getVoteCounts
 }

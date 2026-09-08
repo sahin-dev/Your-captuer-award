@@ -25,7 +25,8 @@
     "backfill:contest-rules": "ts-node --transpile-only src/seeder.ts backfill:contest-rules",
     "backfill:contest-awards": "ts-node --transpile-only src/seeder.ts backfill:contest-awards",
     "backfill:zero-top-rank-rewards": "ts-node --transpile-only src/seeder.ts backfill:zero-top-rank-rewards",
-    "backfill:vote-photo-ref": "ts-node --transpile-only src/seeder.ts backfill:vote-photo-ref"
+    "backfill:vote-photo-ref": "ts-node --transpile-only src/seeder.ts backfill:vote-photo-ref",
+    "backfill:user-active-status": "ts-node --transpile-only src/seeder.ts backfill:user-active-status"
   },
   "repository": {
     "type": "git",

@@ -128,6 +128,22 @@ export const getVoteCount = async (photoId:string)=>{
     return count + (contestPhoto?.bankedVotes ?? 0)
 }
 
+// Bulk variant of getVoteCount for the frontend's realtime polling - a client
+// watching a handful of contest photo slots (e.g. the "My Contests" list)
+// polls this instead of re-fetching the full joined-contest payload on an
+// interval, so the recurring request stays a handful of counts instead of
+// re-downloading contest/rules/banner data the client already has.
+const getVoteCountsByPhotoIds = async (contestPhotoIds:string[]) => {
+    const counts = await Promise.all(
+        contestPhotoIds.map(async (contestPhotoId) => ({
+            contestPhotoId,
+            voteCount: await getVoteCount(contestPhotoId)
+        }))
+    )
+
+    return counts
+}
+
 const getUserPhotoVoteCount = async (userPhotoId:string) => {
     const { count } = await getVoteWeightStats({photo:{photoId:userPhotoId}})
 
@@ -206,6 +222,7 @@ export const voteService = {
     getTotalOrganicVotes,
     getTeamTotalVotes,
     getVoteCount,
+    getVoteCountsByPhotoIds,
     getUserPhotoVoteCount,
     getUserTotalVotes,
     getUserContestSpecificVote,

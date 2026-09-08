@@ -38,6 +38,25 @@ export function setupWebSocket(server: HTTPServer) {
 
   console.log("Socket.IO server is running");
 
+  // A crash or a plain process restart wipes the in-memory socket map without
+  // ever running the "disconnect" handler below, so any user who was online
+  // right before that moment is stuck with isOnline:true forever - nothing
+  // else would ever flip it back for them. Socket.IO's own ping/pong already
+  // detects and disconnects genuinely dead connections on its own (default
+  // pingInterval/pingTimeout), so a periodic ping sweep here would just
+  // duplicate that; the actual gap is this one-time reconciliation on boot,
+  // since a fresh process has zero real connections by definition.
+  prisma.user
+    .updateMany({ where: { isOnline: true }, data: { isOnline: false } })
+    .then((result) => {
+      if (result.count > 0) {
+        console.log(`[Socket.IO] Reset stale isOnline flag for ${result.count} user(s) after server (re)start`);
+      }
+    })
+    .catch((error) => {
+      console.error("[Socket.IO] Failed to reset stale online status on startup:", error);
+    });
+
   io.on("connection", (socket: AuthenticatedSocket) => {
     console.log("A user connected:", socket.id);
     socket.teamIds = new Set();
@@ -64,7 +83,7 @@ export function setupWebSocket(server: HTTPServer) {
         onlineUsers.add(id);
         userSockets.set(id, socket);
 
-        await prisma.user.update({ where: { id }, data: { isActive: true } });
+        await prisma.user.update({ where: { id }, data: { isOnline: true } });
         console.log(`User ${id} authenticated`);
 
         callback({ success: true, userId: id, message: "User authenticated" });
@@ -243,7 +262,7 @@ export function setupWebSocket(server: HTTPServer) {
 
           await prisma.user.update({
             where: { id: socket.userId },
-            data: { isActive: false },
+            data: { isOnline: false },
           });
 
           io.emit("user_status", { userId: socket.userId, isOnline: false });
