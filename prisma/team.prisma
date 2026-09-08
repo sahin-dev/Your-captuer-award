@@ -75,8 +75,13 @@ model TeamMatchQueue {
   matchedTeamMatchId String?              @db.ObjectId
   expiresAt          DateTime
 
-  team    Team    @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  contest Contest @relation(fields: [contestId], references: [id])
+  team    Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  // Nullable: MongoDB has no referential integrity, so a Contest can be
+  // deleted (or wiped in a dev reset) while a queue entry still points at its
+  // id. A required relation there made every findMany() touching this model
+  // hard-crash with "Field contest is required to return data, got null
+  // instead." the moment one orphaned row existed.
+  contest Contest? @relation(fields: [contestId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

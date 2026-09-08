@@ -2626,8 +2626,27 @@ const getTeamMatchSearchStatus = async (teamId: string, userId: string) => {
     orderBy: { createdAt: "asc" },
   });
 
+  // A queue entry whose contest no longer exists (deleted contest, or a dev
+  // DB reset that didn't touch this collection) has nothing meaningful to
+  // show - drop it here, and cancel it in the background so it stops showing
+  // up on every future call instead of staying stuck forever.
+  const orphanedEntries = queueEntries.filter((entry) => !entry.contest);
+  if (orphanedEntries.length > 0) {
+    prisma.teamMatchQueue
+      .updateMany({
+        where: { id: { in: orphanedEntries.map((entry) => entry.id) } },
+        data: { status: TeamMatchQueueStatus.CANCELLED },
+      })
+      .catch((error) => console.error("Failed to cancel orphaned team match queue entries", error));
+  }
+
+  const liveEntries = queueEntries.filter(
+    (entry): entry is typeof entry & { contest: NonNullable<typeof entry.contest> } =>
+      Boolean(entry.contest),
+  );
+
   return Promise.all(
-    queueEntries.map(async (queueEntry) => {
+    liveEntries.map(async (queueEntry) => {
       const [ownMembers, currentUserParticipant] = await Promise.all([
         getEligibleContestMembers(teamId, queueEntry.contestId),
         prisma.contestParticipant.findUnique({
@@ -2747,23 +2766,28 @@ const timeoutExpiredTeamMatchQueues = async () => {
       }
 
       const isWaitingForMembers = entry.status === TeamMatchQueueStatus.WAITING_FOR_MEMBERS;
-      await chatService.sendSystemMessage(
-        entry.teamId,
-        isWaitingForMembers
-          ? `Not enough team members joined "${entry.contest.title}" in time. Match search cancelled.`
-          : `No opponent found for "${entry.contest.title}" within the search window. Search cancelled.`,
-        "system",
-        {
-          event: "TEAM_MATCH_SEARCH_TIMEOUT",
-          contestId: entry.contest.id,
-          contestTitle: entry.contest.title,
-          reason: isWaitingForMembers ? "NOT_ENOUGH_MEMBERS" : "NO_OPPONENT",
-        },
-      );
-      await notificationOrchestrator.notifyTeamMatchSearchTimeout(
-        entry.teamId,
-        entry.contest.title,
-      );
+      // The contest can be gone (deleted, or a dev DB reset that left this
+      // queue row behind) - still expire the entry above, just skip the
+      // contest-titled message/notification since there's nothing to name.
+      if (entry.contest) {
+        await chatService.sendSystemMessage(
+          entry.teamId,
+          isWaitingForMembers
+            ? `Not enough team members joined "${entry.contest.title}" in time. Match search cancelled.`
+            : `No opponent found for "${entry.contest.title}" within the search window. Search cancelled.`,
+          "system",
+          {
+            event: "TEAM_MATCH_SEARCH_TIMEOUT",
+            contestId: entry.contest.id,
+            contestTitle: entry.contest.title,
+            reason: isWaitingForMembers ? "NOT_ENOUGH_MEMBERS" : "NO_OPPONENT",
+          },
+        );
+        await notificationOrchestrator.notifyTeamMatchSearchTimeout(
+          entry.teamId,
+          entry.contest.title,
+        );
+      }
       timedOutCount += 1;
     } catch (error) {
       console.error(`Failed to time out team match queue entry ${entry.id}`, error);
