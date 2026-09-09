@@ -11,10 +11,11 @@ import Events from "../../event/events.constant"
 import { UserRegistrationData, UserSignInData } from "./auth.types"
 import { userService } from "../User/user.service"
 import { UserRole } from "../../../prismaClient"
+import { getCountryFromIp } from "../../../helpers/geoLocation"
 
 
 
-export const handleRegister = async (body:UserRegistrationData)=>{
+export const handleRegister = async (body:UserRegistrationData, ip?: string | null)=>{
 
 
 
@@ -33,9 +34,11 @@ export const handleRegister = async (body:UserRegistrationData)=>{
 
 
 
+    const country = getCountryFromIp(ip)
+
     const createdUser = await prisma.$transaction( async tx =>{
         let fullName = `${body.firstName} ${body.lastName}`
-        
+
         const user  = await tx.user.create({data:{
             firstName:body.firstName,
             lastName:body.lastName,
@@ -43,7 +46,8 @@ export const handleRegister = async (body:UserRegistrationData)=>{
             email:body.email as string,
             password:hashedPassword,
             phone:body.phone,
-            dateOfBirth:body.dateOfBirth
+            dateOfBirth:body.dateOfBirth,
+            country
         }})
         
 

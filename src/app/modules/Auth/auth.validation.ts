@@ -13,7 +13,7 @@ export const userRegistrationSchema = z.object({
     firstName:z.string({required_error:"first name is required"}),
     lastName:z.string({required_error:"last name is required"}),
     email:z.string().email({message:"Email is invalid"}),
-    phone:z.string({required_error:"phone is required"}),
+    phone:z.string().optional(),
     dateOfBirth:z.coerce.date().optional(),
     password:z.string({required_error:"password is required"}).min(6, "password must be at least 6 characters long"),
     confirmPassword: z.string().optional()

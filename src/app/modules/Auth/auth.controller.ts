@@ -1,5 +1,6 @@
 import catchAsync from "../../../shared/catchAsync";
 import {Request, Response} from 'express'
+import requestIp from "request-ip"
 import { getAutheticatedUser, handleAdminSignIn, handleRegister, handleSignIn, handleSignout } from "./auth.service";
 import sendResponse from "../../../shared/ApiResponse";
 import httpstatus from 'http-status'
@@ -7,8 +8,9 @@ import httpstatus from 'http-status'
 
 export const registerUser = catchAsync(async (req:Request, res:Response)=>{
     const body = req.body
+    const ip = requestIp.getClientIp(req)
 
-    const registerData = await handleRegister(body)
+    const registerData = await handleRegister(body, ip)
     res.cookie("token", registerData.token, {
       httpOnly: true,
       secure: true,
