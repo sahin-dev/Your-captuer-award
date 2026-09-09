@@ -953,13 +953,18 @@ const getPublicContests = async (
         ...notDeleted
     }
 
+    const isSoonestFirstStatus = status === ContestStatus.UPCOMING || status === ContestStatus.ACTIVE
+    const orderBy:Prisma.ContestOrderByWithRelationInput[] = isSoonestFirstStatus
+        ? [{startDate:"asc"}, {id:"asc"}]
+        : [{startDate:"desc"}, {id:"desc"}]
+
     const [contests, total] = await Promise.all([
         prisma.contest.findMany({
             where,
             include:{creator:{omit:{password:true, accessToken:true}}, bannerUploader:{select:{id:true, fullName:true}}},
             skip,
             take:paginationLimit,
-            orderBy:[{startDate:"desc"}, {id:"desc"}]
+            orderBy
         }),
         prisma.contest.count({where})
     ])
@@ -1218,7 +1223,7 @@ const getContestsByStatus = async (userId:string,status: ContestStatus) => {
         const contests = await prisma.contest.findMany({
             where:{status, participants:{none:{userId}}, ...notDeleted},
             include: { creator: contestListCreatorInclude, bannerUploader: {select:{id:true, fullName:true}} },
-            orderBy:{startDate:"desc"}
+            orderBy:{startDate:"asc"}
         });
 
         return enrichContestListDetails(contests);
@@ -1360,14 +1365,26 @@ const adminDeleteContestPhoto = async (photoId:string, adminId:string, reason?:s
 
 const getMyActiveContests = async (userId:string) => {
 
-    
+    // Order by when the user joined each contest (latest joined first) rather than
+    // any contest field - joining is tracked on ContestParticipant.createdAt.
+    const participants = await prisma.contestParticipant.findMany({
+        where:{userId, contest:{status:ContestStatus.ACTIVE}},
+        orderBy:{createdAt:"desc"},
+        select:{contestId:true}
+    })
+    const joinOrder = participants.map(participant => participant.contestId)
 
     const contests = await prisma.contest.findMany({
         where:{status:ContestStatus.ACTIVE, participants:{some:{userId}}},
         include: { creator: {select:{id:true, avatar:true,fullName:true,cover:true, firstName:true, lastName:true}}, bannerUploader: {select:{id:true, fullName:true}}}
     });
 
-    const enrichedContests = await enrichContestListDetails(contests)
+    const contestById = new Map(contests.map(contest => [contest.id, contest]))
+    const orderedContests = joinOrder
+        .map(contestId => contestById.get(contestId))
+        .filter((contest): contest is typeof contests[number] => Boolean(contest))
+
+    const enrichedContests = await enrichContestListDetails(orderedContests)
 
     const contestDetails = enrichedContests.map (async (contest) => {
         const levelData = await getParticipantLevelData(contest.id, userId)
