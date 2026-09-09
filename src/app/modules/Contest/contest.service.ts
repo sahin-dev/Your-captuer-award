@@ -1229,7 +1229,7 @@ const getContestsByStatus = async (userId:string,status: ContestStatus) => {
         const contests = await prisma.contest.findMany({
             where:{status: ContestStatus.COMPLETED, participants:{none:{userId}}, ...notDeleted},
             include: { creator: contestListCreatorInclude, bannerUploader: {select:{id:true, fullName:true}} },
-            orderBy:{startDate:"desc"}
+            orderBy:{endDate:"desc"}
         });
 
         return enrichContestListDetails(contests);
@@ -1390,7 +1390,7 @@ const getMyCompletedContest = async (userId:string) => {
         throw new ApiError(httpstatus.NOT_FOUND, "User not found")
     }
 
-    const myParticipatedContest = await prisma.contest.findMany({where:{status:{in:completedContestStatuses}, participants:{some:{userId}}, ...notDeleted}})
+    const myParticipatedContest = await prisma.contest.findMany({where:{status:{in:completedContestStatuses}, participants:{some:{userId}}, ...notDeleted}, orderBy:{endDate:"desc"}})
 
     const mappetdCompletedContest =await Promise.all( myParticipatedContest.map(async contest => {
         const details = await getContestById(contest.id)
