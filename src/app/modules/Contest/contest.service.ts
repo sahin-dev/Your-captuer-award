@@ -1235,6 +1235,17 @@ const getContestsByStatus = async (userId:string,status: ContestStatus) => {
         return enrichContestListDetails(contests);
     }
 
+    if(status === ContestStatus.UPCOMING){
+
+        const contests = await prisma.contest.findMany({
+            where:{status, participants:{none:{userId}}, ...notDeleted},
+            include: { creator: contestListCreatorInclude, bannerUploader: {select:{id:true, fullName:true}} },
+            orderBy:{startDate:"asc"}
+        });
+
+        return enrichContestListDetails(contests);
+    }
+
 
     const contests = await prisma.contest.findMany({
         where:{status, ...notDeleted},
