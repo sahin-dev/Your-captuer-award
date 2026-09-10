@@ -190,6 +190,8 @@ const getStates = async (userId:string)=>{
     const achievementsCount = await achievementService.getAchievementCount(userId)
     const followerCount = await followService.getFollowerCount(userId)
     const followingCount = await followService.getFollowingCount(userId)
+    // Votes this user's photos received across every contest they took part in.
+    const totalVotes = await voteService.getUserTotalVotes(userId)
 
     return {
         likes: likesCount,
@@ -197,6 +199,7 @@ const getStates = async (userId:string)=>{
         follower: followerCount,
         following: followingCount,
         achievements: achievementsCount.total,
+        totalVotes,
     }
 }
 
