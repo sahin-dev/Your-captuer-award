@@ -77,6 +77,17 @@ const normalizeCreateContestInput = (value: unknown) => {
     };
 };
 
+const normalizeUpdateContestInput = (value: unknown) => {
+    const normalized = normalizeCreateContestInput(value);
+
+    if (!normalized || typeof normalized !== "object" || Array.isArray(normalized)) {
+        return normalized;
+    }
+
+    const { recurring, recurrence, ...contest } = normalized as Record<string, unknown>;
+    return contest;
+};
+
 const createContestObjectSchema = z.object({
     title: z.string().trim().min(1, "Title must not be empty").max(160),
     description: richTextField("Description", 5000),
@@ -191,7 +202,7 @@ const updateContestObjectSchema = z.object({
     rules: z.preprocess(parseJsonValue, contestRuleInputArraySchema).optional(),
 }).strict();
 
-export const updateContestSchema = z.preprocess(normalizeCreateContestInput, updateContestObjectSchema);
+export const updateContestSchema = z.preprocess(normalizeUpdateContestInput, updateContestObjectSchema);
 
 export const joinContestSchema = z.object({
     body: z.object({

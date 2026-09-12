@@ -437,10 +437,17 @@ test("contest updates cannot bypass the writable-field contract", () => {
         title:" Updated title ",
         description:"<p onmouseover=\"alert(1)\">Updated</p>",
         category:"Nature",
+        recurring:false,
+        recurrence:{
+            type:"WEEKLY",
+            timezone:"Asia/Dhaka",
+        },
     });
     assert.equal(parsed.title, "Updated title");
     assert.equal(parsed.category, "Nature");
     assert.doesNotMatch(parsed.description || "", /onmouseover/);
+    assert.equal("recurring" in parsed, false);
+    assert.equal("recurrence" in parsed, false);
 
     const statusUpdate = updateContestSchema.safeParse({status:"ACTIVE"});
     assert.equal(statusUpdate.success, false);
