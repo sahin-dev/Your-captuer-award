@@ -2132,7 +2132,7 @@ const getAvailableTeamContests = async (
 // ============ Team Match Queue (opponent search) ============
 
 const TEAM_MATCH_SEARCH_WINDOW_MS = 5 * 60 * 60 * 1000; // 5 hours
-const MIN_TEAM_MATCH_MEMBERS = 3;
+const MIN_TEAM_MATCH_MEMBERS = 1;
 
 const formatMatchQueueEntry = (
   queueEntry: { id: string; teamId: string; status: TeamMatchQueueStatus; createdAt: Date; expiresAt: Date },
