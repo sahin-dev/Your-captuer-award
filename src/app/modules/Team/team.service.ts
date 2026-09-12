@@ -1992,8 +1992,8 @@ const retryStaleTeamMatches = async () => {
   return closeTeamMatches(matches);
 };
 
-// A team can now have multiple active matches at once (one per contest at
-// most), so this returns all of them rather than a single match.
+// Returns active team matches. The start/matchmaking guards keep this to at
+// most one, but the array response is preserved for API compatibility.
 const getActiveMatch = async (teamId: string, userId?: string) => {
   const viewerMember = userId ? await isTeamMemberExist(userId, teamId) : null;
   if (userId && !viewerMember) {
@@ -2133,6 +2133,10 @@ const getAvailableTeamContests = async (
 
 const TEAM_MATCH_SEARCH_WINDOW_MS = 5 * 60 * 60 * 1000; // 5 hours
 const MIN_TEAM_MATCH_MEMBERS = 1;
+const pendingTeamMatchQueueStatuses = [
+  TeamMatchQueueStatus.WAITING_FOR_MEMBERS,
+  TeamMatchQueueStatus.SEARCHING,
+];
 
 const formatMatchQueueEntry = (
   queueEntry: { id: string; teamId: string; status: TeamMatchQueueStatus; createdAt: Date; expiresAt: Date },
@@ -2162,7 +2166,7 @@ const findRivalFromQueue = async (
   participantCount: number,
 ) => {
   const teamsWithActiveMatch = await prisma.teamMatch.findMany({
-    where: { contestId, status: MatchStatus.ACTIVE },
+    where: { status: MatchStatus.ACTIVE },
     select: { team1Id: true, team2Id: true },
   });
   const busyTeamIds = new Set<string>([teamId]);
@@ -2174,6 +2178,15 @@ const findRivalFromQueue = async (
       busyTeamIds.add(match.team2Id);
     }
   });
+
+  const teamsWithOtherPendingSearch = await prisma.teamMatchQueue.findMany({
+    where: {
+      status: { in: pendingTeamMatchQueueStatuses },
+      contestId: { not: contestId },
+    },
+    select: { teamId: true },
+  });
+  teamsWithOtherPendingSearch.forEach((entry) => busyTeamIds.add(entry.teamId));
 
   const searchingEntries = await prisma.teamMatchQueue.findMany({
     where: {
@@ -2270,12 +2283,8 @@ const attemptOpponentSearch = async (params: {
       );
     }
 
-    // Scoped to this contest — a team can now run active matches on several
-    // contests at once, it just can't have two active matches for the same
-    // contest.
     const existingActiveMatch = await tx.teamMatch.findFirst({
       where: {
-        contestId,
         OR: [{ team1Id: teamId }, { team2Id: teamId }],
         status: MatchStatus.ACTIVE,
       },
@@ -2283,13 +2292,12 @@ const attemptOpponentSearch = async (params: {
     if (existingActiveMatch) {
       throw new ApiError(
         httpstatus.BAD_REQUEST,
-        "This team already has an active match for this contest",
+        "This team already has an active match",
       );
     }
 
     const rivalActiveMatch = await tx.teamMatch.findFirst({
       where: {
-        contestId,
         OR: [{ team1Id: rival.team.id }, { team2Id: rival.team.id }],
         status: MatchStatus.ACTIVE,
       },
@@ -2297,7 +2305,7 @@ const attemptOpponentSearch = async (params: {
     if (rivalActiveMatch) {
       throw new ApiError(
         httpstatus.BAD_REQUEST,
-        "Selected rival team already has an active match for this contest",
+        "Selected rival team already has an active match",
       );
     }
 
@@ -2427,11 +2435,8 @@ const startTeamMatchWithAutoRival = async (
     );
   }
 
-  // Scoped to this contest — a team can now run active matches on several
-  // contests at once, it just can't start a second one for the same contest.
   const existingActiveMatch = await prisma.teamMatch.findFirst({
     where: {
-      contestId,
       OR: [{ team1Id: teamId }, { team2Id: teamId }],
       status: MatchStatus.ACTIVE,
     },
@@ -2439,23 +2444,7 @@ const startTeamMatchWithAutoRival = async (
   if (existingActiveMatch) {
     throw new ApiError(
       httpstatus.BAD_REQUEST,
-      "This team already has an active match for this contest",
-    );
-  }
-
-  const existingSearch = await prisma.teamMatchQueue.findFirst({
-    where: {
-      teamId,
-      contestId,
-      status: {
-        in: [TeamMatchQueueStatus.WAITING_FOR_MEMBERS, TeamMatchQueueStatus.SEARCHING],
-      },
-    },
-  });
-  if (existingSearch) {
-    throw new ApiError(
-      httpstatus.BAD_REQUEST,
-      "This team is already searching for an opponent in this contest",
+      "This team already has an active match",
     );
   }
 
@@ -2464,6 +2453,30 @@ const startTeamMatchWithAutoRival = async (
     throw new ApiError(
       httpstatus.BAD_REQUEST,
       "Contest is not open for team matches",
+    );
+  }
+
+  const existingSearch = await prisma.teamMatchQueue.findFirst({
+    where: {
+      teamId,
+      status: { in: pendingTeamMatchQueueStatuses },
+    },
+    orderBy: { createdAt: "asc" },
+  });
+  if (existingSearch) {
+    if (
+      existingSearch.contestId === contestId &&
+      existingSearch.status === TeamMatchQueueStatus.WAITING_FOR_MEMBERS
+    ) {
+      const advanced = await checkAndAdvanceWaitingQueue(teamId, contestId);
+      if (advanced) {
+        return advanced;
+      }
+    }
+
+    throw new ApiError(
+      httpstatus.BAD_REQUEST,
+      "This team already has a match waiting or searching. Finish or cancel it before starting another team match",
     );
   }
 
@@ -2537,6 +2550,25 @@ const checkAndAdvanceWaitingQueue = async (teamId: string, contestId: string) =>
     return null;
   }
 
+  const [existingActiveMatch, otherPendingQueue] = await Promise.all([
+    prisma.teamMatch.findFirst({
+      where: {
+        OR: [{ team1Id: teamId }, { team2Id: teamId }],
+        status: MatchStatus.ACTIVE,
+      },
+    }),
+    prisma.teamMatchQueue.findFirst({
+      where: {
+        teamId,
+        id: { not: queueEntry.id },
+        status: { in: pendingTeamMatchQueueStatuses },
+      },
+    }),
+  ]);
+  if (existingActiveMatch || otherPendingQueue) {
+    return null;
+  }
+
   const team = await getTeam(teamId);
 
   // Give the search its own full window rather than reusing whatever time
@@ -2581,9 +2613,7 @@ const cancelTeamMatchSearch = async (teamId: string, userId: string) => {
   const queueEntry = await prisma.teamMatchQueue.findFirst({
     where: {
       teamId,
-      status: {
-        in: [TeamMatchQueueStatus.WAITING_FOR_MEMBERS, TeamMatchQueueStatus.SEARCHING],
-      },
+      status: { in: pendingTeamMatchQueueStatuses },
     },
   });
   if (!queueEntry) {
@@ -2610,15 +2640,22 @@ const getTeamMatchSearchStatus = async (teamId: string, userId: string) => {
     );
   }
 
-  // A team can search for multiple contests at once (the duplicate-search
-  // guard in startTeamMatchWithAutoRival only blocks re-searching the same
-  // contest), so every active search must be returned, not just one.
+  const waitingEntries = await prisma.teamMatchQueue.findMany({
+    where: { teamId, status: TeamMatchQueueStatus.WAITING_FOR_MEMBERS },
+    select: { contestId: true },
+    orderBy: { createdAt: "asc" },
+  });
+  for (const entry of waitingEntries) {
+    const advanced = await checkAndAdvanceWaitingQueue(teamId, entry.contestId);
+    if (advanced) {
+      break;
+    }
+  }
+
   const queueEntries = await prisma.teamMatchQueue.findMany({
     where: {
       teamId,
-      status: {
-        in: [TeamMatchQueueStatus.WAITING_FOR_MEMBERS, TeamMatchQueueStatus.SEARCHING],
-      },
+      status: { in: pendingTeamMatchQueueStatuses },
     },
     include: {
       contest: { select: { id: true, title: true, banner: true, maxUpload: true, endDate: true } },
@@ -2684,15 +2721,15 @@ const getTeamContestMatchView = async (
     throw new ApiError(httpstatus.NOT_FOUND, "Contest not found");
   }
 
+  await checkAndAdvanceWaitingQueue(teamId, contestId);
+
   const [eligibleMembers, queueEntry, currentUserParticipant, activeTeamMatch] = await Promise.all([
     getEligibleContestMembers(teamId, contestId),
     prisma.teamMatchQueue.findFirst({
       where: {
         teamId,
         contestId,
-        status: {
-          in: [TeamMatchQueueStatus.WAITING_FOR_MEMBERS, TeamMatchQueueStatus.SEARCHING],
-        },
+        status: { in: pendingTeamMatchQueueStatuses },
       },
       orderBy: { createdAt: "desc" },
     }),
@@ -2742,9 +2779,7 @@ const getTeamContestMatchView = async (
 const timeoutExpiredTeamMatchQueues = async () => {
   const expiredEntries = await prisma.teamMatchQueue.findMany({
     where: {
-      status: {
-        in: [TeamMatchQueueStatus.WAITING_FOR_MEMBERS, TeamMatchQueueStatus.SEARCHING],
-      },
+      status: { in: pendingTeamMatchQueueStatuses },
       expiresAt: { lte: new Date() },
     },
     include: { contest: { select: { id: true, title: true } } },

@@ -460,9 +460,9 @@ const getAvailableTeamContests = catchAsync(
 /**
  * Start team match with automatic rival finding
  * Only LEADER and MODERATOR can start matches
- * Admin selects a contest. If fewer than 3 team members have joined it yet,
+ * Admin selects a contest. If fewer than the minimum team members have joined it yet,
  * the system waits (WAITING_FOR_MEMBERS) instead of searching immediately;
- * once 3+ members have joined, it automatically finds a rival team and
+ * once the minimum is reached, it automatically finds a rival team and
  * starts the match.
  * @body { contestId: string }
  */
