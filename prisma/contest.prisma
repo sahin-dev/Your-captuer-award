@@ -276,7 +276,7 @@ model ContestParticipant {
   // time. Separate from ContestPhoto.exposureBoostExpiresAt, which is per-photo
   // and drives the fresh-submission/trade spotlight.
   exposure_bonus Int @default(0)
-  exposureUpdatedAt DateTime @default(now())
+  exposureUpdatedAt DateTime? @default(now())
 
   contest            Contest              @relation(fields: [contestId], references: [id], onDelete: Cascade)
   user               User                @relation(fields: [userId], references: [id])
