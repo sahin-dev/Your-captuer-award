@@ -16,6 +16,30 @@ import { paginationHelper } from "../../../helpers/paginationHelper"
 
 
 
+const buildFullName = (firstName?:string | null, lastName?:string | null) => {
+    const fullName = [firstName, lastName]
+        .map(name => name?.trim())
+        .filter(Boolean)
+        .join(" ")
+    return fullName || null
+}
+
+const getFullNameUpdate = (
+    currentUser:{firstName?:string | null; lastName?:string | null},
+    nextUser:{firstName?:string; lastName?:string}
+) => {
+    if(nextUser.firstName === undefined && nextUser.lastName === undefined){
+        return {}
+    }
+
+    return {
+        fullName:buildFullName(
+            nextUser.firstName ?? currentUser.firstName,
+            nextUser.lastName ?? currentUser.lastName
+        )
+    }
+}
+
 const getUsers = async (filters:{page?:string, limit?:string, search?:string, status?:string, role?:string})=>{
     const page = filters.page ? Number(filters.page) : 1
     const limit = filters.limit ? Number(filters.limit) : 20
@@ -105,8 +129,8 @@ const updateUser = async (adminId:string,userId:string,userData:userAdminUpdateD
 
     const updatedUser = await prisma.user.update({where:{id:user.id}, data:{
         firstName: userData.firstName as string,
-
         lastName: userData.lastName as string,
+        ...getFullNameUpdate(user, userData),
         location: userData.location as string,
         dateOfBirth:userData.dateOfBirth,
     }})
@@ -128,6 +152,7 @@ const updateProfile = async (userId:string,userData:userUpdateData)=>{
     const updatedUser = await prisma.user.update({where:{id:user.id}, data:{
         firstName:userData.firstName,
         lastName:userData.lastName,
+        ...getFullNameUpdate(user, userData),
         location:userData.location,
         dateOfBirth:userData.dateOfBirth,
     }})

@@ -37,6 +37,7 @@ import { reportService } from '../Report/report.service';
 const completedContestStatuses:ContestStatus[] = [ContestStatus.COMPLETED, ContestStatus.CLOSED]
 const isCompletedContest = (status:ContestStatus) => completedContestStatuses.includes(status)
 const contestListCreatorInclude = {omit:{password:true, accessToken:true}} as const
+const contestBannerUploaderInclude = {select:{id:true, fullName:true, username:true, avatar:true, firstName:true, lastName:true}} as const
 const PROMOTION_DURATION_MS = 24 * 60 * 60 * 1000 // promoted photos stay boosted for ~24 hours
 const EXPOSURE_BOOST_DURATION_MS = 60 * 60 * 1000 // a fresh submission/trade stays spotlighted for 1 hour
 const EXPOSURE_BOOST_WEIGHT_MULTIPLIER = 20 // how much more likely a spotlighted photo is to surface vs. its participant-level weight alone
@@ -118,6 +119,38 @@ const shuffleWithSeed = <T>(items:T[], seed:string, getWeight:(item:T) => number
 
 const shouldUseDefaultAwards = (body:contestData) =>
     body.prizeIds === undefined && body.prizes === undefined
+
+const getUserDisplayName = (user?:{
+    fullName?:string | null;
+    username?:string | null;
+    firstName?:string | null;
+    lastName?:string | null;
+} | null) => {
+    if(!user){
+        return null
+    }
+
+    return [user.firstName, user.lastName]
+        .map(name => name?.trim())
+        .filter(Boolean)
+        .join(" ")
+        || user.fullName
+        || user.username
+        || null
+}
+
+const getContestCardAttribution = (contest:any) => {
+    const user = contest.creator
+    if(!user){
+        return null
+    }
+
+    return {
+        source:"creator",
+        displayName:getUserDisplayName(user),
+        user
+    }
+}
 
 // When the admin picks an existing user-submitted photo as the banner instead of
 // uploading a fresh image, resolve its URL and credit the uploading user so the
@@ -837,7 +870,7 @@ const getContestByUserId = async ( userId:string, contestId: string) => {
         where: { id: contestId },
         include: {
             creator: {omit:{password:true, accessToken:true}},
-            bannerUploader: {select:{id:true, fullName:true}}
+            bannerUploader: contestBannerUploaderInclude
         }
     });
     if(!contest){
@@ -852,7 +885,7 @@ const getContestByUserId = async ( userId:string, contestId: string) => {
         prisma.contestFinalization.findUnique({where:{contestId}}),
         contestFinalizationService.getContestAwardSelections(contestId)
     ])
-    const baseContestDetails = {...contest, rules, prizes, levelAwards, totalVotes, finalization, awardSelections}
+    const baseContestDetails = {...contest, cardAttribution:getContestCardAttribution(contest), rules, prizes, levelAwards, totalVotes, finalization, awardSelections}
 
     if(isCompletedContest(contest.status)){
         const winners = await getContestWinners(contestId)
@@ -877,7 +910,7 @@ const getContestById = async ( contestId: string) => {
         where: { id: contestId },
         include: {
             creator: {omit:{password:true, accessToken:true}},
-            bannerUploader: {select:{id:true, fullName:true}}
+            bannerUploader: contestBannerUploaderInclude
         }
     });
     if(!contest){
@@ -892,7 +925,7 @@ const getContestById = async ( contestId: string) => {
         prisma.contestFinalization.findUnique({where:{contestId}}),
         contestFinalizationService.getContestAwardSelections(contestId)
     ])
-    const baseContestDetails = {...contest, rules, prizes, levelAwards, totalVotes, finalization, awardSelections}
+    const baseContestDetails = {...contest, cardAttribution:getContestCardAttribution(contest), rules, prizes, levelAwards, totalVotes, finalization, awardSelections}
 
     if(isCompletedContest(contest.status)){
         const winners = await getContestWinners(contestId)
@@ -926,7 +959,7 @@ const getAllContests = async (
     const [contests, total] = await Promise.all([
         prisma.contest.findMany({    
             where,
-            include: { creator: {omit:{password:true, accessToken:true}}, bannerUploader: {select:{id:true, fullName:true}}},
+            include: { creator: {omit:{password:true, accessToken:true}}, bannerUploader: contestBannerUploaderInclude},
             skip,
             take:paginationLimit,
             orderBy:[{startDate:"desc"}, {id:"desc"}]
@@ -966,7 +999,7 @@ const getPublicContests = async (
     const [contests, total] = await Promise.all([
         prisma.contest.findMany({
             where,
-            include:{creator:{omit:{password:true, accessToken:true}}, bannerUploader:{select:{id:true, fullName:true}}},
+            include:{creator:{omit:{password:true, accessToken:true}}, bannerUploader:contestBannerUploaderInclude},
             skip,
             take:paginationLimit,
             orderBy
@@ -1173,6 +1206,7 @@ const enrichContestListDetails = async (contests:any[]) => {
         const rules = formatContestRulesForList(configuredRules?.length ? configuredRules : getDefaultContestRuleConfigsForList());
         const baseContestDetails = {
             ...contest,
+            cardAttribution:getContestCardAttribution(contest),
             rules,
             prizes:prizesByContestId.get(contest.id) || [],
             totalVotes:(votesByContestId.get(contest.id) || []).reduce((total, vote) => total + getVoteWeight(vote), 0),
@@ -1227,7 +1261,7 @@ const getContestsByStatus = async (userId:string,status: ContestStatus) => {
 
         const contests = await prisma.contest.findMany({
             where:{status, participants:{none:{userId}}, ...notDeleted},
-            include: { creator: contestListCreatorInclude, bannerUploader: {select:{id:true, fullName:true}} },
+            include: { creator: contestListCreatorInclude, bannerUploader: contestBannerUploaderInclude },
             orderBy:{startDate:"asc"}
         });
 
@@ -1238,7 +1272,7 @@ const getContestsByStatus = async (userId:string,status: ContestStatus) => {
 
         const contests = await prisma.contest.findMany({
             where:{status: ContestStatus.COMPLETED, participants:{none:{userId}}, ...notDeleted},
-            include: { creator: contestListCreatorInclude, bannerUploader: {select:{id:true, fullName:true}} },
+            include: { creator: contestListCreatorInclude, bannerUploader: contestBannerUploaderInclude },
             orderBy:{endDate:"desc"}
         });
 
@@ -1249,7 +1283,7 @@ const getContestsByStatus = async (userId:string,status: ContestStatus) => {
 
         const contests = await prisma.contest.findMany({
             where:{status, participants:{none:{userId}}, ...notDeleted},
-            include: { creator: contestListCreatorInclude, bannerUploader: {select:{id:true, fullName:true}} },
+            include: { creator: contestListCreatorInclude, bannerUploader: contestBannerUploaderInclude },
             orderBy:{startDate:"asc"}
         });
 
@@ -1259,7 +1293,7 @@ const getContestsByStatus = async (userId:string,status: ContestStatus) => {
 
     const contests = await prisma.contest.findMany({
         where:{status, ...notDeleted},
-        include: { creator: contestListCreatorInclude, bannerUploader: {select:{id:true, fullName:true}} },
+        include: { creator: contestListCreatorInclude, bannerUploader: contestBannerUploaderInclude },
         orderBy:{startDate:"desc"}
     });
 
@@ -1381,7 +1415,7 @@ const getMyActiveContests = async (userId:string) => {
 
     const contests = await prisma.contest.findMany({
         where:{status:ContestStatus.ACTIVE, participants:{some:{userId}}},
-        include: { creator: {select:{id:true, avatar:true,fullName:true,cover:true, firstName:true, lastName:true}}, bannerUploader: {select:{id:true, fullName:true}}}
+        include: { creator: {select:{id:true, avatar:true,fullName:true,cover:true, firstName:true, lastName:true}}, bannerUploader: contestBannerUploaderInclude}
     });
 
     const contestById = new Map(contests.map(contest => [contest.id, contest]))
@@ -1405,9 +1439,9 @@ const getMyActiveContests = async (userId:string) => {
 const getUpcomingContest = async () => {
     const contests = await prisma.contest.findMany({
         where: { status: ContestStatus.UPCOMING },
-        include: { creator: {select:{id:true, avatar:true,fullName:true,cover:true, firstName:true, lastName:true}}, bannerUploader: {select:{id:true, fullName:true}}}
+        include: { creator: {select:{id:true, avatar:true,fullName:true,cover:true, firstName:true, lastName:true}}, bannerUploader: contestBannerUploaderInclude}
     });
-    return contests;
+    return contests.map(contest => ({...contest, cardAttribution:getContestCardAttribution(contest)}));
 };
 
 //Get my contests which are completed
@@ -1489,7 +1523,7 @@ const getClosedContestsWithWinner = async () => {
         where: { status: {in:completedContestStatuses} },
         include: {
             creator: true,
-            bannerUploader: {select:{id:true, fullName:true}},
+            bannerUploader: contestBannerUploaderInclude,
             participants: {
                 include: {
                     user: true,
@@ -1502,6 +1536,7 @@ const getClosedContestsWithWinner = async () => {
         const winners = await getContestWinners(contest.id)
         return {
             ...contest,
+            cardAttribution:getContestCardAttribution(contest),
             winner:winners[0] || null,
             winners
         }
