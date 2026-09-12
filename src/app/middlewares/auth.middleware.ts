@@ -66,4 +66,48 @@ const auth = (...roles: string[]) => {
   };
 };
 
+export const optionalAuth = () => {
+  return async (
+    req: Request & { user?: any },
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const authorization = req.headers.authorization;
+
+      if (!authorization) {
+        return next();
+      }
+
+      const token = authorization.split(' ')[1];
+
+      if (!token) {
+        return next();
+      }
+
+      const verifiedUser = verifyToken(
+        token,
+        config.jwt.jwt_secret as Secret
+      );
+
+      const { id } = verifiedUser;
+
+      const user = await prisma.user.findUnique({
+        where: {
+          id: id,
+        },
+      });
+
+      if (!user || user.isDeleted) {
+        return next();
+      }
+
+      req.user = user;
+      next();
+    } catch (err) {
+      next();
+    }
+  };
+};
+
 export default auth;

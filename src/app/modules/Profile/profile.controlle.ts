@@ -27,7 +27,7 @@ export const getMyUploads = catchAsync(async (req: Request, res: Response) => {
 
 export const getUserPhotos = catchAsync(async (req: Request, res: Response) => {
     const targetUserId = req.params.id
-    const viewerId = req.user.id
+    const viewerId = req.user?.id
     const { page, limit } = req.query as { page?: string; limit?: string }
 
     let pageNum = page ? Number(page) : undefined
@@ -117,7 +117,7 @@ const deleteUserPhoto = catchAsync(async (req: Request, res: Response) => {
 // GET /profile/users/:id/profile — public user profile with isFollowed
 const getUserPublicProfile = catchAsync(async (req: Request, res: Response) => {
     const targetUserId = req.params.id
-    const viewerId = req.user.id
+    const viewerId = req.user?.id
 
     const result = await profileService.getUserProfileDetails(targetUserId, viewerId)
 
@@ -132,7 +132,7 @@ const getUserPublicProfile = catchAsync(async (req: Request, res: Response) => {
 // GET /profile/users/:id/photos/:photoId — public photo detail with isLiked + isFollowed + comments
 const getPublicPhotoDetails = catchAsync(async (req: Request, res: Response) => {
     const { id: targetUserId, photoId } = req.params
-    const viewerId = req.user.id
+    const viewerId = req.user?.id
 
     const result = await profileService.getPublicPhotoDetails(targetUserId, photoId, viewerId)
 

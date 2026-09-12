@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { profileController } from "./profile.controlle";
-import auth from "../../middlewares/auth.middleware";
+import auth, { optionalAuth } from "../../middlewares/auth.middleware";
 import { fileUploader } from "../../../helpers/fileUploader";
 
 const route = Router();
@@ -13,9 +13,9 @@ route.delete("/photos/:photoId", auth(), profileController.deleteUserPhoto);
 route.get("/stats", auth(), profileController.getUserStates);
 
 // Public user profile routes
-route.get("/users/:id", auth(), profileController.getUserPhotos);
-route.get("/users/:id/stats", auth(), profileController.getUserPublicStates);
-route.get("/users/:id/profile", auth(), profileController.getUserPublicProfile);
-route.get("/users/:id/photos/:photoId", auth(), profileController.getPublicPhotoDetails);
+route.get("/users/:id", optionalAuth(), profileController.getUserPhotos);
+route.get("/users/:id/stats", optionalAuth(), profileController.getUserPublicStates);
+route.get("/users/:id/profile", optionalAuth(), profileController.getUserPublicProfile);
+route.get("/users/:id/photos/:photoId", optionalAuth(), profileController.getPublicPhotoDetails);
 
-export const profileRoutes = route;
+export const profileRoutes = route;
