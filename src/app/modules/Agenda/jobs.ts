@@ -188,8 +188,15 @@ agenda.define("team:yearlyPayout", async () => {
     console.log(`Yearly team payout for period ${result.periodKey}: ${result.teamsRewarded} team(s) rewarded`)
 });
 
-// Photo-level exposure is now a plain expiry timestamp (ContestPhoto.exposureBoostExpiresAt),
-// checked live wherever it's read - no recurring decay job needed to maintain it.
+// Participant-level exposure is time-decayed so meters cannot stay stuck at a
+// charged/vote-boosted value. The service calculates missed intervals from the
+// last exposure update, so delayed scheduler ticks catch up safely.
+agenda.define("contest:decayExposure", async () => {
+    const decayedCount = await contestService.decayExposureMeters()
+    if(decayedCount > 0){
+        console.log(`Decayed exposure for ${decayedCount} contest participant(s)`)
+    }
+});
 
 
 agenda.define("promotion:remove", async (job: Job) => {

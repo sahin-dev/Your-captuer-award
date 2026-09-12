@@ -2162,7 +2162,7 @@ const findRivalFromQueue = async (
   participantCount: number,
 ) => {
   const teamsWithActiveMatch = await prisma.teamMatch.findMany({
-    where: { status: MatchStatus.ACTIVE },
+    where: { contestId, status: MatchStatus.ACTIVE },
     select: { team1Id: true, team2Id: true },
   });
   const busyTeamIds = new Set<string>([teamId]);

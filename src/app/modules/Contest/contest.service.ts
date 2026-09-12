@@ -40,6 +40,9 @@ const contestListCreatorInclude = {omit:{password:true, accessToken:true}} as co
 const PROMOTION_DURATION_MS = 24 * 60 * 60 * 1000 // promoted photos stay boosted for ~24 hours
 const EXPOSURE_BOOST_DURATION_MS = 60 * 60 * 1000 // a fresh submission/trade stays spotlighted for 1 hour
 const EXPOSURE_BOOST_WEIGHT_MULTIPLIER = 20 // how much more likely a spotlighted photo is to surface vs. its participant-level weight alone
+const EXPOSURE_MAX = 100
+const EXPOSURE_DECAY_INTERVAL_MS = 60 * 1000
+const EXPOSURE_DECAY_AMOUNT = 1
 // "Active" tab = anything not yet concluded; "Ended" tab = finished (successfully or not).
 const activeTabStatuses:ContestStatus[] = [ContestStatus.NEW, ContestStatus.UPCOMING, ContestStatus.OPEN, ContestStatus.JOINED, ContestStatus.ACTIVE, ContestStatus.FINALIZING]
 const endedTabStatuses:ContestStatus[] = [ContestStatus.COMPLETED, ContestStatus.CLOSED, ContestStatus.FINALIZATION_FAILED]
@@ -817,7 +820,9 @@ const joinContest = async (userId:string,contestId:string, acceptedRuleKeys?:unk
         }
 
         await chargeContestEntryFee(tx, activeContest, userId)
-        return tx.contestParticipant.create({data:{contestId,userId}})
+        return tx.contestParticipant.create({
+            data:{contestId, userId, exposure_bonus:0, exposureUpdatedAt:new Date()}
+        })
     })
 
     await notifyTeamMatchQueueOfContestJoin(userId, contestId)
@@ -1590,13 +1595,13 @@ const getContestUploadsToVote = async (userId:string, contestId:string, page?:nu
         ? contestUploads.filter(upload => !upload.promoted)
         : contestUploads
     // Base weight comes from the participant's own exposure_bonus (their
-    // voting-activity reward, always in effect). A photo still within its
+    // voting-activity reward, decayed over time). A photo still within its
     // 1-hour post-submission/trade spotlight window (exposureBoostExpiresAt)
     // gets that weight multiplied way up, so fresh/traded-in photos dominate
     // the queue for a while regardless of the photographer's own history -
     // once the window passes, it's back to just the participant-level weight.
     const exposureWeight = (upload:(typeof contestUploads)[number]) => {
-        const participantWeight = Math.max(upload.participant?.exposure_bonus ?? 100, 1)
+        const participantWeight = Math.max(upload.participant?.exposure_bonus ?? 0, 1)
         const isSpotlighted = Boolean(upload.exposureBoostExpiresAt && upload.exposureBoostExpiresAt.getTime() > Date.now())
         return isSpotlighted ? participantWeight * EXPOSURE_BOOST_WEIGHT_MULTIPLIER : participantWeight
     }
@@ -1779,7 +1784,9 @@ const uploadPhotoToContest = async (contestId:string,userId:string, photoIds:str
                 id:activeContest.id,
                 entryFeeCoins:activeContest.entryFeeCoins
             }, userId)
-            participant = await tx.contestParticipant.create({data:{contestId,userId}})
+            participant = await tx.contestParticipant.create({
+                data:{contestId, userId, exposure_bonus:0, exposureUpdatedAt:new Date()}
+            })
         }
         if(submissionLimit !== null){
             const existingUploadCount = await tx.contestPhoto.count({where:{contestId,participantId:participant.id}})
@@ -2228,11 +2235,49 @@ const chargePhoto = async (userId:string, contestId:string) => {
 
         await trx.contestParticipant.update({
             where:{id:participant.id},
-            data:{exposure_bonus:100}
+            data:{exposure_bonus:EXPOSURE_MAX, exposureUpdatedAt:new Date()}
         })
     })
 
     return await prisma.contestParticipant.findUnique({where:{id:participant.id}})
+}
+
+const decayExposureMeters = async () => {
+    const now = new Date()
+    const participants = await prisma.contestParticipant.findMany({
+        where:{
+            exposure_bonus:{gt:0},
+            contest:{status:ContestStatus.ACTIVE}
+        },
+        select:{
+            id:true,
+            exposure_bonus:true,
+            exposureUpdatedAt:true,
+            updatedAt:true
+        }
+    })
+
+    let decayedCount = 0
+    for(const participant of participants){
+        const referenceTime = participant.exposureUpdatedAt ?? participant.updatedAt ?? now
+        const elapsedIntervals = Math.floor((now.getTime() - referenceTime.getTime()) / EXPOSURE_DECAY_INTERVAL_MS)
+        if(elapsedIntervals <= 0){
+            continue
+        }
+
+        const nextExposure = Math.max(0, participant.exposure_bonus - (elapsedIntervals * EXPOSURE_DECAY_AMOUNT))
+        if(nextExposure === participant.exposure_bonus){
+            continue
+        }
+
+        const result = await prisma.contestParticipant.updateMany({
+            where:{id:participant.id, exposure_bonus:participant.exposure_bonus},
+            data:{exposure_bonus:nextExposure, exposureUpdatedAt:now}
+        })
+        decayedCount += result.count
+    }
+
+    return decayedCount
 }
 
 const rankLevelTabs = ['AMATEUR', 'TALENTED', 'SUPREME', 'SUPERIOR', 'TOP_NOTCH'] as const
@@ -2548,6 +2593,7 @@ export const contestService = {
     getRemainingPhotos,
     tradePhoto,
     chargePhoto,
+    decayExposureMeters,
     deleteContestUploadById,
     adminDeleteContestPhoto,
     getContestParticipants,

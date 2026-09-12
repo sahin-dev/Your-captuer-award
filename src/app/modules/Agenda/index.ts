@@ -30,6 +30,7 @@ export const startAgenda = async () => {
     await scheduler.every("five minute", "contest:checkRecurring");
     await scheduler.every("5 seconds", "contest:active");
     await scheduler.every("30 seconds", "contest:watchEnded");
+    await scheduler.every("1 minute", "contest:decayExposure");
     await scheduler.every("1 minute", "teamMatch:watchStale");
     await scheduler.every("1 minute", "teamMatch:watchQueueTimeouts");
     await scheduler.every("0 9 * * 0", "team:weeklyPayout"); // every Sunday 09:00

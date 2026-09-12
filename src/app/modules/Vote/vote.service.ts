@@ -51,9 +51,12 @@ export const addOneVote = async (userId:string, contestId:string, photoId:string
         const vote = await prisma.vote.create({data:{providerId:userId, contestId, photoId, photoRefId:contestPhoto.photoId, type, power:weight, weight}})
         // Casting a vote rewards the voter's own participation - their exposure
         // goes up, not the photo they voted for (that's driven separately by
-        // submission/trade + decay, see ContestPhoto.exposure_bonus).
+        // submission/trade spotlight windows and scheduled decay).
         if(voterParticipant){
-            await prisma.contestParticipant.update({where:{id:voterParticipant.id}, data:{exposure_bonus:{increment:2}}})
+            await prisma.contestParticipant.update({
+                where:{id:voterParticipant.id},
+                data:{exposure_bonus:{increment:2}, exposureUpdatedAt:new Date()}
+            })
         }
         globalEventHandler.publish(Events.NEW_VOTE,{photoId, contestId})
         await contestProgressService.evaluateParticipantLevel(contestId, contestPhoto.participantId)
