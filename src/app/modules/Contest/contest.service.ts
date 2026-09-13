@@ -38,6 +38,7 @@ const completedContestStatuses:ContestStatus[] = [ContestStatus.COMPLETED, Conte
 const isCompletedContest = (status:ContestStatus) => completedContestStatuses.includes(status)
 const contestListCreatorInclude = {omit:{password:true, accessToken:true}} as const
 const contestBannerUploaderInclude = {select:{id:true, fullName:true, username:true, avatar:true, firstName:true, lastName:true}} as const
+const editableContestStatuses:ContestStatus[] = [ContestStatus.NEW, ContestStatus.UPCOMING]
 const PROMOTION_DURATION_MS = 24 * 60 * 60 * 1000 // promoted photos stay boosted for ~24 hours
 const EXPOSURE_BOOST_DURATION_MS = 60 * 60 * 1000 // a fresh submission/trade stays spotlighted for 1 hour
 const EXPOSURE_BOOST_WEIGHT_MULTIPLIER = 20 // how much more likely a spotlighted photo is to surface vs. its participant-level weight alone
@@ -222,17 +223,31 @@ const getContestCreateOptions = async () => {
 // submissions" instead of uploading a fresh image).
 const getBannerCandidates = async (page:number = 1, limit:number = 20, search?:string) => {
     const {skip, limit:paginationLimit, page:currentPage} = paginationHelper.calculatePagination({page, limit})
-    const where:Prisma.UserPhotoWhereInput = {
-        adult:false,
-        ...(search && {
-            OR:[
-                {title:{contains:search, mode:"insensitive" as const}},
-                {user:{fullName:{contains:search, mode:"insensitive" as const}}}
-            ]
-        })
+    const searchTerm = search?.trim()
+    const matchingUserIds = searchTerm
+        ? (await prisma.user.findMany({
+            where:{
+                OR:[
+                    {fullName:{contains:searchTerm, mode:"insensitive" as const}},
+                    {username:{contains:searchTerm, mode:"insensitive" as const}}
+                ]
+            },
+            select:{id:true}
+        })).map(user => user.id)
+        : []
+
+    const where:Prisma.UserPhotoWhereInput = {adult:false}
+    if(searchTerm){
+        const searchConditions:Prisma.UserPhotoWhereInput[] = [
+            {title:{contains:searchTerm, mode:"insensitive" as const}}
+        ]
+        if(matchingUserIds.length > 0){
+            searchConditions.push({userId:{in:matchingUserIds}})
+        }
+        where.OR = searchConditions
     }
 
-    const [photos, total] = await Promise.all([
+    const [photoRows, total] = await Promise.all([
         prisma.userPhoto.findMany({
             where,
             select:{
@@ -240,7 +255,7 @@ const getBannerCandidates = async (page:number = 1, limit:number = 20, search?:s
                 url:true,
                 title:true,
                 createdAt:true,
-                user:{select:{id:true, fullName:true, username:true, avatar:true}}
+                userId:true
             },
             skip,
             take:paginationLimit,
@@ -248,6 +263,18 @@ const getBannerCandidates = async (page:number = 1, limit:number = 20, search?:s
         }),
         prisma.userPhoto.count({where})
     ])
+    const userIds = [...new Set(photoRows.map(photo => photo.userId))]
+    const users = userIds.length > 0
+        ? await prisma.user.findMany({
+            where:{id:{in:userIds}},
+            select:{id:true, fullName:true, username:true, avatar:true}
+        })
+        : []
+    const usersById = new Map(users.map(user => [user.id, user]))
+    const photos = photoRows.map(({userId, ...photo}) => ({
+        ...photo,
+        user:usersById.get(userId) || null
+    }))
 
     return {
         photos,
@@ -670,6 +697,9 @@ const updateContest = async (contestId:string, contestData:updateContestData, ba
     if(!contest){
         throw new ApiError(httpstatus.NOT_FOUND, "contest not found")
     }
+    if(contest.deletedAt){
+        throw new ApiError(httpstatus.BAD_REQUEST, "Archived contests cannot be edited")
+    }
 
     const lockedStatuses:ContestStatus[] = [
         ContestStatus.ACTIVE,
@@ -678,7 +708,7 @@ const updateContest = async (contestId:string, contestData:updateContestData, ba
         ContestStatus.COMPLETED,
         ContestStatus.CLOSED
     ]
-    if(lockedStatuses.includes(contest.status) || (contest.status !== ContestStatus.UPCOMING && contest.status !== ContestStatus.NEW)){
+    if(lockedStatuses.includes(contest.status) || !editableContestStatuses.includes(contest.status)){
         throw new ApiError(httpstatus.BAD_REQUEST, "Editing contest not allowed")
     }
 
@@ -813,8 +843,44 @@ const deleteContestByContestId =async (contestId:string)=>{
     if(contest.deletedAt){
         throw new ApiError(httpstatus.BAD_REQUEST, "contest already deleted!")
     }
+    if(!editableContestStatuses.includes(contest.status)){
+        throw new ApiError(httpstatus.BAD_REQUEST, "Only upcoming contests can be deleted")
+    }
 
-    await prisma.contest.update({where:{id:contestId}, data:{deletedAt:new Date()}})
+    const [
+        participantCount,
+        photoCount,
+        voteCount,
+        teamParticipationCount,
+        teamMatchCount,
+        teamMatchQueueCount
+    ] = await Promise.all([
+        prisma.contestParticipant.count({where:{contestId}}),
+        prisma.contestPhoto.count({where:{contestId}}),
+        prisma.vote.count({where:{contestId}}),
+        prisma.teamParticipation.count({where:{contestId}}),
+        prisma.teamMatch.count({where:{contestId}}),
+        prisma.teamMatchQueue.count({where:{contestId}})
+    ])
+
+    if(
+        participantCount > 0 ||
+        photoCount > 0 ||
+        voteCount > 0 ||
+        teamParticipationCount > 0 ||
+        teamMatchCount > 0 ||
+        teamMatchQueueCount > 0
+    ){
+        throw new ApiError(httpstatus.BAD_REQUEST, "Contest cannot be deleted after participation has started")
+    }
+
+    const deleted = await prisma.contest.updateMany({
+        where:{id:contestId, status:{in:editableContestStatuses}, ...notDeleted},
+        data:{deletedAt:new Date()}
+    })
+    if(deleted.count !== 1){
+        throw new ApiError(httpstatus.BAD_REQUEST, "Contest can no longer be deleted")
+    }
     return "contest deleted!"
 }
 
