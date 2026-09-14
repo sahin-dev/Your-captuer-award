@@ -365,7 +365,7 @@ const createContest = async (creatorId: string, body: contestData, banner:Expres
         currency:body.isMoneyContest ? body.currency : null,
         minPrize:body.isMoneyContest ? body.minPrize : 0,
         maxPrize:body.isMoneyContest ? body.maxPrize : 0,
-        entryFeeAmount:body.isMoneyContest ? (body.entryFeeAmount || 0) : 0,
+        entryFeeAmount:body.entryFeeAmount || 0,
         entryFeeCoins:body.coinRequirement === false ? 0 : (body.entryFeeCoins || 0),
         maxUpload:contestRuleService.getSubmissionLimitFromRules(normalizedRules),
         ...(bannerFromUserPhoto
@@ -641,7 +641,7 @@ const createRecurringContest  =  async (creatorId: string, body: contestData, ba
         currency:body.isMoneyContest ? body.currency : null,
         minPrize:body.isMoneyContest ? body.minPrize : 0,
         maxPrize:body.isMoneyContest ? body.maxPrize : 0,
-        entryFeeAmount:body.isMoneyContest ? (body.entryFeeAmount || 0) : 0,
+        entryFeeAmount:body.entryFeeAmount || 0,
         entryFeeCoins:body.coinRequirement === false ? 0 : (body.entryFeeCoins || 0)
 
     }
@@ -728,7 +728,7 @@ const updateContest = async (contestId:string, contestData:updateContestData, ba
     const minPrize = contestData.minPrize ?? contest.minPrize ?? 0
     const maxPrize = contestData.maxPrize ?? contest.maxPrize ?? 0
     const currency = contestData.currency === undefined ? contest.currency : contestData.currency
-    const entryFeeAmount = isMoneyContest ? (contestData.entryFeeAmount ?? contest.entryFeeAmount ?? 0) : 0
+    const entryFeeAmount = contestData.entryFeeAmount ?? contest.entryFeeAmount ?? 0
     if(isMoneyContest && (!currency || minPrize > maxPrize)){
         throw new ApiError(httpstatus.BAD_REQUEST, "Money contests require valid currency and prize bounds")
     }
@@ -907,7 +907,7 @@ const joinContest = async (userId:string,contestId:string, acceptedRuleKeys?:unk
 
     await contestRuleEngine.validateJoinRules(contestId, userId, acceptedRuleKeys)
 
-    if(contest.isMoneyContest && contest.entryFeeAmount > 0){
+    if(contest.entryFeeAmount > 0){
         throw new ApiError(httpstatus.PAYMENT_REQUIRED, "Stripe payment is required to enter this contest")
     }
 
@@ -956,12 +956,12 @@ const completePaidContestJoin = async (
 
         const contest = await tx.contest.findUnique({
             where:{id:contestId},
-            select:{id:true, status:true, isMoneyContest:true, entryFeeAmount:true, currency:true, entryFeeCoins:true}
+            select:{id:true, status:true, entryFeeAmount:true, currency:true, entryFeeCoins:true}
         })
         if(!contest || contest.status !== ContestStatus.ACTIVE){
             throw new ApiError(httpstatus.BAD_REQUEST, "Contest is no longer accepting participants")
         }
-        if(!contest.isMoneyContest || contest.entryFeeAmount <= 0){
+        if(contest.entryFeeAmount <= 0){
             throw new ApiError(httpstatus.BAD_REQUEST, "This contest does not require Stripe entry payment")
         }
 
@@ -1915,7 +1915,7 @@ const uploadPhotoToContest = async (contestId:string,userId:string, photoIds:str
             throw new ApiError(httpstatus.PAYMENT_REQUIRED, "Insufficient coins to enter this contest")
         }
     }
-    if(isJoiningThroughUpload && contest.isMoneyContest && contest.entryFeeAmount > 0){
+    if(isJoiningThroughUpload && contest.entryFeeAmount > 0){
         throw new ApiError(httpstatus.PAYMENT_REQUIRED, "Stripe payment is required to enter this contest")
     }
 

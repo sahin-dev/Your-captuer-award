@@ -248,7 +248,7 @@ import httpStatus from 'http-status';
       };
     }
 
-    if (!contest.isMoneyContest || contest.entryFeeAmount <= 0) {
+    if (contest.entryFeeAmount <= 0) {
       throw new ApiError(httpStatus.BAD_REQUEST, "This contest does not require Stripe entry payment");
     }
 

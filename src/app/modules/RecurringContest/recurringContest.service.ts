@@ -88,7 +88,7 @@ const updateRecurringContest = async (recurringContestId: string, data: Recurrin
   const minPrize = data.minPrize ?? recurringContest.minPrize ?? 0;
   const maxPrize = data.maxPrize ?? recurringContest.maxPrize ?? 0;
   const currency = data.currency === undefined ? recurringContest.currency : data.currency;
-  const entryFeeAmount = isMoneyContest ? (data.entryFeeAmount ?? recurringContest.entryFeeAmount ?? 0) : 0;
+  const entryFeeAmount = data.entryFeeAmount ?? recurringContest.entryFeeAmount ?? 0;
   if(isMoneyContest && (!currency || minPrize > maxPrize)){
     throw new ApiError(httpStatus.BAD_REQUEST, "Money contests require valid currency and prize bounds");
   }
