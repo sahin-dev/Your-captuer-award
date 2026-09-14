@@ -1498,17 +1498,42 @@ const rejectJoinRequest = async (joinRequestId: string, userId: string) => {
 
 // ============ Leaderboard & Match History ============
 
-const PERIOD_DAYS: Record<"weekly" | "monthly" | "yearly", number> = {
-  weekly: 7,
-  monthly: 30,
-  yearly: 365,
+const WEEKLY_PERIOD_DAYS = 7;
+type TeamLeaderboardPeriod = "weekly" | "monthly" | "yearly";
+
+const compareTeamStandingEntries = (
+  a: [string, { score: number; wins: number }],
+  b: [string, { score: number; wins: number }],
+) =>
+  b[1].score - a[1].score ||
+  b[1].wins - a[1].wins ||
+  a[0].localeCompare(b[0]);
+
+const getCurrentLeaderboardWindow = (period: TeamLeaderboardPeriod, now = new Date()) => {
+  if (period === "monthly") {
+    return {
+      start: new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)),
+      end: now,
+    };
+  }
+
+  if (period === "yearly") {
+    return {
+      start: new Date(Date.UTC(now.getUTCFullYear(), 0, 1)),
+      end: now,
+    };
+  }
+
+  const start = new Date(now);
+  start.setUTCDate(start.getUTCDate() - WEEKLY_PERIOD_DAYS);
+  return { start, end: now };
 };
 
 const getTeamLeaderboard = async (
   contestId?: string,
   page?: number,
   limit?: number,
-  period: "weekly" | "monthly" | "yearly" = "weekly",
+  period: TeamLeaderboardPeriod = "weekly",
 ) => {
   const {
     skip,
@@ -1516,12 +1541,10 @@ const getTeamLeaderboard = async (
     page: currentPage,
   } = paginationHelper.calculatePagination({ page, limit });
 
-  const cutoff = new Date(
-    Date.now() - PERIOD_DAYS[period] * 24 * 60 * 60 * 1000,
-  );
+  const window = getCurrentLeaderboardWindow(period);
 
   const historyWhere = {
-    match_date: { gte: cutoff },
+    match_date: { gte: window.start, lte: window.end },
     ...(contestId ? { contest_id: contestId } : {}),
   };
 
@@ -1540,12 +1563,7 @@ const getTeamLeaderboard = async (
     statsByTeam.set(entry.teamId, existing);
   });
 
-  const ranked = Array.from(statsByTeam.entries()).sort(
-    (a, b) =>
-      b[1].wins - a[1].wins ||
-      b[1].score - a[1].score ||
-      a[0].localeCompare(b[0]),
-  );
+  const ranked = Array.from(statsByTeam.entries()).sort(compareTeamStandingEntries);
 
   const total = ranked.length;
   const pageSlice = ranked.slice(skip, skip + take);
@@ -1616,12 +1634,7 @@ const computeTeamStandingsForWindow = async (start: Date, end: Date) => {
   });
 
   return Array.from(statsByTeam.entries())
-    .sort(
-      (a, b) =>
-        b[1].wins - a[1].wins ||
-        b[1].score - a[1].score ||
-        a[0].localeCompare(b[0]),
-    )
+    .sort(compareTeamStandingEntries)
     .map(([teamId, stats], index) => ({ teamId, rank: index + 1, ...stats }));
 };
 
