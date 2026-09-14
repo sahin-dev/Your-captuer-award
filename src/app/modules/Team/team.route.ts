@@ -58,7 +58,6 @@ router.post(
 
 router.get("/", auth(), teamController.getTeams);
 router.get("/search/by-name", auth(), teamController.searchTeamsByName);
-router.get("/:teamId", teamController.getTeamDetails);
 
 router.get("/members/:teamId", teamController.getAllTeamMembers);
 router.put(
@@ -146,5 +145,7 @@ router.get(
   auth(),
   teamController.getTeamContestMatchView,
 );
+
+router.get("/:teamId", teamController.getTeamDetails);
 
 export const teamRoutes = router;

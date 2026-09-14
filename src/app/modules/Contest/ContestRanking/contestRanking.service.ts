@@ -86,6 +86,9 @@ const buildContestRanking = async (contestId: string): Promise<ContestRanking> =
         userId: true,
         createdAt: true,
         photos: {
+          where: {
+            photoId: { not: null },
+          },
           select: {
             id: true,
             photoId: true,

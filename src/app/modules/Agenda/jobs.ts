@@ -1,8 +1,10 @@
-import { ContestStatus, RecurringContestStatus } from '../../../prismaClient';
+import { ContestStatus, Prisma, RecurringContestStatus } from '../../../prismaClient';
 import { Agenda, Job } from "agenda";
 import prisma from '../../../shared/prisma';
 import {contestService } from '../Contest/contest.service';
 import { teamService } from '../Team/team.service';
+
+const notDeleted:Prisma.ContestWhereInput = {OR:[{deletedAt:null}, {deletedAt:{isSet:false}}]}
 
 
 
@@ -15,7 +17,7 @@ export const registerAgendaJobs = (agenda:Agenda) => {
 agenda.define('contest:checkUpcoming', async () => {
 
     const contests = await prisma.contest.findMany({
-        where: { status:ContestStatus.UPCOMING },
+        where: { status:ContestStatus.UPCOMING, ...notDeleted },
     });
 
     if (contests.length <= 0){
@@ -79,12 +81,12 @@ agenda.define('contest:checkUpcoming', async () => {
 agenda.define("contest:active", async ()=>{
     const now = new Date()
     const upcomingContest = await prisma.contest.findMany({
-        where:{status:ContestStatus.UPCOMING, startDate:{lte:now}}
+        where:{status:ContestStatus.UPCOMING, startDate:{lte:now}, ...notDeleted}
     })
     console.log(`Found ${upcomingContest.length} upcoming contests`)
     for(const contest of upcomingContest){
         const activated = await prisma.contest.updateMany({
-            where:{id:contest.id, status:ContestStatus.UPCOMING},
+            where:{id:contest.id, status:ContestStatus.UPCOMING, ...notDeleted},
             data:{status:ContestStatus.ACTIVE, startedAt:now}
         })
         if(activated.count === 1){
@@ -128,6 +130,10 @@ agenda.define("contest:watcher", async (job: Job) => {
     const contest = await prisma.contest.findUnique({where:{id:contestId}})
     if (!contest){
         throw new Error("'Contest:watcher, contest not found")
+    }
+    if(contest.deletedAt){
+        console.log(`Contest ${contestId} is archived; skipping finalization`)
+        return
     }
 
     await contestService.identifyWinner(contestId)

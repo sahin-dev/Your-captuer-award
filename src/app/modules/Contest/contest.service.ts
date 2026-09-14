@@ -2479,6 +2479,7 @@ const getContestPhotosSortedByVote = async (contestId:string, page?:number, limi
                 userPhotoId:upload.photo.id,
                 url:upload.photo.url,
                 title:upload.photo.title,
+                score:photo.score,
                 voteCount:photo.voteCount,
                 rank:photo.rank,
                 photographer:upload.participant.user
@@ -2573,6 +2574,7 @@ const getContestTopPhotographers = async (
                     participantId: participant.id,
                     rank: photographer.rank,
                     level: getDesignLevelFromYCLevel(photographer.level),
+                    score: photographer.score,
                     user: participant.user,
                     photos: participant.photos
                         .flatMap(photo =>

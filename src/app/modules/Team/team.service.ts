@@ -1541,7 +1541,10 @@ const getTeamLeaderboard = async (
   });
 
   const ranked = Array.from(statsByTeam.entries()).sort(
-    (a, b) => b[1].wins - a[1].wins || b[1].score - a[1].score,
+    (a, b) =>
+      b[1].wins - a[1].wins ||
+      b[1].score - a[1].score ||
+      a[0].localeCompare(b[0]),
   );
 
   const total = ranked.length;
@@ -1613,7 +1616,12 @@ const computeTeamStandingsForWindow = async (start: Date, end: Date) => {
   });
 
   return Array.from(statsByTeam.entries())
-    .sort((a, b) => b[1].wins - a[1].wins || b[1].score - a[1].score)
+    .sort(
+      (a, b) =>
+        b[1].wins - a[1].wins ||
+        b[1].score - a[1].score ||
+        a[0].localeCompare(b[0]),
+    )
     .map(([teamId, stats], index) => ({ teamId, rank: index + 1, ...stats }));
 };
 
