@@ -1,10 +1,11 @@
 // PaymentService.ts
 import ApiError from "../../../errors/ApiError";
-import { PaymentStatus, PlanRecurringType, PaymentType } from "../../../prismaClient";
+import config from "../../../config";
+import { ContestStatus, PaymentStatus, PlanRecurringType, PaymentType } from "../../../prismaClient";
 import prisma from "../../../shared/prisma";
+import { contestRuleEngine } from "../Contest/ContestRules/contestRule.engine";
 import { storeService } from "../Store/store.service";
 import { subscriptionService } from "../Subscription/subscription.service";
-import { PaymentMethod } from "./payment.interface";
 import { PaymentFactory } from "./paymentFactory";
 import { PaymentRegistry } from "./paymentRegistry";
 import { loadProviders } from "./providerLoader";
@@ -208,6 +209,99 @@ import httpStatus from 'http-status';
     );
 
     // Update payment with Stripe session ID
+    await prisma.payment.update({
+      where: { id: payment.id },
+      data: {
+        stripe_session_id: session.id,
+        status: PaymentStatus.PENDING
+      }
+    });
+
+    return session;
+  }
+
+  async purchaseContestEntry(
+    userId: string,
+    contestId: string,
+    success_url?: string,
+    cancel_url?: string,
+    acceptedRuleKeys?: unknown
+  ) {
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      throw new ApiError(httpStatus.NOT_FOUND, "User not found");
+    }
+
+    const contest = await prisma.contest.findUnique({ where: { id: contestId } });
+    if (!contest || contest.status !== ContestStatus.ACTIVE) {
+      throw new ApiError(httpStatus.NOT_FOUND, "Contest is not available to participate");
+    }
+
+    const existingParticipant = await prisma.contestParticipant.findUnique({
+      where: { contestId_userId: { contestId, userId } }
+    });
+    if (existingParticipant) {
+      return {
+        contest_id: contestId,
+        participant_id: existingParticipant.id,
+        message: "You have already joined this contest"
+      };
+    }
+
+    if (!contest.isMoneyContest || contest.entryFeeAmount <= 0) {
+      throw new ApiError(httpStatus.BAD_REQUEST, "This contest does not require Stripe entry payment");
+    }
+
+    await contestRuleEngine.validateJoinRules(contestId, userId, acceptedRuleKeys);
+
+    if (contest.entryFeeCoins > 0) {
+      const store = await prisma.userStore.findUnique({
+        where: { userId },
+        select: { coins: true }
+      });
+      if (!store || store.coins < contest.entryFeeCoins) {
+        throw new ApiError(httpStatus.PAYMENT_REQUIRED, "Insufficient coins to enter this contest");
+      }
+    }
+
+    const currency = contest.currency || "USD";
+    const payment = await prisma.payment.create({
+      data: {
+        amount: contest.entryFeeAmount,
+        type: PaymentType.CONTEST,
+        currency,
+        contestId: contest.id,
+        method: "stripe",
+        userId,
+        recurring: PlanRecurringType.ONETIME,
+        description: `Contest entry - ${contest.title}`
+      }
+    });
+
+    const frontendUrl = config.forontend_url || config.web_redirect_success || "http://localhost:3000";
+    const successUrl =
+      success_url ||
+      `${frontendUrl}/contest/${contest.id}?payment=success&modal=joinSuccess`;
+    const cancelUrl =
+      cancel_url ||
+      `${frontendUrl}/contest/${contest.id}?payment=cancelled`;
+
+    const provider = PaymentFactory.getProvider("STRIPE");
+    const session = await provider.initializePaymentSession(
+      userId,
+      contest.entryFeeAmount,
+      currency,
+      successUrl,
+      cancelUrl,
+      {
+        userId,
+        payment_id: payment.id,
+        contest_id: contest.id,
+        purpose: "CONTEST_ENTRY"
+      },
+      `Entry fee - ${contest.title}`
+    );
+
     await prisma.payment.update({
       where: { id: payment.id },
       data: {

@@ -2,7 +2,7 @@ import prisma from '../../../shared/prisma';
 import ApiError from '../../../errors/ApiError';
 import httpstatus from 'http-status';
 import { fileUploader } from '../../../helpers/fileUploader';
-import { AchievementKind, ContestOccurrenceStatus, ContestParticipant, ContestPhoto, ContestStatus, Prisma, PrizeType, RecurringContest, RecurringContestStatus, RecurringType, TeamMemberStatus, YCLevel } from '../../../prismaClient';
+import { AchievementKind, ContestOccurrenceStatus, ContestParticipant, ContestPhoto, ContestStatus, PaymentStatus, Prisma, PrizeType, RecurringContest, RecurringContestStatus, RecurringType, TeamMemberStatus, YCLevel } from '../../../prismaClient';
 import { contestData, updateContestData } from './contest.type';
 import { contestRuleService } from './ContestRules/contestRules.service';
 import { ContestRuleConfigInput } from './ContestRules/contestRules.type';
@@ -365,6 +365,7 @@ const createContest = async (creatorId: string, body: contestData, banner:Expres
         currency:body.isMoneyContest ? body.currency : null,
         minPrize:body.isMoneyContest ? body.minPrize : 0,
         maxPrize:body.isMoneyContest ? body.maxPrize : 0,
+        entryFeeAmount:body.isMoneyContest ? (body.entryFeeAmount || 0) : 0,
         entryFeeCoins:body.coinRequirement === false ? 0 : (body.entryFeeCoins || 0),
         maxUpload:contestRuleService.getSubmissionLimitFromRules(normalizedRules),
         ...(bannerFromUserPhoto
@@ -503,6 +504,7 @@ const materializeRecurringOccurrence = async (rContest:RecurringContest, options
                     maxPrize:rContest.maxPrize,
                     minPrize:rContest.minPrize,
                     currency:rContest.currency,
+                    entryFeeAmount:rContest.entryFeeAmount,
                     entryFeeCoins:rContest.entryFeeCoins,
                     category:rContest.category,
                     description:rContest.description,
@@ -639,6 +641,7 @@ const createRecurringContest  =  async (creatorId: string, body: contestData, ba
         currency:body.isMoneyContest ? body.currency : null,
         minPrize:body.isMoneyContest ? body.minPrize : 0,
         maxPrize:body.isMoneyContest ? body.maxPrize : 0,
+        entryFeeAmount:body.isMoneyContest ? (body.entryFeeAmount || 0) : 0,
         entryFeeCoins:body.coinRequirement === false ? 0 : (body.entryFeeCoins || 0)
 
     }
@@ -725,6 +728,7 @@ const updateContest = async (contestId:string, contestData:updateContestData, ba
     const minPrize = contestData.minPrize ?? contest.minPrize ?? 0
     const maxPrize = contestData.maxPrize ?? contest.maxPrize ?? 0
     const currency = contestData.currency === undefined ? contest.currency : contestData.currency
+    const entryFeeAmount = isMoneyContest ? (contestData.entryFeeAmount ?? contest.entryFeeAmount ?? 0) : 0
     if(isMoneyContest && (!currency || minPrize > maxPrize)){
         throw new ApiError(httpstatus.BAD_REQUEST, "Money contests require valid currency and prize bounds")
     }
@@ -774,6 +778,7 @@ const updateContest = async (contestId:string, contestData:updateContestData, ba
                 currency:isMoneyContest ? currency : null,
                 minPrize:isMoneyContest ? minPrize : 0,
                 maxPrize:isMoneyContest ? maxPrize : 0,
+                entryFeeAmount,
                 entryFeeCoins,
                 ...(normalizedRules !== undefined && {maxUpload:contestRuleService.getSubmissionLimitFromRules(normalizedRules)}),
             }
@@ -902,6 +907,10 @@ const joinContest = async (userId:string,contestId:string, acceptedRuleKeys?:unk
 
     await contestRuleEngine.validateJoinRules(contestId, userId, acceptedRuleKeys)
 
+    if(contest.isMoneyContest && contest.entryFeeAmount > 0){
+        throw new ApiError(httpstatus.PAYMENT_REQUIRED, "Stripe payment is required to enter this contest")
+    }
+
     const participant = await prisma.$transaction(async tx => {
         const participant = await tx.contestParticipant.findUnique({
             where:{contestId_userId:{contestId,userId}}
@@ -928,6 +937,59 @@ const joinContest = async (userId:string,contestId:string, acceptedRuleKeys?:unk
 
     return {contest_id:contestId, participant_id:participant.id}
 
+}
+
+const completePaidContestJoin = async (
+    userId:string,
+    contestId:string,
+    paymentId:string,
+    stripePaymentId?:string
+) => {
+    const participant = await prisma.$transaction(async tx => {
+        const payment = await tx.payment.findUnique({where:{id:paymentId}})
+        if(!payment){
+            throw new ApiError(httpstatus.NOT_FOUND, "Payment not found")
+        }
+        if(payment.userId !== userId || payment.contestId !== contestId){
+            throw new ApiError(httpstatus.BAD_REQUEST, "Payment does not match this contest entry")
+        }
+
+        const contest = await tx.contest.findUnique({
+            where:{id:contestId},
+            select:{id:true, status:true, isMoneyContest:true, entryFeeAmount:true, currency:true, entryFeeCoins:true}
+        })
+        if(!contest || contest.status !== ContestStatus.ACTIVE){
+            throw new ApiError(httpstatus.BAD_REQUEST, "Contest is no longer accepting participants")
+        }
+        if(!contest.isMoneyContest || contest.entryFeeAmount <= 0){
+            throw new ApiError(httpstatus.BAD_REQUEST, "This contest does not require Stripe entry payment")
+        }
+
+        await tx.payment.update({
+            where:{id:paymentId},
+            data:{
+                status:PaymentStatus.SUCCEEDED,
+                ...(stripePaymentId ? {stripe_payment_id:stripePaymentId} : {})
+            }
+        })
+
+        await chargeContestEntryFee(tx, contest, userId)
+
+        const existingParticipant = await tx.contestParticipant.findUnique({
+            where:{contestId_userId:{contestId,userId}}
+        })
+        if(existingParticipant){
+            return existingParticipant
+        }
+
+        return tx.contestParticipant.create({
+            data:{contestId, userId, exposure_bonus:0, exposureUpdatedAt:new Date()}
+        })
+    })
+
+    await notifyTeamMatchQueueOfContestJoin(userId, contestId)
+
+    return {contest_id:contestId, participant_id:participant.id}
 }
 
 
@@ -1853,6 +1915,9 @@ const uploadPhotoToContest = async (contestId:string,userId:string, photoIds:str
             throw new ApiError(httpstatus.PAYMENT_REQUIRED, "Insufficient coins to enter this contest")
         }
     }
+    if(isJoiningThroughUpload && contest.isMoneyContest && contest.entryFeeAmount > 0){
+        throw new ApiError(httpstatus.PAYMENT_REQUIRED, "Stripe payment is required to enter this contest")
+    }
 
     let selectedPhotoIds:string[] = []
     if(file){
@@ -2674,6 +2739,7 @@ export const contestService = {
     updateContest,
     getBannerCandidates,
     getTradeableHistory,
+    completePaidContestJoin,
     joinContest,
     getContestById,
     getPublicContests,

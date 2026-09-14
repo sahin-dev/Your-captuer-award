@@ -16,6 +16,7 @@ class PaymentRouter {
     private registerRoutes(){
         // Payment initiation
         this.router.post("/", auth(), this.paymentController.pay)
+        this.router.post("/contest-entry", auth(), this.paymentController.purchaseContestEntry)
         
         // Get user's payment history
         this.router.get("/history", auth(), this.paymentController.getUserPayments)

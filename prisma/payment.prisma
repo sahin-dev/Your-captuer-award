@@ -2,6 +2,7 @@ model Payment {
     id                  String              @id @default(auto()) @map("_id") @db.ObjectId
     status              PaymentStatus       @default(PENDING)
     productId           String?             @db.ObjectId
+    contestId           String?             @db.ObjectId
     planId              String?             @db.ObjectId
     subscriptionId      String?             @db.ObjectId
     planName            SubscriptionPlanEnum?

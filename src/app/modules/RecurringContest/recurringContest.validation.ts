@@ -29,6 +29,7 @@ export const updateRecurringContestSchema = z.object({
   maxPrize: z.preprocess((value) => Number(value), z.number().int().min(0)).optional(),
   minPrize: z.preprocess((value) => Number(value), z.number().int().min(0)).optional(),
   currency: z.string().trim().toUpperCase().regex(/^[A-Z]{3}$/).nullable().optional(),
+  entryFeeAmount: z.preprocess((value) => Number(value), z.number().min(0).max(100000000)).optional(),
   entryFeeCoins: z.preprocess((value) => Number(value), z.number().int().min(0).max(100000000)).optional(),
   rules: z.preprocess(parseJsonArray, contestRuleInputArraySchema).optional(),
 });

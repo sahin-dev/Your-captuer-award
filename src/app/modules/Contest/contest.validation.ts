@@ -119,6 +119,10 @@ const createContestObjectSchema = z.object({
         .optional(),
     maxPrize: z.preprocess(parseOptionalNumberField, z.number().int().nonnegative().optional()),
     minPrize: z.preprocess(parseOptionalNumberField, z.number().int().nonnegative().optional()),
+    entryFeeAmount: z.preprocess(
+        parseOptionalNumberField,
+        z.number().nonnegative().max(100000000).optional()
+    ),
     coinRequirement: z.preprocess(parseBooleanField, z.boolean()).optional(),
     entryFeeCoins: z.preprocess(
         parseOptionalNumberField,
@@ -191,6 +195,10 @@ const updateContestObjectSchema = z.object({
     ]).optional(),
     maxPrize: z.preprocess(parseOptionalNumberField, z.number().int().nonnegative().optional()),
     minPrize: z.preprocess(parseOptionalNumberField, z.number().int().nonnegative().optional()),
+    entryFeeAmount: z.preprocess(
+        parseOptionalNumberField,
+        z.number().nonnegative().max(100000000).optional()
+    ),
     coinRequirement: z.preprocess(parseBooleanField, z.boolean()).optional(),
     entryFeeCoins: z.preprocess(
         parseOptionalNumberField,

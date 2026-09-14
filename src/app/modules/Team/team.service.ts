@@ -1507,24 +1507,12 @@ type TeamStandingStats = {
   draws: number;
 };
 
-const getTeamMatchPoints = (result: HistoryResult) => {
-  if (result === HistoryResult.WIN) {
-    return 3;
-  }
-
-  if (result === HistoryResult.DRAW) {
-    return 1;
-  }
-
-  return 0;
-};
-
 const compareTeamStandingEntries = (
   a: [string, TeamStandingStats],
   b: [string, TeamStandingStats],
 ) =>
-  b[1].score - a[1].score ||
   b[1].totalVotes - a[1].totalVotes ||
+  b[1].score - a[1].score ||
   a[0].localeCompare(b[0]);
 
 const getCurrentLeaderboardWindow = (period: TeamLeaderboardPeriod, now = new Date()) => {
@@ -1581,8 +1569,8 @@ const getTeamLeaderboard = async (
       wins: 0,
       draws: 0,
     };
-    existing.score += getTeamMatchPoints(entry.result);
     existing.totalVotes += entry.team_score;
+    existing.score = existing.totalVotes;
     if (entry.result === HistoryResult.WIN) existing.wins += 1;
     if (entry.result === HistoryResult.DRAW) existing.draws += 1;
     statsByTeam.set(entry.teamId, existing);
@@ -1660,8 +1648,8 @@ const computeTeamStandingsForWindow = async (start: Date, end: Date) => {
       wins: 0,
       draws: 0,
     };
-    existing.score += getTeamMatchPoints(entry.result);
     existing.totalVotes += entry.team_score;
+    existing.score = existing.totalVotes;
     if (entry.result === HistoryResult.WIN) existing.wins += 1;
     if (entry.result === HistoryResult.DRAW) existing.draws += 1;
     statsByTeam.set(entry.teamId, existing);
@@ -1781,14 +1769,11 @@ const updateTeamStatsForMatch = async (
   matchId: string,
   contestId: string,
 ) => {
-  const scoreDelta =
-    result === HistoryResult.WIN ? 3 : result === HistoryResult.DRAW ? 1 : 0;
-
   await tx.team.update({
     where: { id: teamId },
     data: {
       total_matches: { increment: 1 },
-      score: { increment: scoreDelta },
+      score: { increment: teamScore },
       win: { increment: result === HistoryResult.WIN ? 1 : 0 },
       lost: { increment: result === HistoryResult.LOSS ? 1 : 0 },
       draw: { increment: result === HistoryResult.DRAW ? 1 : 0 },
@@ -1849,6 +1834,85 @@ const getMatchScoreSnapshot = async (match: any) => {
     team1Score: team1Side.totalVote,
     team2Score: team2Side.totalVote,
   };
+};
+
+const MATCH_WINNER_MEMBER_REWARD_COINS = [100, 50, 25];
+
+const payoutMatchWinnerMemberRewards = async (
+  matchId: string,
+  contestId: string,
+  winnerTeamId?: string,
+) => {
+  if (!winnerTeamId) {
+    return [];
+  }
+
+  const team = await prisma.team.findUnique({
+    where: { id: winnerTeamId },
+    select: { id: true, name: true },
+  });
+  if (!team) {
+    return [];
+  }
+
+  const members = (await getEligibleContestMembers(team.id, contestId))
+    .sort(
+      (a, b) =>
+        b.totalVote - a.totalVote ||
+        a.createdAt.getTime() - b.createdAt.getTime(),
+    )
+    .slice(0, MATCH_WINNER_MEMBER_REWARD_COINS.length);
+
+  const rewarded: Array<{ userId: string; rank: number; coins: number }> = [];
+
+  for (const [index, member] of members.entries()) {
+    const rank = index + 1;
+    const coins = MATCH_WINNER_MEMBER_REWARD_COINS[index];
+    const existingTransaction = await prisma.teamRewardTransaction.findUnique({
+      where: {
+        teamId_userId_period_periodKey: {
+          teamId: team.id,
+          userId: member.memberId,
+          period: TeamRewardPeriod.MATCH,
+          periodKey: matchId,
+        },
+      },
+    });
+    if (existingTransaction) {
+      continue;
+    }
+
+    await prisma.$transaction(async (tx) => {
+      await tx.teamRewardTransaction.create({
+        data: {
+          teamId: team.id,
+          userId: member.memberId,
+          period: TeamRewardPeriod.MATCH,
+          periodKey: matchId,
+          rank,
+          coins,
+        },
+      });
+
+      await tx.userStore.upsert({
+        where: { userId: member.memberId },
+        create: { userId: member.memberId, coins },
+        update: { coins: { increment: coins } },
+      });
+    });
+
+    await notificationOrchestrator.notifyTeamRewardGranted(
+      member.memberId,
+      team.id,
+      team.name,
+      "MATCH",
+      rank,
+      coins,
+    );
+    rewarded.push({ userId: member.memberId, rank, coins });
+  }
+
+  return rewarded;
 };
 
 const closeMatchWithScores = async (
@@ -1948,6 +2012,12 @@ const closeMatchWithScores = async (
     team2Result,
     resolvedTeam2Score,
     resolvedTeam1Score,
+  );
+
+  await payoutMatchWinnerMemberRewards(
+    matchId,
+    match.contestId,
+    updatedMatch.winner_id || undefined,
   );
 
   return updatedMatch;

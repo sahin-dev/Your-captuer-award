@@ -197,6 +197,7 @@ model TeamRewardTransaction {
 }
 
 enum TeamRewardPeriod {
+  MATCH
   WEEKLY
   MONTHLY
   YEARLY

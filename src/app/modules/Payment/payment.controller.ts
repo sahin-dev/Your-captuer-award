@@ -28,6 +28,30 @@ export class PaymentController {
         })
     })
 
+    purchaseContestEntry = catchAsync(async (req:Request, res:Response)=>{
+        const {contestId, success_url, cancel_url, acceptedRuleKeys} = req.body
+        const {id} = req.user
+
+        if (!contestId) {
+            throw new ApiError(httpStatus.BAD_REQUEST, "Contest ID is required")
+        }
+
+        const paymentData = await this.paymentService.purchaseContestEntry(
+            id,
+            contestId,
+            success_url,
+            cancel_url,
+            acceptedRuleKeys
+        )
+
+        sendResponse(res, {
+            success:true,
+            statusCode:httpStatus.OK,
+            message:"Contest entry payment initiated successfully",
+            data:paymentData
+        })
+    })
+
     /**
      * Get user's payment history with pagination
      */

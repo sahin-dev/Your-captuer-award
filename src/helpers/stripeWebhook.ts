@@ -1,8 +1,9 @@
 import { Request, Response } from "express";
 import Stripe from "stripe";
+import { contestService } from "../app/modules/Contest/contest.service";
 import { notificationService } from "../app/modules/Notification/notification.service";
 import config from "../config";
-import { NotificationType, PaymentStatus } from "../prismaClient";
+import { NotificationType, PaymentStatus, PaymentType } from "../prismaClient";
 import prisma from "../shared/prisma";
 
 const stripe = new Stripe(config.stripe_key as string);
@@ -183,6 +184,42 @@ const handleCheckoutSuccess = async (session: Stripe.Checkout.Session) => {
     throw new Error(`Payment for Stripe Checkout Session ${session.id} was not found`);
   }
 
+  const stripePaymentId =
+    typeof session.payment_intent === "string"
+      ? session.payment_intent
+      : session.payment_intent?.id;
+
+  if (payment.type === PaymentType.CONTEST) {
+    const contestId = payment.contestId || session.metadata?.contest_id;
+    if (!contestId) {
+      throw new Error(`Contest ID for Stripe Checkout Session ${session.id} was not found`);
+    }
+    const alreadySucceeded = payment.status === PaymentStatus.SUCCEEDED;
+
+    await contestService.completePaidContestJoin(
+      payment.userId,
+      contestId,
+      payment.id,
+      stripePaymentId,
+    );
+    if (alreadySucceeded) {
+      return;
+    }
+
+    await notifyUserOfSuccess(payment);
+
+    const payerName = getPayerName(payment.user);
+    const amount = formatPaymentAmount(payment.amount, payment.currency);
+    const purpose = getPaymentPurpose(payment);
+    await notificationService.postNotification(
+      "Payment Received",
+      `${payerName} paid ${amount} for ${purpose}.`,
+      "admin",
+      NotificationType.PAYMENT,
+    );
+    return;
+  }
+
   if (payment.status === PaymentStatus.SUCCEEDED) {
     return;
   }
@@ -199,7 +236,7 @@ const handleCheckoutSuccess = async (session: Stripe.Checkout.Session) => {
         })
       : null;
 
-  if (session.mode === "payment" && !product) {
+  if (session.mode === "payment" && payment.type === PaymentType.STORE && !product) {
     throw new Error(`Product for Stripe Checkout Session ${session.id} was not found`);
   }
   if (session.mode === "subscription" && !subscription) {
@@ -214,10 +251,6 @@ const handleCheckoutSuccess = async (session: Stripe.Checkout.Session) => {
     throw new Error(`Coin quantity for product ${product.id} is invalid`);
   }
 
-  const stripePaymentId =
-    typeof session.payment_intent === "string"
-      ? session.payment_intent
-      : session.payment_intent?.id;
   const transitioned = await prisma.payment.updateMany({
     where: { id: payment.id, status: payment.status },
     data: {
