@@ -1500,13 +1500,31 @@ const rejectJoinRequest = async (joinRequestId: string, userId: string) => {
 
 const WEEKLY_PERIOD_DAYS = 7;
 type TeamLeaderboardPeriod = "weekly" | "monthly" | "yearly";
+type TeamStandingStats = {
+  score: number;
+  totalVotes: number;
+  wins: number;
+  draws: number;
+};
+
+const getTeamMatchPoints = (result: HistoryResult) => {
+  if (result === HistoryResult.WIN) {
+    return 3;
+  }
+
+  if (result === HistoryResult.DRAW) {
+    return 1;
+  }
+
+  return 0;
+};
 
 const compareTeamStandingEntries = (
-  a: [string, { score: number; wins: number }],
-  b: [string, { score: number; wins: number }],
+  a: [string, TeamStandingStats],
+  b: [string, TeamStandingStats],
 ) =>
   b[1].score - a[1].score ||
-  b[1].wins - a[1].wins ||
+  b[1].totalVotes - a[1].totalVotes ||
   a[0].localeCompare(b[0]);
 
 const getCurrentLeaderboardWindow = (period: TeamLeaderboardPeriod, now = new Date()) => {
@@ -1552,14 +1570,21 @@ const getTeamLeaderboard = async (
     where: historyWhere,
   });
 
-  const statsByTeam = new Map<string, { score: number; wins: number }>();
+  const statsByTeam = new Map<string, TeamStandingStats>();
   history.forEach((entry) => {
     if (!entry.teamId) {
       return;
     }
-    const existing = statsByTeam.get(entry.teamId) ?? { score: 0, wins: 0 };
-    existing.score += entry.team_score;
+    const existing = statsByTeam.get(entry.teamId) ?? {
+      score: 0,
+      totalVotes: 0,
+      wins: 0,
+      draws: 0,
+    };
+    existing.score += getTeamMatchPoints(entry.result);
+    existing.totalVotes += entry.team_score;
     if (entry.result === HistoryResult.WIN) existing.wins += 1;
+    if (entry.result === HistoryResult.DRAW) existing.draws += 1;
     statsByTeam.set(entry.teamId, existing);
   });
 
@@ -1578,7 +1603,9 @@ const getTeamLeaderboard = async (
     rank: skip + index + 1,
     team: teamById.get(teamId) ?? { id: teamId },
     wins: stats.wins,
+    draws: stats.draws,
     score: stats.score,
+    totalVotes: stats.totalVotes,
   }));
 
   return {
@@ -1622,14 +1649,21 @@ const computeTeamStandingsForWindow = async (start: Date, end: Date) => {
     where: { match_date: { gte: start, lt: end } },
   });
 
-  const statsByTeam = new Map<string, { score: number; wins: number }>();
+  const statsByTeam = new Map<string, TeamStandingStats>();
   history.forEach((entry) => {
     if (!entry.teamId) {
       return;
     }
-    const existing = statsByTeam.get(entry.teamId) ?? { score: 0, wins: 0 };
-    existing.score += entry.team_score;
+    const existing = statsByTeam.get(entry.teamId) ?? {
+      score: 0,
+      totalVotes: 0,
+      wins: 0,
+      draws: 0,
+    };
+    existing.score += getTeamMatchPoints(entry.result);
+    existing.totalVotes += entry.team_score;
     if (entry.result === HistoryResult.WIN) existing.wins += 1;
+    if (entry.result === HistoryResult.DRAW) existing.draws += 1;
     statsByTeam.set(entry.teamId, existing);
   });
 
