@@ -39,7 +39,31 @@ const uploadChatFile = catchAsync(async (req: Request, res: Response) => {
     });
 });
 
+const getUnreadCount = catchAsync(async (req: Request, res: Response) => {
+    const result = await chatService.getUnreadCount(req.user.id, req.params.teamId)
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: "chat unread count fetched successfully",
+        data: { unreadCount: result }
+    })
+})
+
+const markTeamChatRead = catchAsync(async (req: Request, res: Response) => {
+    const result = await chatService.markTeamChatRead(req.user.id, req.params.teamId)
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: "team chat marked as read",
+        data: result
+    })
+})
+
 export const chatController = {
     getAllChats,
-    uploadChatFile
+    uploadChatFile,
+    getUnreadCount,
+    markTeamChatRead
 }

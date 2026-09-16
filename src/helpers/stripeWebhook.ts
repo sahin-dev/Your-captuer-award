@@ -2,7 +2,9 @@ import { Request, Response } from "express";
 import Stripe from "stripe";
 import { contestService } from "../app/modules/Contest/contest.service";
 import { notificationService } from "../app/modules/Notification/notification.service";
+import { normalizeStripeCurrency, toStripeMinorUnits } from "../app/modules/Payment/Providers/stripeProvider";
 import config from "../config";
+import ApiError from "../errors/ApiError";
 import { NotificationType, PaymentStatus, PaymentType } from "../prismaClient";
 import prisma from "../shared/prisma";
 
@@ -174,6 +176,33 @@ const markPaymentFailedAndNotify = async (
   await notifyUserOfFailure(payment);
 };
 
+const refundContestPayment = async (
+  payment: NotificationPayment,
+  stripePaymentId: string,
+  reason: string,
+) => {
+  await stripe.refunds.create(
+    {
+      payment_intent: stripePaymentId,
+      metadata: { paymentId: payment.id, reason: reason.slice(0, 450) },
+    },
+    { idempotencyKey: `contest-entry-refund-${payment.id}` },
+  );
+
+  await prisma.payment.updateMany({
+    where: { id: payment.id, status: { not: PaymentStatus.REFUNDED } },
+    data: { status: PaymentStatus.REFUNDED, stripe_payment_id: stripePaymentId },
+  });
+
+  await notificationService.postNotificationWithPayload(
+    "Contest Entry Refunded",
+    `Your contest entry payment was refunded because the entry could not be completed: ${reason}`,
+    payment.userId,
+    { event: "PAYMENT_REFUNDED", paymentId: payment.id, amount: payment.amount, currency: payment.currency },
+    NotificationType.PAYMENT,
+  );
+};
+
 const handleCheckoutSuccess = async (session: Stripe.Checkout.Session) => {
   const payment = await prisma.payment.findFirst({
     where: { stripe_session_id: session.id },
@@ -190,18 +219,42 @@ const handleCheckoutSuccess = async (session: Stripe.Checkout.Session) => {
       : session.payment_intent?.id;
 
   if (payment.type === PaymentType.CONTEST) {
+    if (payment.status === PaymentStatus.REFUNDED) {
+      return;
+    }
+    if (session.payment_status !== "paid") {
+      return;
+    }
+
     const contestId = payment.contestId || session.metadata?.contest_id;
     if (!contestId) {
       throw new Error(`Contest ID for Stripe Checkout Session ${session.id} was not found`);
     }
     const alreadySucceeded = payment.status === PaymentStatus.SUCCEEDED;
 
-    await contestService.completePaidContestJoin(
-      payment.userId,
-      contestId,
-      payment.id,
-      stripePaymentId,
-    );
+    const expectedCurrency = normalizeStripeCurrency(payment.currency);
+    const expectedAmount = toStripeMinorUnits(payment.amount, payment.currency);
+    if (session.currency !== expectedCurrency || session.amount_total !== expectedAmount) {
+      if (stripePaymentId) {
+        await refundContestPayment(payment, stripePaymentId, "The paid amount did not match the contest entry fee");
+      }
+      throw new Error(`Stripe Checkout Session ${session.id} did not match payment ${payment.id}`);
+    }
+
+    try {
+      await contestService.completePaidContestJoin(
+        payment.userId,
+        contestId,
+        payment.id,
+        stripePaymentId,
+      );
+    } catch (error) {
+      if (error instanceof ApiError && error.statusCode < 500 && stripePaymentId) {
+        await refundContestPayment(payment, stripePaymentId, error.message);
+        return;
+      }
+      throw error;
+    }
     if (alreadySucceeded) {
       return;
     }

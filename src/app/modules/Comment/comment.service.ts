@@ -2,6 +2,20 @@ import ApiError from '../../../errors/ApiError';
 import prisma from '../../../shared/prisma';
 import httpStatus from 'http-status'
 import { paginationHelper } from '../../../helpers/paginationHelper';
+import {
+    notifyCommentReceived,
+    notifyCommentReplyReceived,
+} from '../Notification/notificationOrchestrator';
+
+const getCommenterName = (provider: {
+    fullName?: string | null;
+    firstName?: string | null;
+    lastName?: string | null;
+}) => {
+    const fullName = provider.fullName?.trim();
+    const name = [provider.firstName, provider.lastName].filter(Boolean).join(" ").trim();
+    return fullName || name || "Someone";
+}
 
 export const handlePostComment = async (providerId: string,  text: string,photoId?: string, replyTo?:string ) => {
     
@@ -13,8 +27,21 @@ export const handlePostComment = async (providerId: string,  text: string,photoI
         }
         const comment = await prisma.comment.create({
             data: { providerId,  text,parentId:replyTo},
-            include:{provider:{select:{avatar:true, fullName:true, firstName:true, lastName:true}}}
+            include:{provider:{select:{id:true, avatar:true, fullName:true, firstName:true, lastName:true}}}
         });
+
+        if(parentComment.providerId !== providerId){
+            await notifyCommentReplyReceived(
+                parentComment.providerId,
+                comment.id,
+                parentComment.id,
+                providerId,
+                getCommenterName(comment.provider),
+                text,
+                parentComment.photoId,
+            )
+        }
+
         return comment
     }
     if(!photoId){
@@ -27,8 +54,20 @@ export const handlePostComment = async (providerId: string,  text: string,photoI
     }
     const comment = await prisma.comment.create({
         data: { providerId, photoId, text },
-        include:{provider:{select:{avatar:true, fullName:true, firstName:true, lastName:true}}}
+        include:{provider:{select:{id:true, avatar:true, fullName:true, firstName:true, lastName:true}}}
     });
+
+    if(photo.userId !== providerId){
+        await notifyCommentReceived(
+            photo.userId,
+            photo.id,
+            comment.id,
+            providerId,
+            getCommenterName(comment.provider),
+            text,
+            photo.title,
+        )
+    }
 
     return comment;
 };

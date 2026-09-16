@@ -30,6 +30,10 @@ export enum NotificationEvent {
   CONTEST_WINNER_ANNOUNCED = "CONTEST_WINNER_ANNOUNCED",
   CONTEST_ENDED = "CONTEST_ENDED",
 
+  // Comment-related
+  COMMENT_RECEIVED = "COMMENT_RECEIVED",
+  COMMENT_REPLY_RECEIVED = "COMMENT_REPLY_RECEIVED",
+
   // Achievement-related
   ACHIEVEMENT_UNLOCKED = "ACHIEVEMENT_UNLOCKED",
 
@@ -397,6 +401,61 @@ export async function notifyContestPhotoRemoved(
   });
 }
 
+const previewText = (text: string, limit = 120) => {
+  const normalized = text.replace(/\s+/g, " ").trim();
+  return normalized.length > limit ? `${normalized.slice(0, limit - 1)}...` : normalized;
+};
+
+export async function notifyCommentReceived(
+  userId: string,
+  photoId: string,
+  commentId: string,
+  commenterId: string,
+  commenterName: string,
+  commentText: string,
+  photoTitle?: string | null,
+) {
+  await sendNotification({
+    event: NotificationEvent.COMMENT_RECEIVED,
+    userId,
+    title: "New Comment",
+    message: `${commenterName} commented on your photo${photoTitle ? ` "${photoTitle}"` : ""}: ${previewText(commentText)}`,
+    type: NotificationType.COMMENT,
+    data: {
+      photoId,
+      commentId,
+      commenterId,
+      commenterName,
+      photoTitle,
+    },
+  });
+}
+
+export async function notifyCommentReplyReceived(
+  userId: string,
+  commentId: string,
+  parentCommentId: string,
+  commenterId: string,
+  commenterName: string,
+  commentText: string,
+  photoId?: string | null,
+) {
+  await sendNotification({
+    event: NotificationEvent.COMMENT_REPLY_RECEIVED,
+    userId,
+    title: "New Comment Reply",
+    message: `${commenterName} replied to your comment: ${previewText(commentText)}`,
+    type: NotificationType.COMMENT,
+    data: {
+      photoId,
+      commentId,
+      parentCommentId,
+      commenterId,
+      commenterName,
+    },
+  });
+}
+
 /**
  * Team Reward Granted Notification
  * Sent to each member when their team earns a match or period leaderboard payout
@@ -441,5 +500,7 @@ export const notificationOrchestrator = {
   notifyContestPhotoUploaded,
   notifyContestEnded,
   notifyContestPhotoRemoved,
+  notifyCommentReceived,
+  notifyCommentReplyReceived,
   notifyTeamRewardGranted,
 };

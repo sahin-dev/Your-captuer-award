@@ -11,6 +11,37 @@ import { PaymentRegistry } from "./paymentRegistry";
 import { loadProviders } from "./providerLoader";
 import httpStatus from 'http-status';
 
+const isUniqueConstraintError = (error: unknown) =>
+  typeof error === "object" && error !== null && "code" in error && error.code === "P2002";
+
+const buildContestRedirectUrl = (
+  requestedUrl: string | undefined,
+  fallbackUrl: string,
+  frontendUrl: string,
+) => {
+  try {
+    const fallback = new URL(fallbackUrl);
+    if (!requestedUrl) return fallback.toString();
+
+    const requested = new URL(requestedUrl);
+    const allowedOrigins = new Set([fallback.origin]);
+    try {
+      allowedOrigins.add(new URL(frontendUrl).origin);
+    } catch {
+      // The validated fallback origin remains available.
+    }
+
+    if (process.env.NODE_ENV !== "production") {
+      allowedOrigins.add("http://localhost:3000");
+      allowedOrigins.add("http://127.0.0.1:3000");
+    }
+
+    return allowedOrigins.has(requested.origin) ? requested.toString() : fallback.toString();
+  } catch {
+    return fallbackUrl;
+  }
+};
+
  export class PaymentService {
 
   private providersLoaded:boolean = false
@@ -264,53 +295,154 @@ import httpStatus from 'http-status';
       }
     }
 
-    const currency = contest.currency || "USD";
-    const payment = await prisma.payment.create({
-      data: {
-        amount: contest.entryFeeAmount,
-        type: PaymentType.CONTEST,
-        currency,
-        contestId: contest.id,
-        method: "stripe",
-        userId,
-        recurring: PlanRecurringType.ONETIME,
-        description: `Contest entry - ${contest.title}`
-      }
+    const currency = (contest.currency || "USD").toUpperCase();
+    const frontendUrl = config.forontend_url || config.web_redirect_success || "http://localhost:3000";
+    const fallbackSuccessUrl = `${frontendUrl}/contest/${contest.id}?payment=success`;
+    const fallbackCancelUrl = `${frontendUrl}/contest/${contest.id}?payment=cancelled`;
+    const successUrl = buildContestRedirectUrl(success_url, fallbackSuccessUrl, frontendUrl);
+    const cancelUrl = buildContestRedirectUrl(cancel_url, fallbackCancelUrl, frontendUrl);
+
+    let ownsSessionCreation = false;
+    let payment;
+    const existingCheckout = await prisma.contestEntryCheckout.findUnique({
+      where: { contestId_userId: { contestId, userId } },
     });
 
-    const frontendUrl = config.forontend_url || config.web_redirect_success || "http://localhost:3000";
-    const successUrl =
-      success_url ||
-      `${frontendUrl}/contest/${contest.id}?payment=success&modal=joinSuccess`;
-    const cancelUrl =
-      cancel_url ||
-      `${frontendUrl}/contest/${contest.id}?payment=cancelled`;
+    if (existingCheckout) {
+      payment = await prisma.payment.findUnique({ where: { id: existingCheckout.paymentId } });
+    } else {
+      try {
+        payment = await prisma.$transaction(async (tx) => {
+          const createdPayment = await tx.payment.create({
+            data: {
+              amount: contest.entryFeeAmount,
+              type: PaymentType.CONTEST,
+              currency,
+              contestId: contest.id,
+              method: "stripe",
+              userId,
+              recurring: PlanRecurringType.ONETIME,
+              description: `Contest entry - ${contest.title}`,
+            },
+          });
+          await tx.contestEntryCheckout.create({
+            data: { contestId, userId, paymentId: createdPayment.id },
+          });
+          return createdPayment;
+        });
+        ownsSessionCreation = true;
+      } catch (error) {
+        if (!isUniqueConstraintError(error)) throw error;
+        const checkout = await prisma.contestEntryCheckout.findUnique({
+          where: { contestId_userId: { contestId, userId } },
+        });
+        payment = checkout
+          ? await prisma.payment.findUnique({ where: { id: checkout.paymentId } })
+          : null;
+      }
+    }
+
+    if (!payment) {
+      throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, "Unable to prepare contest entry payment");
+    }
+    if (payment.status === PaymentStatus.SUCCEEDED) {
+      throw new ApiError(httpStatus.CONFLICT, "This contest entry payment was already completed");
+    }
 
     const provider = PaymentFactory.getProvider("STRIPE");
-    const session = await provider.initializePaymentSession(
-      userId,
-      contest.entryFeeAmount,
-      currency,
-      successUrl,
-      cancelUrl,
-      {
-        userId,
-        payment_id: payment.id,
-        contest_id: contest.id,
-        purpose: "CONTEST_ENTRY"
-      },
-      `Entry fee - ${contest.title}`
-    );
-
-    await prisma.payment.update({
-      where: { id: payment.id },
-      data: {
-        stripe_session_id: session.id,
-        status: PaymentStatus.PENDING
+    if (payment.stripe_session_id) {
+      try {
+        const existingSession = await provider.retrieveCheckoutSession(payment.stripe_session_id);
+        if (existingSession.status === "open" && existingSession.url) {
+          return existingSession;
+        }
+        if (existingSession.status === "complete" && existingSession.payment_status === "paid") {
+          return { message: "Payment received. Your contest entry is being confirmed." };
+        }
+        if (existingSession.status === "expired") {
+          await prisma.payment.updateMany({
+            where: { id: payment.id, status: PaymentStatus.PENDING },
+            data: { status: PaymentStatus.EXPIRED },
+          });
+          payment = { ...payment, status: PaymentStatus.EXPIRED };
+        }
+      } catch (error) {
+        if ((error as { code?: string })?.code !== "resource_missing") throw error;
+        await prisma.payment.updateMany({
+          where: { id: payment.id, status: PaymentStatus.PENDING },
+          data: { status: PaymentStatus.EXPIRED },
+        });
+        payment = { ...payment, status: PaymentStatus.EXPIRED };
       }
-    });
+    }
 
-    return session;
+    if (!ownsSessionCreation) {
+      if (payment.status === PaymentStatus.PENDING && !payment.stripe_session_id) {
+        const staleBefore = new Date(Date.now() - 2 * 60 * 1000);
+        const recovered = await prisma.payment.updateMany({
+          where: {
+            id: payment.id,
+            status: PaymentStatus.PENDING,
+            stripe_session_id: null,
+            updatedAt: { lt: staleBefore },
+          },
+          data: { status: PaymentStatus.FAILED },
+        });
+        if (recovered.count === 0) {
+          throw new ApiError(httpStatus.CONFLICT, "Contest checkout is already being prepared");
+        }
+        payment = { ...payment, status: PaymentStatus.FAILED };
+      }
+
+      const claimed = await prisma.payment.updateMany({
+        where: {
+          id: payment.id,
+          status: { in: [PaymentStatus.FAILED, PaymentStatus.EXPIRED] },
+        },
+        data: {
+          status: PaymentStatus.PENDING,
+          stripe_session_id: null,
+          stripe_payment_id: null,
+          amount: contest.entryFeeAmount,
+          currency,
+        },
+      });
+      if (claimed.count === 0) {
+        throw new ApiError(httpStatus.CONFLICT, "Contest checkout is already being prepared");
+      }
+    }
+
+    try {
+      const session = await provider.initializePaymentSession(
+        userId,
+        contest.entryFeeAmount,
+        currency,
+        successUrl,
+        cancelUrl,
+        {
+          userId,
+          payment_id: payment.id,
+          contest_id: contest.id,
+          purpose: "CONTEST_ENTRY",
+        },
+        `Entry fee - ${contest.title}`,
+      );
+
+      await prisma.payment.update({
+        where: { id: payment.id },
+        data: {
+          stripe_session_id: session.id,
+          status: PaymentStatus.PENDING,
+        },
+      });
+      return session;
+    } catch (error) {
+      await prisma.payment.updateMany({
+        where: { id: payment.id, status: PaymentStatus.PENDING },
+        data: { status: PaymentStatus.FAILED },
+      });
+      throw error;
+    }
   }
 
   /**

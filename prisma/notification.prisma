@@ -15,10 +15,12 @@ model Notification {
 
 enum NotificationType {
    DEFAULT
+   CHAT
    INVITATION
    PAYMENT
    VOTE
    LIKE
+   COMMENT
    TEAM_JOIN_REQUEST
    TEAM_JOIN_APPROVED
    TEAM_JOIN_REJECTED

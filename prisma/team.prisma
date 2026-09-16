@@ -95,6 +95,7 @@ model TeamMember {
   id     String           @id @default(auto()) @map("_id") @db.ObjectId
   status TeamMemberStatus @default(ACTIVE)
   level  MemberLevel      @default(MEMBER)
+  lastChatReadAt DateTime?
 
   teamId             String               @db.ObjectId
   memberId           String               @unique @db.ObjectId

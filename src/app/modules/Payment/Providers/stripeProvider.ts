@@ -23,6 +23,36 @@ const ZERO_DECIMAL_CURRENCIES = new Set([
   "XPF",
 ]);
 
+export const normalizeStripeCurrency = (currency: string): string => {
+  const normalizedCurrency = currency.trim().toUpperCase();
+  if (!/^[A-Z]{3}$/.test(normalizedCurrency)) {
+    throw new Error(`Invalid Stripe currency: ${currency}`);
+  }
+  return normalizedCurrency.toLowerCase();
+};
+
+export const toStripeMinorUnits = (amount: number, currency: string): number => {
+  if (!Number.isFinite(amount) || amount <= 0) {
+    throw new Error("Stripe amount must be a positive number");
+  }
+
+  const normalizedCurrency = currency.trim().toUpperCase();
+  if (
+    (normalizedCurrency === "ISK" || normalizedCurrency === "UGX") &&
+    !Number.isInteger(amount)
+  ) {
+    throw new Error(`${normalizedCurrency} amounts cannot include fractions`);
+  }
+  const multiplier = ZERO_DECIMAL_CURRENCIES.has(normalizedCurrency) ? 1 : 100;
+  const minorAmount = Math.round((amount + Number.EPSILON) * multiplier);
+
+  if (!Number.isSafeInteger(minorAmount) || minorAmount <= 0) {
+    throw new Error("Stripe amount is outside the supported range");
+  }
+
+  return minorAmount;
+};
+
 export class StripeProvider implements PaymentProvider {
   private readonly stripe: Stripe;
 
@@ -73,6 +103,10 @@ export class StripeProvider implements PaymentProvider {
       success_url: successUrl,
       cancel_url: cancelUrl,
     });
+  }
+
+  async retrieveCheckoutSession(sessionId: string): Promise<Stripe.Checkout.Session> {
+    return this.stripe.checkout.sessions.retrieve(sessionId);
   }
 
   async initializePayment(
@@ -264,33 +298,11 @@ export class StripeProvider implements PaymentProvider {
   }
 
   private normalizeCurrency(currency: string): string {
-    const normalizedCurrency = currency.trim().toUpperCase();
-    if (!/^[A-Z]{3}$/.test(normalizedCurrency)) {
-      throw new Error(`Invalid Stripe currency: ${currency}`);
-    }
-    return normalizedCurrency.toLowerCase();
+    return normalizeStripeCurrency(currency);
   }
 
   private toMinorUnits(amount: number, currency: string): number {
-    if (!Number.isFinite(amount) || amount <= 0) {
-      throw new Error("Stripe amount must be a positive number");
-    }
-
-    const normalizedCurrency = currency.trim().toUpperCase();
-    if (
-      (normalizedCurrency === "ISK" || normalizedCurrency === "UGX") &&
-      !Number.isInteger(amount)
-    ) {
-      throw new Error(`${normalizedCurrency} amounts cannot include fractions`);
-    }
-    const multiplier = ZERO_DECIMAL_CURRENCIES.has(normalizedCurrency) ? 1 : 100;
-    const minorAmount = Math.round((amount + Number.EPSILON) * multiplier);
-
-    if (!Number.isSafeInteger(minorAmount) || minorAmount <= 0) {
-      throw new Error("Stripe amount is outside the supported range");
-    }
-
-    return minorAmount;
+    return toStripeMinorUnits(amount, currency);
   }
 
   private isMissingStripeResource(error: unknown): boolean {

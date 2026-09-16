@@ -2,7 +2,7 @@ import prisma from '../../../shared/prisma';
 import ApiError from '../../../errors/ApiError';
 import httpstatus from 'http-status';
 import { fileUploader } from '../../../helpers/fileUploader';
-import { AchievementKind, ContestOccurrenceStatus, ContestParticipant, ContestPhoto, ContestStatus, PaymentStatus, Prisma, PrizeType, RecurringContest, RecurringContestStatus, RecurringType, TeamMemberStatus, YCLevel } from '../../../prismaClient';
+import { AchievementKind, ContestOccurrenceStatus, ContestParticipant, ContestPhoto, ContestStatus, PaymentStatus, PaymentType, Prisma, PrizeType, RecurringContest, RecurringContestStatus, RecurringType, TeamMemberStatus, YCLevel } from '../../../prismaClient';
 import { contestData, updateContestData } from './contest.type';
 import { contestRuleService } from './ContestRules/contestRules.service';
 import { ContestRuleConfigInput } from './ContestRules/contestRules.type';
@@ -953,6 +953,12 @@ const completePaidContestJoin = async (
         if(payment.userId !== userId || payment.contestId !== contestId){
             throw new ApiError(httpstatus.BAD_REQUEST, "Payment does not match this contest entry")
         }
+        if(payment.type !== PaymentType.CONTEST){
+            throw new ApiError(httpstatus.BAD_REQUEST, "Payment is not a contest entry payment")
+        }
+        if(payment.status !== PaymentStatus.PENDING && payment.status !== PaymentStatus.SUCCEEDED){
+            throw new ApiError(httpstatus.BAD_REQUEST, "Contest entry payment is not eligible for completion")
+        }
 
         const contest = await tx.contest.findUnique({
             where:{id:contestId},
@@ -963,6 +969,10 @@ const completePaidContestJoin = async (
         }
         if(contest.entryFeeAmount <= 0){
             throw new ApiError(httpstatus.BAD_REQUEST, "This contest does not require Stripe entry payment")
+        }
+        const contestCurrency = (contest.currency || "USD").toUpperCase()
+        if(payment.amount !== contest.entryFeeAmount || payment.currency.toUpperCase() !== contestCurrency){
+            throw new ApiError(httpstatus.BAD_REQUEST, "Payment amount does not match the contest entry fee")
         }
 
         await tx.payment.update({

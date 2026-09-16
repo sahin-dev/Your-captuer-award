@@ -80,6 +80,7 @@ export function setupWebSocket(server: HTTPServer) {
 
         const { id } = user;
         socket.userId = id;
+        socket.join(id);
         onlineUsers.add(id);
         userSockets.set(id, socket);
 
@@ -121,6 +122,7 @@ export function setupWebSocket(server: HTTPServer) {
         // Join the team room
         socket.join(`team_${teamId}`);
         socket.teamIds?.add(teamId);
+        await chatService.markTeamChatRead(socket.userId, teamId);
 
         // Get all chats for this team
         const allChats = await chatService.getAllChats(socket.userId, teamId);
@@ -210,6 +212,9 @@ export function setupWebSocket(server: HTTPServer) {
               select: { id: true, firstName: true, lastName: true, avatar: true },
             },
           },
+        });
+        chatService.notifyTeamMembersOfChatMessage(chat, socket.userId).catch((error) => {
+          console.error("Failed to send chat notifications:", error);
         });
 
         // Broadcast message to all team members in the room

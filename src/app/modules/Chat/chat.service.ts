@@ -4,6 +4,8 @@ import httpStatus from 'http-status'
 import { teamService } from "../Team/team.service"
 import { paginationHelper } from "../../../helpers/paginationHelper";
 import { getIO } from "../../../helpers/websocketSetUp";
+import { NotificationType, TeamMemberStatus } from "../../../prismaClient";
+import { notificationService } from "../Notification/notification.service";
 
 
 const sendMessage = async (senderId: string, teamId: string, message: string) => {
@@ -75,8 +77,140 @@ const getAllChats = async (userId: string, teamId: string, page: number = 1, lim
     return { data: chats, meta };
 }
 
+const getUnreadCount = async (userId: string, teamId: string) => {
+    const member = await teamService.isTeamMemberExist(userId, teamId)
+
+    if (!member) {
+        throw new ApiError(httpStatus.NOT_FOUND, "team member is not present")
+    }
+
+    const readAfter = member.lastChatReadAt || member.createdAt
+
+    return prisma.chat.count({
+        where: {
+            teamId,
+            createdAt: { gt: readAfter },
+            OR: [
+                { senderId: { not: userId } },
+                { senderId: null },
+            ],
+        },
+    })
+}
+
+const markTeamChatRead = async (userId: string, teamId: string) => {
+    const member = await teamService.isTeamMemberExist(userId, teamId)
+
+    if (!member) {
+        throw new ApiError(httpStatus.NOT_FOUND, "team member is not present")
+    }
+
+    await prisma.teamMember.update({
+        where: { id: member.id },
+        data: { lastChatReadAt: new Date() },
+    })
+
+    const io = getIO()
+    if (io) {
+        io.to(userId).emit("chat_unread_count", { teamId, unreadCount: 0 })
+    }
+
+    return { unreadCount: 0 }
+}
+
+const notifyTeamMembersOfChatMessage = async (
+    chat: {
+        id: string
+        teamId: string | null
+        senderId: string | null
+        message: string
+        messageType: string
+        fileUrl?: string | null
+        createdAt: Date
+        sender?: { firstName?: string | null; lastName?: string | null; fullName?: string | null } | null
+    },
+    senderId: string,
+) => {
+    if (!chat.teamId) {
+        return
+    }
+
+    const [team, recipients] = await Promise.all([
+        prisma.team.findUnique({ where: { id: chat.teamId }, select: { id: true, name: true } }),
+        prisma.teamMember.findMany({
+            where: {
+                teamId: chat.teamId,
+                memberId: { not: senderId },
+                status: TeamMemberStatus.ACTIVE,
+            },
+            select: { memberId: true, lastChatReadAt: true, createdAt: true },
+        }),
+    ])
+
+    if (!team || recipients.length === 0) {
+        return
+    }
+
+    const senderName = [chat.sender?.firstName, chat.sender?.lastName].filter(Boolean).join(" ").trim()
+        || chat.sender?.fullName
+        || "A teammate"
+    const title = `New message in ${team.name}`
+    const message = chat.messageType === "file"
+        ? `${senderName} shared a file.`
+        : `${senderName}: ${chat.message}`
+    const io = getIO()
+
+    await Promise.all(recipients.map(async (recipient) => {
+        const readAfter = recipient.lastChatReadAt || recipient.createdAt
+        const unreadCount = await prisma.chat.count({
+            where: {
+                teamId: chat.teamId,
+                createdAt: { gt: readAfter },
+                OR: [
+                    { senderId: { not: recipient.memberId } },
+                    { senderId: null },
+                ],
+            },
+        })
+
+        const notification = await notificationService.postNotificationWithPayload(
+            title,
+            message,
+            recipient.memberId,
+            {
+                event: "CHAT_MESSAGE",
+                teamId: chat.teamId,
+                teamName: team.name,
+                chatId: chat.id,
+                senderId,
+                unreadCount,
+            },
+            NotificationType.CHAT,
+        )
+
+        if (io) {
+            const socketPayload = {
+                event: "CHAT_MESSAGE",
+                title,
+                message,
+                data: notification.data,
+                timestamp: new Date(),
+            }
+            io.to(recipient.memberId).emit("notification", socketPayload)
+            io.to(recipient.memberId).emit("chat_unread_count", {
+                teamId: chat.teamId,
+                unreadCount,
+                message: socketPayload,
+            })
+        }
+    }))
+}
+
 export const chatService = {
     getAllChats,
     sendMessage,
-    sendSystemMessage
+    sendSystemMessage,
+    getUnreadCount,
+    markTeamChatRead,
+    notifyTeamMembersOfChatMessage
 }
