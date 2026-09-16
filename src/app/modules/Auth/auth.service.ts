@@ -20,7 +20,6 @@ export const handleRegister = async (body:UserRegistrationData, ip?: string | nu
 
 
     const existingUser = await prisma.user.findFirst({where:{email:body.email}})
-    console.log(existingUser)
 
     if (existingUser){
         throw new ApiError(httpstatus.CONFLICT, "user already exist with this email")
@@ -31,8 +30,6 @@ export const handleRegister = async (body:UserRegistrationData, ip?: string | nu
     }
 
     const hashedPassword = await bcrypt.hash(body.password as string, parseInt(config.bcrypt_salt_rounds as string))
-
-
 
     const country = getCountryFromIp(ip)
 
