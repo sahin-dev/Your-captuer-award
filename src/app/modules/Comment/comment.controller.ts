@@ -38,7 +38,6 @@ export const postComment = catchAsync(async (req:Request, res:Response)=>{
 })
 
 export const deleteComment  = catchAsync(async (req:Request, res:Response)=>{
-    console.log(req.params)
     const {commentId} = req.params
     const userId = req.user.id
 

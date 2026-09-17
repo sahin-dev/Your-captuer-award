@@ -230,7 +230,6 @@ const getContestsByStatus = catchAsync (async (req:Request, res:Response) => {
 
 const getMyActiveContests = catchAsync(async (req:Request, res:Response) => {
     const userId = req.user.id
-    console.log(userId)
     const contests = await contestService.getMyActiveContests(userId)
 
     sendResponse(res, {

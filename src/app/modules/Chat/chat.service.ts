@@ -47,8 +47,6 @@ const sendSystemMessage = async (
 }
 
 const getAllChats = async (userId: string, teamId: string, page: number = 1, limit: number = 20) => {
-    console.log("UserId", userId)
-    console.log("teamId", teamId)
     const isExist = await teamService.isTeamMemberExist(userId, teamId)
 
     if (!isExist) {
