@@ -71,6 +71,22 @@ test("coin requirement needs a positive entry fee", () => {
     assert.equal(parsed.success, false);
 });
 
+test("USD entry fees are either free or Stripe-compatible amounts", () => {
+    assert.equal(createContestSchema.safeParse({
+        ...baseContest(),
+        entryFeeAmount:0,
+    }).success, true);
+    assert.equal(createContestSchema.safeParse({
+        ...baseContest(),
+        entryFeeAmount:0.49,
+    }).success, false);
+    assert.equal(createContestSchema.safeParse({
+        ...baseContest(),
+        entryFeeAmount:"0.50",
+    }).success, true);
+    assert.equal(updateContestSchema.safeParse({entryFeeAmount:1.001}).success, false);
+});
+
 test("recurrence accepts timezone and termination settings", () => {
     const parsed = createContestSchema.parse({
         ...baseContest(),

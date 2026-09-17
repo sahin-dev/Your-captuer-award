@@ -49,6 +49,16 @@ const richTextField = (label: string, maxLength: number) =>
 
 const optionalIsoDate = z.string().datetime({ offset: true }).optional();
 
+const entryFeeAmountSchema = z.number()
+    .nonnegative()
+    .max(100000000)
+    .refine((value) => value === 0 || value >= 0.5, {
+        message: "USD entry fee must be 0 (free) or at least 0.50",
+    })
+    .refine((value) => Math.abs(value * 100 - Math.round(value * 100)) < 1e-8, {
+        message: "USD entry fee can have at most 2 decimal places",
+    });
+
 const bannerUserPhotoIdField = z.string().trim()
     .refine(checkObjectId, { message: "Invalid user photo ID" })
     .optional();
@@ -121,7 +131,7 @@ const createContestObjectSchema = z.object({
     minPrize: z.preprocess(parseOptionalNumberField, z.number().int().nonnegative().optional()),
     entryFeeAmount: z.preprocess(
         parseOptionalNumberField,
-        z.number().nonnegative().max(100000000).optional()
+        entryFeeAmountSchema.optional()
     ),
     coinRequirement: z.preprocess(parseBooleanField, z.boolean()).optional(),
     entryFeeCoins: z.preprocess(
@@ -197,7 +207,7 @@ const updateContestObjectSchema = z.object({
     minPrize: z.preprocess(parseOptionalNumberField, z.number().int().nonnegative().optional()),
     entryFeeAmount: z.preprocess(
         parseOptionalNumberField,
-        z.number().nonnegative().max(100000000).optional()
+        entryFeeAmountSchema.optional()
     ),
     coinRequirement: z.preprocess(parseBooleanField, z.boolean()).optional(),
     entryFeeCoins: z.preprocess(

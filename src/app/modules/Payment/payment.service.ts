@@ -295,8 +295,17 @@ const buildContestRedirectUrl = (
       }
     }
 
-    const currency = (contest.currency || "USD").toUpperCase();
-    const frontendUrl = config.forontend_url || config.web_redirect_success || "http://localhost:3000";
+    // Contest entry fees are configured and displayed as USD. Prize currency is
+    // a separate concern and must not silently change the Stripe charge currency.
+    const currency = "USD";
+    const configuredFrontendUrl =
+      config.forontend_url || config.web_redirect_success || "http://localhost:3000";
+    let frontendUrl = "http://localhost:3000";
+    try {
+      frontendUrl = new URL(configuredFrontendUrl).origin;
+    } catch {
+      // Keep the safe local fallback when deployment configuration is malformed.
+    }
     const fallbackSuccessUrl = `${frontendUrl}/contest/${contest.id}?payment=success`;
     const fallbackCancelUrl = `${frontendUrl}/contest/${contest.id}?payment=cancelled`;
     const successUrl = buildContestRedirectUrl(success_url, fallbackSuccessUrl, frontendUrl);
@@ -304,9 +313,30 @@ const buildContestRedirectUrl = (
 
     let ownsSessionCreation = false;
     let payment;
-    const existingCheckout = await prisma.contestEntryCheckout.findUnique({
+    let existingCheckout = await prisma.contestEntryCheckout.findUnique({
       where: { contestId_userId: { contestId, userId } },
     });
+
+    // Adopt a pre-deployment contest payment so releasing the checkout guard
+    // cannot create a second Stripe session for somebody already checking out.
+    if (!existingCheckout) {
+      const legacyPayment = await prisma.payment.findFirst({
+        where: { contestId, userId, type: PaymentType.CONTEST },
+        orderBy: { createdAt: "desc" },
+      });
+      if (legacyPayment) {
+        try {
+          existingCheckout = await prisma.contestEntryCheckout.create({
+            data: { contestId, userId, paymentId: legacyPayment.id },
+          });
+        } catch (error) {
+          if (!isUniqueConstraintError(error)) throw error;
+          existingCheckout = await prisma.contestEntryCheckout.findUnique({
+            where: { contestId_userId: { contestId, userId } },
+          });
+        }
+      }
+    }
 
     if (existingCheckout) {
       payment = await prisma.payment.findUnique({ where: { id: existingCheckout.paymentId } });
@@ -344,6 +374,32 @@ const buildContestRedirectUrl = (
 
     if (!payment) {
       throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, "Unable to prepare contest entry payment");
+    }
+    if (payment.status === PaymentStatus.REFUNDED) {
+      const refundedPaymentId = payment.id;
+      payment = await prisma.$transaction(async (tx) => {
+        const replacement = await tx.payment.create({
+          data: {
+            amount: contest.entryFeeAmount,
+            type: PaymentType.CONTEST,
+            currency,
+            contestId: contest.id,
+            method: "stripe",
+            userId,
+            recurring: PlanRecurringType.ONETIME,
+            description: `Contest entry retry - ${contest.title}`,
+          },
+        });
+        const claimed = await tx.contestEntryCheckout.updateMany({
+          where: { contestId, userId, paymentId: refundedPaymentId },
+          data: { paymentId: replacement.id },
+        });
+        if (claimed.count !== 1) {
+          throw new ApiError(httpStatus.CONFLICT, "Contest checkout is already being retried");
+        }
+        return replacement;
+      });
+      ownsSessionCreation = true;
     }
     if (payment.status === PaymentStatus.SUCCEEDED) {
       throw new ApiError(httpStatus.CONFLICT, "This contest entry payment was already completed");

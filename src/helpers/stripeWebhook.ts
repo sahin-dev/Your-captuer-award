@@ -189,10 +189,14 @@ const refundContestPayment = async (
     { idempotencyKey: `contest-entry-refund-${payment.id}` },
   );
 
-  await prisma.payment.updateMany({
+  const updated = await prisma.payment.updateMany({
     where: { id: payment.id, status: { not: PaymentStatus.REFUNDED } },
     data: { status: PaymentStatus.REFUNDED, stripe_payment_id: stripePaymentId },
   });
+
+  if (updated.count === 0) {
+    return;
+  }
 
   await notificationService.postNotificationWithPayload(
     "Contest Entry Refunded",
@@ -230,8 +234,6 @@ const handleCheckoutSuccess = async (session: Stripe.Checkout.Session) => {
     if (!contestId) {
       throw new Error(`Contest ID for Stripe Checkout Session ${session.id} was not found`);
     }
-    const alreadySucceeded = payment.status === PaymentStatus.SUCCEEDED;
-
     const expectedCurrency = normalizeStripeCurrency(payment.currency);
     const expectedAmount = toStripeMinorUnits(payment.amount, payment.currency);
     if (session.currency !== expectedCurrency || session.amount_total !== expectedAmount) {
@@ -242,23 +244,27 @@ const handleCheckoutSuccess = async (session: Stripe.Checkout.Session) => {
     }
 
     try {
-      await contestService.completePaidContestJoin(
+      const completion = await contestService.completePaidContestJoin(
         payment.userId,
         contestId,
         payment.id,
         stripePaymentId,
       );
+      if (completion.alreadyCompleted) {
+        return;
+      }
     } catch (error) {
-      if (error instanceof ApiError && error.statusCode < 500 && stripePaymentId) {
+      if (
+        error instanceof ApiError &&
+        error.statusCode < 500 &&
+        error.statusCode !== 409 &&
+        stripePaymentId
+      ) {
         await refundContestPayment(payment, stripePaymentId, error.message);
         return;
       }
       throw error;
     }
-    if (alreadySucceeded) {
-      return;
-    }
-
     await notifyUserOfSuccess(payment);
 
     const payerName = getPayerName(payment.user);

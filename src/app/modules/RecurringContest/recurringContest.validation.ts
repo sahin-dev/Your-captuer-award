@@ -1,6 +1,16 @@
 import { z } from "zod";
 import { RecurringType } from "../../../prismaClient";
 import { contestRuleInputArraySchema } from "../Contest/ContestRules/contestRule.validation";
+
+const entryFeeAmountSchema = z.number()
+  .min(0)
+  .max(100000000)
+  .refine((value) => value === 0 || value >= 0.5, {
+    message: "USD entry fee must be 0 (free) or at least 0.50",
+  })
+  .refine((value) => Math.abs(value * 100 - Math.round(value * 100)) < 1e-8, {
+    message: "USD entry fee can have at most 2 decimal places",
+  });
 import { contestAwardInputArraySchema } from "../Prize/prize.validation";
 import { contestLevelAwardArraySchema } from "../Contest/contestLevelAward.validation";
 import { getRichTextLength, sanitizeContestRichText } from "../Contest/contestContent";
@@ -29,7 +39,7 @@ export const updateRecurringContestSchema = z.object({
   maxPrize: z.preprocess((value) => Number(value), z.number().int().min(0)).optional(),
   minPrize: z.preprocess((value) => Number(value), z.number().int().min(0)).optional(),
   currency: z.string().trim().toUpperCase().regex(/^[A-Z]{3}$/).nullable().optional(),
-  entryFeeAmount: z.preprocess((value) => Number(value), z.number().min(0).max(100000000)).optional(),
+  entryFeeAmount: z.preprocess((value) => Number(value), entryFeeAmountSchema).optional(),
   entryFeeCoins: z.preprocess((value) => Number(value), z.number().int().min(0).max(100000000)).optional(),
   rules: z.preprocess(parseJsonArray, contestRuleInputArraySchema).optional(),
 });

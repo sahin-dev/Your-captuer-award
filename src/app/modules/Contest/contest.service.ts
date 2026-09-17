@@ -945,7 +945,7 @@ const completePaidContestJoin = async (
     paymentId:string,
     stripePaymentId?:string
 ) => {
-    const participant = await prisma.$transaction(async tx => {
+    const completion = await prisma.$transaction(async tx => {
         const payment = await tx.payment.findUnique({where:{id:paymentId}})
         if(!payment){
             throw new ApiError(httpstatus.NOT_FOUND, "Payment not found")
@@ -970,18 +970,23 @@ const completePaidContestJoin = async (
         if(contest.entryFeeAmount <= 0){
             throw new ApiError(httpstatus.BAD_REQUEST, "This contest does not require Stripe entry payment")
         }
-        const contestCurrency = (contest.currency || "USD").toUpperCase()
-        if(payment.amount !== contest.entryFeeAmount || payment.currency.toUpperCase() !== contestCurrency){
+        if(payment.amount !== contest.entryFeeAmount){
             throw new ApiError(httpstatus.BAD_REQUEST, "Payment amount does not match the contest entry fee")
         }
 
-        await tx.payment.update({
-            where:{id:paymentId},
-            data:{
-                status:PaymentStatus.SUCCEEDED,
-                ...(stripePaymentId ? {stripe_payment_id:stripePaymentId} : {})
+        const alreadyCompleted = payment.status === PaymentStatus.SUCCEEDED
+        if(!alreadyCompleted){
+            const transitioned = await tx.payment.updateMany({
+                where:{id:paymentId, status:PaymentStatus.PENDING},
+                data:{
+                    status:PaymentStatus.SUCCEEDED,
+                    ...(stripePaymentId ? {stripe_payment_id:stripePaymentId} : {})
+                }
+            })
+            if(transitioned.count !== 1){
+                throw new ApiError(httpstatus.CONFLICT, "Contest entry payment is already being completed")
             }
-        })
+        }
 
         await chargeContestEntryFee(tx, contest, userId)
 
@@ -989,17 +994,24 @@ const completePaidContestJoin = async (
             where:{contestId_userId:{contestId,userId}}
         })
         if(existingParticipant){
-            return existingParticipant
+            return {participant:existingParticipant, alreadyCompleted, participantCreated:false}
         }
 
-        return tx.contestParticipant.create({
+        const participant = await tx.contestParticipant.create({
             data:{contestId, userId, exposure_bonus:0, exposureUpdatedAt:new Date()}
         })
+        return {participant, alreadyCompleted, participantCreated:true}
     })
 
-    await notifyTeamMatchQueueOfContestJoin(userId, contestId)
+    if(completion.participantCreated){
+        await notifyTeamMatchQueueOfContestJoin(userId, contestId)
+    }
 
-    return {contest_id:contestId, participant_id:participant.id}
+    return {
+        contest_id:contestId,
+        participant_id:completion.participant.id,
+        alreadyCompleted:completion.alreadyCompleted
+    }
 }
 
 

@@ -23,6 +23,7 @@ import { supportRoutes } from "../modules/Support/support.route";
 import { statsRoutes } from "../modules/Stats/stats.route";
 import { reportRoutes } from "../modules/Report/report.route";
 import { socialLinkRoutes } from "../modules/SocialLink/socialLink.route";
+import { faqRoutes } from "../modules/Faq/faq.route";
 
 
 
@@ -52,7 +53,8 @@ const moduleRoutes = [
     {path:"/support", route:supportRoutes},
     {path:"/stats", route:statsRoutes},
     {path:"/reports", route:reportRoutes},
-    {path:"/social-links", route:socialLinkRoutes}
+    {path:"/social-links", route:socialLinkRoutes},
+    {path:"/faqs", route:faqRoutes}
 
 ]
 
