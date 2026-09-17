@@ -6,6 +6,7 @@
   "scripts": {
     "start": "nodemon src/server.ts",
     "prod": "node dist/server.js",
+    "worker": "node dist/worker.js",
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
     "build": "npx prisma generate --schema=./prisma && tsc && node -e \"require('fs').cpSync('src/prismaClient', 'dist/prismaClient', { recursive: true })\"",
     "generate": "ts-node src/generate-module.js",

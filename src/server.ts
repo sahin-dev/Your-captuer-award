@@ -59,10 +59,11 @@ async function startServer() {
 
   new WebSocketHandler(server);
 
-  startAgenda().catch((error) => {
-    console.error("Agenda scheduler failed to start:", error);
-    logDatabaseConnectionHint(error);
-  });
+  //remove the agenda start from here and move it to worker.ts file because agenda is a background job scheduler and should not be started in the main server process. It should be started in a separate worker process.
+  // startAgenda().catch((error) => {
+  //   console.error("Agenda scheduler failed to start:", error);
+  //   logDatabaseConnectionHint(error);
+  // });
 }
 
 async function shutdown(exitCode = 0) {

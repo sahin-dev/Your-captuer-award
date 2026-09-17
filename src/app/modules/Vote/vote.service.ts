@@ -1,7 +1,7 @@
 import httpstatus from 'http-status'
 import ApiError from "../../../errors/ApiError"
 import prisma from "../../../shared/prisma"
-import { ContestStatus, Prisma, Vote, VoteType } from '../../../prismaClient'
+import { ContestPhoto, ContestStatus, Prisma, Vote, VoteType } from '../../../prismaClient'
 import globalEventHandler from '../../event/eventEmitter'
 import Events from '../../event/events.constant'
 import { ObjectId } from 'mongodb'
@@ -11,11 +11,32 @@ import { getVoteWeightStats } from './voteWeight.service'
 import { contestProgressService } from '../Contest/ContestProgress/contestProgress.service'
 import { notificationOrchestrator } from '../Notification/notificationOrchestrator'
 
-const getVoteType = async (photoId:string)=>{
-    const contestPhoto = await prisma.contestPhoto.findUnique({where:{id:photoId}})
+type VoteContestPhoto = ContestPhoto & {
+    participant: {
+        id: string
+        userId: string
+    }
+}
+
+const resolveContestPhotoForVote = async (contestId:string, submittedPhotoId:string): Promise<VoteContestPhoto | null> => {
+    const contestPhoto = await prisma.contestPhoto.findFirst({
+        where:{
+            contestId,
+            OR:[
+                {id:submittedPhotoId},
+                {photoId:submittedPhotoId}
+            ]
+        },
+        include:{participant:true}
+    })
+
+    return contestPhoto
+}
+
+const getVoteType = (contestPhoto: Pick<ContestPhoto, "promoted">)=>{
     let voteType:VoteType = VoteType.Organic
 
-    if(contestPhoto && contestPhoto.promoted)
+    if(contestPhoto.promoted)
         voteType = VoteType.Promoted
 
     return voteType
@@ -36,19 +57,20 @@ export const addOneVote = async (userId:string, contestId:string, photoId:string
         throw new  ApiError(httpstatus.NOT_FOUND, 'contest not found')
     }
 
-    const {voterParticipant} = await contestRuleEngine.validateVotingRules(contestId, userId, photoId)
-    const contestPhoto = await prisma.contestPhoto.findFirst({where:{contestId, id:photoId}, include:{participant:true}})
+    const contestPhoto = await resolveContestPhotoForVote(contestId, photoId)
     if(!contestPhoto){
         throw new ApiError(httpstatus.NOT_FOUND, "contest photo not found")
     }
+    const contestPhotoId = contestPhoto.id
+    const {voterParticipant} = await contestRuleEngine.validateVotingRules(contestId, userId, contestPhotoId)
 
-    const type = await getVoteType(photoId)
+    const type = getVoteType(contestPhoto)
 
     const weight = Math.max(1, user.voting_power ?? 1)
     try{
         // Stamp the image live in this slot right now, so a later swap doesn't
         // silently move this vote onto a different photo's tally - see getVoteCount.
-        const vote = await prisma.vote.create({data:{providerId:userId, contestId, photoId, photoRefId:contestPhoto.photoId, type, power:weight, weight}})
+        const vote = await prisma.vote.create({data:{providerId:userId, contestId, photoId:contestPhotoId, photoRefId:contestPhoto.photoId, type, power:weight, weight}})
         // Casting a vote rewards the voter's own participation - their exposure
         // goes up, not the photo they voted for (that's driven separately by
         // submission/trade spotlight windows and scheduled decay).
@@ -58,11 +80,11 @@ export const addOneVote = async (userId:string, contestId:string, photoId:string
                 data:{exposure_bonus:{increment:2}, exposureUpdatedAt:new Date()}
             })
         }
-        globalEventHandler.publish(Events.NEW_VOTE,{photoId, contestId})
+        globalEventHandler.publish(Events.NEW_VOTE,{photoId:contestPhotoId, contestId})
         await contestProgressService.evaluateParticipantLevel(contestId, contestPhoto.participantId)
         await levelService.evaluateAndUpdateUserLevel(contestPhoto.participant.userId)
 
-        const totalVotes = await getVoteCount(photoId)
+        const totalVotes = await getVoteCount(contestPhotoId)
         const voterName = user.fullName || [user.firstName, user.lastName].filter(Boolean).join(" ") || user.username || "Someone"
         await notificationOrchestrator.notifyVoteReceived(
             contestPhoto.participantId,
@@ -79,7 +101,7 @@ export const addOneVote = async (userId:string, contestId:string, photoId:string
     }catch(error){
         if(error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002"){
             return prisma.vote.findUnique({
-                where:{providerId_contestId_photoId:{providerId:userId, contestId, photoId}}
+                where:{providerId_contestId_photoId:{providerId:userId, contestId, photoId:contestPhotoId}}
             })
         }
         throw error
