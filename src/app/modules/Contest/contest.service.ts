@@ -1804,7 +1804,13 @@ const getContestUploadsToVote = async (userId:string, contestId:string, page?:nu
         return [async () => {
             const voteCount = await voteService.getVoteCount(upload.id)
 
-            return {id:upload.id, url:photo.url, voteCount}
+            return {
+                id:upload.id,
+                contestPhotoId:upload.id,
+                photoId:photo.id,
+                url:photo.url,
+                voteCount
+            }
         }]
     }).map(getUpload => getUpload()))
 
@@ -1881,7 +1887,13 @@ const getContestUploads = async (userId:string,contestId:string)=>{
         return [async () => {
         const voteCount = await voteService.getVoteCount(upload.id)
 
-        return {id:photo.id, url:photo.url, voteCount}
+        return {
+            id:upload.id,
+            contestPhotoId:upload.id,
+            photoId:photo.id,
+            url:photo.url,
+            voteCount
+        }
         }]
     }).map(getUpload => getUpload()))
 
