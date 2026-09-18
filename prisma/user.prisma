@@ -156,26 +156,26 @@ model Follow {
 }
 
 model Vote {
-  id         String @id @default(auto()) @map("_id") @db.ObjectId
-  providerId String? @db.ObjectId
-  photoId    String @db.ObjectId
-  photoRefId String? @db.ObjectId // the ContestPhoto.photoId (actual image) live when this vote was cast - lets swap/trade preserve per-image vote counts
-  contestId  String @db.ObjectId
-  type       VoteType
-  power      Int @default(1)
-  weight     Int @default(1)
+  id             String @id @default(auto()) @map("_id") @db.ObjectId
+  providerId     String? @db.ObjectId
+  contestPhotoId String @map("photoId") @db.ObjectId
+  photoRefId     String? @db.ObjectId // the ContestPhoto.photoId (actual image) live when this vote was cast - lets swap/trade preserve per-image vote counts
+  contestId      String @db.ObjectId
+  type           VoteType
+  power          Int @default(1)
+  weight         Int @default(1)
 
   provider User?         @relation(fields: [providerId], references: [id], onDelete: SetNull)
-  photo    ContestPhoto @relation(fields: [photoId], references: [id])
+  photo    ContestPhoto @relation(fields: [contestPhotoId], references: [id])
   contest  Contest      @relation(fields: [contestId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([providerId, contestId, photoId])
-  @@index([contestId, photoId])
+  @@unique([providerId, contestId, contestPhotoId])
+  @@index([contestId, contestPhotoId])
   @@index([contestId, providerId])
-  @@index([photoId, photoRefId])
+  @@index([contestPhotoId, photoRefId])
   @@map("votes")
 }
 

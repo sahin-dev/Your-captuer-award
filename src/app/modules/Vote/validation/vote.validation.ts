@@ -7,16 +7,31 @@ const photoIdSchema = z.string().min(1, "Photo ID must not be empty").refine(Obj
 });
 
 export const provideVoteShcema = z.object({
+  contestPhotoId: photoIdSchema.optional(),
+  contestPhotoIds: z.array(photoIdSchema).min(1, "At least one contest photo ID must be provided").optional(),
+  // Temporary aliases keep older clients working while the canonical request
+  // fields are rolled out.
   photoId: photoIdSchema.optional(),
-  photoIds: z.array(photoIdSchema).min(1, "At least one photo ID must be provided").optional(),
+  photoIds: z.array(photoIdSchema).min(1, "At least one contest photo ID must be provided").optional(),
 }).superRefine((value, context) => {
-  const providedFields = Number(Boolean(value.photoId)) + Number(Boolean(value.photoIds));
+  const providedFields = [
+    value.contestPhotoId,
+    value.contestPhotoIds,
+    value.photoId,
+    value.photoIds,
+  ].filter(Boolean).length;
+
   if (providedFields !== 1) {
     context.addIssue({
       code: z.ZodIssueCode.custom,
-      message: "Provide either photoId or photoIds, but not both",
+      message: "Provide either contestPhotoId or contestPhotoIds, but not both",
     });
   }
+}).transform((value) => {
+  return {
+    contestPhotoId: value.contestPhotoId ?? value.photoId,
+    contestPhotoIds: value.contestPhotoIds ?? value.photoIds,
+  };
 });
 
 // Bulk vote-count lookup used by the frontend's realtime polling - capped at

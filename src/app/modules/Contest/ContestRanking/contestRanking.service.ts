@@ -103,7 +103,7 @@ const buildContestRanking = async (contestId: string): Promise<ContestRanking> =
     }),
     prisma.vote.findMany({
       where: { contestId },
-      select: { photoId: true, photoRefId: true, weight: true, power: true, createdAt: true },
+      select: { contestPhotoId: true, photoRefId: true, weight: true, power: true, createdAt: true },
     }),
     contestRuleEngine.getLevelRequirements(contestId),
   ]);
@@ -127,18 +127,18 @@ const buildContestRanking = async (contestId: string): Promise<ContestRanking> =
   const voteScoreByPhoto = new Map<string, number>();
   const voteCountByPhoto = new Map<string, number>();
   votes.forEach((vote) => {
-    const liveImage = currentPhotoIdBySlot.get(vote.photoId);
+    const liveImage = currentPhotoIdBySlot.get(vote.contestPhotoId);
     // A null photoRefId is a legacy vote cast before swap-tracking existed -
     // treat it as belonging to whichever photo is live now.
     if (vote.photoRefId !== null && vote.photoRefId !== liveImage) {
       return;
     }
-    const stintStartedAt = stintStartedAtBySlot.get(vote.photoId);
+    const stintStartedAt = stintStartedAtBySlot.get(vote.contestPhotoId);
     if (stintStartedAt && vote.createdAt < stintStartedAt) {
       return;
     }
-    voteScoreByPhoto.set(vote.photoId, (voteScoreByPhoto.get(vote.photoId) || 0) + getVoteWeight(vote));
-    voteCountByPhoto.set(vote.photoId, (voteCountByPhoto.get(vote.photoId) || 0) + 1);
+    voteScoreByPhoto.set(vote.contestPhotoId, (voteScoreByPhoto.get(vote.contestPhotoId) || 0) + getVoteWeight(vote));
+    voteCountByPhoto.set(vote.contestPhotoId, (voteCountByPhoto.get(vote.contestPhotoId) || 0) + 1);
   });
 
   const photos = participants

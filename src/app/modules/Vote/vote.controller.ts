@@ -5,14 +5,14 @@ import sendResponse from "../../../shared/ApiResponse";
 
 const addContestVote = catchAsync(async (req:any, res:Response)=>{
 
-    const { photoId, photoIds} = req.body
+    const { contestPhotoId, contestPhotoIds } = req.body
 
     const {contestId} = req.params
 
     const user = req.user
     
-    if(Array.isArray(photoIds)){
-        const votes = await addVotes(user.id,contestId,photoIds)
+    if(Array.isArray(contestPhotoIds)){
+        const votes = await addVotes(user.id, contestId, contestPhotoIds)
 
         sendResponse(res, {
             success:true,
@@ -23,7 +23,7 @@ const addContestVote = catchAsync(async (req:any, res:Response)=>{
 
     }else{
 
-        const vote =  await addOneVote(user.id, contestId, photoId)
+        const vote = await addOneVote(user.id, contestId, contestPhotoId)
         sendResponse(res, {
             success:true,
             message:"Vote added successfully",

@@ -71,7 +71,7 @@ const updateLevelsForContest = async (contestId: string): Promise<void> => {
         const contestVotes = await prisma.vote.count({
             where: {
                 contestId,
-                photoId: { in: photoIds }
+                contestPhotoId: { in: photoIds }
             }
         })
 

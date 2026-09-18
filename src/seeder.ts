@@ -344,7 +344,7 @@ class DatabaseSeeder {
 
         if(contestPhotoIds.length > 0){
             await this.db.vote.deleteMany({
-                where:{photoId:{in:contestPhotoIds}}
+                where:{contestPhotoId:{in:contestPhotoIds}}
             })
         }
     }
@@ -355,7 +355,7 @@ class DatabaseSeeder {
             data:{
                 providerId,
                 contestId,
-                photoId,
+                contestPhotoId:photoId,
                 photoRefId:contestPhoto?.photoId,
                 type,
                 power,
@@ -1081,7 +1081,7 @@ class DatabaseSeeder {
         // Mongo - so fetch everything and filter for nullish in JS instead.
         const [allContestPhotos, allVotes] = await Promise.all([
             this.db.contestPhoto.findMany({select:{id:true, photoId:true, originalPhotoId:true}}),
-            this.db.vote.findMany({select:{id:true, photoId:true, photoRefId:true}})
+            this.db.vote.findMany({select:{id:true, contestPhotoId:true, photoRefId:true}})
         ])
         const contestPhotosToUpdate = allContestPhotos.filter(p => p.originalPhotoId == null)
         const votesToUpdate = allVotes.filter(v => v.photoRefId == null)
@@ -1101,7 +1101,7 @@ class DatabaseSeeder {
         )
 
         for(const vote of votesToUpdate){
-            const liveImage = contestPhotoById.get(vote.photoId)
+            const liveImage = contestPhotoById.get(vote.contestPhotoId)
             if(liveImage === undefined){
                 continue
             }
