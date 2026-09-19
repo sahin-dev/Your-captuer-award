@@ -162,21 +162,28 @@ const getVoteCountsByPhotoIds = async (contestPhotoIds:string[]) => {
         where:{id:{in:contestPhotoIds}},
         select:{id:true, contestId:true}
     })
-    const contestIdByPhotoId = new Map(contestPhotos.map(photo => [photo.id, photo.contestId]))
     const uniqueContestIds = [...new Set(contestPhotos.map(photo => photo.contestId))]
     const rankings = await Promise.all(
         uniqueContestIds.map(async contestId => contestRankingService.buildContestRanking(contestId))
     )
-    const rankByPhotoId = new Map(
-        rankings.flatMap(ranking => ranking.photos.map(photo => [photo.photoId, photo.rank] as const))
+    const photoRankingByPhotoId = new Map(
+        rankings.flatMap(ranking => ranking.photos.map(photo => [photo.photoId, photo] as const))
+    )
+    const photographerRankByParticipantId = new Map(
+        rankings.flatMap(ranking => ranking.photographers.map(photographer => [photographer.participantId, photographer.rank] as const))
     )
 
     const counts = await Promise.all(
-        contestPhotoIds.map(async (contestPhotoId) => ({
-            contestPhotoId,
-            voteCount: await getVoteCount(contestPhotoId),
-            rank:contestIdByPhotoId.has(contestPhotoId) ? rankByPhotoId.get(contestPhotoId) ?? null : null
-        }))
+        contestPhotoIds.map(async (contestPhotoId) => {
+            const photoRanking = photoRankingByPhotoId.get(contestPhotoId)
+
+            return {
+                contestPhotoId,
+                voteCount: await getVoteCount(contestPhotoId),
+                rank:photoRanking ? photographerRankByParticipantId.get(photoRanking.participantId) ?? null : null,
+                photoRank:photoRanking?.rank ?? null
+            }
+        })
     )
 
     return counts
