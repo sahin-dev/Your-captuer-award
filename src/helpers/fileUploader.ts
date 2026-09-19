@@ -49,9 +49,10 @@ const filesystemStorage = multer.diskStorage({
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
-// Photos submitted from a user's device (contest uploads, profile photo pool, trade-ins)
-// are capped at 25MB.
+// Standalone profile-pool uploads retain their existing 25MB cap. Contest
+// entries, trade-ins, and contest banners allow files up to 150MB.
 const MAX_PHOTO_UPLOAD_SIZE = 25 * 1024 * 1024;
+const MAX_CONTEST_UPLOAD_SIZE = 150 * 1024 * 1024;
 
 const photoImageFileFilter: multer.Options["fileFilter"] = (_req, file, callback) => {
   const allowed = supportedContestImageMimeTypes.includes(
@@ -68,7 +69,7 @@ const contestImageUpload = multer({
   storage,
   limits: {
     files: 4,
-    fileSize: MAX_PHOTO_UPLOAD_SIZE,
+    fileSize: MAX_CONTEST_UPLOAD_SIZE,
   },
   fileFilter: photoImageFileFilter,
 });
@@ -84,7 +85,7 @@ const tradePhotoUpload = multer({
   storage,
   limits: {
     files: 1,
-    fileSize: MAX_PHOTO_UPLOAD_SIZE,
+    fileSize: MAX_CONTEST_UPLOAD_SIZE,
   },
   fileFilter: photoImageFileFilter,
 });
@@ -92,7 +93,7 @@ const contestBannerUpload = multer({
   storage,
   limits: {
     files: 1,
-    fileSize: 10 * 1024 * 1024,
+    fileSize: MAX_CONTEST_UPLOAD_SIZE,
   },
   fileFilter: (_req, file, callback) => {
     if (["image/jpeg", "image/png", "image/webp"].includes(file.mimetype.toLowerCase())) {

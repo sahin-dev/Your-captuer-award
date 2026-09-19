@@ -181,7 +181,7 @@ export const submissionFormatRuleSchema = baseRuleSchema.extend({
         mimeTypes: z.array(z.enum(supportedContestImageMimeTypes)).min(1),
         minWidth: z.coerce.number().int().min(1),
         minHeight: z.coerce.number().int().min(1),
-        maxSizeMB: z.coerce.number().positive().max(100),
+        maxSizeMB: z.coerce.number().positive().max(150).default(150),
     }),
 });
 

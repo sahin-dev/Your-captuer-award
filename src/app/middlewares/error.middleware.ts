@@ -40,8 +40,15 @@ const ErrorHandler = (
     errorSources = [{ type: "ApiError", details: err.message }];
   }
   else if (err instanceof multer.MulterError) {
+    const fileSizeMessage = err.field === "photo"
+      ? "Uploaded photo must be 150MB or smaller"
+      : err.field === "banner"
+        ? "Contest banner must be 150MB or smaller"
+        : req.originalUrl.includes("/contests/")
+          ? "Each contest photo must be 150MB or smaller"
+          : "Uploaded file exceeds the allowed size";
     const uploadMessages:Partial<Record<multer.MulterError["code"], string>> = {
-      LIMIT_FILE_SIZE: "Each contest photo must be 25MB or smaller",
+      LIMIT_FILE_SIZE: fileSizeMessage,
       LIMIT_FILE_COUNT: "A maximum of 4 photos can be uploaded at once",
       LIMIT_UNEXPECTED_FILE: "The request contains an unsupported photo field",
     };

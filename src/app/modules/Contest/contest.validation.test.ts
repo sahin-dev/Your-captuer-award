@@ -121,6 +121,20 @@ test("submission formats are restricted to formats the runtime supports", () => 
         },
     }]);
     assert.equal(accepted.success, true);
+    if (accepted.success) {
+        const value = accepted.data[0].value as Record<string, unknown>;
+        assert.equal(value.maxSizeMB, 25);
+    }
+
+    const defaultedSize = contestRuleInputArraySchema.parse([{
+        key:"SUBMISSION_FORMAT",
+        value:{
+            mimeTypes:["image/jpeg"],
+            minWidth:700,
+            minHeight:700,
+        },
+    }]);
+    assert.equal((defaultedSize[0].value as Record<string, unknown>).maxSizeMB, 150);
 
     const rejected = contestRuleInputArraySchema.safeParse([{
         key:"SUBMISSION_FORMAT",
