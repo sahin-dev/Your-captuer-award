@@ -1359,7 +1359,7 @@ const enrichContestListDetails = async (contests:any[]) => {
             cardAttribution:getContestCardAttribution(contest),
             rules,
             prizes:prizesByContestId.get(contest.id) || [],
-            totalVotes:(votesByContestId.get(contest.id) || []).reduce((total, vote) => total + getVoteWeight(vote), 0),
+            totalVotes:(votesByContestId.get(contest.id) || []).length,
             finalization:finalizationByContestId.get(contest.id) || null,
             awardSelections:selectionsByContestId.get(contest.id) || [],
         };
@@ -2024,6 +2024,17 @@ const uploadPhotoToContest = async (contestId:string,userId:string, photoIds:str
                 },
                 include:{photo:true}
             }))
+        }
+        // Attach the contest category as a label on each uploaded photo so the
+        // contest context (e.g. "Nature", "Portrait") is always visible on the
+        // photo itself, not just inside the contest. Existing labels are kept.
+        if(activeContest.category){
+            for(const photoId of selectedPhotoIds){
+                await tx.userPhoto.update({
+                    where:{id:photoId},
+                    data:{labels:{push:activeContest.category}}
+                })
+            }
         }
         return createdPhotos
     })

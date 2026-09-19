@@ -1607,8 +1607,8 @@ const getTeamLeaderboard = async (
 // the rolling PERIOD_DAYS cutoff above) so each run has a well-defined periodKey to
 // guard idempotency with - re-running the same window never double-pays.
 const WEEKLY_REWARD_COINS = [1000, 750, 500];
-const MONTHLY_REWARD_COINS = [10000, 5000, 2500];
-const YEARLY_REWARD_COINS = [15000, 10000, 5000];
+const MONTHLY_REWARD_COINS = [2000, 1500, 1000];
+const YEARLY_REWARD_COINS = [5000, 2500, 1500];
 
 const getPreviousWeekWindow = (now = new Date()) => {
   // Start-of-day (UTC) for `now`, then walk back 7 days for the window start.
