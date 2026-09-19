@@ -189,14 +189,14 @@ const uploadPhoto = catchAsync(async (req:any, res:Response)=>{
     const { photoIds, acceptedRuleKeys} = req.body
     const {contestId} = req.params
 
-    const file = req.file as Express.Multer.File
+    const files = contestService.getContestUploadFiles(req.file, req.files)
 
-    const uploadedPhoto = await contestService.uploadPhotoToContest(contestId, user.id, photoIds, file, acceptedRuleKeys)
+    const uploadedPhoto = await contestService.uploadPhotoToContest(contestId, user.id, photoIds, files, acceptedRuleKeys)
 
      sendResponse(res, {
         statusCode:200,
         success:true,
-        message:"photo submit to contest successfully",
+        message:"photos submitted to contest successfully",
         data:uploadedPhoto
     })
 })

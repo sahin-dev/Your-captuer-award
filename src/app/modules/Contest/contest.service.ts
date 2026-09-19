@@ -14,7 +14,7 @@ import { getAwardSlotKey } from '../Awards/award.definitions';
 import { getTeammateUserIds } from '../../../helpers/teammate.helper';
 import { userStoreService } from '../User/UserStore/userStore.service';
 import { voteService } from '../Vote/vote.service';
-import { parseContestPhotoIds } from './contestPhotoInput';
+import { getContestUploadFiles, parseContestPhotoIds } from './contestPhotoInput';
 import { achievementService } from '../Achievements/achievement.service';
 import { prizeService } from '../Prize/prize.service';
 import { contestRuleEngine } from './ContestRules/contestRule.engine';
@@ -1922,7 +1922,7 @@ const getContestUploads = async (userId:string,contestId:string)=>{
 
 //Upload photo to a contest, user can upload photo from pforile or can upload directly from computer
 
-const uploadPhotoToContest = async (contestId:string,userId:string, photoIds:unknown, file:Express.Multer.File, acceptedRuleKeys?:unknown)=>{
+const uploadPhotoToContest = async (contestId:string,userId:string, photoIds:unknown, files:Express.Multer.File[], acceptedRuleKeys?:unknown)=>{
 
     if(!contestId){
         throw new ApiError(httpstatus.BAD_REQUEST, "contest id is required")
@@ -1945,13 +1945,13 @@ const uploadPhotoToContest = async (contestId:string,userId:string, photoIds:unk
     // strings, so JSON-encoded arrays must be decoded before they reach Prisma.
     // In particular, never query MongoDB with the common placeholder value
     // `photoIds: "[]"` when a real file was supplied.
-    const parsedPhotoIds = file ? [] : parseContestPhotoIds(photoIds)
+    const parsedPhotoIds = files.length > 0 ? [] : parseContestPhotoIds(photoIds)
 
     await contestRuleEngine.validateUploadRules({
         contestId,
         userId,
         participantId:contestParticipant?.id,
-        file,
+        files,
         photoIds:parsedPhotoIds,
         acceptedRuleKeys,
         isJoiningThroughUpload
@@ -1971,9 +1971,11 @@ const uploadPhotoToContest = async (contestId:string,userId:string, photoIds:unk
     }
 
     let selectedPhotoIds:string[] = []
-    if(file){
-        const uploadedPhoto = await profileService.uploadUserPhoto(userId, file)
-        selectedPhotoIds = [uploadedPhoto.id]
+    if(files.length > 0){
+        const uploadedPhotos = await Promise.all(
+            files.map(file => profileService.uploadUserPhoto(userId, file))
+        )
+        selectedPhotoIds = uploadedPhotos.map(photo => photo.id)
     }else{
         if(parsedPhotoIds.length <= 0){
             throw new ApiError(httpstatus.BAD_REQUEST,"photoIds is empty or missing")
@@ -2796,6 +2798,7 @@ const getContestRanking = async (
 
 
 export const contestService = {
+    getContestUploadFiles,
     createContest,
     materializeRecurringOccurrence,
     updateContest,

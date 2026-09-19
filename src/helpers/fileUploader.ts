@@ -67,7 +67,7 @@ const photoImageFileFilter: multer.Options["fileFilter"] = (_req, file, callback
 const contestImageUpload = multer({
   storage,
   limits: {
-    files: 1,
+    files: 4,
     fileSize: MAX_PHOTO_UPLOAD_SIZE,
   },
   fileFilter: photoImageFileFilter,
@@ -128,6 +128,13 @@ const uploadCover = upload.single("cover")
 const uploadBadge = upload.single("badge")
 const contestBanner = contestBannerUpload.single("banner");
 const userPhoto = contestImageUpload.single('photo')
+// Contest entry supports a batch of up to four device photos. `photo` keeps
+// existing clients working; `photos` is accepted as the conventional plural
+// field used by multi-file forms.
+const contestPhotos = contestImageUpload.fields([
+  { name: "photo", maxCount: 4 },
+  { name: "photos", maxCount: 4 },
+])
 const tradePhoto = tradePhotoUpload.single("file")
 
 // Upload multiple images
@@ -279,6 +286,7 @@ export const fileUploader = {
   uploadCover,
   filesystemUploadCover,
   userPhoto,
+  contestPhotos,
   filesystemUploadUserPhoto,
   tradePhoto,
   filesystemUploadTradePhoto,

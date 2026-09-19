@@ -41,7 +41,7 @@ type UploadValidationPayload = {
   contestId: string;
   userId: string;
   participantId?: string;
-  file?: Express.Multer.File;
+  files?: Express.Multer.File[];
   photoIds?: string[];
   acceptedRuleKeys?: unknown;
   isJoiningThroughUpload?: boolean;
@@ -228,8 +228,8 @@ const validateSubmissionLimit = async (
   }
 };
 
-const validateSubmissionFormat = async (contestId: string, file?: Express.Multer.File) => {
-  if (!file) {
+const validateSubmissionFormat = async (contestId: string, files: Express.Multer.File[] = []) => {
+  if (files.length === 0) {
     return;
   }
 
@@ -239,24 +239,25 @@ const validateSubmissionFormat = async (contestId: string, file?: Express.Multer
   }
   const normalizedMimeTypes = format.mimeTypes.map((mimeType) => mimeType.toLowerCase());
 
-  if (!normalizedMimeTypes.includes(file.mimetype.toLowerCase())) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "Photo format is not allowed for this contest");
-  }
-
   const maxSizeBytes = format.maxSizeMB * 1024 * 1024;
-  if (file.size > maxSizeBytes) {
-    throw new ApiError(httpStatus.BAD_REQUEST, `Photo size must be ${format.maxSizeMB}MB or less`);
-  }
+  for (const file of files) {
+    if (!normalizedMimeTypes.includes(file.mimetype.toLowerCase())) {
+      throw new ApiError(httpStatus.BAD_REQUEST, `${file.originalname}: photo format is not allowed for this contest`);
+    }
+    if (file.size > maxSizeBytes) {
+      throw new ApiError(httpStatus.BAD_REQUEST, `${file.originalname}: photo size must be ${format.maxSizeMB}MB or less`);
+    }
 
-  const dimensions = getImageDimensions(file);
-  if (!dimensions) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "Unable to read photo dimensions");
-  }
-  if (dimensions.width < format.minWidth || dimensions.height < format.minHeight) {
-    throw new ApiError(
-      httpStatus.BAD_REQUEST,
-      `Photo resolution must be at least ${format.minWidth}px x ${format.minHeight}px`
-    );
+    const dimensions = getImageDimensions(file);
+    if (!dimensions) {
+      throw new ApiError(httpStatus.BAD_REQUEST, `${file.originalname}: unable to read photo dimensions`);
+    }
+    if (dimensions.width < format.minWidth || dimensions.height < format.minHeight) {
+      throw new ApiError(
+        httpStatus.BAD_REQUEST,
+        `${file.originalname}: photo resolution must be at least ${format.minWidth}px x ${format.minHeight}px`
+      );
+    }
   }
 };
 
@@ -282,10 +283,10 @@ const validateSubmissionRules = async (contestId: string, photoIds?: string[]) =
 };
 
 const validateUploadRules = async (payload: UploadValidationPayload) => {
-  const incomingUploadCount = payload.file ? 1 : payload.photoIds?.length || 0;
+  const incomingUploadCount = payload.files?.length || payload.photoIds?.length || 0;
 
   await validateSubmissionLimit(payload.contestId, payload.participantId, incomingUploadCount);
-  await validateSubmissionFormat(payload.contestId, payload.file);
+  await validateSubmissionFormat(payload.contestId, payload.files);
   await validateSubmissionRules(payload.contestId, payload.photoIds);
 
   if (payload.isJoiningThroughUpload) {

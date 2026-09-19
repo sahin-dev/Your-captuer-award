@@ -43,3 +43,21 @@ export const parseContestPhotoIds = (value: unknown): string[] => {
 
   return [trimmed];
 };
+
+export const getContestUploadFiles = (
+  legacyFile?: Express.Multer.File,
+  files?: Express.Multer.File[] | Record<string, Express.Multer.File[]>
+): Express.Multer.File[] => {
+  if (Array.isArray(files)) {
+    return files;
+  }
+
+  if (files && typeof files === "object") {
+    return [
+      ...(files.photo || []),
+      ...(files.photos || []),
+    ];
+  }
+
+  return legacyFile ? [legacyFile] : [];
+};
