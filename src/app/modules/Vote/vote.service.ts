@@ -10,6 +10,7 @@ import { contestRuleEngine } from '../Contest/ContestRules/contestRule.engine'
 import { getVoteWeightStats } from './voteWeight.service'
 import { contestProgressService } from '../Contest/ContestProgress/contestProgress.service'
 import { notificationOrchestrator } from '../Notification/notificationOrchestrator'
+import { contestRankingService } from '../Contest/ContestRanking/contestRanking.service'
 
 type VoteContestPhoto = ContestPhoto & {
     participant: {
@@ -154,13 +155,27 @@ export const getVoteCount = async (contestPhotoId:string)=>{
 // Bulk variant of getVoteCount for the frontend's realtime polling - a client
 // watching a handful of contest photo slots (e.g. the "My Contests" list)
 // polls this instead of re-fetching the full joined-contest payload on an
-// interval, so the recurring request stays a handful of counts instead of
-// re-downloading contest/rules/banner data the client already has.
+// interval, so the recurring request stays a handful of counts/ranks instead
+// of re-downloading contest/rules/banner data the client already has.
 const getVoteCountsByPhotoIds = async (contestPhotoIds:string[]) => {
+    const contestPhotos = await prisma.contestPhoto.findMany({
+        where:{id:{in:contestPhotoIds}},
+        select:{id:true, contestId:true}
+    })
+    const contestIdByPhotoId = new Map(contestPhotos.map(photo => [photo.id, photo.contestId]))
+    const uniqueContestIds = [...new Set(contestPhotos.map(photo => photo.contestId))]
+    const rankings = await Promise.all(
+        uniqueContestIds.map(async contestId => contestRankingService.buildContestRanking(contestId))
+    )
+    const rankByPhotoId = new Map(
+        rankings.flatMap(ranking => ranking.photos.map(photo => [photo.photoId, photo.rank] as const))
+    )
+
     const counts = await Promise.all(
         contestPhotoIds.map(async (contestPhotoId) => ({
             contestPhotoId,
-            voteCount: await getVoteCount(contestPhotoId)
+            voteCount: await getVoteCount(contestPhotoId),
+            rank:contestIdByPhotoId.has(contestPhotoId) ? rankByPhotoId.get(contestPhotoId) ?? null : null
         }))
     )
 

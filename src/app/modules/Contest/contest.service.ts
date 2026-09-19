@@ -1452,8 +1452,21 @@ const getContestsByStatus = async (userId:string,status: ContestStatus) => {
 
 //Get all uploads of a user
 
+const sortByVotesThenUploadSequence = <T extends {id:string; createdAt:Date; votes?:number; totalVotes?:number; voteCount?:number}>(uploads:T[]) => {
+    return uploads.sort((left, right) => {
+        const leftVotes = left.votes ?? left.totalVotes ?? left.voteCount ?? 0
+        const rightVotes = right.votes ?? right.totalVotes ?? right.voteCount ?? 0
+
+        if(rightVotes !== leftVotes){
+            return rightVotes - leftVotes
+        }
+
+        return left.createdAt.getTime() - right.createdAt.getTime() || left.id.localeCompare(right.id)
+    })
+}
+
 const getContestUploadsByUserId = async (contestId:string, userId:string)=>{
-    const userUploads = await prisma.contestPhoto.findMany({where:{contestId:contestId, photo:{userId}}, include:{photo:{select:{id:true, url:true}}}})
+    const userUploads = await prisma.contestPhoto.findMany({where:{contestId:contestId, photo:{userId}}, orderBy:[{createdAt:"asc"}, {id:"asc"}], include:{photo:{select:{id:true, url:true}}}})
    const mappedPhotos  = await Promise.all(userUploads.flatMap(upload => {
 
     const {photo, ...rest} = upload
@@ -1480,7 +1493,7 @@ const getContestUploadsByUserId = async (contestId:string, userId:string)=>{
     }] : []
    }).map(getUpload => getUpload()))
 
-    return mappedPhotos
+    return sortByVotesThenUploadSequence(mappedPhotos)
 }
 
 
@@ -1839,18 +1852,25 @@ const getCompletedContestUploads = async (userId:string,contestId:string)=>{
     }
 
 
-    const contestUploads = await prisma.contestPhoto.findMany({where:{contestId, votes:{none:{providerId:participant.userId}}}, include:{photo:{select:{id:true, url:true}}}})
+    const contestUploads = await prisma.contestPhoto.findMany({where:{contestId, votes:{none:{providerId:participant.userId}}}, orderBy:[{createdAt:"asc"}, {id:"asc"}], include:{photo:{select:{id:true, url:true}}}})
 
-    if(contest.status === ContestStatus.ACTIVE){
-        contestUploads.sort((a: ContestPhoto, b: ContestPhoto) => {
-            
-            if (a.promoted && !b.promoted) return -1;
-            if (!a.promoted && b.promoted) return 1;
-            
-            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-        })
-    }
-    return contestUploads.flatMap(upload => upload.photo ? [{url:upload.photo.url, id:upload.id}] : [])
+    const uploads = await Promise.all(contestUploads.flatMap(upload => {
+        if(!upload.photo){
+            return []
+        }
+
+        return [async () => ({
+            url:upload.photo!.url,
+            id:upload.id,
+            createdAt:upload.createdAt,
+            voteCount:await getContestPhotoVoteScore(upload)
+        })]
+    }).map(getUpload => getUpload()))
+
+    return sortByVotesThenUploadSequence(uploads).map(upload => ({
+        url:upload.url,
+        id:upload.id
+    }))
 }   
 
 //Get all contest uploaded images
@@ -1868,36 +1888,33 @@ const getContestUploads = async (userId:string,contestId:string)=>{
     }
 
 
-    const contestUploads = await prisma.contestPhoto.findMany({where:{contestId, votes:{none:{providerId:participant.userId}}}, include:{photo:{select:{id:true, url:true}}}})
-
-    if(contest.status === ContestStatus.ACTIVE){
-        contestUploads.sort((a: ContestPhoto, b: ContestPhoto) => {
-
-            if (a.promoted && !b.promoted) return -1;
-            if (!a.promoted && b.promoted) return 1;
-
-            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-        })
-    }
+    const contestUploads = await prisma.contestPhoto.findMany({where:{contestId, votes:{none:{providerId:participant.userId}}}, orderBy:[{createdAt:"asc"}, {id:"asc"}], include:{photo:{select:{id:true, url:true}}}})
     const uploads =  await Promise.all(contestUploads.flatMap(upload => {
         if(!upload.photo){
             return []
         }
         const photo = upload.photo
         return [async () => {
-        const voteCount = await voteService.getVoteCount(upload.id)
+        const voteCount = await getContestPhotoVoteScore(upload)
 
         return {
             id:upload.id,
             contestPhotoId:upload.id,
             photoId:photo.id,
             url:photo.url,
-            voteCount
+            voteCount,
+            createdAt:upload.createdAt
         }
         }]
     }).map(getUpload => getUpload()))
 
-    return uploads
+    return sortByVotesThenUploadSequence(uploads).map(upload => ({
+        id:upload.id,
+        contestPhotoId:upload.contestPhotoId,
+        photoId:upload.photoId,
+        url:upload.url,
+        voteCount:upload.voteCount
+    }))
 }
 
 
