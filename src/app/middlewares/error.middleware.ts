@@ -40,10 +40,13 @@ const ErrorHandler = (
     errorSources = [{ type: "ApiError", details: err.message }];
   }
   else if (err instanceof multer.MulterError) {
+    const uploadMessages:Partial<Record<multer.MulterError["code"], string>> = {
+      LIMIT_FILE_SIZE: "Each contest photo must be 25MB or smaller",
+      LIMIT_FILE_COUNT: "A maximum of 4 photos can be uploaded at once",
+      LIMIT_UNEXPECTED_FILE: "The request contains an unsupported photo field",
+    };
     statusCode = err.code === "LIMIT_FILE_SIZE" ? 413 : httpStatus.BAD_REQUEST;
-    message = err.code === "LIMIT_FILE_SIZE"
-      ? "Uploaded file exceeds the allowed size"
-      : err.message;
+    message = uploadMessages[err.code] || err.message;
     errorSources = [{ type: "UploadError", details: message }];
   }
   // handle prisma client validation errors
@@ -51,6 +54,19 @@ const ErrorHandler = (
     statusCode = httpStatus.BAD_REQUEST;
     message = parsePrismaValidationError(err.message);
     errorSources.push("Prisma Client Validation Error");
+  }
+  else if (err instanceof Prisma.PrismaClientKnownRequestError) {
+    if (err.code === "P2028") {
+      statusCode = httpStatus.SERVICE_UNAVAILABLE;
+      message = "The photo submission took too long to complete. Please try again";
+    } else if (err.code === "P2002") {
+      statusCode = httpStatus.CONFLICT;
+      message = "This record already exists";
+    } else {
+      statusCode = httpStatus.BAD_REQUEST;
+      message = "The database could not complete this request";
+    }
+    errorSources = [{ type: "DatabaseError", code: err.code }];
   }
   // Prisma Client Initialization Error
   else if (err instanceof Prisma.PrismaClientInitializationError) {

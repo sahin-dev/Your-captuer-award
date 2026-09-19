@@ -128,13 +128,11 @@ const uploadCover = upload.single("cover")
 const uploadBadge = upload.single("badge")
 const contestBanner = contestBannerUpload.single("banner");
 const userPhoto = contestImageUpload.single('photo')
-// Contest entry supports a batch of up to four device photos. `photo` keeps
-// existing clients working; `photos` is accepted as the conventional plural
-// field used by multi-file forms.
-const contestPhotos = contestImageUpload.fields([
-  { name: "photo", maxCount: 4 },
-  { name: "photos", maxCount: 4 },
-])
+// Contest entry supports up to four image parts. Mobile/web clients use several
+// legitimate multipart names (`photo`, `photos`, `photos[]`, indexed names), so
+// accept the field name here and enforce type/count through Multer and the
+// contest submission rule instead of failing early with "Unexpected field".
+const contestPhotos = contestImageUpload.any()
 const tradePhoto = tradePhotoUpload.single("file")
 
 // Upload multiple images

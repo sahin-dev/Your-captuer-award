@@ -1972,10 +1972,20 @@ const uploadPhotoToContest = async (contestId:string,userId:string, photoIds:unk
 
     let selectedPhotoIds:string[] = []
     if(files.length > 0){
-        const uploadedPhotos = await Promise.all(
-            files.map(file => profileService.uploadUserPhoto(userId, file))
-        )
-        selectedPhotoIds = uploadedPhotos.map(photo => photo.id)
+        // Keep storage pressure predictable for a full four-photo entry. Four
+        // simultaneous in-memory S3 uploads could fail at the boundary while
+        // smaller batches succeeded, and the raw provider error became a 500.
+        for(const file of files){
+            try{
+                const uploadedPhoto = await profileService.uploadUserPhoto(userId, file)
+                selectedPhotoIds.push(uploadedPhoto.id)
+            }catch{
+                throw new ApiError(
+                    httpstatus.BAD_GATEWAY,
+                    `Unable to upload ${file.originalname}. Please try again`
+                )
+            }
+        }
     }else{
         if(parsedPhotoIds.length <= 0){
             throw new ApiError(httpstatus.BAD_REQUEST,"photoIds is empty or missing")
@@ -2014,31 +2024,35 @@ const uploadPhotoToContest = async (contestId:string,userId:string, photoIds:unk
             }
         }
 
-        const createdPhotos:ContestPhoto[] = []
-        for(const photoId of selectedPhotoIds){
-            createdPhotos.push(await tx.contestPhoto.create({
-                data:{
-                    contestId,
-                    participantId:participant.id,
-                    photoId,
-                    originalPhotoId:photoId,
-                    exposureBoostExpiresAt:new Date(Date.now() + EXPOSURE_BOOST_DURATION_MS)
-                },
-                include:{photo:true}
+        const exposureBoostExpiresAt = new Date(Date.now() + EXPOSURE_BOOST_DURATION_MS)
+        await tx.contestPhoto.createMany({
+            data:selectedPhotoIds.map(photoId => ({
+                contestId,
+                participantId:participant.id,
+                photoId,
+                originalPhotoId:photoId,
+                exposureBoostExpiresAt
             }))
-        }
+        })
         // Attach the contest category as a label on each uploaded photo so the
         // contest context (e.g. "Nature", "Portrait") is always visible on the
         // photo itself, not just inside the contest. Existing labels are kept.
         if(activeContest.category){
-            for(const photoId of selectedPhotoIds){
-                await tx.userPhoto.update({
-                    where:{id:photoId},
-                    data:{labels:{push:activeContest.category}}
-                })
-            }
+            await tx.userPhoto.updateMany({
+                where:{id:{in:selectedPhotoIds}},
+                data:{labels:{push:activeContest.category}}
+            })
         }
-        return createdPhotos
+        return tx.contestPhoto.findMany({
+            where:{contestId, participantId:participant.id, photoId:{in:selectedPhotoIds}},
+            include:{photo:true}
+        })
+    }, {
+        // Prisma's interactive transaction default is 5 seconds. Joining can
+        // also charge an entry fee and create a participant, so retain a safety
+        // margin even though photo and label writes are now batched.
+        maxWait:5000,
+        timeout:15000
     })
 
     if(isJoiningThroughUpload){
