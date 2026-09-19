@@ -2,11 +2,10 @@ import { ContestParticipantStatus, ContestRankingScope } from "../../../../prism
 import type { Prisma, YCLevel } from "../../../../prismaClient";
 import prisma from "../../../../shared/prisma";
 import { ycLevels } from "../../Awards/award.definitions";
-import { getVoteWeight } from "../../Vote/voteWeight.service";
 import { contestRuleEngine } from "../ContestRules/contestRule.engine";
 import { LevelRequirementValue } from "../ContestRules/contestRule.definitions";
 
-export const CONTEST_SCORING_VERSION = 1;
+export const CONTEST_SCORING_VERSION = 2;
 const UPDATE_BATCH_SIZE = 25;
 
 const updateInBatches = async <T>(items: T[], update: (item: T) => Promise<unknown>, batchSize = UPDATE_BATCH_SIZE) => {
@@ -103,7 +102,7 @@ const buildContestRanking = async (contestId: string): Promise<ContestRanking> =
     }),
     prisma.vote.findMany({
       where: { contestId },
-      select: { contestPhotoId: true, photoRefId: true, weight: true, power: true, createdAt: true },
+      select: { contestPhotoId: true, photoRefId: true, createdAt: true },
     }),
     contestRuleEngine.getLevelRequirements(contestId),
   ]);
@@ -124,7 +123,6 @@ const buildContestRanking = async (contestId: string): Promise<ContestRanking> =
     });
   });
 
-  const voteScoreByPhoto = new Map<string, number>();
   const voteCountByPhoto = new Map<string, number>();
   votes.forEach((vote) => {
     const liveImage = currentPhotoIdBySlot.get(vote.contestPhotoId);
@@ -137,7 +135,6 @@ const buildContestRanking = async (contestId: string): Promise<ContestRanking> =
     if (stintStartedAt && vote.createdAt < stintStartedAt) {
       return;
     }
-    voteScoreByPhoto.set(vote.contestPhotoId, (voteScoreByPhoto.get(vote.contestPhotoId) || 0) + getVoteWeight(vote));
     voteCountByPhoto.set(vote.contestPhotoId, (voteCountByPhoto.get(vote.contestPhotoId) || 0) + 1);
   });
 
@@ -154,8 +151,7 @@ const buildContestRanking = async (contestId: string): Promise<ContestRanking> =
         userPhotoId: photo.photoId,
         participantId: participant.id,
         userId: participant.userId,
-        score: (voteScoreByPhoto.get(photo.id) || 0) + initialVotes + bankedVotes,
-        // Raw vote count for display, independent of each voter's weight.
+        score: (voteCountByPhoto.get(photo.id) || 0) + initialVotes + bankedVotes,
         voteCount: (voteCountByPhoto.get(photo.id) || 0) + initialVotes + bankedVotes,
         createdAt: photo.createdAt,
         tieBreakKey: photo.id,

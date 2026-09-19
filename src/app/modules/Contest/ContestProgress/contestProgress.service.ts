@@ -2,7 +2,6 @@ import type { PrizeType, YCLevel } from "../../../../prismaClient";
 import prisma from "../../../../shared/prisma";
 import { achievementService } from "../../Achievements/achievement.service";
 import { prizeTypes, ycLevels } from "../../Awards/award.definitions";
-import { getVoteWeight } from "../../Vote/voteWeight.service";
 import { contestRuleEngine } from "../ContestRules/contestRule.engine";
 import { getContestLevelForScore } from "../ContestRanking/contestRanking.service";
 
@@ -24,7 +23,7 @@ const levelOrder: Record<YCLevel, number> = {
 };
 
 const evaluateParticipantLevel = async (contestId: string, participantId: string) => {
-  const [participant, votes, requirements] = await Promise.all([
+  const [participant, voteCount, requirements] = await Promise.all([
     prisma.contestParticipant.findUnique({
       where: { id: participantId },
       select: {
@@ -33,9 +32,8 @@ const evaluateParticipantLevel = async (contestId: string, participantId: string
         photos: { select: { id: true, initialVotes: true } },
       },
     }),
-    prisma.vote.findMany({
+    prisma.vote.count({
       where: { contestId, photo: { participantId } },
-      select: { weight: true, power: true },
     }),
     contestRuleEngine.getLevelRequirements(contestId),
   ]);
@@ -44,7 +42,7 @@ const evaluateParticipantLevel = async (contestId: string, participantId: string
     return null;
   }
 
-  const score = votes.reduce((total, vote) => total + getVoteWeight(vote), 0)
+  const score = voteCount
     + participant.photos.reduce((total, photo) => total + (photo.initialVotes || 0), 0);
   const eligibleLevel = getContestLevelForScore(score, requirements);
   const targetLevel = levelOrder[eligibleLevel] > levelOrder[participant.level]

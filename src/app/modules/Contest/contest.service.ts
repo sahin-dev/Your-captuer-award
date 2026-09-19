@@ -14,7 +14,7 @@ import { getAwardSlotKey } from '../Awards/award.definitions';
 import { getTeammateUserIds } from '../../../helpers/teammate.helper';
 import { userStoreService } from '../User/UserStore/userStore.service';
 import { voteService } from '../Vote/vote.service';
-import { getVoteWeight } from '../Vote/voteWeight.service';
+import { parseContestPhotoIds } from './contestPhotoInput';
 import { achievementService } from '../Achievements/achievement.service';
 import { prizeService } from '../Prize/prize.service';
 import { contestRuleEngine } from './ContestRules/contestRule.engine';
@@ -1333,7 +1333,7 @@ const enrichContestListDetails = async (contests:any[]) => {
         }),
         prisma.vote.findMany({
             where:{contestId:{in:contestIds}},
-            select:{contestId:true, weight:true, power:true},
+            select:{contestId:true},
         }),
         prisma.contestFinalization.findMany({
             where:{contestId:{in:contestIds}},
@@ -1922,7 +1922,7 @@ const getContestUploads = async (userId:string,contestId:string)=>{
 
 //Upload photo to a contest, user can upload photo from pforile or can upload directly from computer
 
-const uploadPhotoToContest = async (contestId:string,userId:string, photoIds:string[], file:Express.Multer.File, acceptedRuleKeys?:unknown)=>{
+const uploadPhotoToContest = async (contestId:string,userId:string, photoIds:unknown, file:Express.Multer.File, acceptedRuleKeys?:unknown)=>{
 
     if(!contestId){
         throw new ApiError(httpstatus.BAD_REQUEST, "contest id is required")
@@ -1941,11 +1941,11 @@ const uploadPhotoToContest = async (contestId:string,userId:string, photoIds:str
 
     const contestParticipant = await prisma.contestParticipant.findUnique({where:{contestId_userId:{contestId,userId}}})
     const isJoiningThroughUpload = !contestParticipant
-    const parsedPhotoIds = Array.isArray(photoIds)
-        ? photoIds
-        : typeof photoIds === "string"
-            ? [photoIds]
-            : []
+    // A file and profile-photo IDs are alternative inputs. Multipart fields are
+    // strings, so JSON-encoded arrays must be decoded before they reach Prisma.
+    // In particular, never query MongoDB with the common placeholder value
+    // `photoIds: "[]"` when a real file was supplied.
+    const parsedPhotoIds = file ? [] : parseContestPhotoIds(photoIds)
 
     await contestRuleEngine.validateUploadRules({
         contestId,

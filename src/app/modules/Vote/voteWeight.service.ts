@@ -5,33 +5,23 @@ type VoteWeightRecord = {
     power?: number | null;
 }
 
-export const getVoteWeight = (vote:VoteWeightRecord) => {
-    return vote.weight ?? vote.power ?? 1
+// Vote power/weight fields remain in the database for backwards compatibility,
+// but contest scoring is record-based: every Vote row contributes exactly one.
+export const getVoteWeight = (_vote:VoteWeightRecord) => {
+    return 1
 }
 
 export const sumVoteWeight = async (where:any) => {
-    const votes = await prisma.vote.findMany({
-        where,
-        select:{
-            weight:true,
-            power:true
-        }
-    })
-
-    return votes.reduce((total, vote) => total + getVoteWeight(vote), 0)
+    return prisma.vote.count({where})
 }
 
 export const getVoteWeightStats = async (where:any) => {
-    const votes = await prisma.vote.findMany({
-        where,
-        select:{
-            weight:true,
-            power:true
-        }
-    })
+    const count = await prisma.vote.count({where})
 
     return {
-        count:votes.length,
-        weight:votes.reduce((total, vote) => total + getVoteWeight(vote), 0)
+        count,
+        // Kept as an API compatibility alias. It now intentionally equals the
+        // number of vote records rather than stored historical vote weights.
+        weight:count
     }
 }

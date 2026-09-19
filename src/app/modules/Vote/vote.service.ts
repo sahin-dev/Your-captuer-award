@@ -65,11 +65,10 @@ export const addOneVote = async (userId:string, contestId:string, contestPhotoId
 
     const type = getVoteType(contestPhoto)
 
-    const weight = Math.max(1, user.voting_power ?? 1)
     try{
         // Stamp the image live in this slot right now, so a later swap doesn't
         // silently move this vote onto a different photo's tally - see getVoteCount.
-        const vote = await prisma.vote.create({data:{providerId:userId, contestId, contestPhotoId:contestPhoto.id, photoRefId:contestPhoto.photoId, type, power:weight, weight}})
+        const vote = await prisma.vote.create({data:{providerId:userId, contestId, contestPhotoId:contestPhoto.id, photoRefId:contestPhoto.photoId, type, power:1, weight:1}})
         // Casting a vote rewards the voter's own participation - their exposure
         // goes up, not the photo they voted for (that's driven separately by
         // submission/trade spotlight windows and scheduled decay).
