@@ -1,6 +1,7 @@
 import { Agenda } from "agenda";
 import { initAgenda } from "./init";
 import { registerAgendaJobs } from "./jobs";
+import { registerJobRetries } from "./retry";
 
 let agenda:Agenda | null = null;
 let started = false;
@@ -10,6 +11,7 @@ const getAgenda = () => {
     if(!agenda){
         agenda = initAgenda();
         registerAgendaJobs(agenda);
+        registerJobRetries(agenda);
         agenda.on("error", (e) => {
             console.log("Agenda error:", e);
         });

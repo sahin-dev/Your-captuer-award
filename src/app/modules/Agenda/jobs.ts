@@ -129,7 +129,10 @@ agenda.define("contest:watcher", async (job: Job) => {
 
     const contest = await prisma.contest.findUnique({where:{id:contestId}})
     if (!contest){
-        throw new Error("'Contest:watcher, contest not found")
+        // A hard-deleted contest is a permanent condition, not a failure worth
+        // retrying - throwing here only spends the job's retry budget.
+        console.log(`Contest ${contestId} no longer exists; skipping finalization`)
+        return
     }
     if(contest.deletedAt){
         console.log(`Contest ${contestId} is archived; skipping finalization`)
