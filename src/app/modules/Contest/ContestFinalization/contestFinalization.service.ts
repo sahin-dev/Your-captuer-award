@@ -508,8 +508,16 @@ const finalizeContest = async (contestId: string) => {
       { label: `contest ${contestId} completion` }
     );
 
-    await notifyGrantRecipients(contestId, grants);
-    await notifyContestParticipants(contestId, contest.title, ranking);
+    // The contest is COMPLETED and the rewards are durable by this point.
+    // Announcements are a retryable side effect: letting one bubble up would
+    // drop the contest into FINALIZATION_FAILED and re-run a finalization that
+    // actually succeeded.
+    try {
+      await notifyGrantRecipients(contestId, grants);
+      await notifyContestParticipants(contestId, contest.title, ranking);
+    } catch (notificationError) {
+      console.error(`Finalization notifications failed for contest ${contestId}`, notificationError);
+    }
 
     return prisma.contestFinalization.findUnique({ where: { contestId } });
   } catch (error) {
