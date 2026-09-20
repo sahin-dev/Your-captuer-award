@@ -87,7 +87,7 @@ export const addOneVote = async (userId:string, contestId:string, contestPhotoId
                 })
             }
             return vote
-        })
+        }, {timeout:15000, maxWait:10000})
 
         // The vote is already durable. Derived levels and notifications are
         // retryable side effects and must not turn a successful vote into a 500.
@@ -157,18 +157,20 @@ export const addVotes = async (userId:string, contestId:string, contestPhotoIds:
             throw new ApiError(httpstatus.CONFLICT, "Contest voting has closed")
         }
 
-        const votes:Vote[] = []
-        const createdPhotoIds:string[] = []
-        for(const photo of resolvedPhotos){
-            const existing = await tx.vote.findUnique({
-                where:{providerId_contestId_contestPhotoId:{providerId:userId, contestId, contestPhotoId:photo.id}}
-            })
-            if(existing){
-                votes.push(existing)
-                continue
-            }
-            votes.push(await tx.vote.create({
-                data:{
+        // Bulk voting is one round trip per step, not two per photo. Checking
+        // and inserting each vote in a loop cost 2N+2 sequential queries, so a
+        // dozen photos was enough to blow past the interactive transaction
+        // timeout against a remote database and lose the whole ballot.
+        const contestPhotoIds = resolvedPhotos.map(photo => photo.id)
+        const existingVotes = await tx.vote.findMany({
+            where:{providerId:userId, contestId, contestPhotoId:{in:contestPhotoIds}}
+        })
+        const existingPhotoIds = new Set(existingVotes.map(vote => vote.contestPhotoId))
+        const newPhotos = resolvedPhotos.filter(photo => !existingPhotoIds.has(photo.id))
+
+        if(newPhotos.length > 0){
+            await tx.vote.createMany({
+                data:newPhotos.map(photo => ({
                     providerId:userId,
                     contestId,
                     contestPhotoId:photo.id,
@@ -176,18 +178,30 @@ export const addVotes = async (userId:string, contestId:string, contestPhotoIds:
                     type:getVoteType(photo),
                     power:1,
                     weight:1
-                }
-            }))
-            createdPhotoIds.push(photo.id)
-        }
-        if(voterParticipant && createdPhotoIds.length > 0){
-            await tx.contestParticipant.updateMany({
-                where:{id:voterParticipant.id, status:ContestParticipantStatus.ACTIVE},
-                data:{exposure_bonus:{increment:2 * createdPhotoIds.length}, exposureUpdatedAt:new Date()}
+                }))
             })
+            if(voterParticipant){
+                await tx.contestParticipant.updateMany({
+                    where:{id:voterParticipant.id, status:ContestParticipantStatus.ACTIVE},
+                    data:{exposure_bonus:{increment:2 * newPhotos.length}, exposureUpdatedAt:new Date()}
+                })
+            }
         }
-        return {votes, createdPhotoIds}
-    })
+
+        // createMany does not return the inserted rows, so re-read only when
+        // something was actually written.
+        const storedVotes = newPhotos.length > 0
+            ? await tx.vote.findMany({
+                where:{providerId:userId, contestId, contestPhotoId:{in:contestPhotoIds}}
+            })
+            : existingVotes
+        const voteByPhotoId = new Map(storedVotes.map(vote => [vote.contestPhotoId, vote]))
+        const votes = resolvedPhotos
+            .map(photo => voteByPhotoId.get(photo.id))
+            .filter((vote): vote is Vote => Boolean(vote))
+
+        return {votes, createdPhotoIds:newPhotos.map(photo => photo.id)}
+    }, {timeout:15000, maxWait:10000})
 
     let persisted:Awaited<ReturnType<typeof persistVotes>>
     try{
