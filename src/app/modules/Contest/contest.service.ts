@@ -1150,10 +1150,13 @@ const getPublicContests = async (
         ...notDeleted
     }
 
-    const isSoonestFirstStatus = status === ContestStatus.UPCOMING || status === ContestStatus.ACTIVE
-    const orderBy:Prisma.ContestOrderByWithRelationInput[] = isSoonestFirstStatus
-        ? [{startDate:"asc"}, {id:"asc"}]
-        : [{startDate:"desc"}, {id:"desc"}]
+    // Running contests are ranked by the one ending soonest, upcoming ones by the
+    // one starting soonest - both mirror the countdown shown on the contest card.
+    const orderBy:Prisma.ContestOrderByWithRelationInput[] = status === ContestStatus.ACTIVE
+        ? [{endDate:"asc"}, {id:"asc"}]
+        : status === ContestStatus.UPCOMING
+            ? [{startDate:"asc"}, {id:"asc"}]
+            : [{startDate:"desc"}, {id:"desc"}]
 
     const [contests, total] = await Promise.all([
         prisma.contest.findMany({
@@ -1422,7 +1425,9 @@ const getContestsByStatus = async (userId:string,status: ContestStatus) => {
         const contests = await prisma.contest.findMany({
             where:{status, participants:{none:{userId}}, ...notDeleted},
             include: { creator: contestListCreatorInclude, bannerUploader: contestBannerUploaderInclude },
-            orderBy:{startDate:"asc"}
+            // Running contests are ranked by urgency - the one closing soonest
+            // sits first, matching the "time left" countdown on the open cards.
+            orderBy:[{endDate:"asc"}, {id:"asc"}]
         });
 
         return enrichContestListDetails(contests);
