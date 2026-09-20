@@ -29,7 +29,8 @@
     "backfill:zero-top-rank-rewards": "ts-node --transpile-only src/seeder.ts backfill:zero-top-rank-rewards",
     "backfill:vote-photo-ref": "ts-node --transpile-only src/seeder.ts backfill:vote-photo-ref",
     "backfill:user-active-status": "ts-node --transpile-only src/seeder.ts backfill:user-active-status",
-    "test:transaction": "node --require ts-node/register/transpile-only --test src/shared/transactionRetry.test.ts"
+    "test:transaction": "node --require ts-node/register/transpile-only --test src/shared/transactionRetry.test.ts",
+    "test:team": "node --require ts-node/register/transpile-only --test src/app/modules/Team/teamPeriod.test.ts"
   },
   "repository": {
     "type": "git",

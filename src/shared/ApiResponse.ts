@@ -8,7 +8,7 @@ const sendResponse = <T>(res: Response, jsonData: {
         page: number,
         limit: number,
         total: number
-    },
+    } & Record<string, unknown>,
     data: T | null | undefined
 }) => {
     res.status(jsonData.statusCode).json({

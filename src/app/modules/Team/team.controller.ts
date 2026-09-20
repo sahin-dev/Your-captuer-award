@@ -355,7 +355,7 @@ const rejectJoinRequest = catchAsync(async (req: Request, res: Response) => {
 // NEW: Leaderboard & Matching Controllers
 
 const getTeamLeaderboard = catchAsync(async (req: Request, res: Response) => {
-  const { contestId, page, limit, period } = req.query;
+  const { contestId, page, limit, period, periodOffset } = req.query;
 
   if (period && !["weekly", "monthly", "yearly"].includes(period as string)) {
     throw new ApiError(
@@ -364,11 +364,22 @@ const getTeamLeaderboard = catchAsync(async (req: Request, res: Response) => {
     );
   }
 
+  // 0 (default) is the board being played for now; -1 is the period that closed
+  // at the last payout. Past boards are recomputed, so they stay available.
+  const offset = periodOffset === undefined ? 0 : Number(periodOffset);
+  if (!Number.isInteger(offset) || offset > 0) {
+    throw new ApiError(
+      httpstatus.BAD_REQUEST,
+      "periodOffset must be 0 for the current period or a negative whole number for a past one",
+    );
+  }
+
   const result = await teamService.getTeamLeaderboard(
     contestId as string | undefined,
     page ? Number(page) : undefined,
     limit ? Number(limit) : undefined,
     (period as "weekly" | "monthly" | "yearly") || "weekly",
+    offset,
   );
 
   sendResponse(res, {
@@ -376,7 +387,10 @@ const getTeamLeaderboard = catchAsync(async (req: Request, res: Response) => {
     statusCode: httpstatus.OK,
     message: `Team ${result.period} leaderboard fetched successfully`,
     data: result.data,
-    meta: result.meta,
+    // Additive: `data` stays the standings array so existing clients are
+    // unaffected, while the window tells them what is being played for and
+    // exactly when the board resets.
+    meta: { ...result.meta, period: result.period, window: result.window },
   });
 });
 

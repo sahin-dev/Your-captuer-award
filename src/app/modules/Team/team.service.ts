@@ -24,6 +24,13 @@ import { notificationOrchestrator } from "../Notification/notificationOrchestrat
 import { chatService } from "../Chat/chat.service";
 import { levelService } from "../Level/level.service";
 import { voteService } from "../Vote/vote.service";
+import {
+  PAYOUT_TIME_ZONE,
+  TeamPeriod,
+  TeamPeriodName,
+  getPeriodWindow,
+  toTeamPeriod,
+} from "./teamPeriod";
 import { contestRankingService } from "../Contest/ContestRanking/contestRanking.service";
 import { userService } from "../User/user.service";
 import { paginationHelper } from "../../../helpers/paginationHelper";
@@ -1565,8 +1572,7 @@ const rejectJoinRequest = async (joinRequestId: string, userId: string) => {
 
 // ============ Leaderboard & Match History ============
 
-const WEEKLY_PERIOD_DAYS = 7;
-type TeamLeaderboardPeriod = "weekly" | "monthly" | "yearly";
+type TeamLeaderboardPeriod = TeamPeriodName;
 type TeamStandingStats = {
   score: number;
   totalVotes: number;
@@ -1582,31 +1588,18 @@ const compareTeamStandingEntries = (
   b[1].score - a[1].score ||
   a[0].localeCompare(b[0]);
 
-const getCurrentLeaderboardWindow = (period: TeamLeaderboardPeriod, now = new Date()) => {
-  if (period === "monthly") {
-    return {
-      start: new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)),
-      end: now,
-    };
-  }
-
-  if (period === "yearly") {
-    return {
-      start: new Date(Date.UTC(now.getUTCFullYear(), 0, 1)),
-      end: now,
-    };
-  }
-
-  const start = new Date(now);
-  start.setUTCDate(start.getUTCDate() - WEEKLY_PERIOD_DAYS);
-  return { start, end: now };
-};
-
+/**
+ * `periodOffset` 0 is the board currently being played for; -1 is the period
+ * that closed at the last payout, and so on. Past boards are recomputed from
+ * immutable match history rather than stored, so nothing has to be archived.
+ */
 const getTeamLeaderboard = async (
   contestId?: string,
   page?: number,
   limit?: number,
   period: TeamLeaderboardPeriod = "weekly",
+  periodOffset = 0,
+  now = new Date(),
 ) => {
   const {
     skip,
@@ -1614,10 +1607,12 @@ const getTeamLeaderboard = async (
     page: currentPage,
   } = paginationHelper.calculatePagination({ page, limit });
 
-  const window = getCurrentLeaderboardWindow(period);
+  // Exactly the window the payout will pay for, so what users see on the board
+  // is what gets rewarded.
+  const window = getPeriodWindow(toTeamPeriod(period), now, periodOffset);
 
   const historyWhere = {
-    match_date: { gte: window.start, lte: window.end },
+    match_date: { gte: window.start, lt: window.end },
     ...(contestId ? { contest_id: contestId } : {}),
   };
 
@@ -1667,37 +1662,26 @@ const getTeamLeaderboard = async (
     data,
     meta: paginationHelper.getPaginationMetaData(currentPage, take, total),
     period,
+    // The board is scoped to this window and clears when it ends, so the client
+    // can show what is being played for and when the reset lands.
+    window: {
+      periodKey: window.periodKey,
+      start: window.start,
+      end: window.end,
+      resetsAt: window.end,
+      timeZone: PAYOUT_TIME_ZONE,
+      isCurrent: periodOffset === 0,
+    },
   };
 };
 
-// Weekly/monthly/yearly top-3 team coin payout. Uses fixed calendar windows (not
-// the rolling PERIOD_DAYS cutoff above) so each run has a well-defined periodKey to
-// guard idempotency with - re-running the same window never double-pays.
+// Weekly/monthly/yearly top-3 team coin payout. The window comes from the same
+// helper the leaderboard reads, so the board that users watch all period is
+// exactly the one that gets paid. periodKey guards idempotency - re-running the
+// same window never double-pays.
 const WEEKLY_REWARD_COINS = [1000, 750, 500];
 const MONTHLY_REWARD_COINS = [2000, 1500, 1000];
 const YEARLY_REWARD_COINS = [5000, 2500, 1500];
-
-const getPreviousWeekWindow = (now = new Date()) => {
-  // Start-of-day (UTC) for `now`, then walk back 7 days for the window start.
-  const end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-  const start = new Date(end);
-  start.setUTCDate(start.getUTCDate() - 7);
-  return { start, end, periodKey: start.toISOString().slice(0, 10) };
-};
-
-const getPreviousMonthWindow = (now = new Date()) => {
-  const end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
-  const start = new Date(Date.UTC(end.getUTCFullYear(), end.getUTCMonth() - 1, 1));
-  const periodKey = `${start.getUTCFullYear()}-${String(start.getUTCMonth() + 1).padStart(2, "0")}`;
-  return { start, end, periodKey };
-};
-
-const getPreviousYearWindow = (now = new Date()) => {
-  const end = new Date(Date.UTC(now.getUTCFullYear(), 0, 1));
-  const start = new Date(Date.UTC(end.getUTCFullYear() - 1, 0, 1));
-  const periodKey = `${start.getUTCFullYear()}`;
-  return { start, end, periodKey };
-};
 
 const computeTeamStandingsForWindow = async (start: Date, end: Date) => {
   const history = await prisma.teamMatchHistory.findMany({
@@ -1727,12 +1711,10 @@ const computeTeamStandingsForWindow = async (start: Date, end: Date) => {
     .map(([teamId, stats], index) => ({ teamId, rank: index + 1, ...stats }));
 };
 
-const payoutPeriodRewards = async (period: "WEEKLY" | "MONTHLY" | "YEARLY") => {
-  const window = period === "WEEKLY"
-    ? getPreviousWeekWindow()
-    : period === "MONTHLY"
-      ? getPreviousMonthWindow()
-      : getPreviousYearWindow();
+const payoutPeriodRewards = async (period: TeamPeriod, now = new Date()) => {
+  // Offset -1: the job fires exactly at a boundary, and what it pays for is the
+  // period that just closed at that instant.
+  const window = getPeriodWindow(period, now, -1);
   const rewards = period === "WEEKLY"
     ? WEEKLY_REWARD_COINS
     : period === "MONTHLY"
@@ -1835,6 +1817,10 @@ const updateTeamStatsForMatch = async (
   result: HistoryResult,
   matchId: string,
   contestId: string,
+  // When the match actually ended, which decides the period it scores in. A
+  // match whose contest was slow to finalize can be closed hours later, and
+  // with a hard period boundary that would otherwise land it in the wrong week.
+  matchEndedAt: Date = new Date(),
 ) => {
   await tx.team.update({
     where: { id: teamId },
@@ -1858,7 +1844,7 @@ const updateTeamStatsForMatch = async (
         team_score: teamScore,
         opponent_score: opponentScore,
         result,
-        match_date: new Date(),
+        match_date: matchEndedAt,
         contest_id: contestId,
       },
     });
@@ -1873,7 +1859,7 @@ const updateTeamStatsForMatch = async (
       team_score: teamScore,
       opponent_score: opponentScore,
       result,
-      match_date: new Date(),
+      match_date: matchEndedAt,
       contest_id: contestId,
     },
   });
@@ -1996,6 +1982,18 @@ const closeMatchWithScores = async (
   const resolvedTeam1Score = team1Score;
   const resolvedTeam2Score = team2Score;
 
+  // A match stops scoring when its contest ends - voting is gated on endDate -
+  // so that is its real end time, even if closing it is delayed by a slow or
+  // retried finalization. Using the close timestamp instead would push a match
+  // that finished on Saturday into the next week's leaderboard.
+  const scoringContest = await prisma.contest.findUnique({
+    where: { id: match.contestId },
+    select: { endDate: true, endedAt: true },
+  });
+  const closedAt = new Date();
+  const contestEndedAt = scoringContest?.endedAt ?? scoringContest?.endDate;
+  const matchEndedAt = contestEndedAt && contestEndedAt < closedAt ? contestEndedAt : closedAt;
+
   const updatedMatch = await prisma.$transaction(async (tx) => {
     let result: MatchResult = MatchResult.DRAW;
     let winnerId: string | undefined;
@@ -2015,7 +2013,7 @@ const closeMatchWithScores = async (
         winner_id: winnerId,
         result,
         status: MatchStatus.CLOSED,
-        endedAt: new Date(),
+        endedAt: matchEndedAt,
       },
     });
     if(claimed.count !== 1){
@@ -2039,6 +2037,7 @@ const closeMatchWithScores = async (
           : HistoryResult.DRAW,
       matchId,
       match.contestId,
+      matchEndedAt,
     );
     await updateTeamStatsForMatch(
       tx,
@@ -2053,6 +2052,7 @@ const closeMatchWithScores = async (
           : HistoryResult.DRAW,
       matchId,
       match.contestId,
+      matchEndedAt,
     );
 
     await tx.team.updateMany({

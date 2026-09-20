@@ -2,6 +2,7 @@ import { Agenda } from "agenda";
 import { initAgenda } from "./init";
 import { registerAgendaJobs } from "./jobs";
 import { registerJobRetries } from "./retry";
+import { PAYOUT_TIME_ZONE } from "../Team/teamPeriod";
 
 let agenda:Agenda | null = null;
 let started = false;
@@ -39,9 +40,14 @@ export const startAgenda = async () => {
         await scheduler.every("1 minute", "promotion:sweep");
         await scheduler.every("1 minute", "teamMatch:watchStale");
         await scheduler.every("1 minute", "teamMatch:watchQueueTimeouts");
-        await scheduler.every("0 9 * * 0", "team:weeklyPayout");
-        await scheduler.every("0 9 1 * *", "team:monthlyPayout");
-        await scheduler.every("0 9 1 1 *", "team:yearlyPayout");
+        // Team rewards are paid on Amsterdam wall clock, and each payout is
+        // also the moment its leaderboard resets. Without an explicit timezone
+        // Agenda reads these crons in server local time (UTC), which fired them
+        // at 11:00 Amsterdam in summer and 10:00 in winter.
+        const payoutSchedule = { timezone: PAYOUT_TIME_ZONE };
+        await scheduler.every("0 9 * * 0", "team:weeklyPayout", {}, payoutSchedule);
+        await scheduler.every("0 9 1 * *", "team:monthlyPayout", {}, payoutSchedule);
+        await scheduler.every("0 9 1 1 *", "team:yearlyPayout", {}, payoutSchedule);
         started = true;
         console.log("Agenda scheduler started");
         return scheduler;
