@@ -400,13 +400,8 @@ const getTeamHistory = catchAsync(async (req: Request, res: Response) => {
 });
 
 const recordMatchResult = catchAsync(async (req: Request, res: Response) => {
-  const { matchId, team1Score, team2Score } = req.body;
-
-  const result = await teamService.recordMatchResult(
-    matchId,
-    team1Score,
-    team2Score,
-  );
+  const { matchId } = req.body;
+  const result = await teamService.recordMatchResult(matchId);
 
   sendResponse(res, {
     success: true,

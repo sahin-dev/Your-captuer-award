@@ -6,6 +6,26 @@ import handleZodError from "../../errors/handleZodError";
 import parsePrismaValidationError from "../../errors/parsePrismaValidationError";
 import ApiError from "../../errors/ApiError";
 import multer from "multer";
+import { fileUploader } from "../../helpers/fileUploader";
+
+// A failed request must not leave its upload behind. Disk-spooled files are
+// unlinked and streamed files are deleted from object storage - unless a
+// database row already claimed them, in which case the bytes are still in use.
+const removeTemporaryUploads = (req: Request) => {
+  const request = req as Request & {
+    file?: Express.Multer.File;
+    files?: Express.Multer.File[] | Record<string, Express.Multer.File[]>;
+  };
+  const files = request.file
+    ? [request.file]
+    : Array.isArray(request.files)
+      ? request.files
+      : Object.values(request.files ?? {}).flat();
+
+  fileUploader.discardUploadedFiles(files).catch((error) => {
+    console.error("Failed to discard uploads for a failed request", error);
+  });
+};
 
 
 // TODO Replace `config.NODE_ENV` with your actual environment configuration
@@ -21,6 +41,7 @@ const ErrorHandler = (
   res: Response,
   next: NextFunction
 ) => {
+  removeTemporaryUploads(req);
   let statusCode: any = httpStatus.INTERNAL_SERVER_ERROR;
   let message = err.message || "Something went wrong!";
   let errorSources:any = [];

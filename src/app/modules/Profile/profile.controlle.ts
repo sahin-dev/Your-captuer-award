@@ -60,6 +60,22 @@ const uploadUserPhoto = async (req: Request, res: Response) => {
 }
 
 
+const createDirectUploadUrl = catchAsync(async (req:Request, res:Response) => {
+    const {fileName, contentType, fileSize} = req.body
+    const result = await profileService.createDirectUploadUrl(
+        req.user.id,
+        String(fileName || "upload"),
+        String(contentType || ""),
+        Number(fileSize),
+    )
+    sendResponse(res, {statusCode:httpStatus.OK, success:true, message:"upload URL created", data:result})
+})
+
+const confirmDirectUpload = catchAsync(async (req:Request, res:Response) => {
+    const result = await profileService.confirmDirectUpload(req.user.id, String(req.body.key || ""))
+    sendResponse(res, {statusCode:httpStatus.CREATED, success:true, message:"photo upload confirmed", data:result})
+})
+
 const getUserStates = async (req: Request, res: Response) => {
     const userId = req.user.id
     const states = await profileService.getStates(userId)
@@ -146,6 +162,8 @@ const getPublicPhotoDetails = catchAsync(async (req: Request, res: Response) => 
 export const profileController = {
     getMyUploads,
     uploadUserPhoto,
+    createDirectUploadUrl,
+    confirmDirectUpload,
     getUserStates,
     getUserPhotoDetails,
     deleteUserPhoto,

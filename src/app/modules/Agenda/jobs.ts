@@ -206,17 +206,22 @@ agenda.define("contest:decayExposure", async () => {
 
 
 agenda.define("promotion:remove", async (job: Job) => {
-    const { photoId } = job.attrs.data as { photoId: string };  
-    const contestPhoto = await prisma.contestPhoto.findUnique({ where: { id: photoId } });
-    if (contestPhoto) {
-        await prisma.contestPhoto.update({
-            where: { id: photoId },
-            data: { promoted: false, promotionExpiresAt: null }
-        });
+    const { photoId } = job.attrs.data as { photoId: string };
+    const updated = await prisma.contestPhoto.updateMany({
+        where: { id: photoId, promoted: true, promotionExpiresAt: { lte: new Date() } },
+        data: { promoted: false, promotionExpiresAt: null }
+    });
+    if (updated.count > 0) {
         console.log(`Promotion removed for photo ID: ${photoId}`);
-    } else {
-        console.log(`No contest photo found with ID: ${photoId}`);
     }
+});
+
+// Recovery path for a missed/delayed one-off promotion job.
+agenda.define("promotion:sweep", async () => {
+    await prisma.contestPhoto.updateMany({
+        where: { promoted: true, promotionExpiresAt: { lte: new Date() } },
+        data: { promoted: false, promotionExpiresAt: null }
+    });
 });
 
 }

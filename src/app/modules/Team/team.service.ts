@@ -24,6 +24,7 @@ import { notificationOrchestrator } from "../Notification/notificationOrchestrat
 import { chatService } from "../Chat/chat.service";
 import { levelService } from "../Level/level.service";
 import { voteService } from "../Vote/vote.service";
+import { contestRankingService } from "../Contest/ContestRanking/contestRanking.service";
 import { userService } from "../User/user.service";
 import { paginationHelper } from "../../../helpers/paginationHelper";
 import { userStoreService } from "../User/UserStore/userStore.service";
@@ -1005,6 +1006,17 @@ const normalizeIds = (ids?: string[]) => {
   );
 };
 
+// A contest photo as it appears in a team match gallery.
+type MatchMemberPhoto = {
+  contestPhotoId: string;
+  userPhotoId: string;
+  url: string;
+  title: string | null;
+  votes: number;
+  rank: number | null;
+  createdAt: Date;
+};
+
 const getEligibleContestMembers = async (teamId: string, contestId: string) => {
   const members = await prisma.teamMember.findMany({
     where: { teamId, status: "ACTIVE" as any },
@@ -1037,28 +1049,81 @@ const getEligibleContestMembers = async (teamId: string, contestId: string) => {
     participants.map((participant) => [participant.userId, participant]),
   );
 
-  const eligibleMembers = await Promise.all(
-    members.map(async (member) => {
-      const participant = participantByUserId.get(member.memberId);
-      if (!participant) {
-        return null;
-      }
+  if (!participants.length) {
+    return [];
+  }
 
-      const [totalVote, totalPhotoUploads] = await Promise.all([
-        voteService.totalVotesOfParticipant(participant.id, contestId),
-        prisma.contestPhoto.count({
-          where: { contestId, participantId: participant.id },
-        }),
-      ]);
-
-      return {
-        ...member,
-        participantId: participant.id,
-        totalVote,
-        totalPhotoUploads,
-      };
+  // One ranking build and one photo read for the whole roster. Asking per member
+  // meant rebuilding the entire contest ranking once per team member.
+  const [ranking, contestPhotos] = await Promise.all([
+    contestRankingService.buildContestRanking(contestId),
+    prisma.contestPhoto.findMany({
+      where: {
+        contestId,
+        participantId: { in: participants.map((participant) => participant.id) },
+        photoId: { not: null },
+      },
+      select: {
+        id: true,
+        participantId: true,
+        createdAt: true,
+        photo: { select: { id: true, url: true, title: true } },
+      },
     }),
+  ]);
+  const scoreByParticipantId = new Map(
+    ranking.photographers.map((photographer) => [photographer.participantId, photographer.score]),
   );
+  // Per-photo scores come from the same ranking as the team totals, so a photo's
+  // vote count always adds up to the score shown beside its photographer.
+  const rankedPhotoByContestPhotoId = new Map(
+    ranking.photos.map((photo) => [photo.photoId, photo]),
+  );
+
+  const photosByParticipantId = new Map<string, MatchMemberPhoto[]>();
+  contestPhotos.forEach((contestPhoto) => {
+    if (!contestPhoto.photo) {
+      // A slot whose photo was removed - keep it out of the match gallery.
+      return;
+    }
+    const ranked = rankedPhotoByContestPhotoId.get(contestPhoto.id);
+    const photos = photosByParticipantId.get(contestPhoto.participantId) || [];
+    photos.push({
+      contestPhotoId: contestPhoto.id,
+      userPhotoId: contestPhoto.photo.id,
+      url: contestPhoto.photo.url,
+      title: contestPhoto.photo.title,
+      votes: ranked?.score ?? 0,
+      rank: ranked?.rank ?? null,
+      createdAt: contestPhoto.createdAt,
+    });
+    photosByParticipantId.set(contestPhoto.participantId, photos);
+  });
+  photosByParticipantId.forEach((photos) => {
+    photos.sort(
+      (left, right) =>
+        right.votes - left.votes || left.createdAt.getTime() - right.createdAt.getTime(),
+    );
+  });
+
+  const eligibleMembers = members.map((member) => {
+    const participant = participantByUserId.get(member.memberId);
+    if (!participant) {
+      return null;
+    }
+
+    const photos = photosByParticipantId.get(participant.id) || [];
+
+    return {
+      ...member,
+      participantId: participant.id,
+      totalVote: scoreByParticipantId.get(participant.id) ?? 0,
+      // Counts the photos actually standing in the contest, which is what the
+      // match gallery shows - a removed photo is no longer one of them.
+      totalPhotoUploads: photos.length,
+      photos,
+    };
+  });
 
   return eligibleMembers
     .filter((member): member is NonNullable<typeof member> => Boolean(member))
@@ -1205,14 +1270,12 @@ const getMatchDetails = async (userId: string, matchId: string) => {
     throw new ApiError(httpstatus.BAD_REQUEST, "This match has a deleted team");
   }
 
-  const team1Vote = await voteService.getTeamTotalVotes(
-    teamMatch.contestId,
-    teamMatch.team1Id,
-  );
-  const team2Vote = await voteService.getTeamTotalVotes(
-    teamMatch.contestId,
-    teamMatch.team2Id,
-  );
+  // Show the same score the match will actually be decided on. Counting raw
+  // Vote rows for every team member instead ignored the locked-in roster and
+  // the trade/stint rules the official ranking applies, so this screen could
+  // disagree with the result the match closed with.
+  const { team1Score: team1Vote, team2Score: team2Vote } =
+    await getMatchScoreSnapshot(teamMatch);
 
   const team1Members = await getMembers(teamMatch.team1Id, teamMatch.contestId);
   const team2Members = await getMembers(teamMatch.team2Id, teamMatch.contestId);
@@ -1842,6 +1905,7 @@ const payoutMatchWinnerMemberRewards = async (
   matchId: string,
   contestId: string,
   winnerTeamId?: string,
+  rosterMemberIds: string[] = [],
 ) => {
   if (!winnerTeamId) {
     return [];
@@ -1855,7 +1919,9 @@ const payoutMatchWinnerMemberRewards = async (
     return [];
   }
 
+  const roster = new Set(rosterMemberIds);
   const members = (await getEligibleContestMembers(team.id, contestId))
+    .filter(member => roster.has(member.id))
     .sort(
       (a, b) =>
         b.totalVote - a.totalVote ||
@@ -1916,7 +1982,7 @@ const payoutMatchWinnerMemberRewards = async (
 };
 
 const closeMatchWithScores = async (
-  match: { id: string; team1Id: string; team2Id: string; contestId: string },
+  match: { id: string; team1Id: string; team2Id: string; contestId: string; team1_member_ids?: string[]; team2_member_ids?: string[] },
   team1Score: number,
   team2Score: number,
 ) => {
@@ -1937,8 +2003,8 @@ const closeMatchWithScores = async (
       winnerId = team2Id;
     }
 
-    const updatedMatch = await tx.teamMatch.update({
-      where: { id: matchId },
+    const claimed = await tx.teamMatch.updateMany({
+      where: { id: matchId, status: MatchStatus.ACTIVE },
       data: {
         team1_score: resolvedTeam1Score,
         team2_score: resolvedTeam2Score,
@@ -1948,6 +2014,13 @@ const closeMatchWithScores = async (
         endedAt: new Date(),
       },
     });
+    if(claimed.count !== 1){
+      throw new ApiError(httpstatus.CONFLICT, "This match has already been closed");
+    }
+    const updatedMatch = await tx.teamMatch.findUnique({where:{id:matchId}});
+    if(!updatedMatch){
+      throw new ApiError(httpstatus.NOT_FOUND, "match not found");
+    }
 
     await updateTeamStatsForMatch(
       tx,
@@ -2018,6 +2091,9 @@ const closeMatchWithScores = async (
     matchId,
     match.contestId,
     updatedMatch.winner_id || undefined,
+    updatedMatch.winner_id === team1Id
+      ? match.team1_member_ids || []
+      : match.team2_member_ids || [],
   );
 
   return updatedMatch;
@@ -2025,8 +2101,6 @@ const closeMatchWithScores = async (
 
 const recordMatchResult = async (
   matchId: string,
-  team1Score: number,
-  team2Score: number,
 ) => {
   const match = await prisma.teamMatch.findUnique({ where: { id: matchId } });
   if (!match) {
@@ -2042,16 +2116,21 @@ const recordMatchResult = async (
     throw new ApiError(httpstatus.BAD_REQUEST, "This match has a deleted team");
   }
 
+  // Scores are always derived from the immutable match roster. Never trust
+  // caller-supplied totals for a result that grants coins and leaderboard wins.
   const scoreSnapshot = await getMatchScoreSnapshot(match);
-  const resolvedTeam1Score = Number.isFinite(team1Score)
-    ? team1Score
-    : scoreSnapshot.team1Score;
-  const resolvedTeam2Score = Number.isFinite(team2Score)
-    ? team2Score
-    : scoreSnapshot.team2Score;
+  const resolvedTeam1Score = scoreSnapshot.team1Score;
+  const resolvedTeam2Score = scoreSnapshot.team2Score;
 
   return closeMatchWithScores(
-    { id: match.id, team1Id: match.team1Id, team2Id: match.team2Id, contestId: match.contestId },
+    {
+      id: match.id,
+      team1Id: match.team1Id,
+      team2Id: match.team2Id,
+      contestId: match.contestId,
+      team1_member_ids: match.team1_member_ids,
+      team2_member_ids: match.team2_member_ids,
+    },
     resolvedTeam1Score,
     resolvedTeam2Score,
   );
@@ -2078,7 +2157,14 @@ const closeTeamMatches = async (
 
       const { team1Score, team2Score } = await getMatchScoreSnapshot(match);
       await closeMatchWithScores(
-        { id: match.id, team1Id: match.team1Id, team2Id: match.team2Id, contestId: match.contestId },
+        {
+          id: match.id,
+          team1Id: match.team1Id,
+          team2Id: match.team2Id,
+          contestId: match.contestId,
+          team1_member_ids: match.team1_member_ids,
+          team2_member_ids: match.team2_member_ids,
+        },
         team1Score,
         team2Score,
       );

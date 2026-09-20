@@ -116,10 +116,11 @@ const claimFinalization = async (contestId: string) => {
   });
 
   if (existing.status === ContestFinalizationStatus.COMPLETED) {
-    return false;
+    return null;
   }
 
   const staleBefore = new Date(Date.now() - FINALIZATION_LEASE_MS);
+  const claimedAt = new Date();
   const claimed = await prisma.contestFinalization.updateMany({
     where: {
       contestId,
@@ -130,14 +131,14 @@ const claimFinalization = async (contestId: string) => {
     },
     data: {
       status: ContestFinalizationStatus.RUNNING,
-      startedAt: new Date(),
+      startedAt: claimedAt,
       completedAt: null,
       error: null,
       attemptCount: { increment: 1 },
     },
   });
 
-  return claimed.count === 1;
+  return claimed.count === 1 ? claimedAt : null;
 };
 
 const loadAwardConfigs = async (contestId: string): Promise<AwardConfig[]> => {
@@ -175,7 +176,23 @@ const awardRecipients = (award: AwardConfig, ranking: ContestRanking, selections
   }
 
   if (identity.type === AwardType.TOP_PHOTO) {
+    const selection = selections.find(item => item.slotKey === (award.slotKey || getAwardSlotKey(identity)));
+    if (selection) {
+      const selectedPhoto = ranking.photos.find(photo => photo.photoId === selection.photoId);
+      return selectedPhoto ? [selectedPhoto] : [];
+    }
     return ranking.photos.slice(0, 1);
+  }
+
+  if (identity.type === AwardType.TOP_PHOTOGRAPHER) {
+    const selection = selections.find(item => item.slotKey === (award.slotKey || getAwardSlotKey(identity)));
+    if (selection) {
+      const selectedPhoto = ranking.photos.find(photo => photo.photoId === selection.photoId);
+      const photographer = selectedPhoto
+        ? ranking.photographers.find(item => item.participantId === selectedPhoto.participantId)
+        : undefined;
+      return photographer ? [photographer] : [];
+    }
   }
 
   return ranking.photographers.slice(0, 1);
@@ -391,19 +408,44 @@ const finalizeContest = async (contestId: string) => {
     throw new Error("Contest cannot be finalized before its end date");
   }
 
-  const claimed = await claimFinalization(contestId);
-  if (!claimed) {
+  const claimedAt = await claimFinalization(contestId);
+  if (!claimedAt) {
     return prisma.contestFinalization.findUnique({ where: { contestId } });
   }
 
-  await prisma.contest.update({
-    where: { id: contestId },
-    data: { status: ContestStatus.FINALIZING, endedAt: contest.endedAt || new Date() },
-  });
+  let leaseTimestamp = claimedAt;
+  const heartbeat = setInterval(() => {
+    const nextTimestamp = new Date();
+    prisma.contestFinalization.updateMany({
+      where: {
+        contestId,
+        status: ContestFinalizationStatus.RUNNING,
+        startedAt: leaseTimestamp,
+      },
+      data: { startedAt: nextTimestamp },
+    }).then(result => {
+      if (result.count === 1) leaseTimestamp = nextTimestamp;
+      else clearInterval(heartbeat);
+    }).catch(error => console.error(`Finalization heartbeat failed for ${contestId}`, error));
+  }, Math.floor(FINALIZATION_LEASE_MS / 3));
+  heartbeat.unref();
 
   try {
+    const frozen = await prisma.contest.updateMany({
+      where: {
+        id: contestId,
+        status: { in: [ContestStatus.ACTIVE, ContestStatus.FINALIZATION_FAILED] },
+        endDate: { lte: new Date() },
+      },
+      data: { status: ContestStatus.FINALIZING, endedAt: contest.endedAt || new Date() },
+    });
+    if (frozen.count !== 1) {
+      throw new Error("Contest could not be frozen for finalization");
+    }
     const [ranking, awards, selections, levelAwards] = await Promise.all([
-      contestRankingService.buildContestRanking(contestId),
+      // Final placement decides awards and payouts, so it is always scanned
+      // fresh from the frozen contest - never served from the read cache.
+      contestRankingService.buildContestRanking(contestId, { maxAgeMs: 0 }),
       loadAwardConfigs(contestId),
       prisma.contestAwardSelection.findMany({
         where: { contestId },
@@ -416,6 +458,7 @@ const finalizeContest = async (contestId: string) => {
       (tx) => contestRankingService.persistContestRanking(tx, ranking),
       { timeout: 30000, maxWait: 30000 }
     );
+    contestRankingService.invalidateContestRanking(contestId);
 
     const candidates = [
       ...buildAwardGrants(contestId, awards, ranking, selections),
@@ -476,6 +519,8 @@ const finalizeContest = async (contestId: string) => {
       }),
     ]);
     throw error;
+  } finally {
+    clearInterval(heartbeat);
   }
 };
 
@@ -517,7 +562,7 @@ const selectAwardPhoto = async (
   }
 
   const photo = await prisma.contestPhoto.findFirst({
-    where: { id: photoId, contestId, participant: { status: "ACTIVE" } },
+    where: { id: photoId, contestId, photoId: { not: null }, participant: { status: "ACTIVE" } },
     select: { id: true, participantId: true },
   });
   if (!photo) {

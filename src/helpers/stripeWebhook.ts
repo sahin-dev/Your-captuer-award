@@ -207,11 +207,44 @@ const refundContestPayment = async (
   );
 };
 
-const handleCheckoutSuccess = async (session: Stripe.Checkout.Session) => {
-  const payment = await prisma.payment.findFirst({
+// A checkout session is created at Stripe before its id can be written to our
+// payment row, so a crash or database blip in that window leaves a payable
+// session that `stripe_session_id` alone cannot find. The session carries the
+// payment id in its metadata, which is written before Stripe is ever called -
+// fall back to it, and backfill the session id so later events match directly.
+const findPaymentForSession = async (session: Stripe.Checkout.Session) => {
+  const bySession = await prisma.payment.findFirst({
     where: { stripe_session_id: session.id },
     include: { user: { select: paymentUserSelection } },
   });
+  if (bySession) {
+    return bySession;
+  }
+
+  const metadataPaymentId = session.metadata?.payment_id || session.metadata?.paymentId;
+  if (!metadataPaymentId) {
+    return null;
+  }
+
+  const byMetadata = await prisma.payment.findUnique({
+    where: { id: metadataPaymentId },
+    include: { user: { select: paymentUserSelection } },
+  });
+  if (!byMetadata || byMetadata.stripe_session_id) {
+    // A different session already owns this payment - do not steal it.
+    return byMetadata?.stripe_session_id === session.id ? byMetadata : null;
+  }
+
+  await prisma.payment.updateMany({
+    where: { id: byMetadata.id, stripe_session_id: null },
+    data: { stripe_session_id: session.id },
+  });
+
+  return { ...byMetadata, stripe_session_id: session.id };
+};
+
+const handleCheckoutSuccess = async (session: Stripe.Checkout.Session) => {
+  const payment = await findPaymentForSession(session);
 
   if (!payment) {
     throw new Error(`Payment for Stripe Checkout Session ${session.id} was not found`);
@@ -408,9 +441,7 @@ const stripeWebhook = async (req: Request, res: Response) => {
 
       case "checkout.session.async_payment_failed": {
         const session = event.data.object as Stripe.Checkout.Session;
-        const payment = await prisma.payment.findFirst({
-          where: { stripe_session_id: session.id },
-        });
+        const payment = await findPaymentForSession(session);
         const stripePaymentId =
           typeof session.payment_intent === "string"
             ? session.payment_intent

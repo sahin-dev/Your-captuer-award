@@ -10,6 +10,7 @@ import { PaymentFactory } from "./paymentFactory";
 import { PaymentRegistry } from "./paymentRegistry";
 import { loadProviders } from "./providerLoader";
 import httpStatus from 'http-status';
+import { activeContestWhere } from "../Contest/contestLifecycle";
 
 const isUniqueConstraintError = (error: unknown) =>
   typeof error === "object" && error !== null && "code" in error && error.code === "P2002";
@@ -263,8 +264,8 @@ const buildContestRedirectUrl = (
       throw new ApiError(httpStatus.NOT_FOUND, "User not found");
     }
 
-    const contest = await prisma.contest.findUnique({ where: { id: contestId } });
-    if (!contest || contest.status !== ContestStatus.ACTIVE) {
+    const contest = await prisma.contest.findFirst({ where: { id: contestId, ...activeContestWhere() } });
+    if (!contest) {
       throw new ApiError(httpStatus.NOT_FOUND, "Contest is not available to participate");
     }
 
@@ -657,9 +658,9 @@ const buildContestRedirectUrl = (
   /**
      * Get payment details
      */
-  async getPaymentDetails(paymentId: string) {
-    const payment = await prisma.payment.findUnique({
-      where: { id: paymentId },
+  async getPaymentDetails(paymentId: string, userId: string) {
+    const payment = await prisma.payment.findFirst({
+      where: { id: paymentId, userId },
       include: { user: true }
     });
 
@@ -684,9 +685,9 @@ const buildContestRedirectUrl = (
   /**
      * Cancel pending payment
      */
-  async cancelPayment(paymentId: string) {
-    const payment = await prisma.payment.findUnique({
-      where: { id: paymentId }
+  async cancelPayment(paymentId: string, userId: string) {
+    const payment = await prisma.payment.findFirst({
+      where: { id: paymentId, userId }
     });
 
     if (!payment) {
@@ -697,12 +698,14 @@ const buildContestRedirectUrl = (
       throw new ApiError(httpStatus.CONFLICT, "Only pending payments can be canceled");
     }
 
-    const canceledPayment = await prisma.payment.update({
-      where: { id: paymentId },
+    const canceledPayment = await prisma.payment.updateMany({
+      where: { id: paymentId, userId, status: PaymentStatus.PENDING },
       data: { status: PaymentStatus.FAILED }
     });
-
-    return canceledPayment;
+    if(canceledPayment.count !== 1){
+      throw new ApiError(httpStatus.CONFLICT, "Payment could not be canceled");
+    }
+    return prisma.payment.findUnique({where:{id:paymentId}});
   }
 
 }

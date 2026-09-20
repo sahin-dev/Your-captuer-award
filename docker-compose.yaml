@@ -1,40 +1,60 @@
-
+# Local development only. Production runs against MongoDB Atlas, which is
+# already a replica set.
+#
+# Every contest, payment and finalization write path uses Prisma interactive
+# transactions, and MongoDB only offers those on a replica set. A standalone
+# `mongo` container therefore fails those operations at runtime with
+# "Transactions are not supported", so the local database is started as a
+# single-node replica set to match Atlas.
 services:
-  
+
   mongo:
-    image: mongo
+    image: mongo:7
     container_name: mongo
+    # No --auth: a keyfile would be required alongside --replSet, which is not
+    # worth the setup cost for a database that is only reachable on localhost.
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
     ports:
       - 27017:27017
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: sahin
-      MONGO_INITDB_ROOT_PASSWORD: sahin
     volumes:
       - mongo-data:/data/db
+    healthcheck:
+      # Initiates the replica set on first boot and succeeds once it has a
+      # primary, which is the point at which transactions become available.
+      test: >
+        mongosh --quiet --eval "
+          try { rs.status().ok }
+          catch (error) { rs.initiate({_id:'rs0',members:[{_id:0,host:'mongo:27017'}]}).ok }
+        "
+      interval: 5s
+      timeout: 10s
+      retries: 30
+      start_period: 10s
 
   mongo-express:
-    image: mongo-express:1.0.0-alpha.4
+    image: mongo-express:1.0.2
     container_name: mongo-express
     restart: always
     ports:
       - 8081:8081
     depends_on:
-      - mongo
+      mongo:
+        condition: service_healthy
     environment:
-      ME_CONFIG_MONGODB_ADMINUSERNAME: sahin
-      ME_CONFIG_MONGODB_ADMINPASSWORD: sahin
-      ME_CONFIG_MONGODB_SERVER: mongo
-
+      ME_CONFIG_MONGODB_URL: mongodb://mongo:27017/?replicaSet=rs0
+      ME_CONFIG_BASICAUTH: "false"
 
   backend:
     build: .
     container_name: backend
     depends_on:
-      - mongo
+      mongo:
+        condition: service_healthy
     env_file:
       - .env
     environment:
-      DATABASE_URL: mongodb://sahin:sahin@mongo:27017/capture?authSource=admin
+      # replicaSet=rs0 is what makes Prisma's $transaction calls work here.
+      DATABASE_URL: mongodb://mongo:27017/capture?replicaSet=rs0
     ports:
       - 80:5000
     command: npm run dev

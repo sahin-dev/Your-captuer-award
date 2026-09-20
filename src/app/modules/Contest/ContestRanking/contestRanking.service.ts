@@ -76,8 +76,39 @@ const compareByScoreAndTieBreak = <T extends {score: number; createdAt: Date; ti
   return createdAtDifference || left.tieBreakKey.localeCompare(right.tieBreakKey);
 };
 
-const buildContestRanking = async (contestId: string): Promise<ContestRanking> => {
-  const [participants, votes, levelRequirements] = await Promise.all([
+// The vote collection of a busy contest does not belong in application memory
+// all at once. Votes are streamed in id-ordered pages and folded into per-slot
+// counters, so peak memory is one page regardless of how large the contest gets.
+const VOTE_SCAN_PAGE_SIZE = 5000;
+
+const scanContestVotes = async (
+  contestId: string,
+  onVote: (vote: { contestPhotoId: string; photoRefId: string | null; createdAt: Date }) => void
+) => {
+  let cursor: string | undefined;
+
+  for (;;) {
+    const page = await prisma.vote.findMany({
+      where: { contestId },
+      select: { id: true, contestPhotoId: true, photoRefId: true, createdAt: true },
+      orderBy: { id: "asc" },
+      take: VOTE_SCAN_PAGE_SIZE,
+      ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+    });
+
+    if (page.length === 0) {
+      return;
+    }
+    page.forEach(onVote);
+    if (page.length < VOTE_SCAN_PAGE_SIZE) {
+      return;
+    }
+    cursor = page[page.length - 1].id;
+  }
+};
+
+const computeContestRanking = async (contestId: string): Promise<ContestRanking> => {
+  const [participants, levelRequirements] = await Promise.all([
     prisma.contestParticipant.findMany({
       where: { contestId, status: ContestParticipantStatus.ACTIVE },
       select: {
@@ -100,10 +131,6 @@ const buildContestRanking = async (contestId: string): Promise<ContestRanking> =
         },
       },
     }),
-    prisma.vote.findMany({
-      where: { contestId },
-      select: { contestPhotoId: true, photoRefId: true, createdAt: true },
-    }),
     contestRuleEngine.getLevelRequirements(contestId),
   ]);
 
@@ -124,7 +151,7 @@ const buildContestRanking = async (contestId: string): Promise<ContestRanking> =
   });
 
   const voteCountByPhoto = new Map<string, number>();
-  votes.forEach((vote) => {
+  await scanContestVotes(contestId, (vote) => {
     const liveImage = currentPhotoIdBySlot.get(vote.contestPhotoId);
     // A null photoRefId is a legacy vote cast before swap-tracking existed -
     // treat it as belonging to whichever photo is live now.
@@ -199,6 +226,71 @@ const buildContestRanking = async (contestId: string): Promise<ContestRanking> =
   };
 };
 
+// A single ranking build reads every participant, photo and vote in the
+// contest, and several callers (participant level evaluation, team match
+// scoring, vote-count polling, the ranking screen) each used to trigger their
+// own build per row they were rendering. Collapsing identical concurrent and
+// closely-spaced builds turns those fan-outs back into one scan.
+type RankingCacheEntry = { builtAt: number; ranking: ContestRanking };
+
+const RANKING_CACHE_TTL_MS = 3000;
+const RANKING_CACHE_MAX_ENTRIES = 200;
+const rankingCache = new Map<string, RankingCacheEntry>();
+const rankingBuildsInFlight = new Map<string, Promise<ContestRanking>>();
+
+const rememberRanking = (contestId: string, ranking: ContestRanking) => {
+  rankingCache.set(contestId, { builtAt: Date.now(), ranking });
+  while (rankingCache.size > RANKING_CACHE_MAX_ENTRIES) {
+    const oldest = rankingCache.keys().next();
+    if (oldest.done) break;
+    rankingCache.delete(oldest.value);
+  }
+};
+
+/** Drops any memoized ranking so the next read rebuilds from the database. */
+const invalidateContestRanking = (contestId: string) => {
+  rankingCache.delete(contestId);
+};
+
+/**
+ * `maxAgeMs` is how stale a ranking this caller tolerates. Read paths take the
+ * default; anything that decides money, awards or final placement passes 0 to
+ * force a fresh scan and bypass in-flight builds started before its own freeze.
+ */
+const buildContestRanking = async (
+  contestId: string,
+  options?: { maxAgeMs?: number }
+): Promise<ContestRanking> => {
+  const maxAgeMs = options?.maxAgeMs ?? RANKING_CACHE_TTL_MS;
+
+  if (maxAgeMs > 0) {
+    const cached = rankingCache.get(contestId);
+    if (cached && Date.now() - cached.builtAt <= maxAgeMs) {
+      return cached.ranking;
+    }
+    const pending = rankingBuildsInFlight.get(contestId);
+    if (pending) {
+      return pending;
+    }
+  } else {
+    rankingCache.delete(contestId);
+  }
+
+  const build = computeContestRanking(contestId)
+    .then((ranking) => {
+      rememberRanking(contestId, ranking);
+      return ranking;
+    })
+    .finally(() => {
+      if (rankingBuildsInFlight.get(contestId) === build) {
+        rankingBuildsInFlight.delete(contestId);
+      }
+    });
+  rankingBuildsInFlight.set(contestId, build);
+
+  return build;
+};
+
 const persistContestRanking = async (tx: Prisma.TransactionClient, ranking: ContestRanking) => {
   await tx.contestRankingResult.deleteMany({ where: { contestId: ranking.contestId } });
 
@@ -253,6 +345,7 @@ const getPersistedContestRanking = async (contestId: string, scope: ContestRanki
 
 export const contestRankingService = {
   buildContestRanking,
+  invalidateContestRanking,
   persistContestRanking,
   getPersistedContestRanking,
 };

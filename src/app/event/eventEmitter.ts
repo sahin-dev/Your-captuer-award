@@ -11,7 +11,13 @@ class GlobalEventHandler extends EventEmitter {
     }
 
     async publish(event:string, data:any){
-        this.emit(event, data)
+        const results = this.listeners(event).map(listener =>
+            Promise.resolve().then(() => listener(data))
+        )
+        const settled = await Promise.allSettled(results)
+        settled.forEach(result => {
+            if(result.status === "rejected") console.error(`Event listener failed for ${event}`, result.reason)
+        })
     }
 
 }

@@ -1,9 +1,7 @@
 import httpstatus from 'http-status'
 import ApiError from "../../../errors/ApiError"
 import prisma from "../../../shared/prisma"
-import { ContestPhoto, ContestStatus, Prisma, Vote, VoteType } from '../../../prismaClient'
-import globalEventHandler from '../../event/eventEmitter'
-import Events from '../../event/events.constant'
+import { ContestParticipantStatus, ContestPhoto, Prisma, Vote, VoteType } from '../../../prismaClient'
 import { ObjectId } from 'mongodb'
 import { levelService } from '../Level/level.service'
 import { contestRuleEngine } from '../Contest/ContestRules/contestRule.engine'
@@ -11,6 +9,7 @@ import { getVoteWeightStats } from './voteWeight.service'
 import { contestProgressService } from '../Contest/ContestProgress/contestProgress.service'
 import { notificationOrchestrator } from '../Notification/notificationOrchestrator'
 import { contestRankingService } from '../Contest/ContestRanking/contestRanking.service'
+import { activeContestWhere } from '../Contest/contestLifecycle'
 
 type VoteContestPhoto = ContestPhoto & {
     participant: {
@@ -25,6 +24,8 @@ const resolveContestPhotoForVote = async (contestId:string, contestPhotoId:strin
         // clients. New clients always submit the ContestPhoto id.
         where:{
             contestId,
+            photoId:{not:null},
+            participant:{status:ContestParticipantStatus.ACTIVE},
             OR:[{id:contestPhotoId}, {photoId:contestPhotoId}]
         },
         include:{participant:true}
@@ -33,10 +34,10 @@ const resolveContestPhotoForVote = async (contestId:string, contestPhotoId:strin
     return contestPhoto
 }
 
-const getVoteType = (contestPhoto: Pick<ContestPhoto, "promoted">)=>{
+const getVoteType = (contestPhoto: Pick<ContestPhoto, "promoted" | "promotionExpiresAt">)=>{
     let voteType:VoteType = VoteType.Organic
 
-    if(contestPhoto.promoted)
+    if(contestPhoto.promoted && contestPhoto.promotionExpiresAt && contestPhoto.promotionExpiresAt > new Date())
         voteType = VoteType.Promoted
 
     return voteType
@@ -51,7 +52,7 @@ export const addOneVote = async (userId:string, contestId:string, contestPhotoId
         throw new ApiError(httpstatus.NOT_FOUND, 'User not found')
     }
 
-    const contest = await prisma.contest.findUnique({where:{id:contestId, status:ContestStatus.ACTIVE}})
+    const contest = await prisma.contest.findFirst({where:{id:contestId, ...activeContestWhere()}})
     
     if (!contest){
         throw new  ApiError(httpstatus.NOT_FOUND, 'contest not found')
@@ -66,36 +67,52 @@ export const addOneVote = async (userId:string, contestId:string, contestPhotoId
     const type = getVoteType(contestPhoto)
 
     try{
-        // Stamp the image live in this slot right now, so a later swap doesn't
-        // silently move this vote onto a different photo's tally - see getVoteCount.
-        const vote = await prisma.vote.create({data:{providerId:userId, contestId, contestPhotoId:contestPhoto.id, photoRefId:contestPhoto.photoId, type, power:1, weight:1}})
-        // Casting a vote rewards the voter's own participation - their exposure
-        // goes up, not the photo they voted for (that's driven separately by
-        // submission/trade spotlight windows and scheduled decay).
-        if(voterParticipant){
-            await prisma.contestParticipant.update({
-                where:{id:voterParticipant.id},
-                data:{exposure_bonus:{increment:2}, exposureUpdatedAt:new Date()}
+        const result = await prisma.$transaction(async tx => {
+            // A harmless write serializes voting with the finalizer's status
+            // transition. If finalization wins the race this guard matches 0;
+            // if this vote wins, the finalizer snapshot includes it.
+            const guard = await tx.contest.updateMany({
+                where:{id:contestId, ...activeContestWhere()},
+                data:{updatedAt:new Date()}
             })
-        }
-        globalEventHandler.publish(Events.NEW_VOTE,{photoId:contestPhoto.id, contestId})
-        await contestProgressService.evaluateParticipantLevel(contestId, contestPhoto.participantId)
-        await levelService.evaluateAndUpdateUserLevel(contestPhoto.participant.userId)
+            if(guard.count !== 1){
+                throw new ApiError(httpstatus.CONFLICT, "Contest voting has closed")
+            }
 
-        const totalVotes = await getVoteCount(contestPhoto.id)
+            const vote = await tx.vote.create({data:{providerId:userId, contestId, contestPhotoId:contestPhoto.id, photoRefId:contestPhoto.photoId, type, power:1, weight:1}})
+            if(voterParticipant){
+                await tx.contestParticipant.updateMany({
+                    where:{id:voterParticipant.id, status:ContestParticipantStatus.ACTIVE},
+                    data:{exposure_bonus:{increment:2}, exposureUpdatedAt:new Date()}
+                })
+            }
+            return vote
+        })
+
+        // The vote is already durable. Derived levels and notifications are
+        // retryable side effects and must not turn a successful vote into a 500.
+        // Drop the memoized ranking first so those side effects score this vote.
+        contestRankingService.invalidateContestRanking(contestId)
         const voterName = user.fullName || [user.firstName, user.lastName].filter(Boolean).join(" ") || user.username || "Someone"
-        await notificationOrchestrator.notifyVoteReceived(
-            contestPhoto.participantId,
-            contestPhoto.participant.userId,
-            contestId,
-            contest.title,
-            contestPhoto.id,
-            userId,
-            voterName,
-            totalVotes,
-        )
+        const sideEffects = await Promise.allSettled([
+            contestProgressService.evaluateParticipantLevel(contestId, contestPhoto.participantId),
+            levelService.evaluateAndUpdateUserLevel(contestPhoto.participant.userId),
+            getVoteCount(contestPhoto.id).then(totalVotes => notificationOrchestrator.notifyVoteReceived(
+                contestPhoto.participantId,
+                contestPhoto.participant.userId,
+                contestId,
+                contest.title,
+                contestPhoto.id,
+                userId,
+                voterName,
+                totalVotes,
+            )),
+        ])
+        sideEffects.forEach(effect => {
+            if(effect.status === "rejected") console.error("Post-vote side effect failed", effect.reason)
+        })
 
-        return vote
+        return result
     }catch(error){
         if(error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002"){
             return prisma.vote.findUnique({
@@ -114,17 +131,102 @@ export const addVotes = async (userId:string, contestId:string, contestPhotoIds:
      if (!user){
         throw new ApiError(httpstatus.NOT_FOUND, 'User not found')
     }
-    const contest = await prisma.contest.findUnique({where:{id:contestId, status:ContestStatus.ACTIVE}})
+    const contest = await prisma.contest.findFirst({where:{id:contestId, ...activeContestWhere()}})
 
     if (!contest){
         throw new  ApiError(httpstatus.NOT_FOUND, 'Contest is not available to vote')
     }
 
-    const votes = (await Promise.all(contestPhotoIds.map(async (contestPhotoId:string)=>{
-        return addOneVote(userId, contestId, contestPhotoId)
-    }))).filter((vote): vote is Vote => Boolean(vote))
+    const uniquePhotoIds = [...new Set(contestPhotoIds)]
+    const contestPhotos = await Promise.all(uniquePhotoIds.map(id => resolveContestPhotoForVote(contestId, id)))
+    if(contestPhotos.some(photo => !photo)){
+        throw new ApiError(httpstatus.NOT_FOUND, "One or more contest photos were not found")
+    }
+    const resolvedPhotos = contestPhotos.filter((photo): photo is VoteContestPhoto => Boolean(photo))
+    const validations = await Promise.all(
+        resolvedPhotos.map(photo => contestRuleEngine.validateVotingRules(contestId, userId, photo.id))
+    )
+    const voterParticipant = validations.find(item => item.voterParticipant)?.voterParticipant ?? null
 
-    return votes
+    const persistVotes = () => prisma.$transaction(async tx => {
+        const guard = await tx.contest.updateMany({
+            where:{id:contestId, ...activeContestWhere()},
+            data:{updatedAt:new Date()}
+        })
+        if(guard.count !== 1){
+            throw new ApiError(httpstatus.CONFLICT, "Contest voting has closed")
+        }
+
+        const votes:Vote[] = []
+        const createdPhotoIds:string[] = []
+        for(const photo of resolvedPhotos){
+            const existing = await tx.vote.findUnique({
+                where:{providerId_contestId_contestPhotoId:{providerId:userId, contestId, contestPhotoId:photo.id}}
+            })
+            if(existing){
+                votes.push(existing)
+                continue
+            }
+            votes.push(await tx.vote.create({
+                data:{
+                    providerId:userId,
+                    contestId,
+                    contestPhotoId:photo.id,
+                    photoRefId:photo.photoId,
+                    type:getVoteType(photo),
+                    power:1,
+                    weight:1
+                }
+            }))
+            createdPhotoIds.push(photo.id)
+        }
+        if(voterParticipant && createdPhotoIds.length > 0){
+            await tx.contestParticipant.updateMany({
+                where:{id:voterParticipant.id, status:ContestParticipantStatus.ACTIVE},
+                data:{exposure_bonus:{increment:2 * createdPhotoIds.length}, exposureUpdatedAt:new Date()}
+            })
+        }
+        return {votes, createdPhotoIds}
+    })
+
+    let persisted:Awaited<ReturnType<typeof persistVotes>>
+    try{
+        persisted = await persistVotes()
+    }catch(error){
+        // A concurrent retry may insert one of the same unique votes after our
+        // pre-check. Re-read once so the whole bulk request stays idempotent.
+        if(error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002"){
+            persisted = await persistVotes()
+        }else{
+            throw error
+        }
+    }
+
+    const createdIds = new Set(persisted.createdPhotoIds)
+    contestRankingService.invalidateContestRanking(contestId)
+    const voterName = user.fullName || [user.firstName, user.lastName].filter(Boolean).join(" ") || user.username || "Someone"
+    const sideEffects = resolvedPhotos
+        .filter(photo => createdIds.has(photo.id))
+        .flatMap(photo => [
+            contestProgressService.evaluateParticipantLevel(contestId, photo.participantId),
+            levelService.evaluateAndUpdateUserLevel(photo.participant.userId),
+            getVoteCount(photo.id).then(totalVotes => notificationOrchestrator.notifyVoteReceived(
+                photo.participantId,
+                photo.participant.userId,
+                contestId,
+                contest.title,
+                photo.id,
+                userId,
+                voterName,
+                totalVotes,
+            )),
+        ])
+    const settled = await Promise.allSettled(sideEffects)
+    settled.forEach(effect => {
+        if(effect.status === "rejected") console.error("Post-vote side effect failed", effect.reason)
+    })
+
+    return persisted.votes
 }
 
 
@@ -172,18 +274,20 @@ const getVoteCountsByPhotoIds = async (contestPhotoIds:string[]) => {
         rankings.flatMap(ranking => ranking.photographers.map(photographer => [photographer.participantId, photographer.rank] as const))
     )
 
-    const counts = await Promise.all(
-        contestPhotoIds.map(async (contestPhotoId) => {
-            const photoRanking = photoRankingByPhotoId.get(contestPhotoId)
+    // Counts come out of the same ranking that produced the ranks, so a polling
+    // client never sees a vote total that disagrees with the leaderboard beside
+    // it - and one contest costs one ranking build instead of two queries per
+    // watched photo.
+    const counts = contestPhotoIds.map((contestPhotoId) => {
+        const photoRanking = photoRankingByPhotoId.get(contestPhotoId)
 
-            return {
-                contestPhotoId,
-                voteCount: await getVoteCount(contestPhotoId),
-                rank:photoRanking ? photographerRankByParticipantId.get(photoRanking.participantId) ?? null : null,
-                photoRank:photoRanking?.rank ?? null
-            }
-        })
-    )
+        return {
+            contestPhotoId,
+            voteCount: photoRanking?.voteCount ?? 0,
+            rank:photoRanking ? photographerRankByParticipantId.get(photoRanking.participantId) ?? null : null,
+            photoRank:photoRanking?.rank ?? null
+        }
+    })
 
     return counts
 }
@@ -250,9 +354,8 @@ const getParticipantTotalVotes = async (photos:{id:string, url:string}[])=>{
 }
 
 const totalVotesOfParticipant = async (participantId:string, contestId:string)=> {
-    const { count } = await getVoteWeightStats({contestId, photo:{participantId}})
-
-    return count
+    const ranking = await contestRankingService.buildContestRanking(contestId)
+    return ranking.photographers.find(item => item.participantId === participantId)?.score ?? 0
 }
 
 

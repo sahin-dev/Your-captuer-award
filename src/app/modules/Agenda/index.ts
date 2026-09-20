@@ -4,6 +4,7 @@ import { registerAgendaJobs } from "./jobs";
 
 let agenda:Agenda | null = null;
 let started = false;
+let starting:Promise<Agenda> | null = null;
 
 const getAgenda = () => {
     if(!agenda){
@@ -21,24 +22,37 @@ export const startAgenda = async () => {
     if(started){
         return getAgenda();
     }
+    if(starting){
+        return starting;
+    }
 
-    started = true;
     const scheduler = getAgenda();
+    starting = (async () => {
+        console.log("Starting agenda scheduler");
+        await scheduler.start();
+        await scheduler.every("five minute", "contest:checkRecurring");
+        await scheduler.every("5 seconds", "contest:active");
+        await scheduler.every("30 seconds", "contest:watchEnded");
+        await scheduler.every("1 minute", "contest:decayExposure");
+        await scheduler.every("1 minute", "promotion:sweep");
+        await scheduler.every("1 minute", "teamMatch:watchStale");
+        await scheduler.every("1 minute", "teamMatch:watchQueueTimeouts");
+        await scheduler.every("0 9 * * 0", "team:weeklyPayout");
+        await scheduler.every("0 9 1 * *", "team:monthlyPayout");
+        await scheduler.every("0 9 1 1 *", "team:yearlyPayout");
+        started = true;
+        console.log("Agenda scheduler started");
+        return scheduler;
+    })();
 
-    console.log("Starting agenda scheduler");
-    await scheduler.start();
-    await scheduler.every("five minute", "contest:checkRecurring");
-    await scheduler.every("5 seconds", "contest:active");
-    await scheduler.every("30 seconds", "contest:watchEnded");
-    await scheduler.every("1 minute", "contest:decayExposure");
-    await scheduler.every("1 minute", "teamMatch:watchStale");
-    await scheduler.every("1 minute", "teamMatch:watchQueueTimeouts");
-    await scheduler.every("0 9 * * 0", "team:weeklyPayout"); // every Sunday 09:00
-    await scheduler.every("0 9 1 * *", "team:monthlyPayout"); // 1st of each month, 09:00
-    await scheduler.every("0 9 1 1 *", "team:yearlyPayout"); // Jan 1st, 09:00
-    console.log("Agenda scheduler started");
-
-    return scheduler;
+    try {
+        return await starting;
+    } catch (error) {
+        await scheduler.stop().catch(() => undefined);
+        throw error;
+    } finally {
+        starting = null;
+    }
 }
 
 type AgendaFacade = {

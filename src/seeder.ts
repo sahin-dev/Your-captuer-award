@@ -124,7 +124,7 @@ class DatabaseSeeder {
         await this.db.user.deleteMany()
     }
 
-    private async seedLevels(){
+    async seedLevels(){
         for(const levelRule of LEVEL_RULES){
             const topBadgeRequirement = levelRule.badges.reduce((max, badge) => Math.max(max, badge.required), 0)
             const requirements = [
@@ -1162,6 +1162,10 @@ async function SeederCLI (){
                 await seeder.createAdmin(adminEmail, adminPassword)
                 break
             }
+            case "seed:levels":
+                await seeder.seedLevels()
+                console.log("Seeded levels")
+                break
             case "seed:levels-demo":
                 await seeder.seedLevelDemo()
                 break
@@ -1217,7 +1221,7 @@ async function SeederCLI (){
                 break
             }
             default:
-                console.log("Available commands: create:admin, seed:levels-demo, seed:contest-config, seed:prizes, seed:contest-categories, seed:achievements-for-user, backfill:contest-rules, backfill:contest-awards [--apply], backfill:zero-top-rank-rewards [--apply], backfill:vote-photo-ref [--apply], backfill:user-active-status [--apply], -reset")
+                console.log("Available commands: create:admin, seed:levels, seed:levels-demo, seed:contest-config, seed:prizes, seed:contest-categories, seed:achievements-for-user, backfill:contest-rules, backfill:contest-awards [--apply], backfill:zero-top-rank-rewards [--apply], backfill:vote-photo-ref [--apply], backfill:user-active-status [--apply], -reset")
         }
     }finally{
         await seeder.destroyClient()

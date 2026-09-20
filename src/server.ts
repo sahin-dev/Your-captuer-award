@@ -4,6 +4,8 @@ import app from "./app";
 import agenda, { startAgenda } from "./app/modules/Agenda";
 import prisma from "./shared/prisma";
 import WebSocketHandler from "./socket";
+const dns = require("dns");
+dns.setServers(["8.8.8.8", "8.8.4.4"]);
 
 let server: Server | undefined;
 let isShuttingDown = false;
@@ -50,8 +52,36 @@ async function connectDatabaseWithRetry() {
   }
 }
 
+// Contest entry, voting, trades, payments and finalization are all written
+// inside Prisma interactive transactions, which MongoDB only provides on a
+// replica set. Against a standalone server every one of those paths fails at
+// the moment a user hits it. Prove the capability once at boot so a
+// misconfigured DATABASE_URL is an obvious startup failure instead of a
+// scattered set of runtime 500s.
+async function assertTransactionsAreSupported() {
+  try {
+    await prisma.$transaction(async (tx) => {
+      await tx.contest.findFirst({ select: { id: true } });
+    });
+  } catch (error) {
+    const message = getErrorMessage(error);
+    if (/replica set|Transaction numbers|transactions are not supported/i.test(message)) {
+      throw new Error(
+        "The configured database does not support transactions. MongoDB must run as a replica set " +
+        "(MongoDB Atlas already does; for a local server start it with --replSet and add replicaSet= to DATABASE_URL). " +
+        `Underlying error: ${message}`
+      );
+    }
+    throw error;
+  }
+}
+
 async function startServer() {
   await connectDatabaseWithRetry();
+  await assertTransactionsAreSupported();
+  // Contest lifecycle correctness depends on Agenda. Do not accept traffic in
+  // a half-started state where contests never open/close or finalize.
+  await startAgenda();
 
   server = app.listen(PORT, () => {
     console.log("Server is listiening on port ", PORT);
@@ -59,10 +89,6 @@ async function startServer() {
 
   new WebSocketHandler(server);
 
-  startAgenda().catch((error) => {
-    console.error("Agenda scheduler failed to start:", error);
-    logDatabaseConnectionHint(error);
-  });
 }
 
 async function shutdown(exitCode = 0) {

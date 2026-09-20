@@ -1,3 +1,4 @@
+import { photoUploadMimeTypes } from "../../../../shared/uploadFormats";
 export const contestRuleKeys = [
   "SUBMISSION_LIMIT",
   "SUBMISSION_RULES",
@@ -33,14 +34,9 @@ export type SubmissionFormatValue = {
   maxSizeMB: number;
 };
 
-export const supportedContestImageMimeTypes = [
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-  "image/heic",
-  "image/heif",
-  "image/tiff",
-] as const;
+// Re-exported from the platform-wide list so the contest rule options, the
+// upload middleware and both clients cannot drift apart.
+export const supportedContestImageMimeTypes = photoUploadMimeTypes;
 
 export type ContestRuleDefinition<TValue = unknown> = {
   key: ContestRuleKey;
@@ -119,7 +115,9 @@ export const contestRuleDefinitions: Record<ContestRuleKey, ContestRuleDefinitio
     icon: "image-plus",
     inputType: "object",
     defaultValue: {
-      mimeTypes: ["image/jpeg"],
+      // .jpg and .jpeg both arrive as image/jpeg, so these two cover all three
+      // formats contests accept by default.
+      mimeTypes: ["image/jpeg", "image/png"],
       minWidth: 700,
       minHeight: 700,
       maxSizeMB: 150,

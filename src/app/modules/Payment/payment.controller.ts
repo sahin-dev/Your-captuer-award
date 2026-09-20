@@ -72,7 +72,7 @@ export class PaymentController {
      */
     getPaymentDetails = catchAsync(async (req:Request, res:Response)=>{
         const {paymentId} = req.params
-        const payment = await this.paymentService.getPaymentDetails(paymentId)
+        const payment = await this.paymentService.getPaymentDetails(paymentId, req.user.id)
         sendResponse(res, {
             success:true,
             statusCode:httpStatus.OK,
@@ -86,7 +86,7 @@ export class PaymentController {
      */
     cancelPayment = catchAsync(async (req:Request, res:Response)=>{
         const {paymentId} = req.params
-        const payment = await this.paymentService.cancelPayment(paymentId)
+        const payment = await this.paymentService.cancelPayment(paymentId, req.user.id)
         sendResponse(res, {
             success:true,
             statusCode:httpStatus.OK,

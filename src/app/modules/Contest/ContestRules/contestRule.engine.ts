@@ -1,7 +1,7 @@
 import httpStatus from "http-status";
 import ApiError from "../../../../errors/ApiError";
 import prisma from "../../../../shared/prisma";
-import { ContestParticipant, ContestStatus } from "../../../../prismaClient";
+import { ContestParticipant, ContestParticipantStatus } from "../../../../prismaClient";
 import {
   ContestRuleKey,
   isContestRuleKey,
@@ -9,8 +9,10 @@ import {
   SubmissionFormatValue,
 } from "./contestRule.definitions";
 import { contestRuleService } from "./contestRules.service";
-import { imageSize } from "image-size";
 import { getTeammateUserIds } from "../../../../helpers/teammate.helper";
+import { activeContestWhere } from "../contestLifecycle";
+import { readImageDimensions as getImageDimensions } from "../../../../helpers/imageMetadata";
+import { normalizeImageMimeType } from "../../../../shared/uploadFormats";
 
 type LegacySubmissionRulesValue = {
   allowAiImages?: boolean;
@@ -83,41 +85,6 @@ const requireAcceptedRule = (
   }
 };
 
-const calculateAge = (date: Date) => {
-  const now = new Date();
-  let age = now.getFullYear() - date.getFullYear();
-  const monthDiff = now.getMonth() - date.getMonth();
-
-  if (monthDiff < 0 || (monthDiff === 0 && now.getDate() < date.getDate())) {
-    age -= 1;
-  }
-
-  return age;
-};
-
-const getUserBirthDate = (user: Record<string, unknown>) => {
-  const value = user.dateOfBirth || user.birthDate || user.dob;
-  if (!value) {
-    return null;
-  }
-
-  const date = new Date(value as string | Date);
-  return Number.isNaN(date.getTime()) ? null : date;
-};
-
-const getImageDimensions = (file: Express.Multer.File) => {
-  try {
-    const dimensions = imageSize(file.buffer);
-    if (dimensions.width && dimensions.height) {
-      return { width: dimensions.width, height: dimensions.height };
-    }
-  } catch {
-    return null;
-  }
-
-  return null;
-};
-
 const validateJoinRules = async (
   contestId: string,
   userId: string,
@@ -145,18 +112,20 @@ const validateJoinRules = async (
     requiredRuleKeys.push("PARTICIPATION");
   }
 
-  // Uploading a photo implies acceptance of the join rules, so record acceptance
-  // without requiring the client to send acceptedRuleKeys or blocking on minAge.
+  // Uploading a photo implies acceptance of the contractual join rules.
+  // `minAge` on the ELIGIBILITY rule is displayed copy only - it is deliberately
+  // not enforced here, so joining is never gated on the user's date of birth.
   if (autoAccept) {
     await Promise.all(requiredRuleKeys.map((key) => prisma.contestRuleAcceptance.upsert({
       where: { contestId_userId_key: { contestId, userId, key } },
       update: { acceptedAt: new Date() },
       create: { contestId, userId, key },
     })));
-    return;
   }
 
-  const submittedRuleKeys = parseAcceptedRuleKeys(acceptedRuleKeysInput).filter(isContestRuleKey);
+  const submittedRuleKeys = autoAccept
+    ? requiredRuleKeys
+    : parseAcceptedRuleKeys(acceptedRuleKeysInput).filter(isContestRuleKey);
   const savedAcceptances = await prisma.contestRuleAcceptance.findMany({
     where: { contestId, userId },
     select: { key: true },
@@ -172,19 +141,6 @@ const validateJoinRules = async (
       "ELIGIBILITY",
       "Eligibility rule must be accepted before joining this contest"
     );
-  }
-
-  if (eligibility?.minAge) {
-    const birthDate = getUserBirthDate(user as unknown as Record<string, unknown>);
-    if (!birthDate) {
-      throw new ApiError(httpStatus.BAD_REQUEST, "A valid birth date is required for this contest");
-    }
-    if (calculateAge(birthDate) < eligibility.minAge) {
-      throw new ApiError(
-        httpStatus.FORBIDDEN,
-        `You must be at least ${eligibility.minAge} years old to join this contest`
-      );
-    }
   }
 
   if (requiredRuleKeys.includes("COPYRIGHT")) {
@@ -220,7 +176,7 @@ const validateSubmissionLimit = async (
     return;
   }
   const existingUploadCount = participantId
-    ? await prisma.contestPhoto.count({ where: { contestId, participantId } })
+    ? await prisma.contestPhoto.count({ where: { contestId, participantId, photoId: { not: null } } })
     : 0;
 
   if (existingUploadCount + incomingUploadCount > submissionLimit) {
@@ -228,8 +184,55 @@ const validateSubmissionLimit = async (
   }
 };
 
-const validateSubmissionFormat = async (contestId: string, files: Express.Multer.File[] = []) => {
-  if (files.length === 0) {
+// A submission can arrive as freshly uploaded files or as ids of photos the
+// user already has in their gallery. Both are checked against the same rule -
+// otherwise uploading to the gallery first would be a way around the contest's
+// allowed formats, minimum resolution and size cap.
+type SubmissionCandidate = {
+  label: string;
+  mimeType: string | null;
+  sizeBytes: number | null;
+  dimensions: { width: number; height: number } | null;
+};
+
+const describeFileCandidate = (file: Express.Multer.File): SubmissionCandidate => ({
+  label: file.originalname,
+  mimeType: file.mimetype ? normalizeImageMimeType(file.mimetype) : null,
+  sizeBytes: Number.isFinite(file.size) ? file.size : null,
+  dimensions: getImageDimensions(file),
+});
+
+// Photos uploaded before format metadata was recorded carry none of it, and
+// there is no fair way to hold an existing gallery to a rule that did not exist
+// when those photos were stored. They are grandfathered: submitted as-is, with
+// no format, resolution or size check. Everything uploaded from now on records
+// its metadata at upload time and is checked normally.
+const describeStoredPhotoCandidate = (photo: {
+  id: string;
+  title: string | null;
+  mimeType: string | null;
+  width: number | null;
+  height: number | null;
+  sizeBytes: number | null;
+}): SubmissionCandidate | null => {
+  if (!photo.mimeType || !photo.width || !photo.height) {
+    return null;
+  }
+
+  return {
+    label: photo.title || "photo",
+    mimeType: normalizeImageMimeType(photo.mimeType),
+    sizeBytes: photo.sizeBytes,
+    dimensions: { width: photo.width, height: photo.height },
+  };
+};
+
+const validateSubmissionFormat = async (
+  contestId: string,
+  files: Express.Multer.File[] = [],
+  photoIds: string[] = []
+) => {
+  if (files.length === 0 && photoIds.length === 0) {
     return;
   }
 
@@ -237,25 +240,40 @@ const validateSubmissionFormat = async (contestId: string, files: Express.Multer
   if (!format) {
     return;
   }
-  const normalizedMimeTypes = format.mimeTypes.map((mimeType) => mimeType.toLowerCase());
-
+  const normalizedMimeTypes = format.mimeTypes.map(normalizeImageMimeType);
   const maxSizeBytes = format.maxSizeMB * 1024 * 1024;
-  for (const file of files) {
-    if (!normalizedMimeTypes.includes(file.mimetype.toLowerCase())) {
-      throw new ApiError(httpStatus.BAD_REQUEST, `${file.originalname}: photo format is not allowed for this contest`);
+
+  const storedPhotos = photoIds.length > 0
+    ? await prisma.userPhoto.findMany({
+        where: { id: { in: photoIds } },
+        select: { id: true, title: true, mimeType: true, width: true, height: true, sizeBytes: true },
+      })
+    : [];
+
+  const candidates: SubmissionCandidate[] = [
+    ...files.map(describeFileCandidate),
+    // Grandfathered photos describe as null and drop out here.
+    ...storedPhotos.flatMap((photo) => {
+      const candidate = describeStoredPhotoCandidate(photo);
+      return candidate ? [candidate] : [];
+    }),
+  ];
+
+  for (const candidate of candidates) {
+    if (!candidate.mimeType || !normalizedMimeTypes.includes(candidate.mimeType)) {
+      throw new ApiError(httpStatus.BAD_REQUEST, `${candidate.label}: photo format is not allowed for this contest`);
     }
-    if (file.size > maxSizeBytes) {
-      throw new ApiError(httpStatus.BAD_REQUEST, `${file.originalname}: photo size must be ${format.maxSizeMB}MB or less`);
+    if (candidate.sizeBytes !== null && candidate.sizeBytes > maxSizeBytes) {
+      throw new ApiError(httpStatus.BAD_REQUEST, `${candidate.label}: photo size must be ${format.maxSizeMB}MB or less`);
     }
 
-    const dimensions = getImageDimensions(file);
-    if (!dimensions) {
-      throw new ApiError(httpStatus.BAD_REQUEST, `${file.originalname}: unable to read photo dimensions`);
+    if (!candidate.dimensions) {
+      throw new ApiError(httpStatus.BAD_REQUEST, `${candidate.label}: unable to read photo dimensions`);
     }
-    if (dimensions.width < format.minWidth || dimensions.height < format.minHeight) {
+    if (candidate.dimensions.width < format.minWidth || candidate.dimensions.height < format.minHeight) {
       throw new ApiError(
         httpStatus.BAD_REQUEST,
-        `${file.originalname}: photo resolution must be at least ${format.minWidth}px x ${format.minHeight}px`
+        `${candidate.label}: photo resolution must be at least ${format.minWidth}px x ${format.minHeight}px`
       );
     }
   }
@@ -286,7 +304,7 @@ const validateUploadRules = async (payload: UploadValidationPayload) => {
   const incomingUploadCount = payload.files?.length || payload.photoIds?.length || 0;
 
   await validateSubmissionLimit(payload.contestId, payload.participantId, incomingUploadCount);
-  await validateSubmissionFormat(payload.contestId, payload.files);
+  await validateSubmissionFormat(payload.contestId, payload.files, payload.photoIds);
   await validateSubmissionRules(payload.contestId, payload.photoIds);
 
   if (payload.isJoiningThroughUpload) {
@@ -301,7 +319,7 @@ const validateVotingRules = async (
 ): Promise<{ voterParticipant: ContestParticipant | null }> => {
   const voting = await contestRuleService.getEnabledRuleValue<VotingValue>(contestId, "VOTING");
 
-  const contest = await prisma.contest.findUnique({ where: { id: contestId, status: ContestStatus.ACTIVE } });
+  const contest = await prisma.contest.findFirst({ where: { id: contestId, ...activeContestWhere() } });
   if (!contest) {
     throw new ApiError(httpStatus.NOT_FOUND, "Contest not found");
   }
@@ -313,13 +331,20 @@ const validateVotingRules = async (
     }
   }
 
-  const voterParticipant = await prisma.contestParticipant.findFirst({ where: { contestId, userId } });
+  const voterParticipant = await prisma.contestParticipant.findFirst({
+    where: { contestId, userId, status: ContestParticipantStatus.ACTIVE },
+  });
   if (voting?.requireContestParticipant && !voterParticipant) {
     throw new ApiError(httpStatus.NOT_FOUND, "Participant not found");
   }
 
   const contestPhoto = await prisma.contestPhoto.findFirst({
-    where: { contestId, id: photoId },
+    where: {
+      contestId,
+      id: photoId,
+      photoId: { not: null },
+      participant: { status: ContestParticipantStatus.ACTIVE },
+    },
     include: { participant: true },
   });
   if (!contestPhoto) {
@@ -343,6 +368,10 @@ const getLevelRequirements = async (contestId: string) => {
 };
 
 export const contestRuleEngine = {
+  // Exposed so the trade/replace paths enforce the same SUBMISSION_FORMAT rule
+  // as a first-time submission - a photo swapped into a contest is just as much
+  // a contest entry as one uploaded into it.
+  validateSubmissionFormat,
   parseAcceptedRuleKeys,
   validateJoinRules,
   validateUploadRules,

@@ -88,7 +88,7 @@ router.get("/leaderboard/all", auth(), teamController.getTeamLeaderboard);
 router.get("/history/:teamId", auth(), teamController.getTeamHistory);
 router.post(
   "/match/record-result",
-  auth(UserRole.USER),
+  auth(UserRole.ADMIN),
   teamController.recordMatchResult,
 );
 router.get("/active-match/:teamId", auth(), teamController.getActiveMatch);

@@ -26,7 +26,7 @@ router.get("/category/:category", auth(), storeController.getProductsByCategory)
 /**
  * POST /api/store - Add new product (admin only)
  */
-router.post("/", fileUploader.filesystemUpload.single("image"), auth(UserRole.ADMIN), storeController.addStoreProduct);
+router.post("/", fileUploader.productImage, auth(UserRole.ADMIN), storeController.addStoreProduct);
 
 /**
  * GET /api/store/:productId - Get product details
@@ -36,7 +36,7 @@ router.get("/:productId", auth(), storeController.getProductDetails);
 /**
  * PATCH /api/store/:productId - Update product (admin only)
  */
-router.patch("/:productId",fileUploader.filesystemUpload.single("image"), auth(UserRole.ADMIN), storeController.updateStoreProduct);
+router.patch("/:productId",fileUploader.productImage, auth(UserRole.ADMIN), storeController.updateStoreProduct);
 
 /**
  * DELETE /api/store/:productId - Delete product (soft delete) (admin only)

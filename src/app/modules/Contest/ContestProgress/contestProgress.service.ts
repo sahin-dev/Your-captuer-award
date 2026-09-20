@@ -2,8 +2,7 @@ import type { PrizeType, YCLevel } from "../../../../prismaClient";
 import prisma from "../../../../shared/prisma";
 import { achievementService } from "../../Achievements/achievement.service";
 import { prizeTypes, ycLevels } from "../../Awards/award.definitions";
-import { contestRuleEngine } from "../ContestRules/contestRule.engine";
-import { getContestLevelForScore } from "../ContestRanking/contestRanking.service";
+import { contestRankingService } from "../ContestRanking/contestRanking.service";
 
 const achievementByLevel: Partial<Record<YCLevel, PrizeType>> = {
   [ycLevels.AMATEUR]: prizeTypes.AMATEUR,
@@ -23,28 +22,24 @@ const levelOrder: Record<YCLevel, number> = {
 };
 
 const evaluateParticipantLevel = async (contestId: string, participantId: string) => {
-  const [participant, voteCount, requirements] = await Promise.all([
+  const [participant, ranking] = await Promise.all([
     prisma.contestParticipant.findUnique({
       where: { id: participantId },
       select: {
         id: true,
         level: true,
-        photos: { select: { id: true, initialVotes: true } },
       },
     }),
-    prisma.vote.count({
-      where: { contestId, photo: { participantId } },
-    }),
-    contestRuleEngine.getLevelRequirements(contestId),
+    contestRankingService.buildContestRanking(contestId),
   ]);
 
-  if (!participant || requirements.length === 0) {
+  const rankedParticipant = ranking.photographers.find(item => item.participantId === participantId);
+  if (!participant || !rankedParticipant) {
     return null;
   }
 
-  const score = voteCount
-    + participant.photos.reduce((total, photo) => total + (photo.initialVotes || 0), 0);
-  const eligibleLevel = getContestLevelForScore(score, requirements);
+  const score = rankedParticipant.score;
+  const eligibleLevel = rankedParticipant.level;
   const targetLevel = levelOrder[eligibleLevel] > levelOrder[participant.level]
     ? eligibleLevel
     : participant.level;

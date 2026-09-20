@@ -81,6 +81,7 @@ export class StripeProvider implements PaymentProvider {
   ): Promise<Stripe.Checkout.Session> {
     const customer = await this.createCustomer(userId);
 
+    const paymentId = typeof data?.payment_id === "string" ? data.payment_id : undefined;
     return this.stripe.checkout.sessions.create({
       customer: customer.id,
       managed_payments: {
@@ -102,7 +103,7 @@ export class StripeProvider implements PaymentProvider {
       payment_intent_data: data ? { metadata: data } : undefined,
       success_url: successUrl,
       cancel_url: cancelUrl,
-    });
+    }, paymentId ? { idempotencyKey: `checkout-${paymentId}` } : undefined);
   }
 
   async retrieveCheckoutSession(sessionId: string): Promise<Stripe.Checkout.Session> {
@@ -147,6 +148,7 @@ export class StripeProvider implements PaymentProvider {
   ): Promise<Stripe.Checkout.Session> {
     const customer = await this.createCustomer(userId);
 
+    const paymentId = typeof data?.payment_id === "string" ? data.payment_id : undefined;
     return this.stripe.checkout.sessions.create({
       customer: customer.id,
       mode,
@@ -160,7 +162,7 @@ export class StripeProvider implements PaymentProvider {
       ...(data && mode === "subscription"
         ? { subscription_data: { metadata: data } }
         : {}),
-    });
+    }, paymentId ? { idempotencyKey: `checkout-${paymentId}` } : undefined);
   }
 
   async createCustomer(userId: string): Promise<Stripe.Customer> {

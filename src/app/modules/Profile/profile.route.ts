@@ -8,6 +8,8 @@ const route = Router();
 // Own photo routes
 route.get("/photos", auth(), profileController.getMyUploads);
 route.post("/photos/upload", auth(), fileUploader.filesystemUploadUserPhoto, profileController.uploadUserPhoto);
+route.post("/photos/direct-upload-url", auth(), profileController.createDirectUploadUrl);
+route.post("/photos/confirm-upload", auth(), profileController.confirmDirectUpload);
 route.get("/photos/:photoId", auth(), profileController.getUserPhotoDetails);
 route.delete("/photos/:photoId", auth(), profileController.deleteUserPhoto);
 route.get("/stats", auth(), profileController.getUserStates);

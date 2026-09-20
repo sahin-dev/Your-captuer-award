@@ -81,6 +81,15 @@ model UserPhoto {
   description   String?
   adult         Boolean   @default(false)
 
+  // Captured when the photo is stored, so a contest submission can check the
+  // SUBMISSION_FORMAT rule (format, minimum dimensions, size cap) for a photo
+  // picked out of the gallery without re-reading it from object storage.
+  // Null on rows created before this existed; those are filled in on demand.
+  mimeType      String?
+  width         Int?
+  height        Int?
+  sizeBytes     Int?
+
   user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   contestUpload ContestPhoto[]
   tradeRecords  ContestPhotoTradeRecord[]

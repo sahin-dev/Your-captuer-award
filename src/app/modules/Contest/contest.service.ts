@@ -2,7 +2,7 @@ import prisma from '../../../shared/prisma';
 import ApiError from '../../../errors/ApiError';
 import httpstatus from 'http-status';
 import { fileUploader } from '../../../helpers/fileUploader';
-import { AchievementKind, ContestOccurrenceStatus, ContestParticipant, ContestPhoto, ContestStatus, PaymentStatus, PaymentType, Prisma, PrizeType, RecurringContest, RecurringContestStatus, RecurringType, TeamMemberStatus, YCLevel } from '../../../prismaClient';
+import { AchievementKind, ContestOccurrenceStatus, ContestParticipant, ContestParticipantStatus, ContestPhoto, ContestStatus, PaymentStatus, PaymentType, Prisma, PrizeType, RecurringContest, RecurringContestStatus, RecurringType, TeamMemberStatus, YCLevel } from '../../../prismaClient';
 import { contestData, updateContestData } from './contest.type';
 import { contestRuleService } from './ContestRules/contestRules.service';
 import { ContestRuleConfigInput } from './ContestRules/contestRules.type';
@@ -33,12 +33,16 @@ import { paginationHelper } from '../../../helpers/paginationHelper';
 import { sendMail } from '../../../shared/mailSender';
 import { notificationOrchestrator } from '../Notification/notificationOrchestrator';
 import { reportService } from '../Report/report.service';
+import { activeContestWhere } from './contestLifecycle';
 
 const completedContestStatuses:ContestStatus[] = [ContestStatus.COMPLETED, ContestStatus.CLOSED]
 const isCompletedContest = (status:ContestStatus) => completedContestStatuses.includes(status)
 const contestListCreatorInclude = {omit:{password:true, accessToken:true}} as const
 const contestBannerUploaderInclude = {select:{id:true, fullName:true, username:true, avatar:true, firstName:true, lastName:true}} as const
 const editableContestStatuses:ContestStatus[] = [ContestStatus.NEW, ContestStatus.UPCOMING]
+// Once finalization starts the photo set is frozen: rankings, grants and award
+// selections all reference it.
+const finalizedContestStatuses:ContestStatus[] = [ContestStatus.FINALIZING, ContestStatus.COMPLETED, ContestStatus.CLOSED]
 const PROMOTION_DURATION_MS = 24 * 60 * 60 * 1000 // promoted photos stay boosted for ~24 hours
 const EXPOSURE_BOOST_DURATION_MS = 60 * 60 * 1000 // a fresh submission/trade stays spotlighted for 1 hour
 const EXPOSURE_BOOST_WEIGHT_MULTIPLIER = 20 // how much more likely a spotlighted photo is to surface vs. its participant-level weight alone
@@ -589,7 +593,12 @@ const materializeRecurringOccurrence = async (rContest:RecurringContest, options
         })
 
         if(initialStatus === ContestStatus.ACTIVE){
-            await agenda.schedule(endDate, "contest:watcher", {contestId:newContest.id})
+            // Materialization is already committed. A scheduler outage must not
+            // mark the occurrence failed and create a duplicate on retry; the
+            // periodic contest watcher remains a recovery path.
+            await agenda.schedule(endDate, "contest:watcher", {contestId:newContest.id}).catch(error => {
+                console.error(`Failed to schedule watcher for recurring contest ${newContest.id}`, error)
+            })
         }
         console.log(`Generated recurring contest instance ${newContest.id} from template ${rContest.id}`)
         return newContest
@@ -893,9 +902,9 @@ const deleteContestByContestId =async (contestId:string)=>{
 // add a user to the contest participant list
 
 const joinContest = async (userId:string,contestId:string, acceptedRuleKeys?:unknown)=>{
-    const contest = await prisma.contest.findUnique({where:{id:contestId}})
+    const contest = await prisma.contest.findFirst({where:{id:contestId, ...activeContestWhere()}})
 
-    if (!contest || contest.status != ContestStatus.ACTIVE){
+    if (!contest){
         throw new ApiError(httpstatus.NOT_FOUND, "Contest is not available to participate")
     }
 
@@ -920,7 +929,7 @@ const joinContest = async (userId:string,contestId:string, acceptedRuleKeys?:unk
         }
 
         const activeContest = await tx.contest.findFirst({
-            where:{id:contestId, status:ContestStatus.ACTIVE},
+            where:{id:contestId, ...activeContestWhere()},
             select:{id:true, entryFeeCoins:true}
         })
         if(!activeContest){
@@ -1016,8 +1025,8 @@ const completePaidContestJoin = async (
 
 
 const getContestByUserId = async ( userId:string, contestId: string) => {
-    const contest = await prisma.contest.findUnique({
-        where: { id: contestId },
+    const contest = await prisma.contest.findFirst({
+        where: { id: contestId, ...notDeleted },
         include: {
             creator: {omit:{password:true, accessToken:true}},
             bannerUploader: contestBannerUploaderInclude
@@ -1318,7 +1327,7 @@ const enrichContestListDetails = async (contests:any[]) => {
     const [
         ruleConfigs,
         prizes,
-        votes,
+        voteGroups,
         finalizations,
         awardSelections,
         winnersByContestId,
@@ -1331,9 +1340,10 @@ const enrichContestListDetails = async (contests:any[]) => {
             where:{contestId:{in:contestIds}, enabled:true},
             orderBy:[{order:"asc"}, {createdAt:"asc"}],
         }),
-        prisma.vote.findMany({
+        prisma.vote.groupBy({
+            by:["contestId"],
             where:{contestId:{in:contestIds}},
-            select:{contestId:true},
+            _count:{_all:true},
         }),
         prisma.contestFinalization.findMany({
             where:{contestId:{in:contestIds}},
@@ -1347,7 +1357,7 @@ const enrichContestListDetails = async (contests:any[]) => {
 
     const rulesByContestId = groupByContestId(ruleConfigs);
     const prizesByContestId = groupByContestId(prizes);
-    const votesByContestId = groupByContestId(votes);
+    const voteCountByContestId = new Map(voteGroups.map(group => [group.contestId, group._count._all]));
     const finalizationByContestId = new Map(finalizations.map((finalization) => [finalization.contestId, finalization]));
     const selectionsByContestId = groupByContestId(awardSelections);
 
@@ -1359,7 +1369,7 @@ const enrichContestListDetails = async (contests:any[]) => {
             cardAttribution:getContestCardAttribution(contest),
             rules,
             prizes:prizesByContestId.get(contest.id) || [],
-            totalVotes:(votesByContestId.get(contest.id) || []).length,
+            totalVotes:voteCountByContestId.get(contest.id) || 0,
             finalization:finalizationByContestId.get(contest.id) || null,
             awardSelections:selectionsByContestId.get(contest.id) || [],
         };
@@ -1466,20 +1476,30 @@ const sortByVotesThenUploadSequence = <T extends {id:string; createdAt:Date; vot
 }
 
 const getContestUploadsByUserId = async (contestId:string, userId:string)=>{
-    const userUploads = await prisma.contestPhoto.findMany({where:{contestId:contestId, photo:{userId}}, orderBy:[{createdAt:"asc"}, {id:"asc"}], include:{photo:{select:{id:true, url:true}}}})
-   const mappedPhotos  = await Promise.all(userUploads.flatMap(upload => {
+    const [userUploads, ranking] = await Promise.all([
+        prisma.contestPhoto.findMany({where:{contestId:contestId, photo:{userId}}, orderBy:[{createdAt:"asc"}, {id:"asc"}], include:{photo:{select:{id:true, url:true}}}}),
+        // One ranking read rather than two queries per uploaded photo, and the
+        // totals shown here are the same ones the leaderboard uses.
+        contestRankingService.buildContestRanking(contestId)
+    ])
+    const rankedPhotoById = new Map(ranking.photos.map(photo => [photo.photoId, photo] as const))
 
-    const {photo, ...rest} = upload
+    const mappedPhotos = userUploads.flatMap(upload => {
 
-    return photo ? [async () => {
-        const voteCount = await voteService.getVoteCount(upload.id)
+        const {photo, ...rest} = upload
+        if(!photo){
+            return []
+        }
+
         // initialVotes is a baseline for the photo this slot originally launched with -
         // it shouldn't follow a later swapped-in photo (see originalPhotoId/photoRefId).
         const stillOriginalPhoto = !upload.originalPhotoId || upload.originalPhotoId === upload.photoId
-        const totalVotes = voteCount + (stillOriginalPhoto ? (upload.initialVotes || 0) : 0)
+        const initialVotes = stillOriginalPhoto ? (upload.initialVotes || 0) : 0
+        const totalVotes = rankedPhotoById.get(upload.id)?.score ?? 0
+        const voteCount = Math.max(totalVotes - initialVotes, 0)
         const traded = upload.updatedAt.getTime() > upload.createdAt.getTime() && !upload.promoted
 
-        return {
+        return [{
             ...rest,
             userPhotoId:photo.id,
             url:photo.url,
@@ -1489,9 +1509,8 @@ const getContestUploadsByUserId = async (contestId:string, userId:string)=>{
             vote_count:voteCount,
             total_votes:totalVotes,
             traded
-        }
-    }] : []
-   }).map(getUpload => getUpload()))
+        }]
+    })
 
     return sortByVotesThenUploadSequence(mappedPhotos)
 }
@@ -1499,14 +1518,33 @@ const getContestUploadsByUserId = async (contestId:string, userId:string)=>{
 
 const deleteContestUploadById = async (contestId:string, userId:string, photoId:string)=>{
 
-    const contestUpload = await prisma.contestPhoto.findUnique({where:{id:photoId, contestId}, include:{participant:true}})
+    const contest = await prisma.contest.findFirst({where:{id:contestId, ...activeContestWhere()}})
+    if(!contest){
+        throw new ApiError(httpstatus.CONFLICT, "Contest submissions can no longer be changed")
+    }
+    const contestUpload = await prisma.contestPhoto.findFirst({where:{id:photoId, contestId, photoId:{not:null}}, include:{participant:true}})
     if(!contestUpload){
         throw new ApiError(httpstatus.NOT_FOUND, "Contest upload not found")
     }
     if (contestUpload.participant.userId !== userId){
         throw new ApiError(httpstatus.FORBIDDEN, "You are not allowed to delete this contest upload")
     }
-    await prisma.contestPhoto.delete({where:{id:photoId}})
+    await prisma.$transaction(async tx => {
+        const guard = await tx.contest.updateMany({
+            where:{id:contestId, ...activeContestWhere()},
+            data:{updatedAt:new Date()}
+        })
+        if(guard.count !== 1){
+            throw new ApiError(httpstatus.CONFLICT, "Contest submissions can no longer be changed")
+        }
+        // Keep the slot as a tombstone so existing votes, comments and audit
+        // records remain valid. Rankings already ignore slots without a photo.
+        await tx.contestPhoto.update({
+            where:{id:photoId},
+            data:{photoId:null, promoted:false, promotionExpiresAt:null, exposureBoostExpiresAt:null}
+        })
+    })
+    contestRankingService.invalidateContestRanking(contestId)
     return "Contest upload deleted successfully"
  }
 
@@ -1525,9 +1563,16 @@ const adminDeleteContestPhoto = async (photoId:string, adminId:string, reason?:s
         throw new ApiError(httpstatus.NOT_FOUND, "Contest upload not found")
     }
 
-    const contest = await prisma.contest.findUnique({where:{id:contestUpload.contestId}, select:{title:true}})
+    const contest = await prisma.contest.findUnique({where:{id:contestUpload.contestId}, select:{title:true, status:true}})
+    if(!contest || finalizedContestStatuses.includes(contest.status)){
+        throw new ApiError(httpstatus.CONFLICT, "A photo cannot be removed after finalization starts")
+    }
 
-    await prisma.contestPhoto.delete({where:{id:photoId}})
+    await prisma.contestPhoto.update({
+        where:{id:photoId},
+        data:{photoId:null, promoted:false, promotionExpiresAt:null, exposureBoostExpiresAt:null}
+    })
+    contestRankingService.invalidateContestRanking(contestUpload.contestId)
 
     const owner = contestUpload.participant.user
     const contestTitle = contest?.title || "the contest"
@@ -1757,13 +1802,13 @@ const isContestParticipantExist = async (userId:string, contestId:string)=>{
 }
 
 const getContestUploadsToVote = async (userId:string, contestId:string, page?:number, limit?:number, seed?:string)=> {
-     const contest = await prisma.contest.findUnique({where:{id:contestId}})
+     const contest = await prisma.contest.findFirst({where:{id:contestId, ...activeContestWhere()}})
     if(!contest){
         throw new ApiError(httpstatus.NOT_FOUND, "contest not found")
     }
     const participant = await isContestParticipantExist(userId, contestId)
 
-    if( !participant){
+    if( !participant || participant.status !== ContestParticipantStatus.ACTIVE){
         throw new ApiError(httpstatus.NOT_FOUND, "user is not in the participation list")
     }
 
@@ -1774,23 +1819,31 @@ const getContestUploadsToVote = async (userId:string, contestId:string, page?:nu
     const where:Prisma.ContestPhotoWhereInput = {
         contestId,
         photoId:{not:null},
-        participant:{userId:{notIn:excludedUserIds}},
+        participant:{userId:{notIn:excludedUserIds}, status:ContestParticipantStatus.ACTIVE},
         votes:{none:{providerId:participant.userId}}
     }
 
+    // The seeded shuffle needs every candidate to keep pagination stable across
+    // pages, so this deliberately reads the whole eligible set - but only the
+    // handful of columns the weighting needs. Photo rows are joined in later for
+    // the single page actually being returned.
     const contestUploads = await prisma.contestPhoto.findMany({
         where,
         orderBy:[{createdAt:"desc"}, {id:"desc"}],
-        include:{
-            photo:{select:{id:true, url:true}},
+        select:{
+            id:true,
+            promoted:true,
+            promotionExpiresAt:true,
+            exposureBoostExpiresAt:true,
             participant:{select:{exposure_bonus:true}}
         }
     })
+    const now = new Date()
     const promotedUploads = contest.status === ContestStatus.ACTIVE
-        ? contestUploads.filter(upload => upload.promoted)
+        ? contestUploads.filter(upload => upload.promoted && upload.promotionExpiresAt && upload.promotionExpiresAt > now)
         : []
     const regularUploads = contest.status === ContestStatus.ACTIVE
-        ? contestUploads.filter(upload => !upload.promoted)
+        ? contestUploads.filter(upload => !upload.promoted || !upload.promotionExpiresAt || upload.promotionExpiresAt <= now)
         : contestUploads
     // Base weight comes from the participant's own exposure_bonus (their
     // voting-activity reward, decayed over time). A photo still within its
@@ -1809,23 +1862,30 @@ const getContestUploadsToVote = async (userId:string, contestId:string, page?:nu
     ]
     const paginatedUploads = randomizedUploads.slice(skip, skip + paginationLimit)
 
-    const data = await Promise.all(paginatedUploads.flatMap(upload => {
-        if(!upload.photo){
+    const [pagePhotos, ranking] = await Promise.all([
+        prisma.contestPhoto.findMany({
+            where:{id:{in:paginatedUploads.map(upload => upload.id)}},
+            select:{id:true, photo:{select:{id:true, url:true}}}
+        }),
+        contestRankingService.buildContestRanking(contestId)
+    ])
+    const photoByContestPhotoId = new Map(pagePhotos.map(upload => [upload.id, upload.photo] as const))
+    const scoreByContestPhotoId = new Map(ranking.photos.map(photo => [photo.photoId, photo.score] as const))
+
+    const data = paginatedUploads.flatMap(upload => {
+        const photo = photoByContestPhotoId.get(upload.id)
+        if(!photo){
             return []
         }
-        const photo = upload.photo
-        return [async () => {
-            const voteCount = await voteService.getVoteCount(upload.id)
 
-            return {
-                id:upload.id,
-                contestPhotoId:upload.id,
-                photoId:photo.id,
-                url:photo.url,
-                voteCount
-            }
+        return [{
+            id:upload.id,
+            contestPhotoId:upload.id,
+            photoId:photo.id,
+            url:photo.url,
+            voteCount:scoreByContestPhotoId.get(upload.id) ?? 0
         }]
-    }).map(getUpload => getUpload()))
+    })
 
     return {
         data,
@@ -1922,12 +1982,34 @@ const getContestUploads = async (userId:string,contestId:string)=>{
 
 //Upload photo to a contest, user can upload photo from pforile or can upload directly from computer
 
+// Undoes the profile-pool photos a rejected contest submission created, so a
+// failed entry never leaves a stray photo in the user's gallery or a stray
+// object in storage. Photos the user picked from their existing pool are not
+// passed here and are never removed.
+const rollbackUploadedContestPhotos = async (
+    created:{userPhotoId:string; file:Express.Multer.File}[]
+) => {
+    if(created.length === 0){
+        return
+    }
+    try{
+        await prisma.userPhoto.deleteMany({where:{id:{in:created.map(item => item.userPhotoId)}}})
+    }catch(error){
+        console.error("Failed to roll back contest submission photos", error)
+        return
+    }
+    await Promise.all(created.map(async ({file}) => {
+        file.claimed = false
+        await fileUploader.discardUploadedFile(file)
+    }))
+}
+
 const uploadPhotoToContest = async (contestId:string,userId:string, photoIds:unknown, files:Express.Multer.File[], acceptedRuleKeys?:unknown)=>{
 
     if(!contestId){
         throw new ApiError(httpstatus.BAD_REQUEST, "contest id is required")
     }
-    const contest = await prisma.contest.findUnique({where:{id:contestId, status:ContestStatus.ACTIVE}})
+    const contest = await prisma.contest.findFirst({where:{id:contestId, ...activeContestWhere()}})
 
     if(!contest){
         throw new ApiError(httpstatus.NOT_FOUND, "contest not found or contest closed")
@@ -1971,20 +2053,28 @@ const uploadPhotoToContest = async (contestId:string,userId:string, photoIds:unk
     }
 
     let selectedPhotoIds:string[] = []
+    // Photos created by this request specifically. If the contest write fails
+    // these are rolled back, so a rejected submission leaves nothing behind in
+    // the user's photo pool or in object storage. Photos picked from the
+    // existing pool are never touched.
+    const photosCreatedHere:{userPhotoId:string; file:Express.Multer.File}[] = []
     if(files.length > 0){
         // Keep storage pressure predictable for a full four-photo entry. Four
-        // simultaneous in-memory S3 uploads could fail at the boundary while
-        // smaller batches succeeded, and the raw provider error became a 500.
+        // simultaneous S3 uploads could fail at the boundary while smaller
+        // batches succeeded, and the raw provider error became a 500.
         for(const file of files){
+            let uploadedPhoto
             try{
-                const uploadedPhoto = await profileService.uploadUserPhoto(userId, file)
-                selectedPhotoIds.push(uploadedPhoto.id)
+                uploadedPhoto = await profileService.uploadUserPhoto(userId, file)
             }catch{
+                await rollbackUploadedContestPhotos(photosCreatedHere)
                 throw new ApiError(
                     httpstatus.BAD_GATEWAY,
                     `Unable to upload ${file.originalname}. Please try again`
                 )
             }
+            selectedPhotoIds.push(uploadedPhoto.id)
+            photosCreatedHere.push({userPhotoId:uploadedPhoto.id, file})
         }
     }else{
         if(parsedPhotoIds.length <= 0){
@@ -1999,67 +2089,81 @@ const uploadPhotoToContest = async (contestId:string,userId:string, photoIds:unk
     }
 
     const submissionLimit = await contestRuleService.getEnabledRuleValue<number>(contestId, "SUBMISSION_LIMIT")
-    const images = await prisma.$transaction(async tx => {
-        const activeContest = await tx.contest.findFirst({where:{id:contestId, status:ContestStatus.ACTIVE}})
-        if(!activeContest){
-            throw new ApiError(httpstatus.BAD_REQUEST, "Contest is no longer accepting submissions")
-        }
-
-        let participant = await tx.contestParticipant.findUnique({
-            where:{contestId_userId:{contestId,userId}}
-        })
-        if(!participant){
-            await chargeContestEntryFee(tx, {
-                id:activeContest.id,
-                entryFeeCoins:activeContest.entryFeeCoins
-            }, userId)
-            participant = await tx.contestParticipant.create({
-                data:{contestId, userId, exposure_bonus:0, exposureUpdatedAt:new Date()}
-            })
-        }
-        if(submissionLimit !== null){
-            const existingUploadCount = await tx.contestPhoto.count({where:{contestId,participantId:participant.id}})
-            if(existingUploadCount + selectedPhotoIds.length > submissionLimit){
-                throw new ApiError(httpstatus.BAD_REQUEST, "Maximum upload limit exceeded")
-            }
-        }
-
-        const exposureBoostExpiresAt = new Date(Date.now() + EXPOSURE_BOOST_DURATION_MS)
-        await tx.contestPhoto.createMany({
-            data:selectedPhotoIds.map(photoId => ({
-                contestId,
-                participantId:participant.id,
-                photoId,
-                originalPhotoId:photoId,
-                exposureBoostExpiresAt
-            }))
-        })
-        // Attach the contest category as a label on each uploaded photo so the
-        // contest context (e.g. "Nature", "Portrait") is always visible on the
-        // photo itself, not just inside the contest. Existing labels are kept.
-        if(activeContest.category){
-            await tx.userPhoto.updateMany({
-                where:{id:{in:selectedPhotoIds}},
-                data:{labels:{push:activeContest.category}}
-            })
-        }
-        return tx.contestPhoto.findMany({
-            where:{contestId, participantId:participant.id, photoId:{in:selectedPhotoIds}},
-            include:{photo:true}
-        })
-    }, {
-        // Prisma's interactive transaction default is 5 seconds. Joining can
-        // also charge an entry fee and create a participant, so retain a safety
-        // margin even though photo and label writes are now batched.
-        maxWait:5000,
-        timeout:15000
-    })
+    const images = await runContestSubmission()
+    contestRankingService.invalidateContestRanking(contestId)
 
     if(isJoiningThroughUpload){
-        await notifyTeamMatchQueueOfContestJoin(userId, contestId)
+        // The entry itself is committed. A queue notification failure must not
+        // surface as a failed submission or trigger the upload rollback.
+        await notifyTeamMatchQueueOfContestJoin(userId, contestId).catch(error => {
+            console.error(`Failed to notify team match queue for contest ${contestId}`, error)
+        })
     }
 
     return images
+
+    async function runContestSubmission(){
+      try{
+        return await prisma.$transaction(async tx => {
+            const activeContest = await tx.contest.findFirst({where:{id:contestId, ...activeContestWhere()}})
+            if(!activeContest){
+                throw new ApiError(httpstatus.BAD_REQUEST, "Contest is no longer accepting submissions")
+            }
+
+            let participant = await tx.contestParticipant.findUnique({
+                where:{contestId_userId:{contestId,userId}}
+            })
+            if(!participant){
+                await chargeContestEntryFee(tx, {
+                    id:activeContest.id,
+                    entryFeeCoins:activeContest.entryFeeCoins
+                }, userId)
+                participant = await tx.contestParticipant.create({
+                    data:{contestId, userId, exposure_bonus:0, exposureUpdatedAt:new Date()}
+                })
+            }
+            if(submissionLimit !== null){
+                const existingUploadCount = await tx.contestPhoto.count({where:{contestId,participantId:participant.id}})
+                if(existingUploadCount + selectedPhotoIds.length > submissionLimit){
+                    throw new ApiError(httpstatus.BAD_REQUEST, "Maximum upload limit exceeded")
+                }
+            }
+
+            const exposureBoostExpiresAt = new Date(Date.now() + EXPOSURE_BOOST_DURATION_MS)
+            await tx.contestPhoto.createMany({
+                data:selectedPhotoIds.map(photoId => ({
+                    contestId,
+                    participantId:participant.id,
+                    photoId,
+                    originalPhotoId:photoId,
+                    exposureBoostExpiresAt
+                }))
+            })
+            // Attach the contest category as a label on each uploaded photo so the
+            // contest context (e.g. "Nature", "Portrait") is always visible on the
+            // photo itself, not just inside the contest. Existing labels are kept.
+            if(activeContest.category){
+                await tx.userPhoto.updateMany({
+                    where:{id:{in:selectedPhotoIds}},
+                    data:{labels:{push:activeContest.category}}
+                })
+            }
+            return tx.contestPhoto.findMany({
+                where:{contestId, participantId:participant.id, photoId:{in:selectedPhotoIds}},
+                include:{photo:true}
+            })
+        }, {
+            // Prisma's interactive transaction default is 5 seconds. Joining can
+            // also charge an entry fee and create a participant, so retain a safety
+            // margin even though photo and label writes are now batched.
+            maxWait:5000,
+            timeout:15000
+        })
+      }catch(error){
+        await rollbackUploadedContestPhotos(photosCreatedHere)
+        throw error
+      }
+    }
 }
 
 
@@ -2181,18 +2285,21 @@ const getParticipantLevelData = async (contestId:string,userId:string)=>{
 
 const promoteContestPhoto = async (contestId:string, photoId:string, userId:string)=>{
 
-     const contest = await prisma.contest.findUnique({where:{id:contestId, status:ContestStatus.ACTIVE}})
+     const contest = await prisma.contest.findFirst({where:{id:contestId, ...activeContestWhere()}})
 
     if (!contest){
         throw new ApiError(httpstatus.NOT_FOUND, "Contest not found")
     }
-    const contestPhoto = await prisma.contestPhoto.findUnique({where:{id:photoId},include:{participant:true}})
+    const contestPhoto = await prisma.contestPhoto.findFirst({
+        where:{id:photoId, contestId, photoId:{not:null}, participant:{status:ContestParticipantStatus.ACTIVE}},
+        include:{participant:true}
+    })
     
     if(!contestPhoto){
         throw new ApiError(httpstatus.NOT_FOUND, "Contest photo not found")
     }
 
-    if (contestPhoto.promoted){
+    if (contestPhoto.promoted && contestPhoto.promotionExpiresAt && contestPhoto.promotionExpiresAt > new Date()){
         throw new ApiError(httpstatus.BAD_REQUEST, "Contest photo is already promoted.")
     }
 
@@ -2207,6 +2314,19 @@ const promoteContestPhoto = async (contestId:string, photoId:string, userId:stri
         throw new ApiError(httpstatus.BAD_REQUEST, "You don't have enough promotes")
     }
     await prisma.$transaction(async (tx) => {
+        const guard = await tx.contest.updateMany({
+            where:{id:contestId, ...activeContestWhere()},
+            data:{updatedAt:new Date()}
+        })
+        if(guard.count !== 1){
+            throw new ApiError(httpstatus.CONFLICT, "Contest is no longer accepting promotions")
+        }
+        const livePhoto = await tx.contestPhoto.findFirst({
+            where:{id:photoId, contestId, photoId:{not:null}, participant:{userId, status:ContestParticipantStatus.ACTIVE}}
+        })
+        if(!livePhoto){
+            throw new ApiError(httpstatus.CONFLICT, "Contest photo is no longer eligible for promotion")
+        }
         // Decrement the user's promotes count
         await tx.userStore.update({
             where: { userId },
@@ -2224,7 +2344,7 @@ const promoteContestPhoto = async (contestId:string, photoId:string, userId:stri
     // Schedule a job to remove promotion once it expires
     agenda.schedule(promotionExpiresAt, 'promotion:remove', {
         photoId: photoId
-    });
+    }).catch(error => console.error(`Failed to schedule promotion expiry for ${photoId}`, error));
 
     console.log(`Contest photo with ID ${photoId} has been promoted until ${promotionExpiresAt}`);
 
@@ -2290,6 +2410,10 @@ const identifyContestTopPhoto = async (contestId:string)=>{
 
 
 const tradePhoto = async (userId:string,contestId:string, contestPhotoId:string, photoId:string, file:Express.Multer.File) => {
+    const contest = await prisma.contest.findFirst({where:{id:contestId, ...activeContestWhere()}})
+    if(!contest){
+        throw new ApiError(httpstatus.CONFLICT, "Contest photos can no longer be traded")
+    }
     const contestPhoto = await prisma.contestPhoto.findUnique({
         where:{id:contestPhotoId, contestId},
         include:{photo:true, participant:true}
@@ -2307,23 +2431,40 @@ const tradePhoto = async (userId:string,contestId:string, contestPhotoId:string,
         throw new ApiError(httpstatus.BAD_REQUEST, "you does not have enough trade")
     }
 
+    // A traded-in photo has to satisfy the contest's format rule too, and this
+    // runs before the swap charge so a rejected photo costs the user nothing.
+    await contestRuleEngine.validateSubmissionFormat(
+        contestId,
+        !photoId && file ? [file] : [],
+        photoId ? [photoId] : []
+    )
+
     let replacementPhotoId = photoId
+    const photosCreatedHere:{userPhotoId:string; file:Express.Multer.File}[] = []
     if(!replacementPhotoId){
         if(!file){
             throw new ApiError(httpstatus.BAD_REQUEST, "file is required to replace contest photo")
         }
         const uploadedPhoto = await profileService.uploadUserPhoto(userId, file)
         replacementPhotoId = uploadedPhoto.id
+        photosCreatedHere.push({userPhotoId:uploadedPhoto.id, file})
     }
 
     const replacedPhoto = await prisma.$transaction(async trx => {
+        const guard = await trx.contest.updateMany({
+            where:{id:contestId, ...activeContestWhere()},
+            data:{updatedAt:new Date()}
+        })
+        if(guard.count !== 1){
+            throw new ApiError(httpstatus.CONFLICT, "Contest photos can no longer be traded")
+        }
         const store = await trx.userStore.findUnique({where:{userId}})
         if (!store || store.swap <= 0){
             throw new ApiError(httpstatus.BAD_REQUEST, "you does not have enough trade")
         }
 
         const currentContestPhoto = await trx.contestPhoto.findUnique({
-            where:{id:contestPhotoId, contestId},
+            where:{id:contestPhotoId, contestId, photoId:{not:null}, participant:{status:ContestParticipantStatus.ACTIVE}},
             include:{participant:true}
         })
         if(!currentContestPhoto){
@@ -2384,7 +2525,14 @@ const tradePhoto = async (userId:string,contestId:string, contestPhotoId:string,
                 exposureBoostExpiresAt:new Date(Date.now() + EXPOSURE_BOOST_DURATION_MS)
             }
         })
+    }).catch(async error => {
+        // A rejected trade must not leave the replacement photo behind.
+        await rollbackUploadedContestPhotos(photosCreatedHere)
+        throw error
     })
+
+    // The slot now holds a different image with a different vote history.
+    contestRankingService.invalidateContestRanking(contestId)
 
     return replacedPhoto
 
@@ -2430,6 +2578,9 @@ const replaceContestPhoto = async (userId:string, contestId:string, contestPhoto
         throw new ApiError(httpstatus.BAD_REQUEST, "file is required to replace contest photo")
     }
 
+    // Checked before storing it, so a rejected file never reaches the gallery.
+    await contestRuleEngine.validateSubmissionFormat(contestId, [file])
+
     const uploadedPhoto = await profileService.uploadUserPhoto(userId, file)
     
     return await replaceContestPhotoWithUserPhoto(userId, contestId, contestPhotoId, uploadedPhoto.id)
@@ -2442,14 +2593,17 @@ const replaceContestPhotoWithUserPhoto = async (userId:string, contestId:string,
         throw new ApiError(httpstatus.NOT_FOUND, "contest photo not found")
     }
 
+    await contestRuleEngine.validateSubmissionFormat(contestId, [], [userPhotoId])
+
     const updatedContestPhoto = await prisma.contestPhoto.update({where:{id:contestPhotoId}, data:{photoId:userPhotoId}})
+    contestRankingService.invalidateContestRanking(contestId)
 
     return updatedContestPhoto
 }
 
 
 const chargePhoto = async (userId:string, contestId:string) => {
-    const contest = await prisma.contest.findUnique({where:{id:contestId, status:ContestStatus.ACTIVE}})
+    const contest = await prisma.contest.findFirst({where:{id:contestId, ...activeContestWhere()}})
 
     if (!contest){
         throw new ApiError(httpstatus.NOT_FOUND, "Contest not found")
@@ -2591,14 +2745,19 @@ const getFollowedUserIds = async (currentUserId:string, followingIds:string[]) =
     return new Set(follows.map(follow => follow.followingId))
 }
 
-const getContestPhotosSortedByVote = async (contestId:string, page?:number, limit?:number) => {
+const getContestPhotosSortedByVote = async (
+    contestId:string,
+    page?:number,
+    limit?:number,
+    rankingInput?:Awaited<ReturnType<typeof contestRankingService.buildContestRanking>>
+) => {
 
     const contest = await prisma.contest.findUnique({where:{id:contestId}})
 
     if(!contest){
         throw new ApiError(httpstatus.NOT_FOUND, 'Contest not found')
     }
-    const ranking = await contestRankingService.buildContestRanking(contestId)
+    const ranking = rankingInput ?? await contestRankingService.buildContestRanking(contestId)
     const contestUploads = await prisma.contestPhoto.findMany({
         where:{id:{in:ranking.photos.map(photo => photo.photoId)}},
         include:{
@@ -2641,7 +2800,8 @@ const getContestTopPhotographers = async (
     currentUserId?: string,
     page?: number,
     limit?: number,
-    level?: string
+    level?: string,
+    rankingInput?:Awaited<ReturnType<typeof contestRankingService.buildContestRanking>>
 ) => {
     const contest = await prisma.contest.findUnique({
         where: { id: contestId }
@@ -2653,7 +2813,7 @@ const getContestTopPhotographers = async (
 
     const activeLevel = normalizeRankLevel(level)
 
-    const ranking = await contestRankingService.buildContestRanking(contestId)
+    const ranking = rankingInput ?? await contestRankingService.buildContestRanking(contestId)
 
     const contestParticipants = await prisma.contestParticipant.findMany({
         where: {
@@ -2800,9 +2960,10 @@ const getContestRanking = async (
     limit?:number,
     level?:string
 ) => {
+    const ranking = await contestRankingService.buildContestRanking(contestId)
     const [photos, photographers] = await Promise.all([
-        getContestPhotosSortedByVote(contestId, page, limit),
-        getContestTopPhotographers(contestId, currentUserId, page, limit, level)
+        getContestPhotosSortedByVote(contestId, page, limit, ranking),
+        getContestTopPhotographers(contestId, currentUserId, page, limit, level, ranking)
     ])
 
     return {photos, photographers}

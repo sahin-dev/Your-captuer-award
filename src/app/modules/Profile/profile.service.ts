@@ -7,6 +7,7 @@ import { MappedPhoto } from "./profile.types"
 import { voteService } from "../Vote/vote.service"
 import { followService } from "../Follow/followe.service"
 import { paginationHelper } from "../../../helpers/paginationHelper"
+import { describeUploadedImage, UploadedImageMetadata } from "../../../helpers/imageMetadata"
 
 const fetchUserUploads = async (targetUserId:string, pagination:{page?:number, limit?:number}, viewerId?:string)=>{
     const {page, limit, skip} = paginationHelper.calculatePagination({
@@ -62,16 +63,55 @@ export const uploadUserPhoto = async (userId:string, file:Express.Multer.File)=>
 
     const uploadedFile = await fileUploader.uploadToDigitalOcean(file)
 
-    const addedPhoto =   await handleAddUpload(userId, uploadedFile.Location)
+    let addedPhoto
+    try{
+        // Recorded now so a later contest submission that picks this photo out
+        // of the gallery can still be checked against the contest's
+        // SUBMISSION_FORMAT rule.
+        addedPhoto = await handleAddUpload(userId, uploadedFile.Location, describeUploadedImage(file))
+    }catch(error){
+        await fileUploader.deleteFromDigitalOcean(uploadedFile.Key).catch(() => undefined)
+        throw error
+    }
+    // A UserPhoto row now points at these bytes, so request-level cleanup must
+    // leave the object alone even if the rest of the request fails.
+    fileUploader.markUploadClaimed(file)
 
     return {...addedPhoto, contestUpload: [],
             totalVotes: 0,
             likes: 0}
 }
 
-export const handleAddUpload = async (userId:string, photoUrl:string)=>{
+const createDirectUploadUrl = async (userId:string, fileName:string, contentType:string, fileSize:number) => {
+    const user = await prisma.user.findUnique({where:{id:userId}, select:{id:true}})
+    if(!user){
+        throw new ApiError(httpStatus.NOT_FOUND, "user not found")
+    }
+    return fileUploader.createDirectUploadUrl(userId, fileName, contentType, fileSize)
+}
 
-    const uploadedPhoto = await prisma.userPhoto.create({data:{url:photoUrl, userId}})
+const confirmDirectUpload = async (userId:string, key:string) => {
+    const uploaded = await fileUploader.confirmDirectUpload(userId, key)
+    const existing = await prisma.userPhoto.findFirst({where:{userId, url:uploaded.Location}})
+    const photo = existing ?? await handleAddUpload(userId, uploaded.Location, {
+        mimeType:uploaded.ContentType || null,
+        width:uploaded.Width ?? null,
+        height:uploaded.Height ?? null,
+        sizeBytes:uploaded.ContentLength || null
+    })
+    return {...photo, contestUpload:[], totalVotes:0, likes:0}
+}
+
+export const handleAddUpload = async (userId:string, photoUrl:string, metadata?:UploadedImageMetadata)=>{
+
+    const uploadedPhoto = await prisma.userPhoto.create({data:{
+        url:photoUrl,
+        userId,
+        mimeType:metadata?.mimeType ?? null,
+        width:metadata?.width ?? null,
+        height:metadata?.height ?? null,
+        sizeBytes:metadata?.sizeBytes ?? null
+    }})
 
     return uploadedPhoto
 }
@@ -293,6 +333,8 @@ const deleteUserPhoto = async (userId:string, photoId:string)=> {
 
 export const profileService = {
     uploadUserPhoto,
+    createDirectUploadUrl,
+    confirmDirectUpload,
     getStates,
     getAvailablePhotoForContest,
     getParticipatedContest,
