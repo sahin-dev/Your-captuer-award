@@ -9,6 +9,7 @@ import {
 } from "../../../../prismaClient";
 import type { PrizeType, YCLevel } from "../../../../prismaClient";
 import prisma from "../../../../shared/prisma";
+import { runWithWriteConflictRetry } from "../../../../shared/transactionRetry";
 import ApiError from "../../../../errors/ApiError";
 import httpStatus from "http-status";
 import {
@@ -431,10 +432,15 @@ const finalizeContest = async (contestId: string) => {
   heartbeat.unref();
 
   try {
+    // FINALIZING is accepted here on purpose: a run killed mid-flight (process
+    // restart, or a failure while writing the FAILED status) leaves the contest
+    // frozen with nothing left to move it, and without this it could never be
+    // picked up again. The finalization lease in claimFinalization - not the
+    // contest status - is what keeps two finalizers apart.
     const frozen = await prisma.contest.updateMany({
       where: {
         id: contestId,
-        status: { in: [ContestStatus.ACTIVE, ContestStatus.FINALIZATION_FAILED] },
+        status: { in: [ContestStatus.ACTIVE, ContestStatus.FINALIZATION_FAILED, ContestStatus.FINALIZING] },
         endDate: { lte: new Date() },
       },
       data: { status: ContestStatus.FINALIZING, endedAt: contest.endedAt || new Date() },
@@ -454,10 +460,7 @@ const finalizeContest = async (contestId: string) => {
       prisma.contestLevelAward.findMany({ where: { contestId } }),
     ]);
 
-    await prisma.$transaction(
-      (tx) => contestRankingService.persistContestRanking(tx, ranking),
-      { timeout: 30000, maxWait: 30000 }
-    );
+    await contestRankingService.persistContestRanking(ranking);
     contestRankingService.invalidateContestRanking(contestId);
 
     const candidates = [
@@ -486,21 +489,24 @@ const finalizeContest = async (contestId: string) => {
     }
 
     const completedAt = new Date();
-    await prisma.$transaction([
-      prisma.contest.update({
-        where: { id: contestId },
-        data: { status: ContestStatus.COMPLETED, finalizedAt: completedAt },
-      }),
-      prisma.contestFinalization.update({
-        where: { contestId },
-        data: {
-          status: ContestFinalizationStatus.COMPLETED,
-          scoringVersion: ranking.scoringVersion,
-          completedAt,
-          error: null,
-        },
-      }),
-    ]);
+    await runWithWriteConflictRetry(
+      () => prisma.$transaction([
+        prisma.contest.update({
+          where: { id: contestId },
+          data: { status: ContestStatus.COMPLETED, finalizedAt: completedAt },
+        }),
+        prisma.contestFinalization.update({
+          where: { contestId },
+          data: {
+            status: ContestFinalizationStatus.COMPLETED,
+            scoringVersion: ranking.scoringVersion,
+            completedAt,
+            error: null,
+          },
+        }),
+      ]),
+      { label: `contest ${contestId} completion` }
+    );
 
     await notifyGrantRecipients(contestId, grants);
     await notifyContestParticipants(contestId, contest.title, ranking);
@@ -508,16 +514,26 @@ const finalizeContest = async (contestId: string) => {
     return prisma.contestFinalization.findUnique({ where: { contestId } });
   } catch (error) {
     const message = getErrorMessage(error);
-    await prisma.$transaction([
-      prisma.contest.update({
-        where: { id: contestId },
-        data: { status: ContestStatus.FINALIZATION_FAILED },
-      }),
-      prisma.contestFinalization.update({
-        where: { contestId },
-        data: { status: ContestFinalizationStatus.FAILED, error: message },
-      }),
-    ]);
+    // If this bookkeeping is the thing that fails, the contest is left stuck in
+    // FINALIZING - so it retries on conflict, and a hard failure is logged
+    // rather than masking the error that actually broke finalization.
+    try {
+      await runWithWriteConflictRetry(
+        () => prisma.$transaction([
+          prisma.contest.update({
+            where: { id: contestId },
+            data: { status: ContestStatus.FINALIZATION_FAILED },
+          }),
+          prisma.contestFinalization.update({
+            where: { contestId },
+            data: { status: ContestFinalizationStatus.FAILED, error: message },
+          }),
+        ]),
+        { label: `contest ${contestId} finalization failure` }
+      );
+    } catch (statusError) {
+      console.error(`Could not mark contest ${contestId} as FINALIZATION_FAILED`, statusError);
+    }
     throw error;
   } finally {
     clearInterval(heartbeat);

@@ -178,7 +178,9 @@ export async function notifyTeamMatchStarted(
   teamId: string,
   matchId: string,
   rivalTeamName: string,
-  contestName: string
+  contestName: string,
+  rivalTeamId?: string,
+  contestId?: string
 ) {
   // Get all team members
   const teamMembers = await notificationService.getTeamMembers(teamId);
@@ -195,7 +197,9 @@ export async function notifyTeamMatchStarted(
         teamId,
         matchId,
         rivalTeamName,
+        rivalTeamId,
         contestName,
+        contestId,
       },
     });
   }
@@ -211,7 +215,11 @@ export async function notifyTeamMatchEnded(
   result: "WIN" | "LOSS" | "DRAW",
   teamScore: number,
   rivalScore: number,
-  prizes?: Record<string, any>
+  prizes?: Record<string, any>,
+  rivalTeamId?: string,
+  rivalTeamName?: string,
+  contestId?: string,
+  contestName?: string
 ) {
   const teamMembers = await notificationService.getTeamMembers(teamId);
   
@@ -227,7 +235,7 @@ export async function notifyTeamMatchEnded(
       event: NotificationEvent.TEAM_MATCH_ENDED,
       userId: member.memberId,
       title: `Team Match Ended - ${result}`,
-      message: resultMessage,
+      message: resultMessage + (contestName ? ` in "${contestName}".` : ""),
       type: NotificationType.VOTE,
       teamId,
       data: {
@@ -237,6 +245,10 @@ export async function notifyTeamMatchEnded(
         teamScore,
         rivalScore,
         prizes,
+        rivalTeamId,
+        rivalTeamName,
+        contestId,
+        contestName,
       },
     });
   }
@@ -248,7 +260,8 @@ export async function notifyTeamMatchEnded(
  */
 export async function notifyTeamMatchSearchTimeout(
   teamId: string,
-  contestName: string
+  contestName: string,
+  contestId?: string
 ) {
   const teamMembers = await notificationService.getTeamMembers(teamId);
 
@@ -263,6 +276,7 @@ export async function notifyTeamMatchSearchTimeout(
       data: {
         teamId,
         contestName,
+        contestId,
       },
     });
   }

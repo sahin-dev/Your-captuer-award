@@ -146,7 +146,12 @@ agenda.define("contest:watchEnded", async () => {
         where:{
             OR:[
                 {status:ContestStatus.ACTIVE, endDate:{lte:new Date()}},
-                {status:ContestStatus.FINALIZATION_FAILED}
+                {status:ContestStatus.FINALIZATION_FAILED},
+                // A contest whose finalizer died mid-run stays FINALIZING with
+                // nothing else scheduled to touch it. finalizeContest re-claims
+                // it only once its lease has gone stale, so a healthy run in
+                // progress is simply skipped here.
+                {status:ContestStatus.FINALIZING, endDate:{lte:new Date()}}
             ]
         },
         select:{id:true}

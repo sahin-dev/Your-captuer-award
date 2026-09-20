@@ -575,12 +575,16 @@ const startTeamMatch = async (
     teamMatch.id,
     otherTeam?.name ?? "the rival team",
     contest.title,
+    otherTeam?.id,
+    contestId,
   );
   await notificationOrchestrator.notifyTeamMatchStarted(
     otherTeamId,
     teamMatch.id,
     ownTeam?.name ?? "the rival team",
     contest.title,
+    ownTeam?.id,
+    contestId,
   );
 
   return teamMatch;
@@ -2072,12 +2076,24 @@ const closeMatchWithScores = async (
         ? "LOSS"
         : "DRAW";
 
+  // Context for the ended-notification links: rival team + contest.
+  const [rival1, rival2, endedContest] = await Promise.all([
+    prisma.team.findUnique({ where: { id: team2Id }, select: { id: true, name: true } }),
+    prisma.team.findUnique({ where: { id: team1Id }, select: { id: true, name: true } }),
+    prisma.contest.findUnique({ where: { id: match.contestId }, select: { id: true, title: true } }),
+  ]);
+
   await notificationOrchestrator.notifyTeamMatchEnded(
     team1Id,
     matchId,
     team1Result,
     resolvedTeam1Score,
     resolvedTeam2Score,
+    undefined,
+    rival2?.id,
+    rival2?.name ?? "the rival team",
+    endedContest?.id,
+    endedContest?.title,
   );
   await notificationOrchestrator.notifyTeamMatchEnded(
     team2Id,
@@ -2085,6 +2101,11 @@ const closeMatchWithScores = async (
     team2Result,
     resolvedTeam2Score,
     resolvedTeam1Score,
+    undefined,
+    rival1?.id,
+    rival1?.name ?? "the rival team",
+    endedContest?.id,
+    endedContest?.title,
   );
 
   await payoutMatchWinnerMemberRewards(
@@ -2185,14 +2206,23 @@ const closeActiveMatchesForContest = async (contestId: string) => {
   return closeTeamMatches(matches);
 };
 
+// A match whose contest has ended stops accruing votes (voting is gated on
+// endDate), so its score is already final and it is safe to record late.
+const STALE_MATCH_GRACE_MS = 60 * 60 * 1000;
+
 // Safety-net retry: picks up any team match still ACTIVE whose contest has already
 // been finalized (status COMPLETED), regardless of why it wasn't closed the first time
 // (e.g. closeActiveMatchesForContest failed or was never reached during finalization).
+// It also covers contests that ended but never reached COMPLETED - a finalization
+// stuck or failing would otherwise pin both teams to the match indefinitely.
 const retryStaleTeamMatches = async () => {
   const matches = await prisma.teamMatch.findMany({
     where: {
       status: MatchStatus.ACTIVE,
-      contest: { status: ContestStatus.COMPLETED },
+      OR: [
+        { contest: { status: ContestStatus.COMPLETED } },
+        { contest: { endDate: { lte: new Date(Date.now() - STALE_MATCH_GRACE_MS) } } },
+      ],
     },
   });
 
@@ -2584,12 +2614,16 @@ const attemptOpponentSearch = async (params: {
     match.id,
     rival.team.name,
     contest.title,
+    rival.team.id,
+    contest.id,
   );
   await notificationOrchestrator.notifyTeamMatchStarted(
     rival.team.id,
     match.id,
     team.name,
     contest.title,
+    teamId,
+    contest.id,
   );
 
   await chatService.sendSystemMessage(
@@ -3032,6 +3066,7 @@ const timeoutExpiredTeamMatchQueues = async () => {
         await notificationOrchestrator.notifyTeamMatchSearchTimeout(
           entry.teamId,
           entry.contest.title,
+          entry.contest.id,
         );
       }
       timedOutCount += 1;

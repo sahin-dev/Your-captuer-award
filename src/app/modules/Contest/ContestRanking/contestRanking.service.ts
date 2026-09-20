@@ -1,6 +1,7 @@
 import { ContestParticipantStatus, ContestRankingScope } from "../../../../prismaClient";
-import type { Prisma, YCLevel } from "../../../../prismaClient";
+import type { YCLevel } from "../../../../prismaClient";
 import prisma from "../../../../shared/prisma";
+import { runWithWriteConflictRetry } from "../../../../shared/transactionRetry";
 import { ycLevels } from "../../Awards/award.definitions";
 import { contestRuleEngine } from "../ContestRules/contestRule.engine";
 import { LevelRequirementValue } from "../ContestRules/contestRule.definitions";
@@ -8,6 +9,9 @@ import { LevelRequirementValue } from "../ContestRules/contestRule.definitions";
 export const CONTEST_SCORING_VERSION = 2;
 const UPDATE_BATCH_SIZE = 25;
 
+// Only ever used for writes that run on their own connection. Fanning queries
+// out inside an interactive transaction shares one MongoDB session, which
+// makes the write order - and therefore the conflict window - arbitrary.
 const updateInBatches = async <T>(items: T[], update: (item: T) => Promise<unknown>, batchSize = UPDATE_BATCH_SIZE) => {
   for (let index = 0; index < items.length; index += batchSize) {
     const batch = items.slice(index, index + batchSize);
@@ -291,9 +295,7 @@ const buildContestRanking = async (
   return build;
 };
 
-const persistContestRanking = async (tx: Prisma.TransactionClient, ranking: ContestRanking) => {
-  await tx.contestRankingResult.deleteMany({ where: { contestId: ranking.contestId } });
-
+const persistContestRanking = async (ranking: ContestRanking) => {
   const photoResults = ranking.photos.map((photo) => ({
     resultKey: `${ranking.contestId}:PHOTO:${photo.photoId}`,
     contestId: ranking.contestId,
@@ -317,23 +319,46 @@ const persistContestRanking = async (tx: Prisma.TransactionClient, ranking: Cont
     scoringVersion: ranking.scoringVersion,
   }));
 
-  if (photoResults.length + photographerResults.length > 0) {
-    await tx.contestRankingResult.createMany({ data: [...photoResults, ...photographerResults] });
-  }
+  // Only the snapshot swap has to be atomic - readers must never see a
+  // half-replaced leaderboard. Keeping it to this one collection keeps the
+  // transaction short and out of the way of anything a live contest writes.
+  await runWithWriteConflictRetry(
+    () => prisma.$transaction(
+      async (tx) => {
+        await tx.contestRankingResult.deleteMany({ where: { contestId: ranking.contestId } });
+        if (photoResults.length + photographerResults.length > 0) {
+          await tx.contestRankingResult.createMany({ data: [...photoResults, ...photographerResults] });
+        }
+      },
+      { timeout: 30000, maxWait: 30000 }
+    ),
+    { label: `contest ranking snapshot ${ranking.contestId}` }
+  );
 
-  await updateInBatches(ranking.photographers, async (photographer) => {
-    await tx.contestParticipant.update({
-      where: { id: photographer.participantId },
-      data: { rank: photographer.rank, level: photographer.level },
-    });
-  });
+  // rank/level on ContestParticipant and ContestPhoto are denormalized copies
+  // of the snapshot above, so they deliberately stay outside the transaction.
+  // Post-vote level evaluation, exposure decay and promotion sweeps write the
+  // same documents; inside a transaction any one of them aborts the entire
+  // finalization with a write conflict, while these single-document writes
+  // just retry. updateMany (not update) so a participant or photo removed
+  // between the scan and the write is a no-op instead of a P2025 crash.
+  await updateInBatches(ranking.photographers, (photographer) =>
+    runWithWriteConflictRetry(
+      () => prisma.contestParticipant.updateMany({
+        where: { id: photographer.participantId },
+        data: { rank: photographer.rank, level: photographer.level },
+      }),
+      { label: `participant rank ${photographer.participantId}` }
+    ));
 
-  await updateInBatches(ranking.photos, async (photo) => {
-    await tx.contestPhoto.update({
-      where: { id: photo.photoId },
-      data: { rank: photo.rank },
-    });
-  });
+  await updateInBatches(ranking.photos, (photo) =>
+    runWithWriteConflictRetry(
+      () => prisma.contestPhoto.updateMany({
+        where: { id: photo.photoId },
+        data: { rank: photo.rank },
+      }),
+      { label: `photo rank ${photo.photoId}` }
+    ));
 };
 
 const getPersistedContestRanking = async (contestId: string, scope: ContestRankingScope) => {
