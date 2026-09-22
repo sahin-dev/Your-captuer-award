@@ -50,7 +50,7 @@ const findTeamUsers = async (userIds: string[]) => {
   const uniqueIds = Array.from(new Set(userIds));
   const users = uniqueIds.length
     ? await prisma.user.findMany({
-        where: { id: { in: uniqueIds } },
+        where: { id: { in: uniqueIds }, isDeleted: false },
         select: TEAM_USER_SELECT,
       })
     : [];
@@ -70,10 +70,15 @@ const findTeamMembersWithUser = async (
   const members = await prisma.teamMember.findMany(args);
   const userById = await findTeamUsers(members.map((member) => member.memberId));
 
-  return members.map((member) => ({
-    ...member,
-    member: userById.get(member.memberId) ?? null,
-  }));
+  return members.flatMap((membership) => {
+    const member = userById.get(membership.memberId);
+
+    // MongoDB does not enforce relations. A membership may therefore point to
+    // a user that was deleted outside Prisma, and soft-deleted users must not
+    // remain visible in a team's roster. Never expose `member: null` to API
+    // consumers, which expect every returned membership to contain a user.
+    return member ? [{ ...membership, member }] : [];
+  });
 };
 
 //create a team
@@ -279,11 +284,8 @@ const getMyTeamDetails = async (userId: string) => {
     throw new ApiError(httpstatus.NOT_FOUND, "team not found");
   }
 
-  const memberCount = await prisma.teamMember.count({
-    where: { teamId: team?.id },
-  });
-
   const memberDetails = await getMembers(team.id);
+  const memberCount = memberDetails.length;
 
   return { team, members: memberDetails, memberCount };
 };
@@ -578,18 +580,17 @@ const getAllTeamMember = async (
     page: currentPage,
   } = paginationHelper.calculatePagination({ page, limit });
 
-  const [members, total] = await Promise.all([
-    findTeamMembersWithUser({
-      where: { teamId },
-      skip,
-      take,
-      orderBy: [{ createdAt: "asc" }, { id: "asc" }],
-    }),
-    prisma.teamMember.count({ where: { teamId } }),
-  ]);
+  // Resolve users before paginating so orphaned membership rows cannot create
+  // short/empty pages or inflate the total returned to clients.
+  const members = await findTeamMembersWithUser({
+    where: { teamId },
+    orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+  });
+  const total = members.length;
+  const paginatedMembers = members.slice(skip, skip + take);
 
   return {
-    data: members,
+    data: paginatedMembers,
     meta: paginationHelper.getPaginationMetaData(currentPage, take, total),
   };
 };
