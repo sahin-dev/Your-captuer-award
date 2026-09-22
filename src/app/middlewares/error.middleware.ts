@@ -79,11 +79,13 @@ const ErrorHandler = (
   }
   // handle prisma client validation errors
   else if (err instanceof Prisma.PrismaClientValidationError) {
+    console.error(`[PrismaClientValidationError] ${req.method} ${req.originalUrl}:`, err.message);
     statusCode = httpStatus.BAD_REQUEST;
     message = parsePrismaValidationError(err.message);
     errorSources.push("Prisma Client Validation Error");
   }
   else if (err instanceof Prisma.PrismaClientKnownRequestError) {
+    console.error(`[PrismaClientKnownRequestError ${err.code}] ${req.method} ${req.originalUrl}:`, err.message, err.meta);
     if (err.code === "P2028") {
       statusCode = httpStatus.SERVICE_UNAVAILABLE;
       message = "The photo submission took too long to complete. Please try again";
@@ -98,6 +100,7 @@ const ErrorHandler = (
   }
   // Prisma Client Initialization Error
   else if (err instanceof Prisma.PrismaClientInitializationError) {
+    console.error(`[PrismaClientInitializationError] ${req.method} ${req.originalUrl}:`, err.message);
     statusCode = httpStatus.SERVICE_UNAVAILABLE;
     message =
       "Failed to initialize Prisma Client. Check your database connection or Prisma configuration.";
@@ -105,6 +108,7 @@ const ErrorHandler = (
   }
   // Prisma Client Rust Panic Error
   else if (err instanceof Prisma.PrismaClientRustPanicError) {
+    console.error(`[PrismaClientRustPanicError] ${req.method} ${req.originalUrl}:`, err.message);
     statusCode = httpStatus.INTERNAL_SERVER_ERROR;
     message =
       "A critical error occurred in the Prisma engine. Please try again later.";
@@ -112,6 +116,7 @@ const ErrorHandler = (
   }
   // Prisma Client Unknown Request Error
   else if (err instanceof Prisma.PrismaClientUnknownRequestError) {
+    console.error(`[PrismaClientUnknownRequestError] ${req.method} ${req.originalUrl}:`, err.message);
     statusCode = httpStatus.INTERNAL_SERVER_ERROR;
     message = "An unknown error occurred while processing the request.";
     errorSources.push("Prisma Client Unknown Request Error");

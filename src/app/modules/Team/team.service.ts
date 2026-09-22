@@ -150,7 +150,6 @@ export const getTeams = async (
   const [teams, total] = await Promise.all([
     prisma.team.findMany({
       where,
-      include: { creator: true, members: { include: { member: true } } },
       skip,
       take,
       orderBy: [{ createdAt: "desc" }, { id: "desc" }],
@@ -158,8 +157,48 @@ export const getTeams = async (
     prisma.team.count({ where }),
   ]);
 
+  const members = teams.length
+    ? await prisma.teamMember.findMany({
+        where: { teamId: { in: teams.map((team) => team.id) } },
+      })
+    : [];
+
+  // Users are resolved separately rather than through `include`. MongoDB has no
+  // referential integrity, so a team or membership can outlive the user it
+  // points at, and creator/member are required relations - one dangling id made
+  // the whole page fail with "Field creator is required to return data, got null
+  // instead" instead of just dropping that one name.
+  const userIds = Array.from(
+    new Set([
+      ...teams.map((team) => team.creatorId),
+      ...members.map((member) => member.memberId),
+    ]),
+  );
+  const users = userIds.length
+    ? await prisma.user.findMany({
+        where: { id: { in: userIds } },
+        omit: { password: true, accessToken: true },
+      })
+    : [];
+  const userById = new Map(users.map((user) => [user.id, user]));
+
+  const membersWithUser = members.map((member) => ({
+    ...member,
+    member: userById.get(member.memberId) ?? null,
+  }));
+  const membersByTeamId = new Map<string, typeof membersWithUser>();
+  membersWithUser.forEach((member) => {
+    const teamMembers = membersByTeamId.get(member.teamId) ?? [];
+    teamMembers.push(member);
+    membersByTeamId.set(member.teamId, teamMembers);
+  });
+
   return {
-    data: teams,
+    data: teams.map((team) => ({
+      ...team,
+      creator: userById.get(team.creatorId) ?? null,
+      members: membersByTeamId.get(team.id) ?? [],
+    })),
     meta: paginationHelper.getPaginationMetaData(currentPage, take, total),
   };
 };
