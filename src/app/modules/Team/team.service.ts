@@ -48,14 +48,23 @@ const TEAM_USER_SELECT = {
 
 const findTeamUsers = async (userIds: string[]) => {
   const uniqueIds = Array.from(new Set(userIds));
-  const users = uniqueIds.length
-    ? await prisma.user.findMany({
-        where: { id: { in: uniqueIds }, isDeleted: false },
-        select: TEAM_USER_SELECT,
-      })
-    : [];
+  if (!uniqueIds.length) return new Map();
 
-  return new Map(users.map((user) => [user.id, user]));
+  const [users, deletedUsers] = await Promise.all([
+    prisma.user.findMany({
+      where: { id: { in: uniqueIds } },
+      select: TEAM_USER_SELECT,
+    }),
+    prisma.user.findMany({
+      where: { id: { in: uniqueIds }, isDeleted: true },
+      select: { id: true },
+    }),
+  ]);
+  const deletedUserIds = new Set(deletedUsers.map((user) => user.id));
+
+  return new Map(
+    users.filter((user) => !deletedUserIds.has(user.id)).map((user) => [user.id, user]),
+  );
 };
 
 // Loads memberships and attaches each one's user. The user is resolved in a
@@ -74,9 +83,11 @@ const findTeamMembersWithUser = async (
     const member = userById.get(membership.memberId);
 
     // MongoDB does not enforce relations. A membership may therefore point to
-    // a user that was deleted outside Prisma, and soft-deleted users must not
-    // remain visible in a team's roster. Never expose `member: null` to API
-    // consumers, which expect every returned membership to contain a user.
+    // a user that was deleted outside Prisma, and explicitly soft-deleted
+    // users must not remain visible in a team's roster. Legacy users without
+    // an `isDeleted` field are valid and are included by findTeamUsers. Never
+    // expose `member: null` to API consumers, which expect every returned
+    // membership to contain a user.
     return member ? [{ ...membership, member }] : [];
   });
 };
