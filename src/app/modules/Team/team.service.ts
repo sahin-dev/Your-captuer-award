@@ -36,6 +36,46 @@ import { userService } from "../User/user.service";
 import { paginationHelper } from "../../../helpers/paginationHelper";
 import { userStoreService } from "../User/UserStore/userStore.service";
 
+// The public slice of a user shown next to a team or a membership.
+const TEAM_USER_SELECT = {
+  id: true,
+  avatar: true,
+  fullName: true,
+  firstName: true,
+  lastName: true,
+  location: true,
+} as const;
+
+const findTeamUsers = async (userIds: string[]) => {
+  const uniqueIds = Array.from(new Set(userIds));
+  const users = uniqueIds.length
+    ? await prisma.user.findMany({
+        where: { id: { in: uniqueIds } },
+        select: TEAM_USER_SELECT,
+      })
+    : [];
+
+  return new Map(users.map((user) => [user.id, user]));
+};
+
+// Loads memberships and attaches each one's user. The user is resolved in a
+// separate query rather than through `include`: MongoDB has no referential
+// integrity, so a membership can outlive the user it points at, and `member` is
+// a required relation - one dangling id made the whole query fail with "Field
+// member is required to return data, got `null` instead" rather than dropping a
+// single name.
+const findTeamMembersWithUser = async (
+  args: Omit<Prisma.TeamMemberFindManyArgs, "include" | "select">,
+) => {
+  const members = await prisma.teamMember.findMany(args);
+  const userById = await findTeamUsers(members.map((member) => member.memberId));
+
+  return members.map((member) => ({
+    ...member,
+    member: userById.get(member.memberId) ?? null,
+  }));
+};
+
 //create a team
 
 export const createTeam = async (
@@ -214,40 +254,16 @@ const getTeam = async (teamId: string) => {
 
 //get team details
 export const getTeamDetails = async (teamId: string) => {
-  const team = await prisma.team.findUnique({
-    where: { id: teamId },
-    include: {
-      creator: {
-        select: {
-          id: true,
-          avatar: true,
-          fullName: true,
-          firstName: true,
-          lastName: true,
-        },
-      },
-      members: {
-        include: {
-          member: {
-            select: {
-              id: true,
-              avatar: true,
-              fullName: true,
-              firstName: true,
-              lastName: true,
-              location: true,
-            },
-          },
-        },
-      },
-    },
-  });
+  const team = await prisma.team.findUnique({ where: { id: teamId } });
 
   if (!team) {
     throw new ApiError(httpstatus.NOT_FOUND, "Team not found");
   }
 
-  return team;
+  const members = await findTeamMembersWithUser({ where: { teamId } });
+  const userById = await findTeamUsers([team.creatorId]);
+
+  return { ...team, creator: userById.get(team.creatorId) ?? null, members };
 };
 
 const getMyTeamDetails = async (userId: string) => {
@@ -563,19 +579,8 @@ const getAllTeamMember = async (
   } = paginationHelper.calculatePagination({ page, limit });
 
   const [members, total] = await Promise.all([
-    prisma.teamMember.findMany({
+    findTeamMembersWithUser({
       where: { teamId },
-      include: {
-        member: {
-          select: {
-            id: true,
-            avatar: true,
-            firstName: true,
-            lastName: true,
-            fullName: true,
-          },
-        },
-      },
       skip,
       take,
       orderBy: [{ createdAt: "asc" }, { id: "asc" }],
@@ -1011,21 +1016,7 @@ const getMyTeamMatches = async (userId: string) => {
 };
 
 const getMembers = async (teamId: string, contestId?: string) => {
-  const members = await prisma.teamMember.findMany({
-    where: { teamId },
-    include: {
-      member: {
-        select: {
-          id: true,
-          avatar: true,
-          fullName: true,
-          firstName: true,
-          lastName: true,
-          location: true,
-        },
-      },
-    },
-  });
+  const members = await findTeamMembersWithUser({ where: { teamId } });
   let mappedMember;
   if (!contestId) {
     mappedMember = members.map(async (member) => {
@@ -1068,20 +1059,8 @@ type MatchMemberPhoto = {
 };
 
 const getEligibleContestMembers = async (teamId: string, contestId: string) => {
-  const members = await prisma.teamMember.findMany({
+  const members = await findTeamMembersWithUser({
     where: { teamId, status: "ACTIVE" as any },
-    include: {
-      member: {
-        select: {
-          id: true,
-          avatar: true,
-          fullName: true,
-          firstName: true,
-          lastName: true,
-          location: true,
-        },
-      },
-    },
   });
 
   if (!members.length) {
@@ -1198,20 +1177,8 @@ const getSelectedContestMembers = async (
     );
   }
 
-  const selectedMembers = await prisma.teamMember.findMany({
+  const selectedMembers = await findTeamMembersWithUser({
     where: { teamId, id: { in: normalizedMemberIds }, status: "ACTIVE" as any },
-    include: {
-      member: {
-        select: {
-          id: true,
-          avatar: true,
-          fullName: true,
-          firstName: true,
-          lastName: true,
-          location: true,
-        },
-      },
-    },
   });
 
   if (selectedMembers.length !== normalizedMemberIds.length) {
