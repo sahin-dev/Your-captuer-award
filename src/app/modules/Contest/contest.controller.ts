@@ -215,10 +215,14 @@ const deleteContest = catchAsync(async (req:any, res:Response)=>{
 })
 
 const getContestsByStatus = catchAsync (async (req:Request, res:Response) => {
-    const {status} = req.query as {status:ContestStatus}
+    const {status, page = "1", limit = "20"} = req.query as {
+        status:ContestStatus,
+        page?:string,
+        limit?:string
+    }
     const userId = req.user.id
 
-    const contests = await contestService.getContestsByStatus(userId,status)
+    const contests = await contestService.getContestsByStatus(userId, status, Number(page) || 1, Number(limit) || 20)
 
     sendResponse(res, {
         success:true,

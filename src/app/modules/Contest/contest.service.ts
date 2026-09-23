@@ -1410,83 +1410,73 @@ const enrichContestListDetails = async (contests:any[]) => {
 }
 
 //Search contest by contest status
-const getContestsByStatus = async (userId:string,status: ContestStatus) => {
+const getContestsByStatus = async (userId:string, status:ContestStatus, page:number = 1, limit:number = 20) => {
     if(status && !Object.values(ContestStatus).includes(status)){
         throw new ApiError(httpstatus.BAD_REQUEST, "Invalid contest status")
     }
 
-    if(status === ContestStatus.COMPLETED){
+    const {skip, limit:paginationLimit, page:currentPage} = paginationHelper.calculatePagination({page, limit})
+    const paginated = <T>(contests:T[], total:number) => ({
+        contests,
+        total,
+        page:currentPage,
+        limit:paginationLimit,
+        meta:paginationHelper.getPaginationMetaData(currentPage, paginationLimit, total)
+    })
 
-        const completedContests =  await getMyCompletedContest(userId)
+    if(status === ContestStatus.COMPLETED){
+        const {contests:completedContests, total} = await getMyCompletedContest(userId, skip, paginationLimit)
 
         const mappedContest = await Promise.all(completedContests.map(async contest => {
-            // const achievements = await achievementService.getMyAchievementsByContest(userId, contest.id)
             const rank = (await getParticipantLevelData(contest.id, userId)).currentLevel
-        
+
             return {...contest, rank}
         }))
 
-       
-        return mappedContest
+        return paginated(mappedContest, total)
     }
 
-   
+    // Every order ends on id so pages never overlap or skip contests that
+    // share the same start/end date.
+    const {where, orderBy} = ((): {where:Prisma.ContestWhereInput; orderBy:Prisma.ContestOrderByWithRelationInput[]} => {
+        switch(status){
+            case ContestStatus.ACTIVE:
+                // Running contests are ranked by urgency - the one closing soonest
+                // sits first, matching the "time left" countdown on the open cards.
+                return {
+                    where:{status, participants:{none:{userId}}, ...notDeleted},
+                    orderBy:[{endDate:"asc"}, {id:"asc"}]
+                }
+            case ContestStatus.CLOSED:
+                return {
+                    where:{status:ContestStatus.COMPLETED, participants:{none:{userId}}, ...notDeleted},
+                    orderBy:[{endDate:"desc"}, {id:"desc"}]
+                }
+            case ContestStatus.UPCOMING:
+                return {
+                    where:{status, participants:{none:{userId}}, ...notDeleted},
+                    orderBy:[{startDate:"asc"}, {id:"asc"}]
+                }
+            default:
+                return {
+                    where:{status, ...notDeleted},
+                    orderBy:[{startDate:"desc"}, {id:"desc"}]
+                }
+        }
+    })()
 
-    // if(status === ContestStatus.CLOSED){
-    //     const closedContests = await prisma.contest.findMany({where:{participants:{none:{userId}}}})
-
-    //     closedContests.map( async contest => {
-    //         const winners = await getContestWinners(contest.id)
-
-    //         return {...contest, winners}
-    //     })
-
-        
-    // }
-
-    if(status === ContestStatus.ACTIVE){
-
-        const contests = await prisma.contest.findMany({
-            where:{status, participants:{none:{userId}}, ...notDeleted},
+    const [contests, total] = await Promise.all([
+        prisma.contest.findMany({
+            where,
             include: { creator: contestListCreatorInclude, bannerUploader: contestBannerUploaderInclude },
-            // Running contests are ranked by urgency - the one closing soonest
-            // sits first, matching the "time left" countdown on the open cards.
-            orderBy:[{endDate:"asc"}, {id:"asc"}]
-        });
+            orderBy,
+            skip,
+            take:paginationLimit
+        }),
+        prisma.contest.count({where})
+    ])
 
-        return enrichContestListDetails(contests);
-    }
-
-    if(status === ContestStatus.CLOSED){
-
-        const contests = await prisma.contest.findMany({
-            where:{status: ContestStatus.COMPLETED, participants:{none:{userId}}, ...notDeleted},
-            include: { creator: contestListCreatorInclude, bannerUploader: contestBannerUploaderInclude },
-            orderBy:{endDate:"desc"}
-        });
-
-        return enrichContestListDetails(contests);
-    }
-
-    if(status === ContestStatus.UPCOMING){
-
-        const contests = await prisma.contest.findMany({
-            where:{status, participants:{none:{userId}}, ...notDeleted},
-            include: { creator: contestListCreatorInclude, bannerUploader: contestBannerUploaderInclude },
-            orderBy:{startDate:"asc"}
-        });
-
-        return enrichContestListDetails(contests);
-    }
-
-
-    const contests = await prisma.contest.findMany({
-        where:{status, ...notDeleted},
-        include: { creator: contestListCreatorInclude, bannerUploader: contestBannerUploaderInclude },
-        orderBy:{startDate:"desc"}
-    });
-
-    return enrichContestListDetails(contests);
+    return paginated(await enrichContestListDetails(contests), total)
 };
 
 //Get all uploads of a user
@@ -1683,7 +1673,7 @@ const getUpcomingContest = async () => {
 
 //Get my contests which are completed
 
-const getMyCompletedContest = async (userId:string) => {
+const getMyCompletedContest = async (userId:string, skip?:number, take?:number) => {
 
     if (!userId){
         throw new ApiError(httpstatus.BAD_REQUEST, "User id is not provided")
@@ -1694,7 +1684,13 @@ const getMyCompletedContest = async (userId:string) => {
         throw new ApiError(httpstatus.NOT_FOUND, "User not found")
     }
 
-    const myParticipatedContest = await prisma.contest.findMany({where:{status:{in:completedContestStatuses}, participants:{some:{userId}}, ...notDeleted}, orderBy:{endDate:"desc"}})
+    // Paginate before the per-contest detail/photo/achievement loads below -
+    // those run several queries per contest.
+    const where:Prisma.ContestWhereInput = {status:{in:completedContestStatuses}, participants:{some:{userId}}, ...notDeleted}
+    const [myParticipatedContest, total] = await Promise.all([
+        prisma.contest.findMany({where, orderBy:[{endDate:"desc"}, {id:"desc"}], skip, take}),
+        prisma.contest.count({where})
+    ])
 
     const mappetdCompletedContest =await Promise.all( myParticipatedContest.map(async contest => {
         const details = await getContestById(contest.id)
@@ -1712,7 +1708,7 @@ const getMyCompletedContest = async (userId:string) => {
 
     // const myCompletedContests = await prisma.contest.findMany({where:{status:ContestStatus.COMPLETED, participants:{some:{userId}}},include:{_count:{select:{votes:true}}}})
     
-    return mappetdCompletedContest
+    return {contests:mappetdCompletedContest, total}
 }
 
 
