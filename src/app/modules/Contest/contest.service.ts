@@ -1427,13 +1427,7 @@ const getContestsByStatus = async (userId:string, status:ContestStatus, page:num
     if(status === ContestStatus.COMPLETED){
         const {contests:completedContests, total} = await getMyCompletedContest(userId, skip, paginationLimit)
 
-        const mappedContest = await Promise.all(completedContests.map(async contest => {
-            const rank = (await getParticipantLevelData(contest.id, userId)).currentLevel
-
-            return {...contest, rank}
-        }))
-
-        return paginated(mappedContest, total)
+        return paginated(completedContests, total)
     }
 
     // Every order ends on id so pages never overlap or skip contests that
@@ -1673,6 +1667,24 @@ const getUpcomingContest = async () => {
 
 //Get my contests which are completed
 
+const COMPLETED_CARD_TTL_SECONDS = 60 * 60
+
+const loadCompletedContestCard = async (contestId:string, userId:string) => {
+    const [details, participantPhotos, achievements, levelData] = await Promise.all([
+        getContestById(contestId),
+        getContestUploadsByUserId(contestId, userId),
+        achievementService.getMyAchievementsByContest(userId, contestId),
+        getParticipantLevelData(contestId, userId)
+    ])
+    const photos = await Promise.all(participantPhotos.map(async photo => ({
+        ...photo,
+        voteCount:await voteService.getVoteCount(photo.id)
+    })))
+    const totalVotes = photos.reduce((pre, photo) => photo.voteCount + pre, 0)
+
+    return {...details, photos, totalVotes, achievements, rank:levelData.currentLevel}
+}
+
 const getMyCompletedContest = async (userId:string, skip?:number, take?:number) => {
 
     if (!userId){
@@ -1692,22 +1704,21 @@ const getMyCompletedContest = async (userId:string, skip?:number, take?:number) 
         prisma.contest.count({where})
     ])
 
-    const mappetdCompletedContest =await Promise.all( myParticipatedContest.map(async contest => {
-        const details = await getContestById(contest.id)
-        const participantPhotos = await getContestUploadsByUserId(contest.id, userId)
-        const photos = await Promise.all(participantPhotos.map(async photo => ({
-            ...photo,
-            voteCount:await voteService.getVoteCount(photo.id)
-        })))
-        const achievements = await achievementService.getMyAchievementsByContest(userId, contest.id)
-        const totalVotes =  photos.reduce((pre, photo) => photo.voteCount + pre, 0)
-        return {...details, photos, totalVotes, achievements}
-    }))
+    // A finished contest's card is frozen - votes are rejected once it leaves
+    // the active states and photos cannot be removed after finalization - so
+    // the whole per-user card is cached. Anything that can still change it
+    // (finalization, awards, selections, achievements) bumps the contest's
+    // cache version.
+    const cardsByContestId = await contestCache.getMany(
+        "completedCard",
+        myParticipatedContest,
+        async (contests) => new Map(await Promise.all(
+            contests.map(async contest => [contest.id, await loadCompletedContestCard(contest.id, userId)] as const)
+        )),
+        {scope:userId, ttlSeconds:COMPLETED_CARD_TTL_SECONDS}
+    )
+    const mappetdCompletedContest = myParticipatedContest.map(contest => cardsByContestId.get(contest.id)!)
 
- 
-
-    // const myCompletedContests = await prisma.contest.findMany({where:{status:ContestStatus.COMPLETED, participants:{some:{userId}}},include:{_count:{select:{votes:true}}}})
-    
     return {contests:mappetdCompletedContest, total}
 }
 

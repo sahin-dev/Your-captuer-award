@@ -20,18 +20,23 @@ import { redisClient } from "../../../shared/redis";
 // Every operation fails open: if Redis is down or errors, callers get a fresh
 // database load and the request still succeeds.
 
-export type ContestCachePart = "detail" | "list" | "winners";
+export type ContestCachePart = "detail" | "list" | "winners" | "completedCard";
 type CacheableContest = { id: string; status: string };
+type CacheOptions = {
+    // Extra key segment for per-viewer entries, e.g. a user id.
+    scope?: string;
+    ttlSeconds?: number;
+};
 
 const DATA_TTL_SECONDS = 10 * 60;
-// Must outlive DATA_TTL_SECONDS: if a version key expired while data written
+// Must outlive every data TTL: if a version key expired while data written
 // under a later version were still alive, the counter would restart and could
 // collide with those entries.
 const VERSION_TTL_SECONDS = 24 * 60 * 60;
 
 const versionKey = (contestId: string) => `contest:${contestId}:ver`;
-const dataKey = (part: ContestCachePart, contest: CacheableContest, version: string) =>
-    `contest:${contest.id}:v${version}:${contest.status}:${part}`;
+const dataKey = (part: ContestCachePart, contest: CacheableContest, version: string, scope?: string) =>
+    `contest:${contest.id}:v${version}:${contest.status}:${part}${scope ? `:${scope}` : ""}`;
 
 // JSON turns Dates into ISO strings; turn them back so cached values have the
 // same shape as freshly loaded Prisma rows.
@@ -42,8 +47,10 @@ const reviveDates = (_key: string, value: unknown) =>
 const getMany = async <T>(
     part: ContestCachePart,
     contests: CacheableContest[],
-    load: (contests: CacheableContest[]) => Promise<Map<string, T>>
+    load: (contests: CacheableContest[]) => Promise<Map<string, T>>,
+    options: CacheOptions = {}
 ): Promise<Map<string, T>> => {
+    const ttlSeconds = Math.min(options.ttlSeconds ?? DATA_TTL_SECONDS, VERSION_TTL_SECONDS);
     if (contests.length === 0) {
         return new Map();
     }
@@ -55,7 +62,7 @@ const getMany = async <T>(
     let cached: (string | null)[];
     try {
         const versions = await redisClient.mGet(contests.map((contest) => versionKey(contest.id)));
-        keys = contests.map((contest, index) => dataKey(part, contest, versions[index] ?? "0"));
+        keys = contests.map((contest, index) => dataKey(part, contest, versions[index] ?? "0", options.scope));
         cached = await redisClient.mGet(keys);
     } catch (error) {
         console.error(`[ContestCache] read failed for ${part}:`, error);
@@ -82,7 +89,7 @@ const getMany = async <T>(
             result.set(contestId, value);
             const key = missKeys.get(contestId);
             if (key) {
-                write.setEx(key, DATA_TTL_SECONDS, JSON.stringify(value));
+                write.setEx(key, ttlSeconds, JSON.stringify(value));
             }
         });
         write.exec().catch((error) => console.error(`[ContestCache] write failed for ${part}:`, error));
@@ -94,9 +101,10 @@ const getMany = async <T>(
 const getOne = async <T>(
     part: ContestCachePart,
     contest: CacheableContest,
-    load: (contest: CacheableContest) => Promise<T>
+    load: (contest: CacheableContest) => Promise<T>,
+    options: CacheOptions = {}
 ): Promise<T> => {
-    const result = await getMany(part, [contest], async ([only]) => new Map([[only.id, await load(only)]]));
+    const result = await getMany(part, [contest], async ([only]) => new Map([[only.id, await load(only)]]), options);
     return result.get(contest.id) as T;
 };
 

@@ -293,7 +293,7 @@ const upsertContestLevelAchievement = async (participantId:string, contestId:str
         })
     }
 
-    return prisma.$transaction(async tx => {
+    const achievement = await prisma.$transaction(async tx => {
         await tx.contestAchievement.deleteMany({
             where:{
                 participantId,
@@ -316,6 +316,9 @@ const upsertContestLevelAchievement = async (participantId:string, contestId:str
             }
         })
     })
+    await contestCache.invalidateContest(contestId)
+
+    return achievement
 }
 
 //get the contest achievements for a specific user
