@@ -4,8 +4,9 @@ import app from "./app";
 import agenda, { startAgenda } from "./app/modules/Agenda";
 import prisma from "./shared/prisma";
 import WebSocketHandler from "./socket";
-const dns = require("dns");
-dns.setServers(["8.8.8.8", "8.8.4.4"]);
+import { connectRedis, disconnectRedis } from "./helpers/websocketSetUp";
+import dns from 'dns'
+
 
 let server: Server | undefined;
 let isShuttingDown = false;
@@ -81,7 +82,9 @@ async function startServer() {
   await assertTransactionsAreSupported();
   // Contest lifecycle correctness depends on Agenda. Do not accept traffic in
   // a half-started state where contests never open/close or finalize.
-  await startAgenda();
+  dns.setServers(["8.8.8.8", "8.8.4.4"]);
+  // await startAgenda();
+  await connectRedis();
 
   server = app.listen(PORT, () => {
     console.log("Server is listiening on port ", PORT);
@@ -109,6 +112,10 @@ async function shutdown(exitCode = 0) {
 
   await agenda.stop().catch((error) => {
     console.error("Failed to stop agenda:", error);
+  });
+
+  await disconnectRedis().catch((error) => {
+    console.error("Failed to disconnect redis:", error);
   });
 
   await prisma.$disconnect().catch((error) => {

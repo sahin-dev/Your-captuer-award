@@ -4,10 +4,36 @@ import config from "../config";
 import { jwtHelpers } from "./jwt";
 import prisma from "../shared/prisma";
 import { chatService } from "../app/modules/Chat/chat.service";
+import {createClient} from 'redis'
+import {createAdapter} from '@socket.io/redis-adapter'
+
 
 interface AuthenticatedSocket extends Socket {
   userId?: string;
   teamIds?: Set<string>;
+}
+
+const pubClient = createClient({ url: `redis://${config.redis.host}:${config.redis.port}` });
+const subClient = createClient({ url: `redis://${config.redis.host}:${config.redis.port}` });
+const adapter = createAdapter(pubClient, subClient, );
+
+// node-redis emits "error" on connection problems; without a listener the
+// process crashes, so log it and let the client's built-in reconnect retry.
+pubClient.on("error", (error) => console.error("[Redis pub] error:", error));
+subClient.on("error", (error) => console.error("[Redis sub] error:", error));
+
+// node-redis v4+ does not connect on creation. Any emit through the adapter
+// before this resolves fails with ClientClosedError, so await it before
+// attaching Socket.IO.
+export async function connectRedis() {
+  await Promise.all([pubClient.connect(), subClient.connect()]);
+  console.log("[Redis] pub/sub clients connected");
+}
+
+export async function disconnectRedis() {
+  await Promise.all(
+    [pubClient, subClient].filter((client) => client.isOpen).map((client) => client.quit())
+  );
 }
 
 type Message = { event: string; token?: string; teamId?: string; message?: string };
@@ -27,7 +53,7 @@ let ioInstance: SocketIOServer | null = null;
 
 export function setupWebSocket(server: HTTPServer) {
   const io = new SocketIOServer(server, {
-    
+    adapter: adapter,
     cors: {
       origin: "*",
       methods: ["GET", "POST"],

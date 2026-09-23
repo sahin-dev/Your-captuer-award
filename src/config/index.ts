@@ -48,6 +48,10 @@ const config =  {
         pass: process.env.SMTP_PASS || process.env.APP_PASS,
         from: process.env.SMTP_FROM || "no-reply@yourcaptureawards.org",
     },
+    redis:{
+        host: process.env.REDIS_HOST || "localhost",
+        port: Number(process.env.REDIS_PORT || 6379)
+    },
     cloud:[{
         provider:"digitalOcean",
         endpoint: process.env.DO_SPACE_ENDPOINT,
