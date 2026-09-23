@@ -3,13 +3,13 @@ module.exports = {
     {
       name: "api",
       script: "./dist/server.js",
-      exec_mode: "fork",
+      exec_mode: "cluster",
        // Allocates 4GB heap size to the V8 engine
       node_args: "--max-old-space-size=4096",
       
       // Restarts the app gracefully at 4.2GB to prevent hard crashes
       max_memory_restart: "4200M",
-      instances: 1,
+      instances: "max",
       autorestart: true,
       watch: false,
 

@@ -27,6 +27,7 @@ let ioInstance: SocketIOServer | null = null;
 
 export function setupWebSocket(server: HTTPServer) {
   const io = new SocketIOServer(server, {
+    
     cors: {
       origin: "*",
       methods: ["GET", "POST"],
