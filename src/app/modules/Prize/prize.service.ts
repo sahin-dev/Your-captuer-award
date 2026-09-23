@@ -5,6 +5,7 @@ import { AwardIdentity, awardTypes, contestLevelPrizeTypes, getAwardKey, getAwar
 import { z } from "zod";
 import { contestAwardInputSchema, createPrizeSchema, updatePrizeSchema } from "./prize.validation";
 import { contestAwardRewardFields } from "./prize.definitions";
+import { contestCache } from "../Contest/contest.cache";
 
 type PrizeCreateData = z.infer<typeof createPrizeSchema>;
 type PrizeUpdateData = z.infer<typeof updatePrizeSchema>;
@@ -345,6 +346,7 @@ const createContestAwardsFromPrizeIds = async (contestId: string, prizeIds: stri
     })),
   });
 
+  await contestCache.invalidateContest(contestId);
   return getContestAwards(contestId);
 };
 
@@ -358,6 +360,7 @@ const createContestAwardsFromConfigs = async (contestId: string, awards: Contest
     })),
   });
 
+  await contestCache.invalidateContest(contestId);
   return getContestAwards(contestId);
 };
 
@@ -379,6 +382,7 @@ const replaceContestAwards = async (
       });
     }
   });
+  await contestCache.invalidateContest(contestId);
   return getContestAwards(contestId);
 };
 
@@ -474,6 +478,7 @@ const copyRecurringAwardsToContest = async (recurringContestId: string, contestI
     })),
   });
 
+  await contestCache.invalidateContest(contestId);
   return getContestAwards(contestId);
 };
 

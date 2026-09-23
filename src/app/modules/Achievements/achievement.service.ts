@@ -3,6 +3,7 @@ import { paginationHelper } from "../../../helpers/paginationHelper";
 import { AchievementKind, AwardTarget, AwardType, PrizeType } from "../../../prismaClient";
 import prisma from "../../../shared/prisma";
 import httpStatus from 'http-status'
+import { contestCache } from "../Contest/contest.cache";
 import {
     ContestLevelBadgeValue,
     getContestLevelBadge,
@@ -242,7 +243,7 @@ const addContestAchievement = async (
         return existingAchievement
     }
 
-    return prisma.contestAchievement.create({
+    const achievement = await prisma.contestAchievement.create({
         data:{
             participantId,
             contestId,
@@ -256,6 +257,9 @@ const addContestAchievement = async (
             ...(photoId && {photoId})
         }
     })
+    await contestCache.invalidateContest(contestId)
+
+    return achievement
 }
 
 const upsertContestLevelAchievement = async (participantId:string, contestId:string, category:PrizeType) => {

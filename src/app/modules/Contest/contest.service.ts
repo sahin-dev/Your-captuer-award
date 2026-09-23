@@ -34,6 +34,7 @@ import { sendMail } from '../../../shared/mailSender';
 import { notificationOrchestrator } from '../Notification/notificationOrchestrator';
 import { reportService } from '../Report/report.service';
 import { activeContestWhere } from './contestLifecycle';
+import { contestCache } from './contest.cache';
 
 const completedContestStatuses:ContestStatus[] = [ContestStatus.COMPLETED, ContestStatus.CLOSED]
 const isCompletedContest = (status:ContestStatus) => completedContestStatuses.includes(status)
@@ -838,6 +839,7 @@ const updateContest = async (contestId:string, contestData:updateContestData, ba
 
         return {updatedContest, updatedRules, updatedAwards, updatedLevelAwards}
     })
+    await contestCache.invalidateContest(contestId)
 
     return {
         ...updatedContest,
@@ -1024,6 +1026,31 @@ const completePaidContestJoin = async (
 }
 
 
+// Everything on the contest detail page except the contest row and the vote
+// total. Cached in Redis per contest (see contest.cache.ts); the writers of
+// these tables call contestCache.invalidateContest.
+const loadContestDetailExtras = async (contest:{id:string; status:string}) => {
+    const [rules, prizes, levelAwards, finalization, awardSelections, winners] = await Promise.all([
+        contestRuleService.getContestRules(contest.id),
+        prizeService.getContestAwards(contest.id),
+        prisma.contestLevelAward.findMany({where:{contestId:contest.id}}),
+        prisma.contestFinalization.findUnique({where:{contestId:contest.id}}),
+        contestFinalizationService.getContestAwardSelections(contest.id),
+        isCompletedContest(contest.status as ContestStatus) ? loadContestWinners(contest.id) : Promise.resolve(undefined)
+    ])
+    return {rules, prizes, levelAwards, finalization, awardSelections, winners}
+}
+
+const buildContestDetails = async <T extends {id:string; status:ContestStatus}>(contest:T) => {
+    const [{winners, ...extras}, totalVotes] = await Promise.all([
+        contestCache.getOne("detail", contest, loadContestDetailExtras),
+        voteService.getContestTotalVotes(contest.id)
+    ])
+    const baseContestDetails = {...contest, cardAttribution:getContestCardAttribution(contest), ...extras, totalVotes}
+
+    return isCompletedContest(contest.status) ? {...baseContestDetails, winners} : baseContestDetails
+}
+
 const getContestByUserId = async ( userId:string, contestId: string) => {
     const contest = await prisma.contest.findFirst({
         where: { id: contestId, ...notDeleted },
@@ -1036,29 +1063,20 @@ const getContestByUserId = async ( userId:string, contestId: string) => {
         throw new ApiError(httpstatus.NOT_FOUND, "contest not found")
     }
 
-    const [rules, prizes, levelAwards, totalVotes, finalization, awardSelections] = await Promise.all([
-        contestRuleService.getContestRules(contestId),
-        prizeService.getContestAwards(contestId),
-        prisma.contestLevelAward.findMany({where:{contestId}}),
-        voteService.getContestTotalVotes(contestId),
-        prisma.contestFinalization.findUnique({where:{contestId}}),
-        contestFinalizationService.getContestAwardSelections(contestId)
-    ])
-    const baseContestDetails = {...contest, cardAttribution:getContestCardAttribution(contest), rules, prizes, levelAwards, totalVotes, finalization, awardSelections}
+    const contestDetails = await buildContestDetails(contest)
 
     if(isCompletedContest(contest.status)){
-        const winners = await getContestWinners(contestId)
-        return {...baseContestDetails, winners};
+        return contestDetails;
     }
 
     if( (await isContestParticipantExist(userId, contestId)) && (contest.status === ContestStatus.ACTIVE)){
         const contestPhotoCount =  await prisma.contestPhoto.count({where:{contestId, photo:{userId}}})
 
-        return {...baseContestDetails, joined:true, uploadCount:contestPhotoCount}
+        return {...contestDetails, joined:true, uploadCount:contestPhotoCount}
     }
 
 
-    return {...baseContestDetails, joined:false};
+    return {...contestDetails, joined:false};
 }
 
 
@@ -1076,23 +1094,7 @@ const getContestById = async ( contestId: string) => {
         throw new ApiError(httpstatus.NOT_FOUND, "contest not found")
     }
 
-    const [rules, prizes, levelAwards, totalVotes, finalization, awardSelections] = await Promise.all([
-        contestRuleService.getContestRules(contestId),
-        prizeService.getContestAwards(contestId),
-        prisma.contestLevelAward.findMany({where:{contestId}}),
-        voteService.getContestTotalVotes(contestId),
-        prisma.contestFinalization.findUnique({where:{contestId}}),
-        contestFinalizationService.getContestAwardSelections(contestId)
-    ])
-    const baseContestDetails = {...contest, cardAttribution:getContestCardAttribution(contest), rules, prizes, levelAwards, totalVotes, finalization, awardSelections}
-
-    if(isCompletedContest(contest.status)){
-        const winners = await getContestWinners(contestId)
-        return {...baseContestDetails, winners};
-    }
-
-
-    return baseContestDetails;
+    return buildContestDetails(contest)
 }
 
 
@@ -1320,17 +1322,14 @@ const getContestWinnerMapForList = async (contests:{id:string; status:ContestSta
     return winnersByContestId;
 }
 
-const enrichContestListDetails = async (contests:any[]) => {
+// Per-contest list-card data except the vote total. Loaded in one batch for
+// every contest the Redis cache missed.
+const loadContestListExtras = async (contests:{id:string; status:string}[]) => {
     const contestIds = contests.map((contest) => contest.id);
-
-    if(contestIds.length === 0){
-        return [];
-    }
 
     const [
         ruleConfigs,
         prizes,
-        voteGroups,
         finalizations,
         awardSelections,
         winnersByContestId,
@@ -1343,11 +1342,6 @@ const enrichContestListDetails = async (contests:any[]) => {
             where:{contestId:{in:contestIds}, enabled:true},
             orderBy:[{order:"asc"}, {createdAt:"asc"}],
         }),
-        prisma.vote.groupBy({
-            by:["contestId"],
-            where:{contestId:{in:contestIds}},
-            _count:{_all:true},
-        }),
         prisma.contestFinalization.findMany({
             where:{contestId:{in:contestIds}},
         }),
@@ -1355,30 +1349,60 @@ const enrichContestListDetails = async (contests:any[]) => {
             where:{contestId:{in:contestIds}},
             orderBy:{createdAt:"asc"},
         }),
-        getContestWinnerMapForList(contests),
+        getContestWinnerMapForList(contests as {id:string; status:ContestStatus}[]),
     ]);
 
     const rulesByContestId = groupByContestId(ruleConfigs);
     const prizesByContestId = groupByContestId(prizes);
-    const voteCountByContestId = new Map(voteGroups.map(group => [group.contestId, group._count._all]));
     const finalizationByContestId = new Map(finalizations.map((finalization) => [finalization.contestId, finalization]));
     const selectionsByContestId = groupByContestId(awardSelections);
 
-    return contests.map((contest) => {
+    return new Map(contests.map((contest) => {
         const configuredRules = rulesByContestId.get(contest.id);
-        const rules = formatContestRulesForList(configuredRules?.length ? configuredRules : getDefaultContestRuleConfigsForList());
+        return [contest.id, {
+            rules:formatContestRulesForList(configuredRules?.length ? configuredRules : getDefaultContestRuleConfigsForList()),
+            prizes:prizesByContestId.get(contest.id) || [],
+            finalization:finalizationByContestId.get(contest.id) || null,
+            awardSelections:selectionsByContestId.get(contest.id) || [],
+            winners:winnersByContestId.get(contest.id) || [],
+        }];
+    }));
+}
+
+const enrichContestListDetails = async (contests:any[]) => {
+    const contestIds = contests.map((contest) => contest.id);
+
+    if(contestIds.length === 0){
+        return [];
+    }
+
+    // The contest rows come from the caller's live query, so status, dates and
+    // membership filters are always current; only the per-contest extras are
+    // cached, and vote totals are always counted live.
+    const [extrasByContestId, voteGroups] = await Promise.all([
+        contestCache.getMany("list", contests, loadContestListExtras),
+        prisma.vote.groupBy({
+            by:["contestId"],
+            where:{contestId:{in:contestIds}},
+            _count:{_all:true},
+        }),
+    ]);
+    const voteCountByContestId = new Map(voteGroups.map(group => [group.contestId, group._count._all]));
+
+    return contests.map((contest) => {
+        const {winners, ...extras} = extrasByContestId.get(contest.id)!;
         const baseContestDetails = {
             ...contest,
             cardAttribution:getContestCardAttribution(contest),
-            rules,
-            prizes:prizesByContestId.get(contest.id) || [],
+            rules:extras.rules,
+            prizes:extras.prizes,
             totalVotes:voteCountByContestId.get(contest.id) || 0,
-            finalization:finalizationByContestId.get(contest.id) || null,
-            awardSelections:selectionsByContestId.get(contest.id) || [],
+            finalization:extras.finalization,
+            awardSelections:extras.awardSelections,
         };
 
         if(isCompletedContest(contest.status)){
-            return {...baseContestDetails, winners:winnersByContestId.get(contest.id) || []};
+            return {...baseContestDetails, winners};
         }
 
         return baseContestDetails;
@@ -1702,6 +1726,10 @@ const getContestWinners = async (contestId:string) => {
         throw new ApiError(httpstatus.NOT_FOUND, "contest not found")
     }
 
+    return contestCache.getOne("winners", contest, () => loadContestWinners(contestId))
+}
+
+const loadContestWinners = async (contestId:string) => {
     const grants = await contestFinalizationService.getContestAwardResults(contestId)
     if(grants.length > 0){
         const [users, photos] = await Promise.all([
@@ -1724,7 +1752,7 @@ const getContestWinners = async (contestId:string) => {
     }
 
     return prisma.contestAchievement.findMany({
-        where:{contestId:contest.id, kind:AchievementKind.CONTEST_AWARD},
+        where:{contestId, kind:AchievementKind.CONTEST_AWARD},
         include:{participant:{include:{user:{select:{avatar:true, fullName:true, firstName:true, lastName:true}}}}}
     })
 }

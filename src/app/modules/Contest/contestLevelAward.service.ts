@@ -1,6 +1,7 @@
 import { z } from "zod";
 import prisma from "../../../shared/prisma";
 import { contestLevelAwardArraySchema } from "./contestLevelAward.validation";
+import { contestCache } from "./contest.cache";
 
 type LevelAwardInput = z.infer<typeof contestLevelAwardArraySchema>;
 
@@ -18,6 +19,7 @@ const replaceContestLevelAwards = async (contestId: string, levelAwards: LevelAw
     }
   });
 
+  await contestCache.invalidateContest(contestId);
   return getContestLevelAwards(contestId);
 };
 
@@ -55,6 +57,7 @@ const copyRecurringLevelAwardsToContest = async (recurringContestId: string, con
     })),
   });
 
+  await contestCache.invalidateContest(contestId);
   return getContestLevelAwards(contestId);
 };
 

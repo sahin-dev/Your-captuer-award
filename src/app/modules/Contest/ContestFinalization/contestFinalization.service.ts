@@ -25,6 +25,7 @@ import {
 import { levelService } from "../../Level/level.service";
 import { ContestRanking, contestRankingService } from "../ContestRanking/contestRanking.service";
 import { notificationOrchestrator } from "../../Notification/notificationOrchestrator";
+import { contestCache } from "../contest.cache";
 
 type AwardConfig = {
   id: string;
@@ -413,6 +414,7 @@ const finalizeContest = async (contestId: string) => {
   if (!claimedAt) {
     return prisma.contestFinalization.findUnique({ where: { contestId } });
   }
+  await contestCache.invalidateContest(contestId);
 
   let leaseTimestamp = claimedAt;
   const heartbeat = setInterval(() => {
@@ -545,6 +547,7 @@ const finalizeContest = async (contestId: string) => {
     throw error;
   } finally {
     clearInterval(heartbeat);
+    await contestCache.invalidateContest(contestId);
   }
 };
 
@@ -595,7 +598,7 @@ const selectAwardPhoto = async (
 
   const slotKey = award.slotKey || getAwardSlotKey(identity);
   const selectionKey = `${contestId}:${slotKey}`;
-  return prisma.contestAwardSelection.upsert({
+  const selection = await prisma.contestAwardSelection.upsert({
     where: { selectionKey },
     update: {
       contestAwardId: award.id,
@@ -613,6 +616,9 @@ const selectAwardPhoto = async (
       selectedById,
     },
   });
+  await contestCache.invalidateContest(contestId);
+
+  return selection;
 };
 
 const getContestAwardSelections = async (contestId: string) => {

@@ -12,6 +12,7 @@ import {
 } from "./contestRule.definitions";
 import { contestRuleConfigArraySchema } from "./contestRule.validation";
 import { ContestRuleConfigInput } from "./contestRules.type";
+import { contestCache } from "../contest.cache";
 
 type RuleConfigRecord = {
   id?: string;
@@ -83,7 +84,7 @@ const addContestRules = async (
 
   const normalizedRules = normalizeContestRules(rules);
 
-  return prisma.$transaction(async (tx) => {
+  const savedRules = await prisma.$transaction(async (tx) => {
     await tx.contestRuleConfig.deleteMany({ where: { contestId } });
     await tx.contestRuleConfig.createMany({
       data: normalizedRules.map((rule) => ({
@@ -100,6 +101,9 @@ const addContestRules = async (
       orderBy: { order: "asc" },
     }) as Promise<RuleConfigRecord[]>;
   });
+  await contestCache.invalidateContest(contestId);
+
+  return savedRules;
 };
 
 const getContestRuleConfigs = async (contestId: string): Promise<RuleConfigRecord[]> => {

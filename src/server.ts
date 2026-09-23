@@ -4,7 +4,7 @@ import app from "./app";
 import agenda, { startAgenda } from "./app/modules/Agenda";
 import prisma from "./shared/prisma";
 import WebSocketHandler from "./socket";
-import { connectRedis, disconnectRedis } from "./helpers/websocketSetUp";
+import { connectRedis, disconnectRedis } from "./shared/redis";
 import dns from 'dns'
 
 
