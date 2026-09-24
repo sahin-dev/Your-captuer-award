@@ -52,7 +52,7 @@ services:
       - grafana-data:/var/lib/grafana
     ports:
       # 3000 is taken by the Next.js frontend in local dev.
-      - "127.0.0.1:3001:3000"
+      - "3003:3000"
     depends_on:
       - prometheus
       - tempo
