@@ -2,6 +2,7 @@ import { LevelName } from "../../../prismaClient"
 import prisma from "../../../shared/prisma"
 import globalEventHandler from "../eventEmitter"
 import Events from "../events.constant"
+import logger from "../../../shared/logger"
 
 globalEventHandler.on(Events.USER_REGISTERED, async (user: { id: string }) => {
     try {
@@ -9,7 +10,7 @@ globalEventHandler.on(Events.USER_REGISTERED, async (user: { id: string }) => {
             where: { levelName: LevelName.APPRENTICE }
         })
         if (!apprenticeLevel) {
-            console.warn("[Level Event] APPRENTICE level not found in DB — skipping assignment")
+            logger.warn("APPRENTICE level not found in DB, skipping assignment")
             return
         }
 
@@ -26,8 +27,8 @@ globalEventHandler.on(Events.USER_REGISTERED, async (user: { id: string }) => {
             data: { currentLevel: apprenticeLevel.level }
         })
 
-        console.log(`[Level Event] Assigned APPRENTICE level to user ${user.id}`)
+        logger.debug({ userId: user.id }, "Assigned APPRENTICE level")
     } catch (err) {
-        console.error(`[Level Event] Failed to assign APPRENTICE level to user ${user.id}:`, err)
+        logger.error({ err, userId: user.id }, "Failed to assign APPRENTICE level")
     }
 })

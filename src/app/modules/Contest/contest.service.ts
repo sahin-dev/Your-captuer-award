@@ -35,6 +35,7 @@ import { notificationOrchestrator } from '../Notification/notificationOrchestrat
 import { reportService } from '../Report/report.service';
 import { activeContestWhere } from './contestLifecycle';
 import { contestCache } from './contest.cache';
+import logger from "../../../shared/logger";
 
 const completedContestStatuses:ContestStatus[] = [ContestStatus.COMPLETED, ContestStatus.CLOSED]
 const isCompletedContest = (status:ContestStatus) => completedContestStatuses.includes(status)
@@ -75,7 +76,7 @@ const notifyTeamMatchQueueOfContestJoin = async (userId: string, contestId: stri
         const { teamService } = await import('../Team/team.service.js')
         await teamService.checkAndAdvanceWaitingQueue(membership.teamId, contestId)
     } catch (error) {
-        console.error(`Failed to advance team match queue after contest join (userId=${userId}, contestId=${contestId})`, error)
+        logger.error({ err: error, userId, contestId }, "Failed to advance team match queue after contest join")
     }
 }
 
@@ -598,10 +599,10 @@ const materializeRecurringOccurrence = async (rContest:RecurringContest, options
             // mark the occurrence failed and create a duplicate on retry; the
             // periodic contest watcher remains a recovery path.
             await agenda.schedule(endDate, "contest:watcher", {contestId:newContest.id}).catch(error => {
-                console.error(`Failed to schedule watcher for recurring contest ${newContest.id}`, error)
+                logger.error({ err: error, contestId: newContest.id }, "Failed to schedule watcher for recurring contest")
             })
         }
-        console.log(`Generated recurring contest instance ${newContest.id} from template ${rContest.id}`)
+        logger.info({ contestId: newContest.id, recurringContestId: rContest.id }, "Generated recurring contest instance")
         return newContest
     }catch(error){
         await prisma.recurringContestOccurrence.update({
@@ -698,7 +699,7 @@ const createRecurringContest  =  async (creatorId: string, body: contestData, ba
     try{
         await materializeRecurringOccurrence(created, {force:true})
     }catch(error){
-        console.error(`Failed to immediately materialize first occurrence for recurring contest ${created.id}`, error)
+        logger.error({ err: error, recurringContestId: created.id }, "Failed to materialize first occurrence of recurring contest")
     }
 
     return {...created, prizes:awardRows, levelAwards}
@@ -1605,7 +1606,7 @@ const adminDeleteContestPhoto = async (photoId:string, adminId:string, reason?:s
     `
 
     sendMail({to:owner.email, subject:`Your contest photo was removed`, html:emailHtml}).catch((err) => {
-        console.error("Failed to send contest photo removal email:", err)
+        logger.error({ err }, "Failed to send contest photo removal email")
     })
 
     await notificationOrchestrator.notifyContestPhotoRemoved(owner.id, contestUpload.contestId, contestTitle, reason)
@@ -2035,7 +2036,7 @@ const rollbackUploadedContestPhotos = async (
     try{
         await prisma.userPhoto.deleteMany({where:{id:{in:created.map(item => item.userPhotoId)}}})
     }catch(error){
-        console.error("Failed to roll back contest submission photos", error)
+        logger.error({ err: error }, "Failed to roll back contest submission photos")
         return
     }
     await Promise.all(created.map(async ({file}) => {
@@ -2136,7 +2137,7 @@ const uploadPhotoToContest = async (contestId:string,userId:string, photoIds:unk
         // The entry itself is committed. A queue notification failure must not
         // surface as a failed submission or trigger the upload rollback.
         await notifyTeamMatchQueueOfContestJoin(userId, contestId).catch(error => {
-            console.error(`Failed to notify team match queue for contest ${contestId}`, error)
+            logger.error({ err: error, contestId }, "Failed to notify team match queue")
         })
     }
 
@@ -2384,9 +2385,8 @@ const promoteContestPhoto = async (contestId:string, photoId:string, userId:stri
     // Schedule a job to remove promotion once it expires
     agenda.schedule(promotionExpiresAt, 'promotion:remove', {
         photoId: photoId
-    }).catch(error => console.error(`Failed to schedule promotion expiry for ${photoId}`, error));
+    }).catch(error => logger.error({ err: error, photoId }, "Failed to schedule promotion expiry"));
 
-    console.log(`Contest photo with ID ${photoId} has been promoted until ${promotionExpiresAt}`);
 
     return { message: `Contest photo with ID ${photoId} has been promoted until ${promotionExpiresAt}` };
 }

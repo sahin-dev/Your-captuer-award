@@ -94,7 +94,6 @@ const buildContestRedirectUrl = (
     cancel_url: string
   ) {
 
-    console.log(success_url)
     // Validate user exists
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) {

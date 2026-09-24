@@ -8,7 +8,6 @@ class WebSocketHandler {
   constructor(server: HTTPServer) {
     this.io = setupWebSocket(server);
     this.init();
-    console.log("Socket.IO server initialized...");
   }
 
   private init() {

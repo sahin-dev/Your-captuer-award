@@ -165,7 +165,6 @@ const getUserProgress = catchAsync(async (req: Request, res: Response) => {
     const userId = req.user.id
 
     const userProgress = await userService.getUserCurrentLevel(userId)
-    console.log(userProgress)
 
     sendResponse(res, {
         success: true,

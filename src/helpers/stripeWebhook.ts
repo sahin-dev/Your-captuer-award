@@ -7,6 +7,7 @@ import config from "../config";
 import ApiError from "../errors/ApiError";
 import { NotificationType, PaymentStatus, PaymentType } from "../prismaClient";
 import prisma from "../shared/prisma";
+import logger from "../shared/logger";
 
 const stripe = new Stripe(config.stripe_key as string);
 
@@ -420,7 +421,7 @@ const stripeWebhook = async (req: Request, res: Response) => {
     );
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
-    console.error("Error verifying Stripe webhook signature:", message);
+    logger.warn({ reason: message }, "Invalid Stripe webhook signature");
     res.status(400).send(`Webhook Error: ${message}`);
     return;
   }
@@ -451,13 +452,13 @@ const stripeWebhook = async (req: Request, res: Response) => {
       }
 
       default:
-        console.log(`Unhandled Stripe event type: ${event.type}`);
+        logger.debug({ type: event.type }, "Unhandled Stripe event type");
     }
 
     res.status(200).send("Webhook received");
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
-    console.error(`Error handling Stripe event ${event.id}:`, message);
+    logger.error({ eventId: event.id, type: event.type, reason: message }, "Failed to handle Stripe event");
     res.status(500).send("Webhook processing failed");
   }
 };

@@ -1,3 +1,4 @@
+import { shutdownTelemetry } from "./instrumentation";
 import { Server } from "http";
 import config from "./config";
 import app from "./app";
@@ -6,6 +7,7 @@ import prisma from "./shared/prisma";
 import WebSocketHandler from "./socket";
 import { connectRedis, disconnectRedis } from "./shared/redis";
 import dns from 'dns'
+import logger from "./shared/logger";
 
 
 let server: Server | undefined;
@@ -24,8 +26,7 @@ const logDatabaseConnectionHint = (error:unknown) => {
   const message = getErrorMessage(error);
 
   if(message.includes("querySrv") || message.includes("ECONNREFUSED")){
-    console.error("Database connection failed during MongoDB SRV lookup.");
-    console.error("Please verify DATABASE_URL, DNS/network access, and MongoDB Atlas network access settings.");
+    logger.error("Database connection failed during MongoDB SRV lookup. Check DATABASE_URL, DNS and Atlas network access.");
   }
 }
 
@@ -47,7 +48,7 @@ async function connectDatabaseWithRetry() {
       if (attempt === DB_CONNECT_MAX_ATTEMPTS) {
         throw new Error("Failed to connect to the database. Please check your DATABASE_URL and ensure the database is running.");
       }
-      console.error(`Database connection attempt ${attempt}/${DB_CONNECT_MAX_ATTEMPTS} failed, retrying in ${DB_CONNECT_RETRY_DELAY_MS}ms...`);
+      logger.warn(`Database connection attempt ${attempt}/${DB_CONNECT_MAX_ATTEMPTS} failed, retrying in ${DB_CONNECT_RETRY_DELAY_MS}ms`);
       await delay(DB_CONNECT_RETRY_DELAY_MS);
     }
   }
@@ -83,11 +84,11 @@ async function startServer() {
   // Contest lifecycle correctness depends on Agenda. Do not accept traffic in
   // a half-started state where contests never open/close or finalize.
   dns.setServers(["8.8.8.8", "8.8.4.4"]);
-  await startAgenda();
+  // await startAgenda();
   await connectRedis();
 
   server = app.listen(PORT, () => {
-    console.log("Server is listiening on port ", PORT);
+    logger.info(`Server is listening on port ${PORT}`);
   });
 
   new WebSocketHandler(server);
@@ -104,51 +105,55 @@ async function shutdown(exitCode = 0) {
   if(server){
     await new Promise<void>((resolve) => {
       server?.close(() => {
-        console.info("Server closed!");
+        logger.info("Server closed");
         resolve();
       });
     });
   }
 
   await agenda.stop().catch((error) => {
-    console.error("Failed to stop agenda:", error);
+    logger.error({ err: error }, "Failed to stop agenda");
   });
 
   await disconnectRedis().catch((error) => {
-    console.error("Failed to disconnect redis:", error);
+    logger.error({ err: error }, "Failed to disconnect redis");
   });
 
   await prisma.$disconnect().catch((error) => {
-    console.error("Failed to disconnect prisma:", error);
+    logger.error({ err: error }, "Failed to disconnect prisma");
+  });
+
+  await shutdownTelemetry().catch((error) => {
+    logger.error({ err: error }, "Failed to flush telemetry");
   });
 
   process.exit(exitCode);
 }
 
 process.on("uncaughtException", (error) => {
-  console.log("Uncaught Exception: ", error);
+  logger.fatal({ err: error }, "Uncaught exception");
   logDatabaseConnectionHint(error);
   shutdown(1);
 });
 
 process.on("unhandledRejection", (error) => {
-  console.log("Unhandled Rejection: ", error);
+  logger.fatal({ err: error }, "Unhandled rejection");
   logDatabaseConnectionHint(error);
   shutdown(1);
 });
 
 process.on("SIGTERM", () => {
-  console.log("SIGTERM signal received. Shutting down gracefully...");
+  logger.info("SIGTERM received, shutting down");
   shutdown(0);
 });
 
 process.on("SIGINT", () => {
-  console.log("SIGINT signal received. Shutting down gracefully...");
+  logger.info("SIGINT received, shutting down");
   shutdown(0);
 });
 
 startServer().catch((error) => {
-  console.error("Failed to start server:", error);
+  logger.fatal({ err: error }, "Failed to start server");
   logDatabaseConnectionHint(error);
   shutdown(1);
 });

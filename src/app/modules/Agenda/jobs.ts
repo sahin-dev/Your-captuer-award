@@ -3,6 +3,7 @@ import { Agenda, Job } from "agenda";
 import prisma from '../../../shared/prisma';
 import {contestService } from '../Contest/contest.service';
 import { teamService } from '../Team/team.service';
+import logger from "../../../shared/logger";
 
 const notDeleted:Prisma.ContestWhereInput = {OR:[{deletedAt:null}, {deletedAt:{isSet:false}}]}
 
@@ -21,7 +22,7 @@ agenda.define('contest:checkUpcoming', async () => {
     });
 
     if (contests.length <= 0){
-        console.log("There is no upcoming contest")
+        logger.debug("No upcoming contest to activate")
     }
     for (const contest of contests) {
         try {
@@ -30,11 +31,11 @@ agenda.define('contest:checkUpcoming', async () => {
 
             if (startDate <= currentDate){
                 const updatedContest = await prisma.contest.update({where:{id:contest.id}, data:{status:ContestStatus.ACTIVE, startedAt:new Date(Date.now())}})
-                console.log(`Contest with id: ${contest.id} has started`)
+                logger.info({ contestId: contest.id }, "Contest started")
                 await agenda.schedule(contest.endDate, "contest:watcher",{contestId:updatedContest.id})
             }
         } catch (error) {
-            console.error(`Failed to activate upcoming contest ${contest.id}`, error)
+            logger.error({ err: error, contestId: contest.id }, "Failed to activate upcoming contest")
         }
     }
 
@@ -67,14 +68,11 @@ agenda.define('contest:checkUpcoming', async () => {
 //                 type: ContestType.RECURRING,
 //             }
 //         });
-//         console.log(`Created new contest from recurring contest ID: ${contest.id}`);
 //         await prisma.recurringContest.update({
 //             where: { id: contest.id },
 //             data: { nextOccurrence: new Date(new Date(contest.nextOccurrence).getTime() + 24 * 60 * 60 * 1000) } // Increment next occurrence
 //         });
-//         console.log(`Updated next occurrence for recurring contest ID: ${contest.id}`);
 //         await agenda.schedule(newContest.startDate, 'contest:checkUpcoming', newContest.id);
-//         console.log(`Scheduled check for new contest ID: ${newContest.id}`);
 //     }
 // });
 
@@ -83,7 +81,7 @@ agenda.define("contest:active", async ()=>{
     const upcomingContest = await prisma.contest.findMany({
         where:{status:ContestStatus.UPCOMING, startDate:{lte:now}, ...notDeleted}
     })
-    console.log(`Found ${upcomingContest.length} upcoming contests`)
+    logger.debug(`Found ${upcomingContest.length} upcoming contests`)
     for(const contest of upcomingContest){
         const activated = await prisma.contest.updateMany({
             where:{id:contest.id, status:ContestStatus.UPCOMING, ...notDeleted},
@@ -102,13 +100,13 @@ agenda.define("contest:checkRecurring", async ()=>{
     const recurringContests = await prisma.recurringContest.findMany({
         where:{status:RecurringContestStatus.ACTIVE}
     });
-    console.log(`Found ${recurringContests.length} recurring contests to process.`);
+    logger.debug(`Found ${recurringContests.length} recurring contests to process`);
 
     for(const contest of recurringContests){
         try{
             await contestService.materializeRecurringOccurrence(contest);
         }catch(error){
-            console.error(`Failed to generate recurring contest ${contest.id}`, error)
+            logger.error({ err: error, recurringContestId: contest.id }, "Failed to generate recurring contest")
         }
     }
 });
@@ -131,17 +129,17 @@ agenda.define("contest:watcher", async (job: Job) => {
     if (!contest){
         // A hard-deleted contest is a permanent condition, not a failure worth
         // retrying - throwing here only spends the job's retry budget.
-        console.log(`Contest ${contestId} no longer exists; skipping finalization`)
+        logger.warn({ contestId }, "Contest no longer exists, skipping finalization")
         return
     }
     if(contest.deletedAt){
-        console.log(`Contest ${contestId} is archived; skipping finalization`)
+        logger.info({ contestId }, "Contest is archived, skipping finalization")
         return
     }
 
     await contestService.identifyWinner(contestId)
     await teamService.closeActiveMatchesForContest(contestId)
-    console.log(`Contest has been finalized ${contestId}`)
+    logger.info({ contestId }, "Contest finalized")
 });
 
 agenda.define("contest:watchEnded", async () => {
@@ -165,7 +163,7 @@ agenda.define("contest:watchEnded", async () => {
             await contestService.identifyWinner(contest.id)
             await teamService.closeActiveMatchesForContest(contest.id)
         }catch(error){
-            console.error(`Failed to finalize contest ${contest.id}`, error)
+            logger.error({ err: error, contestId: contest.id }, "Failed to finalize contest")
         }
     }
 })
@@ -173,7 +171,7 @@ agenda.define("contest:watchEnded", async () => {
 agenda.define("teamMatch:watchStale", async () => {
     const closedCount = await teamService.retryStaleTeamMatches()
     if(closedCount > 0){
-        console.log(`Auto-closed ${closedCount} stale team match(es) whose contest had already ended`)
+        logger.info(`Auto-closed ${closedCount} stale team match(es) whose contest had already ended`)
     }
 });
 
@@ -181,7 +179,7 @@ agenda.define("teamMatch:watchStale", async () => {
 agenda.define("teamMatch:watchQueueTimeouts", async () => {
     const timedOutCount = await teamService.timeoutExpiredTeamMatchQueues()
     if(timedOutCount > 0){
-        console.log(`Timed out ${timedOutCount} team match search(es) with no opponent found`)
+        logger.info(`Timed out ${timedOutCount} team match search(es) with no opponent found`)
     }
 });
 
@@ -189,17 +187,17 @@ agenda.define("teamMatch:watchQueueTimeouts", async () => {
 // Idempotent per (team, member, period, periodKey) - safe if this fires more than once.
 agenda.define("team:weeklyPayout", async () => {
     const result = await teamService.payoutPeriodRewards("WEEKLY")
-    console.log(`Weekly team payout for period ${result.periodKey}: ${result.teamsRewarded} team(s) rewarded`)
+    logger.info({ period: result.periodKey, teamsRewarded: result.teamsRewarded }, "Weekly team payout done")
 });
 
 agenda.define("team:monthlyPayout", async () => {
     const result = await teamService.payoutPeriodRewards("MONTHLY")
-    console.log(`Monthly team payout for period ${result.periodKey}: ${result.teamsRewarded} team(s) rewarded`)
+    logger.info({ period: result.periodKey, teamsRewarded: result.teamsRewarded }, "Monthly team payout done")
 });
 
 agenda.define("team:yearlyPayout", async () => {
     const result = await teamService.payoutPeriodRewards("YEARLY")
-    console.log(`Yearly team payout for period ${result.periodKey}: ${result.teamsRewarded} team(s) rewarded`)
+    logger.info({ period: result.periodKey, teamsRewarded: result.teamsRewarded }, "Yearly team payout done")
 });
 
 // Participant-level exposure is time-decayed so meters cannot stay stuck at a
@@ -208,7 +206,7 @@ agenda.define("team:yearlyPayout", async () => {
 agenda.define("contest:decayExposure", async () => {
     const decayedCount = await contestService.decayExposureMeters()
     if(decayedCount > 0){
-        console.log(`Decayed exposure for ${decayedCount} contest participant(s)`)
+        logger.debug(`Decayed exposure for ${decayedCount} contest participant(s)`)
     }
 });
 
@@ -220,7 +218,7 @@ agenda.define("promotion:remove", async (job: Job) => {
         data: { promoted: false, promotionExpiresAt: null }
     });
     if (updated.count > 0) {
-        console.log(`Promotion removed for photo ID: ${photoId}`);
+        logger.info({ photoId }, "Photo promotion expired");
     }
 });
 

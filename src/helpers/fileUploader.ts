@@ -23,6 +23,7 @@ import { isPhotoUploadMimeType, isWebImageMimeType, webImageMimeTypes } from "..
 import { IMAGE_HEADER_SAMPLE_BYTES, readImageDimensionsFromBytes } from "./imageMetadata";
 import ApiError from "../errors/ApiError";
 import httpStatus from "http-status";
+import logger from "../shared/logger";
 
 dotenv.config();
 
@@ -394,7 +395,7 @@ const uploadToCloudinary = async (file: Express.Multer.File): Promise<{ Location
       },
       (error, result) => {
         if (error) {
-          console.error("Error uploading file to Cloudinary:", error);
+          logger.error({ err: error }, "Failed to upload file to Cloudinary");
           return reject(error);
         }
 
@@ -458,7 +459,7 @@ const uploadToDigitalOcean = async (file: Express.Multer.File) => {
       Key,
     };
   } catch (error) {
-    console.error("Error uploading file to DigitalOcean:", error);
+    logger.error({ err: error }, "Failed to upload file to DigitalOcean");
     throw error;
   } finally {
     s3Client.destroy()
@@ -534,7 +535,7 @@ const readStoredImageDimensions = async (key: string) => {
     }
     return readImageDimensionsFromBytes(Buffer.concat(chunks));
   } catch (error) {
-    console.error(`Failed to read image dimensions for ${key}`, error);
+    logger.error({ err: error, key }, "Failed to read image dimensions");
     return null;
   } finally {
     client.destroy();
@@ -600,7 +601,7 @@ const uploadToFilesystem = async (file: Express.Multer.File): Promise<{ Location
       filename: result.Key,
     };
   } catch (error) {
-    console.error("Error uploading file to DigitalOcean via uploadToFilesystem:", error);
+    logger.error({ err: error }, "Failed to upload file to DigitalOcean from filesystem");
     throw error;
   }
 };

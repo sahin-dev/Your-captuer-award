@@ -13,8 +13,11 @@ import './app/event'
 import './app/passportStrategies'
 import stripeWebhook from "./helpers/stripeWebhook";
 import v2Router from "./app/routes/v2";
+import requestLogger from "./app/middlewares/requestLogger.middleware";
 
 const app: Application = express();
+
+app.use(requestLogger)
 
 app.use(passport.initialize())
 

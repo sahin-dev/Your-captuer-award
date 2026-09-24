@@ -52,6 +52,11 @@ const config =  {
         host: process.env.REDIS_HOST || "localhost",
         port: Number(process.env.REDIS_PORT || 6379)
     },
+    // Telemetry is off unless an OTLP endpoint is set, e.g. http://localhost:4318
+    otel:{
+        endpoint: process.env.OTEL_EXPORTER_OTLP_ENDPOINT,
+        serviceName: process.env.OTEL_SERVICE_NAME || "yca-api"
+    },
     cloud:[{
         provider:"digitalOcean",
         endpoint: process.env.DO_SPACE_ENDPOINT,

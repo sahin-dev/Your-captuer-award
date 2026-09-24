@@ -58,8 +58,6 @@ const addStoreProduct = catchAsync(async (req: Request, res: Response) => {
     const userId = req.user.id;
     const file = req.file;
 
-    console.log("Received product data:", req.body);
-    console.log("Received file:", file);
 
     const quantityNumber = Number(quantity);
     const amountNumber = Number(amount);

@@ -1,5 +1,6 @@
 // ./event/eventEmitter.ts
 import { EventEmitter } from "events";
+import logger from "../../shared/logger";
 
 
 
@@ -16,7 +17,7 @@ class GlobalEventHandler extends EventEmitter {
         )
         const settled = await Promise.allSettled(results)
         settled.forEach(result => {
-            if(result.status === "rejected") console.error(`Event listener failed for ${event}`, result.reason)
+            if(result.status === "rejected") logger.error({ err: result.reason, event }, "Event listener failed")
         })
     }
 

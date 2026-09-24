@@ -1,34 +1,18 @@
 import {PrismaClient} from "../prismaClient/client";
+import logger from "./logger";
 
 // import { PrismaClient } from "@prisma/client";
 
 // import { initiateSuperAdmin } from "../app/db/db";
 
 
+// Query errors are not logged here: Prisma throws them to the caller, and the
+// request logger / job handlers already log them with more context.
 const prisma = new PrismaClient({
-  log: [ 'info', 'warn', 'error']
+  log: [{ emit: "event", level: "warn" }]
 })
-// async function connectPrisma() {
-//   try {
-//     await prisma.$connect();
-//     console.log("Prisma connected to the database successfully!");
 
-//     // initiate super admin
-//     // initiateSuperAdmin();
-//   } catch (error) {
-//     console.error("Prisma connection failed:", error);
-//     process.exit(1); // Exit process with failure
-//   }
-
-//   // Graceful shutdown
-//   process.on("SIGINT", async () => {
-//     await prisma.$disconnect();
-//     console.log("Prisma disconnected due to application termination.");
-//     process.exit(0);
-//   });
-// }
-
-// connectPrisma();
+prisma.$on("warn", (e) => logger.warn({ target: e.target }, e.message))
 
 
 export default prisma;

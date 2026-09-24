@@ -1,4 +1,6 @@
+import { metrics } from "@opentelemetry/api";
 import { redisClient } from "../../../shared/redis";
+import logger from "../../../shared/logger";
 
 // Redis cache for the slow-changing data hung off a contest (rules, prizes,
 // level awards, finalization, award selections, winners).
@@ -34,7 +36,14 @@ const DATA_TTL_SECONDS = 10 * 60;
 // collide with those entries.
 const VERSION_TTL_SECONDS = 24 * 60 * 60;
 
+// Counts every contest looked up through the cache. result is hit, miss, or
+// bypass (Redis unavailable). A no-op when telemetry is off.
+const cacheLookups = metrics.getMeter("contest-cache").createCounter("yca.contest_cache.lookups", {
+    description: "Contest cache lookups by part and result",
+});
+
 const versionKey = (contestId: string) => `contest:${contestId}:ver`;
+
 const dataKey = (part: ContestCachePart, contest: CacheableContest, version: string, scope?: string) =>
     `contest:${contest.id}:v${version}:${contest.status}:${part}${scope ? `:${scope}` : ""}`;
 
@@ -55,6 +64,7 @@ const getMany = async <T>(
         return new Map();
     }
     if (!redisClient.isReady) {
+        cacheLookups.add(contests.length, { part, result: "bypass" });
         return load(contests);
     }
 
@@ -65,13 +75,15 @@ const getMany = async <T>(
         keys = contests.map((contest, index) => dataKey(part, contest, versions[index] ?? "0", options.scope));
         cached = await redisClient.mGet(keys);
     } catch (error) {
-        console.error(`[ContestCache] read failed for ${part}:`, error);
+        logger.error({ err: error, part }, "Contest cache read failed");
+        cacheLookups.add(contests.length, { part, result: "bypass" });
         return load(contests);
     }
 
     const result = new Map<string, T>();
     const misses: CacheableContest[] = [];
     const missKeys = new Map<string, string>();
+
     contests.forEach((contest, index) => {
         const raw = cached[index];
         if (raw !== null) {
@@ -81,6 +93,9 @@ const getMany = async <T>(
             missKeys.set(contest.id, keys[index]);
         }
     });
+
+    cacheLookups.add(contests.length - misses.length, { part, result: "hit" });
+    cacheLookups.add(misses.length, { part, result: "miss" });
 
     if (misses.length > 0) {
         const loaded = await load(misses);
@@ -92,7 +107,7 @@ const getMany = async <T>(
                 write.setEx(key, ttlSeconds, JSON.stringify(value));
             }
         });
-        write.exec().catch((error) => console.error(`[ContestCache] write failed for ${part}:`, error));
+        write.exec().catch((error) => logger.error({ err: error, part }, "Contest cache write failed"));
     }
 
     return result;
@@ -120,7 +135,7 @@ const invalidateContest = async (contestId: string) => {
             .expire(versionKey(contestId), VERSION_TTL_SECONDS)
             .exec();
     } catch (error) {
-        console.error(`[ContestCache] invalidation failed for ${contestId}:`, error);
+        logger.error({ err: error, contestId }, "Contest cache invalidation failed");
     }
 };
 

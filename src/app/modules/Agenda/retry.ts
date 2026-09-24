@@ -1,4 +1,5 @@
 import type { Agenda, Job } from "agenda";
+import logger from "../../../shared/logger";
 
 // Agenda has no built-in retry. Job#run() calls computeNextRunAt() *before* the
 // handler executes, so a repeating job's next tick is already booked and a
@@ -19,12 +20,12 @@ export const registerJobRetries = (agenda: Agenda) => {
 
     try {
       if (job.attrs.repeatInterval || job.attrs.repeatAt) {
-        console.error(`Agenda job ${name} failed (${failCount}x); its next scheduled run is unaffected:`, error.message);
+        logger.error({ err: error, job: name, failCount }, "Agenda job failed, next scheduled run is unaffected");
         return;
       }
 
       if (failCount >= MAX_JOB_ATTEMPTS) {
-        console.error(`Agenda job ${name} failed ${failCount} times; giving up.`, data, error.message);
+        logger.error({ err: error, job: name, failCount, data }, "Agenda job failed too many times, giving up");
         return;
       }
 
@@ -33,12 +34,12 @@ export const registerJobRetries = (agenda: Agenda) => {
       const delayMs = RETRY_BASE_DELAY_MS * 2 ** (failCount - 1);
       job.schedule(new Date(Date.now() + delayMs));
       await job.save();
-      console.warn(
-        `Agenda job ${name} failed (attempt ${failCount}/${MAX_JOB_ATTEMPTS}); retrying in ${Math.round(delayMs / 1000)}s:`,
-        error.message
+      logger.warn(
+        { err: error, job: name, attempt: failCount, maxAttempts: MAX_JOB_ATTEMPTS },
+        `Agenda job failed, retrying in ${Math.round(delayMs / 1000)}s`
       );
     } catch (retryError) {
-      console.error(`Could not schedule a retry for Agenda job ${name}`, retryError);
+      logger.error({ err: retryError, job: name }, "Could not schedule a retry for Agenda job");
     }
   });
 };

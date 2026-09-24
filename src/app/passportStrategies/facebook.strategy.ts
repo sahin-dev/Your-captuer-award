@@ -4,6 +4,7 @@ import { IUser } from "../modules/User/user.interface";
 import prisma from "../../shared/prisma";
 import globalEventHandler from "../event/eventEmitter";
 import Events from "../event/events.constant";
+import logger from "../../shared/logger";
 
 const facebookConfig:StrategyOptions = {
     clientID:config.facebook.client_id as string, 
@@ -89,7 +90,7 @@ const facebookCallback = async (accessToken:any, refreshToken:any, profile:Profi
         return done(null, user);
 
     }catch(error){
-         console.error(error, "Error in Facebook Strategy");
+         logger.error({ err: error }, "Facebook login failed");
         done(error, null);
     }
 }

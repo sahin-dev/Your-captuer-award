@@ -6,6 +6,7 @@ import prisma from "../shared/prisma";
 import { chatService } from "../app/modules/Chat/chat.service";
 import {createAdapter} from '@socket.io/redis-adapter'
 import { redisClient, redisSubClient } from "../shared/redis";
+import logger from "../shared/logger";
 
 
 interface AuthenticatedSocket extends Socket {
@@ -42,7 +43,7 @@ export function setupWebSocket(server: HTTPServer) {
   // Store io instance globally
   ioInstance = io;
 
-  console.log("Socket.IO server is running");
+  logger.info("Socket.IO server is running");
 
   // A crash or a plain process restart wipes the in-memory socket map without
   // ever running the "disconnect" handler below, so any user who was online
@@ -56,22 +57,21 @@ export function setupWebSocket(server: HTTPServer) {
     .updateMany({ where: { isOnline: true }, data: { isOnline: false } })
     .then((result) => {
       if (result.count > 0) {
-        console.log(`[Socket.IO] Reset stale isOnline flag for ${result.count} user(s) after server (re)start`);
+        logger.info(`Reset stale isOnline flag for ${result.count} user(s) after restart`);
       }
     })
     .catch((error) => {
-      console.error("[Socket.IO] Failed to reset stale online status on startup:", error);
+      logger.error({ err: error }, "Failed to reset stale online status on startup");
     });
 
   io.on("connection", (socket: AuthenticatedSocket) => {
-    console.log("A user connected:", socket.id);
+    logger.debug({ socketId: socket.id }, "Socket connected");
     socket.teamIds = new Set();
     connectedSocketIds.add(socket.id);
 
     socket.on("authenticate", async (token: string, callback) => {
       try {
         if (!token) {
-          console.log("No token provided");
           callback({ success: false, message: "No token provided" });
           return;
         }
@@ -79,7 +79,6 @@ export function setupWebSocket(server: HTTPServer) {
         const user = jwtHelpers.verifyToken(token, config.jwt.jwt_secret as string);
 
         if (!user) {
-          console.log("Invalid token");
           callback({ success: false, message: "Invalid token" });
           return;
         }
@@ -91,14 +90,14 @@ export function setupWebSocket(server: HTTPServer) {
         userSockets.set(id, socket);
 
         await prisma.user.update({ where: { id }, data: { isOnline: true } });
-        console.log(`User ${id} authenticated`);
+        logger.debug({ userId: id }, "Socket authenticated");
 
         callback({ success: true, userId: id, message: "User authenticated" });
 
         // Broadcast user online status
         io.emit("user_status", { userId: id, isOnline: true });
       } catch (error) {
-        console.error("Authentication error:", error);
+        logger.warn({ err: error }, "Socket authentication failed");
         callback({ success: false, message: "Authentication failed" });
       }
     });
@@ -142,9 +141,9 @@ export function setupWebSocket(server: HTTPServer) {
           timestamp: new Date(),
         });
 
-        console.log(`User ${socket.userId} joined team ${teamId}`);
+        logger.debug({ userId: socket.userId, teamId }, "User joined team room");
       } catch (error) {
-        console.error("Join team error:", error);
+        logger.error({ err: error, teamId }, "Failed to join team room");
         callback({ success: false, message: "Failed to join team" });
       }
     });
@@ -173,9 +172,9 @@ export function setupWebSocket(server: HTTPServer) {
         });
 
         acknowledge({ success: true, message: "Left team room" });
-        console.log(`User ${socket.userId} left team ${teamId}`);
+        logger.debug({ userId: socket.userId, teamId }, "User left team room");
       } catch (error) {
-        console.error("Leave team error:", error);
+        logger.error({ err: error, teamId }, "Failed to leave team room");
         acknowledge({ success: false, message: "Failed to leave team" });
       }
     });
@@ -220,7 +219,7 @@ export function setupWebSocket(server: HTTPServer) {
           },
         });
         chatService.notifyTeamMembersOfChatMessage(chat, socket.userId).catch((error) => {
-          console.error("Failed to send chat notifications:", error);
+          logger.error({ err: error }, "Failed to send chat notifications");
         });
 
         // Broadcast message to all team members in the room
@@ -230,9 +229,8 @@ export function setupWebSocket(server: HTTPServer) {
         });
 
         callback({ success: true, data: chat });
-        console.log(`Message from ${socket.userId} to team ${teamId}`);
       } catch (error) {
-        console.error("Send message error:", error);
+        logger.error({ err: error }, "Failed to send chat message");
         callback({ success: false, message: "Failed to send message" });
       }
     });
@@ -249,7 +247,7 @@ export function setupWebSocket(server: HTTPServer) {
         const chats = await chatService.getAllChats(socket.userId, data.teamId, data.page, data.limit);
         callback({ success: true, data: chats });
       } catch (error) {
-        console.error("Get team messages error:", error);
+        logger.error({ err: error }, "Failed to get team messages");
         callback({ success: false, message: "Failed to retrieve messages" });
       }
     });
@@ -277,10 +275,10 @@ export function setupWebSocket(server: HTTPServer) {
           });
 
           io.emit("user_status", { userId: socket.userId, isOnline: false });
-          console.log(`User ${socket.userId} disconnected`);
+          logger.debug({ userId: socket.userId }, "Socket disconnected");
         }
       } catch (error) {
-        console.error("Disconnect error:", error);
+        logger.error({ err: error }, "Socket disconnect handler failed");
       }
     });
   });

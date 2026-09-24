@@ -3,6 +3,7 @@ import { initAgenda } from "./init";
 import { registerAgendaJobs } from "./jobs";
 import { registerJobRetries } from "./retry";
 import { PAYOUT_TIME_ZONE } from "../Team/teamPeriod";
+import logger from "../../../shared/logger";
 
 let agenda:Agenda | null = null;
 let started = false;
@@ -14,7 +15,7 @@ const getAgenda = () => {
         registerAgendaJobs(agenda);
         registerJobRetries(agenda);
         agenda.on("error", (e) => {
-            console.log("Agenda error:", e);
+            logger.error({ err: e }, "Agenda error");
         });
     }
 
@@ -31,7 +32,7 @@ export const startAgenda = async () => {
 
     const scheduler = getAgenda();
     starting = (async () => {
-        console.log("Starting agenda scheduler");
+        logger.info("Starting agenda scheduler");
         await scheduler.start();
         await scheduler.every("five minute", "contest:checkRecurring");
         await scheduler.every("5 seconds", "contest:active");
@@ -49,7 +50,7 @@ export const startAgenda = async () => {
         await scheduler.every("0 9 1 * *", "team:monthlyPayout", {}, payoutSchedule);
         await scheduler.every("0 9 1 1 *", "team:yearlyPayout", {}, payoutSchedule);
         started = true;
-        console.log("Agenda scheduler started");
+        logger.info("Agenda scheduler started");
         return scheduler;
     })();
 

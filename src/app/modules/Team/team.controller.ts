@@ -73,7 +73,6 @@ const updateTeam = catchAsync(async (req: Request, res: Response) => {
 
   const body = req.body;
   const file = req.file;
-  console.log(body);
 
   const updatedTeam = await teamService.updateTeam(teamId, body, file);
 

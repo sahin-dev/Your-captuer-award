@@ -26,6 +26,7 @@ import { levelService } from "../../Level/level.service";
 import { ContestRanking, contestRankingService } from "../ContestRanking/contestRanking.service";
 import { notificationOrchestrator } from "../../Notification/notificationOrchestrator";
 import { contestCache } from "../contest.cache";
+import logger from "../../../../shared/logger";
 
 type AwardConfig = {
   id: string;
@@ -429,7 +430,7 @@ const finalizeContest = async (contestId: string) => {
     }).then(result => {
       if (result.count === 1) leaseTimestamp = nextTimestamp;
       else clearInterval(heartbeat);
-    }).catch(error => console.error(`Finalization heartbeat failed for ${contestId}`, error));
+    }).catch(error => logger.error({ err: error, contestId }, "Finalization heartbeat failed"));
   }, Math.floor(FINALIZATION_LEASE_MS / 3));
   heartbeat.unref();
 
@@ -518,7 +519,7 @@ const finalizeContest = async (contestId: string) => {
       await notifyGrantRecipients(contestId, grants);
       await notifyContestParticipants(contestId, contest.title, ranking);
     } catch (notificationError) {
-      console.error(`Finalization notifications failed for contest ${contestId}`, notificationError);
+      logger.error({ err: notificationError, contestId }, "Finalization notifications failed");
     }
 
     return prisma.contestFinalization.findUnique({ where: { contestId } });
@@ -542,7 +543,7 @@ const finalizeContest = async (contestId: string) => {
         { label: `contest ${contestId} finalization failure` }
       );
     } catch (statusError) {
-      console.error(`Could not mark contest ${contestId} as FINALIZATION_FAILED`, statusError);
+      logger.error({ err: statusError, contestId }, "Could not mark contest as FINALIZATION_FAILED");
     }
     throw error;
   } finally {

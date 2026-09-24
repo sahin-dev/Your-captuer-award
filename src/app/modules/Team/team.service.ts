@@ -35,6 +35,7 @@ import { contestRankingService } from "../Contest/ContestRanking/contestRanking.
 import { userService } from "../User/user.service";
 import { paginationHelper } from "../../../helpers/paginationHelper";
 import { userStoreService } from "../User/UserStore/userStore.service";
+import logger from "../../../shared/logger";
 
 // The public slice of a user shown next to a team or a membership.
 const TEAM_USER_SELECT = {
@@ -862,7 +863,6 @@ const joinByInvitation = async (
     );
     return joinedTeam;
   } catch (err: any) {
-    console.log(err);
     if (err instanceof ApiError) {
       throw err;
     }
@@ -2209,7 +2209,7 @@ const closeTeamMatches = async (
       );
       closedCount += 1;
     } catch (error) {
-      console.error(`Failed to close team match ${match.id}`, error);
+      logger.error({ err: error, matchId: match.id }, "Failed to close team match");
     }
   }
   return closedCount;
@@ -2937,7 +2937,7 @@ const getTeamMatchSearchStatus = async (teamId: string, userId: string) => {
         where: { id: { in: orphanedEntries.map((entry) => entry.id) } },
         data: { status: TeamMatchQueueStatus.CANCELLED },
       })
-      .catch((error) => console.error("Failed to cancel orphaned team match queue entries", error));
+      .catch((error) => logger.error({ err: error }, "Failed to cancel orphaned team match queue entries"));
   }
 
   const liveEntries = queueEntries.filter(
@@ -3089,7 +3089,7 @@ const timeoutExpiredTeamMatchQueues = async () => {
       }
       timedOutCount += 1;
     } catch (error) {
-      console.error(`Failed to time out team match queue entry ${entry.id}`, error);
+      logger.error({ err: error, entryId: entry.id }, "Failed to time out team match queue entry");
     }
   }
 

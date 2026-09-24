@@ -1,5 +1,6 @@
 import nodemailer, { Transporter } from "nodemailer";
 import config from "../config";
+import logger from "./logger";
 
 export interface MailOptions {
   to: string | string[];
@@ -34,7 +35,6 @@ const getTransporter = (): Transporter => {
 
   const { user, pass, host, port, secure } = config.smtp;
 
-  console.log(config.smtp)
 
   if (!user || !pass) {
     throw new Error(
@@ -87,19 +87,13 @@ export const sendMail = async (options: MailOptions) => {
         attachments,
       });
 
-      console.log(
-        `[mailSender] sent messageId=${info.messageId} to=${to} subject="${subject}"`
-      );
+      logger.info({ messageId: info.messageId, subject }, "Email sent");
       return info;
     } catch (error) {
       lastError = error;
       const canRetry = attempt < MAX_ATTEMPTS && isRetryableError(error);
 
-      console.error(
-        `[mailSender] attempt ${attempt}/${MAX_ATTEMPTS} failed to=${to} subject="${subject}": ${
-          error instanceof Error ? error.message : String(error)
-        }`
-      );
+      logger.warn({ err: error, attempt, maxAttempts: MAX_ATTEMPTS, subject }, "Email send attempt failed");
 
       if (!canRetry) {
         break;

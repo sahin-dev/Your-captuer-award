@@ -1,6 +1,7 @@
 import { NotificationType } from "../../../prismaClient";
 import { notificationService } from "./notification.service";
 import { getIO } from "../../../helpers/websocketSetUp";
+import logger from "../../../shared/logger";
 
 /**
  * Notification Orchestrator
@@ -72,11 +73,9 @@ export async function sendNotification(payload: NotificationPayload) {
     // Send through Socket.IO real-time channel
     sendSocketNotification(payload);
 
-    console.log(
-      `[Notification] ${payload.event} sent to user ${payload.userId}`
-    );
+    logger.debug({ event: payload.event, userId: payload.userId }, "Notification sent");
   } catch (error) {
-    console.error(`[Notification Error] Failed to send notification:`, error);
+    logger.error({ err: error }, "Failed to send notification");
   }
 }
 
@@ -87,7 +86,7 @@ function sendSocketNotification(payload: NotificationPayload) {
   try {
     const io = getIO();
     if (!io) {
-      console.warn("[Socket.IO] Instance not available for real-time notification");
+      logger.warn("Socket.IO not available for real-time notification");
       return;
     }
 
@@ -108,7 +107,7 @@ function sendSocketNotification(payload: NotificationPayload) {
       io.to(payload.userId).emit("notification", socketPayload);
     }
   } catch (error) {
-    console.error("[Socket.IO Error] Failed to send real-time notification:", error);
+    logger.error({ err: error }, "Failed to send real-time notification");
   }
 }
 

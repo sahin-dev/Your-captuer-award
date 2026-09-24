@@ -7,6 +7,7 @@ import parsePrismaValidationError from "../../errors/parsePrismaValidationError"
 import ApiError from "../../errors/ApiError";
 import multer from "multer";
 import { fileUploader } from "../../helpers/fileUploader";
+import logger from "../../shared/logger";
 
 // A failed request must not leave its upload behind. Disk-spooled files are
 // unlinked and streamed files are deleted from object storage - unless a
@@ -23,7 +24,7 @@ const removeTemporaryUploads = (req: Request) => {
       : Object.values(request.files ?? {}).flat();
 
   fileUploader.discardUploadedFiles(files).catch((error) => {
-    console.error("Failed to discard uploads for a failed request", error);
+    logger.error({ err: error }, "Failed to discard uploads for a failed request");
   });
 };
 
@@ -79,13 +80,11 @@ const ErrorHandler = (
   }
   // handle prisma client validation errors
   else if (err instanceof Prisma.PrismaClientValidationError) {
-    console.error(`[PrismaClientValidationError] ${req.method} ${req.originalUrl}:`, err.message);
     statusCode = httpStatus.BAD_REQUEST;
     message = parsePrismaValidationError(err.message);
     errorSources.push("Prisma Client Validation Error");
   }
   else if (err instanceof Prisma.PrismaClientKnownRequestError) {
-    console.error(`[PrismaClientKnownRequestError ${err.code}] ${req.method} ${req.originalUrl}:`, err.message, err.meta);
     if (err.code === "P2028") {
       statusCode = httpStatus.SERVICE_UNAVAILABLE;
       message = "The photo submission took too long to complete. Please try again";
@@ -100,7 +99,6 @@ const ErrorHandler = (
   }
   // Prisma Client Initialization Error
   else if (err instanceof Prisma.PrismaClientInitializationError) {
-    console.error(`[PrismaClientInitializationError] ${req.method} ${req.originalUrl}:`, err.message);
     statusCode = httpStatus.SERVICE_UNAVAILABLE;
     message =
       "Failed to initialize Prisma Client. Check your database connection or Prisma configuration.";
@@ -108,7 +106,6 @@ const ErrorHandler = (
   }
   // Prisma Client Rust Panic Error
   else if (err instanceof Prisma.PrismaClientRustPanicError) {
-    console.error(`[PrismaClientRustPanicError] ${req.method} ${req.originalUrl}:`, err.message);
     statusCode = httpStatus.INTERNAL_SERVER_ERROR;
     message =
       "A critical error occurred in the Prisma engine. Please try again later.";
@@ -116,7 +113,6 @@ const ErrorHandler = (
   }
   // Prisma Client Unknown Request Error
   else if (err instanceof Prisma.PrismaClientUnknownRequestError) {
-    console.error(`[PrismaClientUnknownRequestError] ${req.method} ${req.originalUrl}:`, err.message);
     statusCode = httpStatus.INTERNAL_SERVER_ERROR;
     message = "An unknown error occurred while processing the request.";
     errorSources.push("Prisma Client Unknown Request Error");
@@ -144,6 +140,15 @@ const ErrorHandler = (
   else {
     message = "An unexpected error occurred!";
     errorSources.push("Unknown Error");
+  }
+
+  // The request logger writes one line per request. Attaching the error puts
+  // its stack on that line - only for server-side failures and database
+  // errors, since a normal 4xx (bad input, not found) has nothing to debug.
+  const isDatabaseError =
+    err instanceof Prisma.PrismaClientKnownRequestError || err instanceof Prisma.PrismaClientValidationError;
+  if (statusCode >= 500 || isDatabaseError) {
+    res.err = err;
   }
 
   res.status(statusCode).json({

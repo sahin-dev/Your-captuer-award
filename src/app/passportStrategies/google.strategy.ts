@@ -4,6 +4,7 @@ import { IUser } from "../modules/User/user.interface";
 import prisma from "../../shared/prisma";
 import globalEventHandler from "../event/eventEmitter";
 import Events from "../event/events.constant";
+import logger from "../../shared/logger";
 
 const googleConfig = {
     clientID:config.google.client_id as string, 
@@ -12,7 +13,6 @@ const googleConfig = {
 }
 
 const googleCallback = async (accessToken:any, refreshToken:any, profile:Profile, done:any)=>{
-    console.log('# Google Profile --->', profile, "------------###############################------------");
   try {
     if (!profile.emails || !profile.emails[0]?.value) {
       return done(new Error("No email found in Google profile"), null);
@@ -90,7 +90,7 @@ const googleCallback = async (accessToken:any, refreshToken:any, profile:Profile
     return done(null, user);
 
   } catch (error) {
-    console.error(error, "Error in Google Strategy");
+    logger.error({ err: error }, "Google login failed");
     done(error, null);
   }
 }

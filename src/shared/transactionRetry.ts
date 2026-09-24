@@ -1,4 +1,5 @@
 import { Prisma } from "../prismaClient";
+import logger from "./logger";
 
 // MongoDB uses optimistic concurrency: a transaction is aborted as soon as any
 // other writer touches a document it has already written. The server labels
@@ -42,7 +43,7 @@ export const runWithWriteConflictRetry = async <T>(
       }
       lastError = error;
       const delay = baseDelayMs * 2 ** (attempt - 1) + Math.floor(Math.random() * baseDelayMs);
-      console.warn(`Write conflict on ${label} (attempt ${attempt}/${attempts}); retrying in ${delay}ms`);
+      logger.warn(`Write conflict on ${label} (attempt ${attempt}/${attempts}), retrying in ${delay}ms`);
       await new Promise((resolve) => setTimeout(resolve, delay));
     }
   }

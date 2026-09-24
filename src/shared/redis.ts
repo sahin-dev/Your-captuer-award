@@ -1,5 +1,6 @@
 import { createClient } from "redis";
 import config from "../config";
+import logger from "./logger";
 
 const url = `redis://${config.redis.host}:${config.redis.port}`;
 
@@ -11,14 +12,14 @@ export const redisSubClient = redisClient.duplicate();
 
 // node-redis emits "error" on connection problems; without a listener the
 // process crashes, so log it and let the client's built-in reconnect retry.
-redisClient.on("error", (error) => console.error("[Redis] error:", error));
-redisSubClient.on("error", (error) => console.error("[Redis sub] error:", error));
+redisClient.on("error", (error) => logger.error({ err: error }, "Redis error"));
+redisSubClient.on("error", (error) => logger.error({ err: error }, "Redis subscriber error"));
 
 // node-redis v4+ does not connect on creation. Any command before this
 // resolves fails with ClientClosedError, so await it during startup.
 export async function connectRedis() {
   await Promise.all([redisClient.connect(), redisSubClient.connect()]);
-  console.log("[Redis] clients connected");
+  logger.info("Redis connected");
 }
 
 export async function disconnectRedis() {

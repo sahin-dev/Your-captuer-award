@@ -4,6 +4,7 @@ import httpStatus from "http-status";
 import mailer from "../../../shared/mailSender";
 import { SupportStatus } from "../../../prismaClient";
 import { paginationHelper } from "../../../helpers/paginationHelper";
+import logger from "../../../shared/logger";
 
 /**
  * Generate a unique ticket number in the format TKT-YYYYMMDD-XXXX
@@ -97,7 +98,7 @@ const updateSupportStatus = async (id: string, status: SupportStatus) => {
       emailHtml,
       `Update on Support Ticket: ${ticket.ticket_no}`
     ).catch((err) => {
-      console.error("Failed to send status update email:", err);
+      logger.error({ err }, "Failed to send support status update email");
     });
 
     return updatedTicket;

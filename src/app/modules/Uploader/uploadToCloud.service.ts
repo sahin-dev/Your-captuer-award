@@ -5,6 +5,7 @@ import { ProviderConfiguration, Configuration, DOConfuration } from "./types/clo
 import { CloudProvider } from "./cloud.enum";
 import { DigitalOceanConfiguration } from "./classes/DigitalOceanConfiguration";
 import { IProviderConfiguration } from "./classes/IProviderConfiguration";
+import logger from "../../../shared/logger";
 
 
 
@@ -108,7 +109,7 @@ export class CloudUploader {
               Key,
             };
           } catch (error) {
-            console.error("Error uploading file to DigitalOcean:", error);
+            logger.error({ err: error }, "Failed to upload file to DigitalOcean");
             throw error;
           }finally {
             this.client.destroy()

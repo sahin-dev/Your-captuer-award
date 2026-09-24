@@ -10,6 +10,7 @@ import { contestProgressService } from '../Contest/ContestProgress/contestProgre
 import { notificationOrchestrator } from '../Notification/notificationOrchestrator'
 import { contestRankingService } from '../Contest/ContestRanking/contestRanking.service'
 import { activeContestWhere } from '../Contest/contestLifecycle'
+import logger from "../../../shared/logger"
 
 type VoteContestPhoto = ContestPhoto & {
     participant: {
@@ -109,7 +110,7 @@ export const addOneVote = async (userId:string, contestId:string, contestPhotoId
             )),
         ])
         sideEffects.forEach(effect => {
-            if(effect.status === "rejected") console.error("Post-vote side effect failed", effect.reason)
+            if(effect.status === "rejected") logger.error({ err: effect.reason }, "Post-vote side effect failed")
         })
 
         return result
@@ -237,7 +238,7 @@ export const addVotes = async (userId:string, contestId:string, contestPhotoIds:
         ])
     const settled = await Promise.allSettled(sideEffects)
     settled.forEach(effect => {
-        if(effect.status === "rejected") console.error("Post-vote side effect failed", effect.reason)
+        if(effect.status === "rejected") logger.error({ err: effect.reason }, "Post-vote side effect failed")
     })
 
     return persisted.votes

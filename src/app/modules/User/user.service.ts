@@ -13,6 +13,7 @@ import bcrypt from 'bcryptjs'
 import { userStoreService } from "./UserStore/userStore.service"
 import { levelService } from "../Level/level.service"
 import { paginationHelper } from "../../../helpers/paginationHelper"
+import logger from "../../../shared/logger"
 
 
 
@@ -243,7 +244,6 @@ const uploadCover = async (userId:string,file:Express.Multer.File)=>{
 
 const forgetPassword = async ( email:string)=>{
     const user = await prisma.user.findFirst({where:{email}})
-    console.log("Forget password request for email:", email, "User found:", !!user)
 
     if(!user){
         throw new ApiError(httpstatus.NOT_FOUND, "User not found with this email")
@@ -270,7 +270,7 @@ const forgetPassword = async ( email:string)=>{
 try {
         await mailer(email, html, "Your Capture Award");
     } catch (error) {
-        console.error("Forget password email send failed:", error);
+        logger.error({ err: error }, "Failed to send forget password email");
         throw new ApiError(
             httpstatus.SERVICE_UNAVAILABLE,
             "Unable to send password reset email right now. Please try again later."
