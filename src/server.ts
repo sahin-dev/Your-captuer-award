@@ -8,6 +8,7 @@ import WebSocketHandler from "./socket";
 import { connectRedis, disconnectRedis } from "./shared/redis";
 import dns from 'dns'
 import logger from "./shared/logger";
+import { drainBackgroundTasks } from "./shared/backgroundTasks";
 
 
 let server: Server | undefined;
@@ -110,6 +111,9 @@ async function shutdown(exitCode = 0) {
       });
     });
   }
+
+  // Post-vote side effects still running need Redis and Prisma.
+  await drainBackgroundTasks();
 
   await agenda.stop().catch((error) => {
     logger.error({ err: error }, "Failed to stop agenda");

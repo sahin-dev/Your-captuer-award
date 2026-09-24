@@ -52,6 +52,11 @@ const config =  {
         host: process.env.REDIS_HOST || "localhost",
         port: Number(process.env.REDIS_PORT || 6379)
     },
+    vote:{
+        // Levels and notifications after a vote run after the response is
+        // sent. Set VOTE_ASYNC_SIDE_EFFECTS=false to make the request wait again.
+        asyncSideEffects: process.env.VOTE_ASYNC_SIDE_EFFECTS !== "false"
+    },
     // Telemetry is off unless an OTLP endpoint is set, e.g. http://localhost:4318
     otel:{
         endpoint: process.env.OTEL_EXPORTER_OTLP_ENDPOINT,

@@ -1,7 +1,7 @@
 import httpstatus from 'http-status'
 import ApiError from "../../../errors/ApiError"
 import prisma from "../../../shared/prisma"
-import { ContestParticipantStatus, ContestPhoto, Prisma, Vote, VoteType } from '../../../prismaClient'
+import { ContestParticipant, ContestParticipantStatus, ContestPhoto, Prisma, User, Vote, VoteType } from '../../../prismaClient'
 import { ObjectId } from 'mongodb'
 import { levelService } from '../Level/level.service'
 import { contestRuleEngine } from '../Contest/ContestRules/contestRule.engine'
@@ -11,12 +11,11 @@ import { notificationOrchestrator } from '../Notification/notificationOrchestrat
 import { contestRankingService } from '../Contest/ContestRanking/contestRanking.service'
 import { activeContestWhere } from '../Contest/contestLifecycle'
 import logger from "../../../shared/logger"
+import config from "../../../config"
+import { runInBackground } from "../../../shared/backgroundTasks"
 
 type VoteContestPhoto = ContestPhoto & {
-    participant: {
-        id: string
-        userId: string
-    }
+    participant: ContestParticipant
 }
 
 const resolveContestPhotoForVote = async (contestId:string, contestPhotoId:string): Promise<VoteContestPhoto | null> => {
@@ -45,25 +44,71 @@ const getVoteType = (contestPhoto: Pick<ContestPhoto, "promoted" | "promotionExp
 }
 
 
+const getVoterName = (user:User) =>
+    user.fullName || [user.firstName, user.lastName].filter(Boolean).join(" ") || user.username || "Someone"
+
+// Everything derived from a vote: participant level, photo owner's level and
+// the "you received a vote" notification. The vote is already durable when
+// this runs, so a failure here is logged and never fails the vote.
+const runVoteSideEffects = async (contestId:string, contestTitle:string, voter:User, photos:VoteContestPhoto[]) => {
+    const voterName = getVoterName(voter)
+    const participantIds = [...new Set(photos.map(photo => photo.participantId))]
+    const ownerUserIds = [...new Set(photos.map(photo => photo.participant.userId))]
+
+    const settled = await Promise.allSettled([
+        ...participantIds.map(participantId => contestProgressService.evaluateParticipantLevel(contestId, participantId)),
+        ...ownerUserIds.map(ownerUserId => levelService.evaluateAndUpdateUserLevel(ownerUserId)),
+        ...photos.map(photo => getVoteCount(photo.id).then(totalVotes => notificationOrchestrator.notifyVoteReceived(
+            photo.participantId,
+            photo.participant.userId,
+            contestId,
+            contestTitle,
+            photo.id,
+            voter.id,
+            voterName,
+            totalVotes,
+        ))),
+    ])
+    settled.forEach(effect => {
+        if(effect.status === "rejected") logger.error({ err: effect.reason, contestId }, "Post-vote side effect failed")
+    })
+}
+
+// By default the response goes out as soon as the vote is committed and the
+// side effects finish in the background (config.vote.asyncSideEffects).
+const handleVoteSideEffects = async (contestId:string, contestTitle:string, voter:User, photos:VoteContestPhoto[]) => {
+    if(photos.length === 0){
+        return
+    }
+    // Drop the memoized ranking first so the side effects score this vote.
+    contestRankingService.invalidateContestRanking(contestId)
+
+    if(config.vote.asyncSideEffects){
+        runInBackground("vote-side-effects", () => runVoteSideEffects(contestId, contestTitle, voter, photos))
+        return
+    }
+    await runVoteSideEffects(contestId, contestTitle, voter, photos)
+}
+
 export const addOneVote = async (userId:string, contestId:string, contestPhotoId:string)=>{
-    
-    const user = await prisma.user.findUnique({where:{id:userId}})
-    
-     if (!user){
+    const [user, contest, contestPhoto] = await Promise.all([
+        prisma.user.findUnique({where:{id:userId}}),
+        prisma.contest.findFirst({where:{id:contestId, ...activeContestWhere()}}),
+        resolveContestPhotoForVote(contestId, contestPhotoId),
+    ])
+
+    if (!user){
         throw new ApiError(httpstatus.NOT_FOUND, 'User not found')
     }
-
-    const contest = await prisma.contest.findFirst({where:{id:contestId, ...activeContestWhere()}})
-    
     if (!contest){
         throw new  ApiError(httpstatus.NOT_FOUND, 'contest not found')
     }
-
-    const contestPhoto = await resolveContestPhotoForVote(contestId, contestPhotoId)
     if(!contestPhoto){
         throw new ApiError(httpstatus.NOT_FOUND, "contest photo not found")
     }
-    const {voterParticipant} = await contestRuleEngine.validateVotingRules(contestId, userId, contestPhoto.id)
+    const {voterParticipant} = await contestRuleEngine.validateVotingRules(
+        contestId, userId, [contestPhoto.id], {contest, user, contestPhotos:[contestPhoto]}
+    )
 
     const type = getVoteType(contestPhoto)
 
@@ -90,28 +135,7 @@ export const addOneVote = async (userId:string, contestId:string, contestPhotoId
             return vote
         }, {timeout:15000, maxWait:10000})
 
-        // The vote is already durable. Derived levels and notifications are
-        // retryable side effects and must not turn a successful vote into a 500.
-        // Drop the memoized ranking first so those side effects score this vote.
-        contestRankingService.invalidateContestRanking(contestId)
-        const voterName = user.fullName || [user.firstName, user.lastName].filter(Boolean).join(" ") || user.username || "Someone"
-        const sideEffects = await Promise.allSettled([
-            contestProgressService.evaluateParticipantLevel(contestId, contestPhoto.participantId),
-            levelService.evaluateAndUpdateUserLevel(contestPhoto.participant.userId),
-            getVoteCount(contestPhoto.id).then(totalVotes => notificationOrchestrator.notifyVoteReceived(
-                contestPhoto.participantId,
-                contestPhoto.participant.userId,
-                contestId,
-                contest.title,
-                contestPhoto.id,
-                userId,
-                voterName,
-                totalVotes,
-            )),
-        ])
-        sideEffects.forEach(effect => {
-            if(effect.status === "rejected") logger.error({ err: effect.reason }, "Post-vote side effect failed")
-        })
+        await handleVoteSideEffects(contestId, contest.title, user, [contestPhoto])
 
         return result
     }catch(error){
@@ -127,27 +151,26 @@ export const addOneVote = async (userId:string, contestId:string, contestPhotoId
 
 export const addVotes = async (userId:string, contestId:string, contestPhotoIds:string[])=>{
 
-    const user = await prisma.user.findUnique({where:{id:userId}})
+    const uniquePhotoIds = [...new Set(contestPhotoIds)]
+    const [user, contest, contestPhotos] = await Promise.all([
+        prisma.user.findUnique({where:{id:userId}}),
+        prisma.contest.findFirst({where:{id:contestId, ...activeContestWhere()}}),
+        Promise.all(uniquePhotoIds.map(id => resolveContestPhotoForVote(contestId, id))),
+    ])
 
-     if (!user){
+    if (!user){
         throw new ApiError(httpstatus.NOT_FOUND, 'User not found')
     }
-    const contest = await prisma.contest.findFirst({where:{id:contestId, ...activeContestWhere()}})
-
     if (!contest){
         throw new  ApiError(httpstatus.NOT_FOUND, 'Contest is not available to vote')
     }
-
-    const uniquePhotoIds = [...new Set(contestPhotoIds)]
-    const contestPhotos = await Promise.all(uniquePhotoIds.map(id => resolveContestPhotoForVote(contestId, id)))
     if(contestPhotos.some(photo => !photo)){
         throw new ApiError(httpstatus.NOT_FOUND, "One or more contest photos were not found")
     }
     const resolvedPhotos = contestPhotos.filter((photo): photo is VoteContestPhoto => Boolean(photo))
-    const validations = await Promise.all(
-        resolvedPhotos.map(photo => contestRuleEngine.validateVotingRules(contestId, userId, photo.id))
+    const {voterParticipant} = await contestRuleEngine.validateVotingRules(
+        contestId, userId, resolvedPhotos.map(photo => photo.id), {contest, user, contestPhotos:resolvedPhotos}
     )
-    const voterParticipant = validations.find(item => item.voterParticipant)?.voterParticipant ?? null
 
     const persistVotes = () => prisma.$transaction(async tx => {
         const guard = await tx.contest.updateMany({
@@ -218,28 +241,7 @@ export const addVotes = async (userId:string, contestId:string, contestPhotoIds:
     }
 
     const createdIds = new Set(persisted.createdPhotoIds)
-    contestRankingService.invalidateContestRanking(contestId)
-    const voterName = user.fullName || [user.firstName, user.lastName].filter(Boolean).join(" ") || user.username || "Someone"
-    const sideEffects = resolvedPhotos
-        .filter(photo => createdIds.has(photo.id))
-        .flatMap(photo => [
-            contestProgressService.evaluateParticipantLevel(contestId, photo.participantId),
-            levelService.evaluateAndUpdateUserLevel(photo.participant.userId),
-            getVoteCount(photo.id).then(totalVotes => notificationOrchestrator.notifyVoteReceived(
-                photo.participantId,
-                photo.participant.userId,
-                contestId,
-                contest.title,
-                photo.id,
-                userId,
-                voterName,
-                totalVotes,
-            )),
-        ])
-    const settled = await Promise.allSettled(sideEffects)
-    settled.forEach(effect => {
-        if(effect.status === "rejected") logger.error({ err: effect.reason }, "Post-vote side effect failed")
-    })
+    await handleVoteSideEffects(contestId, contest.title, user, resolvedPhotos.filter(photo => createdIds.has(photo.id)))
 
     return persisted.votes
 }

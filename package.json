@@ -15,7 +15,7 @@
     "postman:contest": "node postman/generate-contest-system-collection.cjs",
     "test": "echo \"Error: no test specified\" && exit 1",
     "test:contest": "node --require ts-node/register/transpile-only --test src/app/modules/Contest/contest.validation.test.ts src/app/modules/Contest/contestPhotoInput.test.ts src/app/modules/Contest/ContestRules/submissionFormat.test.ts",
-    "test:vote": "node --require ts-node/register/transpile-only --test src/app/modules/Vote/vote.validation.test.ts src/app/modules/Vote/voteWeight.test.ts",
+    "test:vote": "node --require ts-node/register/transpile-only --test src/app/modules/Vote/vote.validation.test.ts src/app/modules/Vote/voteWeight.test.ts src/shared/backgroundTasks.test.ts",
     "test:upload": "node --require ts-node/register/transpile-only --test src/helpers/fileUploader.test.ts src/shared/uploadFormats.test.ts",
     "seed": "ts-node-dev src/seeder.ts",
     "seed:prizes": "ts-node --transpile-only src/seeder.ts seed:prizes",

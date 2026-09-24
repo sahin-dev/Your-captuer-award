@@ -1,7 +1,7 @@
 import httpStatus from "http-status";
 import ApiError from "../../../../errors/ApiError";
 import prisma from "../../../../shared/prisma";
-import { ContestParticipant, ContestParticipantStatus } from "../../../../prismaClient";
+import { Contest, ContestParticipant, ContestParticipantStatus, ContestPhoto, User } from "../../../../prismaClient";
 import {
   ContestRuleKey,
   isContestRuleKey,
@@ -312,52 +312,77 @@ const validateUploadRules = async (payload: UploadValidationPayload) => {
   }
 };
 
+type VotingPhoto = ContestPhoto & { participant: ContestParticipant };
+
+// Records the caller already loaded, so validation does not fetch them again.
+type VotingPreloaded = {
+  contest?: Contest;
+  user?: User;
+  contestPhotos?: VotingPhoto[];
+};
+
+/**
+ * Validates one ballot (one or more photos) for a voter. Everything that
+ * depends only on the voter - the VOTING rule, their participant record and
+ * their teammates - is loaded once, in parallel, instead of once per photo.
+ * Checks run in the same order as before so the error a user sees is unchanged.
+ */
 const validateVotingRules = async (
   contestId: string,
   userId: string,
-  photoId: string
+  photoIds: string[],
+  preloaded: VotingPreloaded = {}
 ): Promise<{ voterParticipant: ContestParticipant | null }> => {
-  const voting = await contestRuleService.getEnabledRuleValue<VotingValue>(contestId, "VOTING");
+  const preloadedPhotoById = new Map((preloaded.contestPhotos ?? []).map((photo) => [photo.id, photo]));
+  const missingPhotoIds = photoIds.filter((id) => !preloadedPhotoById.has(id));
 
-  const contest = await prisma.contest.findFirst({ where: { id: contestId, ...activeContestWhere() } });
+  const [voting, contest, user, voterParticipant, loadedPhotos, teammateUserIds] = await Promise.all([
+    contestRuleService.getEnabledRuleValue<VotingValue>(contestId, "VOTING"),
+    preloaded.contest ?? prisma.contest.findFirst({ where: { id: contestId, ...activeContestWhere() } }),
+    preloaded.user ?? prisma.user.findUnique({ where: { id: userId } }),
+    prisma.contestParticipant.findFirst({
+      where: { contestId, userId, status: ContestParticipantStatus.ACTIVE },
+    }),
+    missingPhotoIds.length > 0
+      ? prisma.contestPhoto.findMany({
+          where: {
+            contestId,
+            id: { in: missingPhotoIds },
+            photoId: { not: null },
+            participant: { status: ContestParticipantStatus.ACTIVE },
+          },
+          include: { participant: true },
+        })
+      : Promise.resolve([] as VotingPhoto[]),
+    getTeammateUserIds(userId),
+  ]);
+
   if (!contest) {
     throw new ApiError(httpStatus.NOT_FOUND, "Contest not found");
   }
 
-  if (voting?.membersOnly) {
-    const user = await prisma.user.findUnique({ where: { id: userId } });
-    if (!user) {
-      throw new ApiError(httpStatus.NOT_FOUND, "User not found");
-    }
+  if (voting?.membersOnly && !user) {
+    throw new ApiError(httpStatus.NOT_FOUND, "User not found");
   }
 
-  const voterParticipant = await prisma.contestParticipant.findFirst({
-    where: { contestId, userId, status: ContestParticipantStatus.ACTIVE },
-  });
   if (voting?.requireContestParticipant && !voterParticipant) {
     throw new ApiError(httpStatus.NOT_FOUND, "Participant not found");
   }
 
-  const contestPhoto = await prisma.contestPhoto.findFirst({
-    where: {
-      contestId,
-      id: photoId,
-      photoId: { not: null },
-      participant: { status: ContestParticipantStatus.ACTIVE },
-    },
-    include: { participant: true },
-  });
-  if (!contestPhoto) {
-    throw new ApiError(httpStatus.NOT_FOUND, "Contest photo not found");
-  }
+  const photoById = new Map([...preloadedPhotoById, ...loadedPhotos.map((photo) => [photo.id, photo] as const)]);
+  for (const photoId of photoIds) {
+    const contestPhoto = photoById.get(photoId);
+    if (!contestPhoto) {
+      throw new ApiError(httpStatus.NOT_FOUND, "Contest photo not found");
+    }
 
-  if (contestPhoto.participant.userId === userId) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "You are not allowed to vote on your own photo");
-  }
+    if (contestPhoto.participant.userId === userId) {
+      throw new ApiError(httpStatus.BAD_REQUEST, "You are not allowed to vote on your own photo");
+    }
 
-  const teammateUserIds = await getTeammateUserIds(userId);
-  if (teammateUserIds.includes(contestPhoto.participant.userId)) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "You are not allowed to vote on your teammate's photo");
+    if (teammateUserIds.includes(contestPhoto.participant.userId)) {
+      throw new ApiError(httpStatus.BAD_REQUEST, "You are not allowed to vote on your teammate's photo");
+    }
   }
 
   return { voterParticipant };
