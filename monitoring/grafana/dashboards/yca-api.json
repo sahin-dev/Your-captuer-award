@@ -7,7 +7,7 @@
   ],
   "timezone": "browser",
   "schemaVersion": 39,
-  "version": 2,
+  "version": 3,
   "refresh": "30s",
   "time": {
     "from": "now-6h",
@@ -285,13 +285,441 @@
       }
     },
     {
+      "id": 18,
+      "type": "row",
+      "title": "CPU & memory",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 13,
+        "w": 24,
+        "h": 1
+      },
+      "panels": []
+    },
+    {
+      "id": 19,
+      "type": "stat",
+      "title": "Server CPU",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 14,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "1 - sum(rate(system_cpu_time_seconds_total{job=\"yca-api\", system_cpu_state=\"idle\"}[5m])) / sum(rate(system_cpu_time_seconds_total{job=\"yca-api\"}[5m]))",
+          "legendFormat": ""
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 0.7
+              },
+              {
+                "color": "red",
+                "value": 0.9
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {},
+      "description": "Whole server, all cores. Includes everything running on it, not only the API."
+    },
+    {
+      "id": 20,
+      "type": "stat",
+      "title": "Server RAM",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 6,
+        "y": 14,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum(system_memory_usage{job=\"yca-api\", system_memory_state=\"used\"}) / sum(system_memory_usage{job=\"yca-api\"})",
+          "legendFormat": ""
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 0.75
+              },
+              {
+                "color": "red",
+                "value": 0.9
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {},
+      "description": "Whole server memory in use (total minus available)."
+    },
+    {
+      "id": 21,
+      "type": "stat",
+      "title": "API CPU (all workers)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 14,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum(rate(process_cpu_time_seconds_total{job=\"yca-api\"}[5m])) / count(count by (system_cpu_logical_number) (system_cpu_time_seconds_total{job=\"yca-api\", system_cpu_state=\"idle\"}))",
+          "legendFormat": ""
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 0.7
+              },
+              {
+                "color": "red",
+                "value": 0.9
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {},
+      "description": "CPU used by all PM2 workers together, as a share of the whole server."
+    },
+    {
+      "id": 22,
+      "type": "stat",
+      "title": "API RAM (all workers)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 18,
+        "y": 14,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum(process_memory_usage{job=\"yca-api\"})",
+          "legendFormat": ""
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes"
+        },
+        "overrides": []
+      },
+      "options": {},
+      "description": "Resident memory (RSS) of all PM2 workers together."
+    },
+    {
+      "id": 23,
+      "type": "timeseries",
+      "title": "Server CPU by state",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 18,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (system_cpu_state) (rate(system_cpu_time_seconds_total{job=\"yca-api\", system_cpu_state!=\"idle\"}[5m])) / scalar(sum(rate(system_cpu_time_seconds_total{job=\"yca-api\"}[5m])))",
+          "legendFormat": "{{system_cpu_state}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1,
+          "custom": {
+            "stacking": {
+              "mode": "normal"
+            },
+            "fillOpacity": 40,
+            "lineWidth": 1
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "description": "Busy share of all cores. Stacked: the top of the stack is total CPU usage."
+    },
+    {
+      "id": 24,
+      "type": "timeseries",
+      "title": "Server memory",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 18,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum(system_memory_usage{job=\"yca-api\", system_memory_state=\"used\"})",
+          "legendFormat": "used"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum(system_memory_usage{job=\"yca-api\"})",
+          "legendFormat": "total"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      }
+    },
+    {
+      "id": 25,
+      "type": "timeseries",
+      "title": "CPU per worker (% of one core)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 26,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (instance) (rate(process_cpu_time_seconds_total{job=\"yca-api\"}[5m]))",
+          "legendFormat": "{{instance}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "description": "A Node.js worker runs JavaScript on one core, so 100% here means that worker is saturated."
+    },
+    {
+      "id": 26,
+      "type": "timeseries",
+      "title": "Memory per worker (RSS)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 26,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "process_memory_usage{job=\"yca-api\"}",
+          "legendFormat": "{{instance}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "transparent",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 4404019200
+              }
+            ]
+          },
+          "custom": {
+            "thresholdsStyle": {
+              "mode": "dashed"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "description": "PM2 restarts a worker when it passes 4.2 GB (max_memory_restart in ecosystem.config.js)."
+    },
+    {
       "id": 8,
       "type": "row",
       "title": "Latency",
       "collapsed": false,
       "gridPos": {
         "x": 0,
-        "y": 13,
+        "y": 34,
         "w": 24,
         "h": 1
       },
@@ -307,7 +735,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 14,
+        "y": 35,
         "w": 12,
         "h": 8
       },
@@ -352,7 +780,7 @@
       },
       "gridPos": {
         "x": 12,
-        "y": 14,
+        "y": 35,
         "w": 12,
         "h": 8
       },
@@ -406,7 +834,7 @@
       "collapsed": false,
       "gridPos": {
         "x": 0,
-        "y": 22,
+        "y": 43,
         "w": 24,
         "h": 1
       },
@@ -422,7 +850,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 23,
+        "y": 44,
         "w": 8,
         "h": 8
       },
@@ -468,7 +896,7 @@
       },
       "gridPos": {
         "x": 8,
-        "y": 23,
+        "y": 44,
         "w": 8,
         "h": 8
       },
@@ -513,7 +941,7 @@
       },
       "gridPos": {
         "x": 16,
-        "y": 23,
+        "y": 44,
         "w": 8,
         "h": 8
       },
@@ -555,7 +983,7 @@
       "collapsed": false,
       "gridPos": {
         "x": 0,
-        "y": 31,
+        "y": 52,
         "w": 24,
         "h": 1
       },
@@ -571,7 +999,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 32,
+        "y": 53,
         "w": 6,
         "h": 6
       },
@@ -605,7 +1033,7 @@
       },
       "gridPos": {
         "x": 6,
-        "y": 32,
+        "y": 53,
         "w": 18,
         "h": 6
       },

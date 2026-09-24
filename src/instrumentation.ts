@@ -14,6 +14,7 @@ import { RedisInstrumentation } from "@opentelemetry/instrumentation-redis";
 import { PinoInstrumentation } from "@opentelemetry/instrumentation-pino";
 import { RuntimeNodeInstrumentation } from "@opentelemetry/instrumentation-runtime-node";
 import { PrismaInstrumentation } from "@prisma/instrumentation";
+import { HostMetrics } from "@opentelemetry/host-metrics";
 import config from "./config";
 
 let sdk: NodeSDK | undefined;
@@ -56,6 +57,17 @@ if (config.otel.endpoint) {
   });
 
   sdk.start();
+
+  // CPU and memory. Every worker reports its own process; only the first PM2
+  // worker (or the single local process) reports the whole server, since every
+  // worker would otherwise send the same machine-wide numbers.
+  const isFirstWorker = (process.env.NODE_APP_INSTANCE ?? "0") === "0";
+  new HostMetrics({
+    name: "host-metrics",
+    metricGroups: isFirstWorker
+      ? ["process.cpu", "process.memory", "system.cpu", "system.memory"]
+      : ["process.cpu", "process.memory"],
+  }).start();
 }
 
 // Flushes spans and metrics that are still buffered. Called on shutdown.

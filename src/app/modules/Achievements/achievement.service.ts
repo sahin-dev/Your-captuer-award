@@ -2,6 +2,7 @@ import ApiError from "../../../errors/ApiError";
 import { paginationHelper } from "../../../helpers/paginationHelper";
 import { AchievementKind, AwardTarget, AwardType, PrizeType } from "../../../prismaClient";
 import prisma from "../../../shared/prisma";
+import logger from "../../../shared/logger";
 import httpStatus from 'http-status'
 import { contestCache } from "../Contest/contest.cache";
 import {
@@ -400,15 +401,38 @@ const getUserPhotoAchievements = async (userId:string, photoId:string) => {
 }
 
 const getAllPhotosAchievements = async (page = 1, limit = 20) => {
-    const achievements = await prisma.contestAchievement.findMany({
+    const records = await prisma.contestAchievement.findMany({
         where:{photoId:{not:null}},
         include:{
             contest:{select:{id:true, title:true, banner:true}},
             photo:{select:{id:true, photo:{select:{id:true, url:true, title:true}}}},
-            participant:{select:{user:{select:{id:true, fullName:true, avatar:true}}}}
+            participant:{select:{userId:true}}
         },
         orderBy:{createdAt:"desc"}
     })
+
+    // Users are loaded separately rather than through participant.user: a
+    // participant whose user document was removed from the database makes
+    // Prisma fail the whole query ("Field user is required to return data").
+    const userIds = [...new Set(records.flatMap(record => record.participant ? [record.participant.userId] : []))]
+    const users = await prisma.user.findMany({
+        where:{id:{in:userIds}},
+        select:{id:true, fullName:true, avatar:true}
+    })
+    const userById = new Map(users.map(user => [user.id, user]))
+
+    const achievements = records.flatMap(({participant, ...record}) => {
+        const user = participant ? userById.get(participant.userId) : undefined
+        if(participant && !user){
+            return []
+        }
+        return [{...record, participant:participant ? {user} : null}]
+    })
+
+    const orphaned = records.length - achievements.length
+    if(orphaned > 0){
+        logger.warn({orphaned, missingUserIds:userIds.filter(id => !userById.has(id))}, "Skipped achievements whose participant user no longer exists")
+    }
 
     return paginateAchievements(collapseLevelAchievements(achievements), page, limit)
 }
