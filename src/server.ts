@@ -84,7 +84,7 @@ async function startServer() {
   // Contest lifecycle correctness depends on Agenda. Do not accept traffic in
   // a half-started state where contests never open/close or finalize.
   dns.setServers(["8.8.8.8", "8.8.4.4"]);
-  // await startAgenda();
+  await startAgenda();
   await connectRedis();
 
   server = app.listen(PORT, () => {
