@@ -391,7 +391,9 @@ const getContestPhotographers = catchAsync(async (req:Request, res:Response)=> {
     const {contestId} = req.params
     const userId = req.user?.id
     const {page = "1", limit = "20", level} = req.query as {page:string, limit:string, level?:string}
-    const photos = await contestService.getContestTopPhotographers(contestId, userId, Number(page), Number(limit), level)
+    const photos = await contestService.getContestTopPhotographers(
+        contestId, userId, Number(page), Number(limit), level, undefined, {allLevelsWhenUnset:true}
+    )
 
     sendResponse(res, {
         statusCode:200,

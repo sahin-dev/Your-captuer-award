@@ -2841,7 +2841,10 @@ const getContestTopPhotographers = async (
     page?: number,
     limit?: number,
     level?: string,
-    rankingInput?:Awaited<ReturnType<typeof contestRankingService.buildContestRanking>>
+    rankingInput?:Awaited<ReturnType<typeof contestRankingService.buildContestRanking>>,
+    // /rank-photographer lists every photographer when no level tab is
+    // requested. /ranking keeps the older default of the AMATEUR tab.
+    options?: { allLevelsWhenUnset?: boolean }
 ) => {
     const contest = await prisma.contest.findUnique({
         where: { id: contestId }
@@ -2851,7 +2854,8 @@ const getContestTopPhotographers = async (
         throw new ApiError(httpstatus.NOT_FOUND, "contest not found")
     }
 
-    const activeLevel = normalizeRankLevel(level)
+    const showAllLevels = Boolean(options?.allLevelsWhenUnset) && !level
+    const activeLevel = showAllLevels ? null : normalizeRankLevel(level)
 
     const ranking = rankingInput ?? await contestRankingService.buildContestRanking(contestId)
 
@@ -2957,7 +2961,7 @@ const getContestTopPhotographers = async (
         : new Set<string>()
 
     const sortedParticipant = participantWithVote
-        .filter(participant => participant.level === activeLevel)
+        .filter(participant => activeLevel === null || participant.level === activeLevel)
         .map((participant, idx) => ({
             ...participant,
             levelRank: idx + 1,
