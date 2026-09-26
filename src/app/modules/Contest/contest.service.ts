@@ -1816,7 +1816,7 @@ const getRemainingPhotos = async (userId:string, contestId:string)=>{
     }
     
     const contestUploads = await prisma.contestPhoto.findMany({where:{contestId, participant:{userId}}})
-    const userPhotos = await prisma.userPhoto.findMany({where:{userId, contestUpload:{none:{contestId}}}, select:{id:true, url:true}})
+    const userPhotos = await prisma.userPhoto.findMany({where:{userId, contestUpload:{none:{contestId}}}, select:{id:true, url:true, labels:true}})
     
     return userPhotos
 }

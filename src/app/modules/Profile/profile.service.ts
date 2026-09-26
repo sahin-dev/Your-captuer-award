@@ -8,6 +8,7 @@ import { voteService } from "../Vote/vote.service"
 import { followService } from "../Follow/followe.service"
 import { paginationHelper } from "../../../helpers/paginationHelper"
 import { describeUploadedImage, UploadedImageMetadata } from "../../../helpers/imageMetadata"
+import { dedupeLabels } from "../../../shared/labels"
 
 const fetchUserUploads = async (targetUserId:string, pagination:{page?:number, limit?:number}, viewerId?:string)=>{
     const {page, limit, skip} = paginationHelper.calculatePagination({
@@ -331,6 +332,22 @@ const deleteUserPhoto = async (userId:string, photoId:string)=> {
     return deletedPhoto
 }
 
+// Replaces a photo's labels with the list its owner sent. Only the owner can
+// change them; repeated labels (compared case-insensitively) are dropped.
+const updatePhotoLabels = async (userId:string, photoId:string, labels:string[])=> {
+    const photo = await prisma.userPhoto.findUnique({where:{id:photoId, userId}, select:{id:true}})
+
+    if(!photo){
+        throw new ApiError(httpStatus.NOT_FOUND, "photo not found")
+    }
+
+    return prisma.userPhoto.update({
+        where:{id:photo.id},
+        data:{labels:dedupeLabels(labels)},
+        select:{id:true, labels:true}
+    })
+}
+
 export const profileService = {
     uploadUserPhoto,
     createDirectUploadUrl,
@@ -343,6 +360,7 @@ export const profileService = {
     getUserProfileDetails,
     getUserPhotoDetails,
     getPublicPhotoDetails,
-    deleteUserPhoto
+    deleteUserPhoto,
+    updatePhotoLabels
 
 }

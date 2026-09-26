@@ -2,6 +2,8 @@ import { Router } from "express";
 import { profileController } from "./profile.controlle";
 import auth, { optionalAuth } from "../../middlewares/auth.middleware";
 import { fileUploader } from "../../../helpers/fileUploader";
+import validateRequest from "../../middlewares/validation.middleware";
+import { profileSchema } from "./profile.validation";
 
 const route = Router();
 
@@ -12,6 +14,7 @@ route.post("/photos/direct-upload-url", auth(), profileController.createDirectUp
 route.post("/photos/confirm-upload", auth(), profileController.confirmDirectUpload);
 route.get("/photos/:photoId", auth(), profileController.getUserPhotoDetails);
 route.delete("/photos/:photoId", auth(), profileController.deleteUserPhoto);
+route.patch("/photos/:photoId/labels", auth(), validateRequest(profileSchema.updatePhotoLabelsSchema), profileController.updatePhotoLabels);
 route.get("/stats", auth(), profileController.getUserStates);
 
 // Public user profile routes
