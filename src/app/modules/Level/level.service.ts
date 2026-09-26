@@ -172,7 +172,7 @@ const buildLevelProgress = (
 
 const getEligibleLevel = (
     stats:{receivedVotes:number; promotedVotes:number; badgeCounts:Record<string, number>}
-) => {
+): LevelRule | null => {
     let eligibleLevel:LevelRule | null = null
 
     LEVEL_RULES.forEach(rule => {
@@ -261,5 +261,6 @@ export const levelService =  {
     evaluateAndUpdateUserLevel,
     getReceivedVoteStats,
     getBadgeCounts,
+    getEligibleLevel,
     getLevelByLevelName,
 }

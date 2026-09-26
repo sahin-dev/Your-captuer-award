@@ -373,8 +373,10 @@ const getSuggestedTeams = async (
     page: currentPage,
   } = paginationHelper.calculatePagination({ page, limit });
 
+  // A user without a level has currentLevel -1; teams with no level
+  // requirement store 0, so treat "no level" as 0 to keep matching them.
   const where = {
-    OR: [country ? { country } : {}, { min_requirement: user.currentLevel }],
+    OR: [country ? { country } : {}, { min_requirement: Math.max(user.currentLevel ?? 0, 0) }],
   };
 
   const [teams, total] = await Promise.all([
