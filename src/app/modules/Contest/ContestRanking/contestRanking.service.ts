@@ -5,6 +5,7 @@ import { runWithWriteConflictRetry } from "../../../../shared/transactionRetry";
 import { ycLevels } from "../../Awards/award.definitions";
 import { contestRuleEngine } from "../ContestRules/contestRule.engine";
 import { LevelRequirementValue } from "../ContestRules/contestRule.definitions";
+import { getVoteWeight } from "../../Vote/voteWeight.service";
 
 export const CONTEST_SCORING_VERSION = 2;
 const UPDATE_BATCH_SIZE = 25;
@@ -25,7 +26,10 @@ export type RankedPhoto = {
   participantId: string;
   userId: string;
   score: number;
+  // Votes counted with voting power, plus initial and banked votes.
   voteCount: number;
+  // How many people voted for the photo in its current stint.
+  voterCount: number;
   rank: number;
   createdAt: Date;
   tieBreakKey: string;
@@ -36,6 +40,7 @@ export type RankedPhotographer = {
   userId: string;
   score: number;
   voteCount: number;
+  voterCount: number;
   rank: number;
   level: YCLevel;
   createdAt: Date;
@@ -87,14 +92,14 @@ const VOTE_SCAN_PAGE_SIZE = 5000;
 
 const scanContestVotes = async (
   contestId: string,
-  onVote: (vote: { contestPhotoId: string; photoRefId: string | null; createdAt: Date }) => void
+  onVote: (vote: { contestPhotoId: string; photoRefId: string | null; createdAt: Date; power: number }) => void
 ) => {
   let cursor: string | undefined;
 
   for (;;) {
     const page = await prisma.vote.findMany({
       where: { contestId },
-      select: { id: true, contestPhotoId: true, photoRefId: true, createdAt: true },
+      select: { id: true, contestPhotoId: true, photoRefId: true, createdAt: true, power: true },
       orderBy: { id: "asc" },
       take: VOTE_SCAN_PAGE_SIZE,
       ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
@@ -155,6 +160,7 @@ const computeContestRanking = async (contestId: string): Promise<ContestRanking>
   });
 
   const voteCountByPhoto = new Map<string, number>();
+  const voterCountByPhoto = new Map<string, number>();
   await scanContestVotes(contestId, (vote) => {
     const liveImage = currentPhotoIdBySlot.get(vote.contestPhotoId);
     // A null photoRefId is a legacy vote cast before swap-tracking existed -
@@ -166,7 +172,9 @@ const computeContestRanking = async (contestId: string): Promise<ContestRanking>
     if (stintStartedAt && vote.createdAt < stintStartedAt) {
       return;
     }
-    voteCountByPhoto.set(vote.contestPhotoId, (voteCountByPhoto.get(vote.contestPhotoId) || 0) + 1);
+    // Each vote counts as the voter's voting power (see voteWeight.service).
+    voteCountByPhoto.set(vote.contestPhotoId, (voteCountByPhoto.get(vote.contestPhotoId) || 0) + getVoteWeight(vote));
+    voterCountByPhoto.set(vote.contestPhotoId, (voterCountByPhoto.get(vote.contestPhotoId) || 0) + 1);
   });
 
   const photos = participants
@@ -184,6 +192,7 @@ const computeContestRanking = async (contestId: string): Promise<ContestRanking>
         userId: participant.userId,
         score: (voteCountByPhoto.get(photo.id) || 0) + initialVotes + bankedVotes,
         voteCount: (voteCountByPhoto.get(photo.id) || 0) + initialVotes + bankedVotes,
+        voterCount: voterCountByPhoto.get(photo.id) || 0,
         createdAt: photo.createdAt,
         tieBreakKey: photo.id,
       };
@@ -193,6 +202,7 @@ const computeContestRanking = async (contestId: string): Promise<ContestRanking>
 
   const photoScoreByParticipant = new Map<string, number>();
   const photoVoteCountByParticipant = new Map<string, number>();
+  const photoVoterCountByParticipant = new Map<string, number>();
   photos.forEach((photo) => {
     photoScoreByParticipant.set(
       photo.participantId,
@@ -202,6 +212,10 @@ const computeContestRanking = async (contestId: string): Promise<ContestRanking>
       photo.participantId,
       (photoVoteCountByParticipant.get(photo.participantId) || 0) + photo.voteCount
     );
+    photoVoterCountByParticipant.set(
+      photo.participantId,
+      (photoVoterCountByParticipant.get(photo.participantId) || 0) + photo.voterCount
+    );
   });
 
   const photographers = participants
@@ -209,11 +223,13 @@ const computeContestRanking = async (contestId: string): Promise<ContestRanking>
     .map((participant) => {
       const score = photoScoreByParticipant.get(participant.id) || 0;
       const voteCount = photoVoteCountByParticipant.get(participant.id) || 0;
+      const voterCount = photoVoterCountByParticipant.get(participant.id) || 0;
       return {
         participantId: participant.id,
         userId: participant.userId,
         score,
         voteCount,
+        voterCount,
         level: getContestLevelForScore(score, levelRequirements),
         createdAt: participant.createdAt,
         tieBreakKey: participant.id,

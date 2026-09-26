@@ -5,7 +5,7 @@ import { ContestParticipant, ContestParticipantStatus, ContestPhoto, Prisma, Use
 import { ObjectId } from 'mongodb'
 import { levelService } from '../Level/level.service'
 import { contestRuleEngine } from '../Contest/ContestRules/contestRule.engine'
-import { getVoteWeightStats } from './voteWeight.service'
+import { getVotePowerForVoter, getVoteWeightStats } from './voteWeight.service'
 import { contestProgressService } from '../Contest/ContestProgress/contestProgress.service'
 import { notificationOrchestrator } from '../Notification/notificationOrchestrator'
 import { contestRankingService } from '../Contest/ContestRanking/contestRanking.service'
@@ -125,7 +125,7 @@ export const addOneVote = async (userId:string, contestId:string, contestPhotoId
                 throw new ApiError(httpstatus.CONFLICT, "Contest voting has closed")
             }
 
-            const vote = await tx.vote.create({data:{providerId:userId, contestId, contestPhotoId:contestPhoto.id, photoRefId:contestPhoto.photoId, type, power:1, weight:1}})
+            const vote = await tx.vote.create({data:{providerId:userId, contestId, contestPhotoId:contestPhoto.id, photoRefId:contestPhoto.photoId, type, power:getVotePowerForVoter(user), weight:1}})
             if(voterParticipant){
                 await tx.contestParticipant.updateMany({
                     where:{id:voterParticipant.id, status:ContestParticipantStatus.ACTIVE},
@@ -200,7 +200,7 @@ export const addVotes = async (userId:string, contestId:string, contestPhotoIds:
                     contestPhotoId:photo.id,
                     photoRefId:photo.photoId,
                     type:getVoteType(photo),
-                    power:1,
+                    power:getVotePowerForVoter(user),
                     weight:1
                 }))
             })
@@ -261,7 +261,8 @@ export const getVoteCount = async (contestPhotoId:string)=>{
         select:{photoId:true, bankedVotes:true, stintStartedAt:true, createdAt:true}
     })
     const stintStartedAt = contestPhoto?.stintStartedAt ?? contestPhoto?.createdAt ?? new Date(0)
-    const { count } = await getVoteWeightStats({
+    // Votes counted with voting power (see voteWeight.service).
+    const { weight: count } = await getVoteWeightStats({
         contestPhotoId,
         createdAt:{gte:stintStartedAt},
         OR:[{photoRefId:contestPhoto?.photoId ?? null}, {photoRefId:null}]
@@ -310,7 +311,8 @@ const getVoteCountsByPhotoIds = async (contestPhotoIds:string[]) => {
 }
 
 const getUserPhotoVoteCount = async (userPhotoId:string) => {
-    const { count } = await getVoteWeightStats({photo:{photoId:userPhotoId}})
+    // Votes counted with voting power (see voteWeight.service).
+    const { weight: count } = await getVoteWeightStats({photo:{photoId:userPhotoId}})
 
     return count
 }
@@ -325,33 +327,38 @@ export const getVoteUsers = async (contestPhotoId:string)=>{
 
 
 const getTotalPromotedVotes = async (userId:string)=>{
-    const { count } = await getVoteWeightStats({photo:{participant:{userId}}, type:VoteType.Promoted})
+    // Votes counted with voting power (see voteWeight.service).
+    const { weight: count } = await getVoteWeightStats({photo:{participant:{userId}}, type:VoteType.Promoted})
 
     return count
 }
 
 const getTotalOrganicVotes = async (userId:string)=>{
-    const { count } = await getVoteWeightStats({photo:{participant:{userId}}, type:VoteType.Organic})
+    // Votes counted with voting power (see voteWeight.service).
+    const { weight: count } = await getVoteWeightStats({photo:{participant:{userId}}, type:VoteType.Organic})
 
     return count
 }
 
 const getTeamTotalVotes = async (contestId:string , teamId:string) => {
 
-    const { count } = await getVoteWeightStats({contestId, photo:{photo:{user:{joinedTeam:{id:teamId}}}}})
+    // Votes counted with voting power (see voteWeight.service).
+    const { weight: count } = await getVoteWeightStats({contestId, photo:{photo:{user:{joinedTeam:{id:teamId}}}}})
 
     return count
 }
 
 const getUserTotalVotes = async (userId:string) => {
 
-    const { count } = await getVoteWeightStats({photo:{participant:{userId}}})
+    // Votes counted with voting power (see voteWeight.service).
+    const { weight: count } = await getVoteWeightStats({photo:{participant:{userId}}})
 
     return count
 }
 
 const getUserContestSpecificVote = async (contestId:string, userId:string) => {
-    const { count } = await getVoteWeightStats({contestId,photo:{participant:{userId}}})
+    // Votes counted with voting power (see voteWeight.service).
+    const { weight: count } = await getVoteWeightStats({contestId,photo:{participant:{userId}}})
 
     return count
 }
@@ -377,7 +384,8 @@ const totalVotesOfParticipant = async (participantId:string, contestId:string)=>
 
 
 const getContestTotalVotes = async (contestId:string)=> {
-    const { count } = await getVoteWeightStats({contestId})
+    // Votes counted with voting power (see voteWeight.service).
+    const { weight: count } = await getVoteWeightStats({contestId})
 
     return count
 }

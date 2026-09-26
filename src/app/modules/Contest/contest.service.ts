@@ -1382,13 +1382,14 @@ const enrichContestListDetails = async (contests:any[]) => {
     // cached, and vote totals are always counted live.
     const [extrasByContestId, voteGroups] = await Promise.all([
         contestCache.getMany("list", contests, loadContestListExtras),
+        // Votes counted with voting power, like every other vote total.
         prisma.vote.groupBy({
             by:["contestId"],
             where:{contestId:{in:contestIds}},
-            _count:{_all:true},
+            _sum:{power:true},
         }),
     ]);
-    const voteCountByContestId = new Map(voteGroups.map(group => [group.contestId, group._count._all]));
+    const voteCountByContestId = new Map(voteGroups.map(group => [group.contestId, group._sum.power ?? 0]));
 
     return contests.map((contest) => {
         const {winners, ...extras} = extrasByContestId.get(contest.id)!;
@@ -2823,6 +2824,7 @@ const getContestPhotosSortedByVote = async (
                 title:upload.photo.title,
                 score:photo.score,
                 voteCount:photo.voteCount,
+                voterCount:photo.voterCount,
                 rank:photo.rank,
                 photographer:upload.participant.user
             }
@@ -2941,7 +2943,8 @@ const getContestTopPhotographers = async (
                                 : []
                         )
                         .sort((a, b) => b.voteCount - a.voteCount),
-                    totalVotes: photographer.voteCount
+                    totalVotes: photographer.voteCount,
+                    voterCount: photographer.voterCount
                 }
             ]
         }

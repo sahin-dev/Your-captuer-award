@@ -1,27 +1,39 @@
 import prisma from "../../../shared/prisma";
 
 type VoteWeightRecord = {
-    weight?: number | null;
     power?: number | null;
 }
 
-// Vote power/weight fields remain in the database for backwards compatibility,
-// but contest scoring is record-based: every Vote row contributes exactly one.
-export const getVoteWeight = (_vote:VoteWeightRecord) => {
-    return 1
+// A vote counts as many votes as the voter's voting power when it was cast
+// (Vote.power, copied from User.voting_power). `weight` stays 1 and is not used
+// for scoring. Votes in contests that finished before power-based counting was
+// introduced were normalized to power 1 so their results did not change.
+export const getVoteWeight = (vote:VoteWeightRecord) => {
+    const power = vote.power ?? 1
+    return Number.isFinite(power) && power > 0 ? Math.floor(power) : 1
+}
+
+// The power to store on a new vote. Never below 1, so a missing or corrupt
+// voting_power can not make a vote count for nothing.
+export const getVotePowerForVoter = (voter:{voting_power?: number | null}) => {
+    return getVoteWeight({power:voter.voting_power})
 }
 
 export const sumVoteWeight = async (where:any) => {
-    return prisma.vote.count({where})
+    return (await getVoteWeightStats(where)).weight
 }
 
 export const getVoteWeightStats = async (where:any) => {
-    const count = await prisma.vote.count({where})
+    const result = await prisma.vote.aggregate({
+        where,
+        _count:{_all:true},
+        _sum:{power:true}
+    })
 
     return {
-        count,
-        // Kept as an API compatibility alias. It now intentionally equals the
-        // number of vote records rather than stored historical vote weights.
-        weight:count
+        // Number of vote records, i.e. how many people voted.
+        count:result._count._all,
+        // Votes counted with voting power. This is the number shown as "votes".
+        weight:result._sum.power ?? 0
     }
 }

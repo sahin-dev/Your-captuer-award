@@ -1,5 +1,6 @@
 import prisma from "../../../shared/prisma"
 import { Level, LevelRequirementTitle } from "../../../prismaClient"
+import { sumVoteWeight } from "../Vote/voteWeight.service"
 
 /**
  * Resolves the user's current value for a given requirement type.
@@ -68,11 +69,10 @@ const updateLevelsForContest = async (contestId: string): Promise<void> => {
         if (photoIds.length === 0) continue
 
         // Count votes received for this participant's photos in this specific contest
-        const contestVotes = await prisma.vote.count({
-            where: {
-                contestId,
-                contestPhotoId: { in: photoIds }
-            }
+        // Votes counted with voting power (see Vote/voteWeight.service).
+        const contestVotes = await sumVoteWeight({
+            contestId,
+            contestPhotoId: { in: photoIds }
         })
 
         // Increment the user's totalVotes in the database (we always update their cumulative votes)
