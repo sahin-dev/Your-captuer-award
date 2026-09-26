@@ -14,7 +14,7 @@
     "prisma:validate": "prisma validate --schema=./prisma",
     "postman:contest": "node postman/generate-contest-system-collection.cjs",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "test:contest": "node --require ts-node/register/transpile-only --test src/app/modules/Contest/contest.validation.test.ts src/app/modules/Contest/contestPhotoInput.test.ts src/app/modules/Contest/ContestRules/submissionFormat.test.ts",
+    "test:contest": "node --require ts-node/register/transpile-only --test src/app/modules/Contest/contest.validation.test.ts src/app/modules/Contest/contestPhotoInput.test.ts src/app/modules/Contest/ContestRules/submissionFormat.test.ts src/shared/labels.test.ts",
     "test:vote": "node --require ts-node/register/transpile-only --test src/app/modules/Vote/vote.validation.test.ts src/app/modules/Vote/voteWeight.test.ts src/shared/backgroundTasks.test.ts",
     "test:upload": "node --require ts-node/register/transpile-only --test src/helpers/fileUploader.test.ts src/shared/uploadFormats.test.ts",
     "seed": "ts-node-dev src/seeder.ts",
@@ -31,7 +31,8 @@
     "backfill:user-active-status": "ts-node --transpile-only src/seeder.ts backfill:user-active-status",
     "test:transaction": "node --require ts-node/register/transpile-only --test src/shared/transactionRetry.test.ts",
     "test:team": "node --require ts-node/register/transpile-only --test src/app/modules/Team/teamPeriod.test.ts",
-    "votes:backfill-power": "node dist/scripts/backfillVotePower.js"
+    "votes:backfill-power": "node dist/scripts/backfillVotePower.js",
+    "photos:dedupe-labels": "node dist/scripts/dedupePhotoLabels.js"
   },
   "repository": {
     "type": "git",

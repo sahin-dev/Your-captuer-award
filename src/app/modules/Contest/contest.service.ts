@@ -36,6 +36,7 @@ import { reportService } from '../Report/report.service';
 import { activeContestWhere } from './contestLifecycle';
 import { contestCache } from './contest.cache';
 import logger from "../../../shared/logger";
+import { hasLabel } from "../../../shared/labels";
 
 const completedContestStatuses:ContestStatus[] = [ContestStatus.COMPLETED, ContestStatus.CLOSED]
 const isCompletedContest = (status:ContestStatus) => completedContestStatuses.includes(status)
@@ -2183,12 +2184,29 @@ const uploadPhotoToContest = async (contestId:string,userId:string, photoIds:unk
             })
             // Attach the contest category as a label on each uploaded photo so the
             // contest context (e.g. "Nature", "Portrait") is always visible on the
-            // photo itself, not just inside the contest. Existing labels are kept.
-            if(activeContest.category){
-                await tx.userPhoto.updateMany({
+            // photo itself, not just inside the contest. Existing labels are kept,
+            // and a photo that already has this label (e.g. it was entered in
+            // another contest of the same category) is skipped so it is never
+            // added twice.
+            // The check reads the labels first instead of filtering with
+            // NOT:{labels:{has}}: that filter never matches photos stored before
+            // the labels field existed, which would then never get a label.
+            // Prisma reads a missing field as [], and push creates it.
+            const category = activeContest.category
+            if(category){
+                const photosWithLabels = await tx.userPhoto.findMany({
                     where:{id:{in:selectedPhotoIds}},
-                    data:{labels:{push:activeContest.category}}
+                    select:{id:true, labels:true}
                 })
+                const photoIdsMissingLabel = photosWithLabels
+                    .filter(photo => !hasLabel(photo.labels, category))
+                    .map(photo => photo.id)
+                if(photoIdsMissingLabel.length > 0){
+                    await tx.userPhoto.updateMany({
+                        where:{id:{in:photoIdsMissingLabel}},
+                        data:{labels:{push:category}}
+                    })
+                }
             }
             return tx.contestPhoto.findMany({
                 where:{contestId, participantId:participant.id, photoId:{in:selectedPhotoIds}},
