@@ -76,7 +76,8 @@ model UserPhoto {
   userId        String      @db.ObjectId
   states        PhotoStats?
   views         Int         @default(0)
-  labels        String[]    @default([])
+  labels        String[]    @default([])  // tags the owner adds and edits
+  categories    String[]    @default([])  // categories of the contests the photo was entered in (read-only)
   title         String?
   description   String?
   adult         Boolean   @default(false)

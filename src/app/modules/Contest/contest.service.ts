@@ -1816,7 +1816,7 @@ const getRemainingPhotos = async (userId:string, contestId:string)=>{
     }
     
     const contestUploads = await prisma.contestPhoto.findMany({where:{contestId, participant:{userId}}})
-    const userPhotos = await prisma.userPhoto.findMany({where:{userId, contestUpload:{none:{contestId}}}, select:{id:true, url:true, labels:true}})
+    const userPhotos = await prisma.userPhoto.findMany({where:{userId, contestUpload:{none:{contestId}}}, select:{id:true, url:true, labels:true, categories:true}})
     
     return userPhotos
 }
@@ -2182,29 +2182,29 @@ const uploadPhotoToContest = async (contestId:string,userId:string, photoIds:unk
                     exposureBoostExpiresAt
                 }))
             })
-            // Attach the contest category as a label on each uploaded photo so the
-            // contest context (e.g. "Nature", "Portrait") is always visible on the
-            // photo itself, not just inside the contest. Existing labels are kept,
-            // and a photo that already has this label (e.g. it was entered in
-            // another contest of the same category) is skipped so it is never
-            // added twice.
-            // The check reads the labels first instead of filtering with
-            // NOT:{labels:{has}}: that filter never matches photos stored before
-            // the labels field existed, which would then never get a label.
+            // Record the contest category (e.g. "Nature", "Portrait") in the
+            // photo's categories so the contest context is visible on the photo
+            // itself, not just inside the contest. Categories are kept apart
+            // from labels, which are the owner's own tags. A photo that already
+            // has this category (e.g. it was entered in another contest of the
+            // same category) is skipped so it is never added twice.
+            // The check reads the categories first instead of filtering with
+            // NOT:{categories:{has}}: that filter never matches photos stored
+            // before the field existed, which would then never get a category.
             // Prisma reads a missing field as [], and push creates it.
             const category = activeContest.category
             if(category){
-                const photosWithLabels = await tx.userPhoto.findMany({
+                const photosWithCategories = await tx.userPhoto.findMany({
                     where:{id:{in:selectedPhotoIds}},
-                    select:{id:true, labels:true}
+                    select:{id:true, categories:true}
                 })
-                const photoIdsMissingLabel = photosWithLabels
-                    .filter(photo => !hasLabel(photo.labels, category))
+                const photoIdsMissingCategory = photosWithCategories
+                    .filter(photo => !hasLabel(photo.categories, category))
                     .map(photo => photo.id)
-                if(photoIdsMissingLabel.length > 0){
+                if(photoIdsMissingCategory.length > 0){
                     await tx.userPhoto.updateMany({
-                        where:{id:{in:photoIdsMissingLabel}},
-                        data:{labels:{push:category}}
+                        where:{id:{in:photoIdsMissingCategory}},
+                        data:{categories:{push:category}}
                     })
                 }
             }
