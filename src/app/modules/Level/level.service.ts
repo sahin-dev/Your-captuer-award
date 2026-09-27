@@ -152,7 +152,7 @@ const buildLevelProgress = (
             const current = sumBadgeCount(stats.badgeCounts, badge.categories)
             return {
                 type:"badge",
-                badges:badge.categories,
+                badges:badge.displayAs ?? badge.categories,
                 required:badge.required,
                 current,
                 percentage:Math.min(100, Math.floor((current * 100) / badge.required)),

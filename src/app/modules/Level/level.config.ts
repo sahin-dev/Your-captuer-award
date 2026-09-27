@@ -4,6 +4,9 @@ import { prizeTypes } from "../Awards/award.definitions";
 export type BadgeRequirement = {
     categories: PrizeType[];
     required: number;
+    // Badges the progress row is shown as, when they differ from the counted
+    // categories. Without it the row shows the counted categories.
+    displayAs?: PrizeType[];
 };
 
 export type LevelRule = {
@@ -104,7 +107,13 @@ export const LEVEL_RULES: LevelRule[] = [
             { categories: [PrizeType.TOP_100_PHOTO, PrizeType.TOP_100_PHOTOGRAPHER], required: 30 },
             { categories: [PrizeType.TOP_50_PHOTO, PrizeType.TOP_50_PHOTOGRAPHER], required: 10 },
             { categories: [PrizeType.TOP_20_PHOTO, PrizeType.TOP_20_PHOTOGRAPHER], required: 5 },
-            { categories: [PrizeType.WINNER], required: 1 },
+            // Winning a contest means taking its Top Photo or Top Photographer
+            // award, so either one counts. The row is still shown as Winner.
+            {
+                categories: [PrizeType.TOP_PHOTO, PrizeType.TOP_PHOTOGRAPHER],
+                required: 1,
+                displayAs: [PrizeType.WINNER],
+            },
         ],
     },
 ];
