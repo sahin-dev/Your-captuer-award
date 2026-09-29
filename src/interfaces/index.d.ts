@@ -9,6 +9,9 @@ declare global {
         plan: string;
         verified: boolean;
       };
+      // Id made by the uploader for a record that does not exist yet (create
+      // routes), so its files can be stored under that record's folder.
+      newRecordId?: string;
     }
 
     namespace Multer {
@@ -20,6 +23,8 @@ declare global {
         key?: string;
         location?: string;
         headerBuffer?: Buffer;
+        // Same as Request.newRecordId: the id to create the record with.
+        recordId?: string;
         // Set once a database row references these bytes, so failure-path
         // cleanup stops treating the object as an orphan.
         claimed?: boolean;

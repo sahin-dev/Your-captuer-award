@@ -90,7 +90,8 @@ const updateProfilePhoto = async (userId:string, file: Express.Multer.File)=>{
 
     let url = await fileUploader.uploadToDigitalOcean(file)
 
-    await prisma.user.update({where:{id:userId}, data:{avatar:url.Location}})
+    await prisma.user.update({where:{id:userId}, data:{avatar:url.Key}})
+    await fileUploader.deleteReplacedFile(user.avatar, `users/${userId}/avatar`)
 
     return "Cover photo updated!"
 }
@@ -108,7 +109,8 @@ const updateCoverPhoto = async (userId:string, file: Express.Multer.File)=>{
 
     let url = await fileUploader.uploadToDigitalOcean(file)
 
-    await prisma.user.update({where:{id:userId}, data:{cover:url.Location}})
+    await prisma.user.update({where:{id:userId}, data:{cover:url.Key}})
+    await fileUploader.deleteReplacedFile(user.cover, `users/${userId}/cover`)
 
     return "Cover photo updated!"
 }
@@ -221,7 +223,9 @@ const uploadAvatar = async (userId:string,file:Express.Multer.File)=>{
 
     const uploadedFile = await fileUploader.uploadToDigitalOcean(file)
 
-    await prisma.user.update({where:{id:userId}, data:{avatar:uploadedFile.Location}})
+    const user = await prisma.user.findUnique({where:{id:userId}, select:{avatar:true}})
+    await prisma.user.update({where:{id:userId}, data:{avatar:uploadedFile.Key}})
+    await fileUploader.deleteReplacedFile(user?.avatar, `users/${userId}/avatar`)
 
     return "avatar updated successfully"
 
@@ -236,7 +240,9 @@ const uploadCover = async (userId:string,file:Express.Multer.File)=>{
 
     const uploadedFile = await fileUploader.uploadToDigitalOcean(file)
 
-    await prisma.user.update({where:{id:userId}, data:{cover:uploadedFile.Location}})
+    const user = await prisma.user.findUnique({where:{id:userId}, select:{cover:true}})
+    await prisma.user.update({where:{id:userId}, data:{cover:uploadedFile.Key}})
+    await fileUploader.deleteReplacedFile(user?.cover, `users/${userId}/cover`)
 
     return "cover updated successfully"
 

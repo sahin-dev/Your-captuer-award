@@ -1,5 +1,7 @@
 import multer from "multer";
+import type { Request } from "express";
 import { v4 as uuidv4 } from "uuid";
+import { ObjectId } from "mongodb";
 import path from "path";
 import fs from "fs";
 import os from "os";
@@ -19,11 +21,12 @@ import { CloudinaryStorage } from "multer-storage-cloudinary";
 import streamifier from "streamifier";
 import dotenv from "dotenv";
 import { supportedContestImageMimeTypes } from "../app/modules/Contest/ContestRules/contestRule.definitions";
-import { isPhotoUploadMimeType, isWebImageMimeType, webImageMimeTypes } from "../shared/uploadFormats";
+import { isPhotoUploadMimeType, isWebImageMimeType, normalizeImageMimeType, webImageMimeTypes } from "../shared/uploadFormats";
 import { IMAGE_HEADER_SAMPLE_BYTES, readImageDimensionsFromBytes } from "./imageMetadata";
 import ApiError from "../errors/ApiError";
 import httpStatus from "http-status";
 import logger from "../shared/logger";
+import { buildFileUrl, toFileKey } from "./fileUrl";
 
 dotenv.config();
 
@@ -36,9 +39,7 @@ const createS3Client = () => new S3Client({
   },
 });
 
-const getObjectUrl = (key: string) => process.env.DO_SPACE_ORIGIN_ENDPOINT
-  ? `${process.env.DO_SPACE_ORIGIN_ENDPOINT}/${key}`
-  : `${process.env.DO_SPACE_ENDPOINT}/${process.env.DO_SPACE_BUCKET}/${key}`;
+const getObjectUrl = (key: string) => buildFileUrl(key);
 
 // Configure DigitalOcean Spaces
 
@@ -59,12 +60,11 @@ if (!fs.existsSync(uploadsDir)) {
 
 // Filesystem storage configuration
 const filesystemStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
+  destination: (_req, _file, cb) => {
     cb(null, uploadsDir);
   },
-  filename: (req, file, cb) => {
-    const uniqueName = `${Date.now()}_${uuidv4()}_${file.originalname}`;
-    cb(null, uniqueName);
+  filename: (_req, _file, cb) => {
+    cb(null, uuidv4());
   }
 });
 
@@ -74,9 +74,8 @@ const temporaryUploadsDir = path.join(os.tmpdir(), "capture-award-uploads");
 fs.mkdirSync(temporaryUploadsDir, { recursive: true });
 const storage = multer.diskStorage({
   destination: (_req, _file, callback) => callback(null, temporaryUploadsDir),
-  filename: (_req, file, callback) => {
-    const safeExtension = path.extname(file.originalname).slice(0, 16);
-    callback(null, `${Date.now()}_${uuidv4()}${safeExtension}`);
+  filename: (_req, _file, callback) => {
+    callback(null, uuidv4());
   },
 });
 // Standalone profile-pool uploads retain their existing 25MB cap. Contest
@@ -144,15 +143,23 @@ const isStreamedUpload = (file: Express.Multer.File): boolean =>
   typeof (file as Partial<StreamedUploadInfo>).key === "string" &&
   typeof (file as Partial<StreamedUploadInfo>).location === "string";
 
+// Picks the folder an upload is stored in, e.g. "users/<id>/avatar".
+export type UploadFolder = (req: Request) => string;
+
+// Object names never contain user-controlled names. Content-Type carries the
+// media format, so an extension is unnecessary and the final segment can stay
+// an exact UUID.
+export const buildStorageKey = (folder: string) => `${folder}/${uuidv4()}`;
+
 export class S3StreamStorage implements multer.StorageEngine {
   constructor(
-    private readonly keyPrefix: string,
+    private readonly folder: UploadFolder,
     // Overridable so the engine can be exercised against a stub client.
     private readonly createClient: () => S3Client = createS3Client
   ) {}
 
   _handleFile(
-    _req: Express.Request,
+    req: Express.Request,
     file: Express.Multer.File,
     callback: (error?: unknown, info?: Partial<Express.Multer.File>) => void
   ): void {
@@ -162,8 +169,7 @@ export class S3StreamStorage implements multer.StorageEngine {
       return;
     }
 
-    const extension = path.extname(file.originalname).slice(0, 16);
-    const key = `${this.keyPrefix}/${Date.now()}_${uuidv4()}${extension}`;
+    const key = buildStorageKey(this.folder(req as Request));
     const client = this.createClient();
 
     let size = 0;
@@ -212,6 +218,7 @@ export class S3StreamStorage implements multer.StorageEngine {
         callback(null, {
           bucket,
           key,
+          recordId: req.newRecordId,
           location: getObjectUrl(key),
           size,
           headerBuffer: Buffer.concat(headerChunks),
@@ -248,71 +255,35 @@ export class S3StreamStorage implements multer.StorageEngine {
   }
 }
 
-const contestImageStorage = new S3StreamStorage("captureaward");
+// ========== FOLDERS ==========
+// Every upload is stored under the record it belongs to:
+//   users/<userId>/avatar/<uuid>
+//   teams/<teamId>/badge/<uuid>
+// The file name is always new, so a replaced image gets a new URL and no
+// CDN or browser cache keeps showing the old one.
 
-const contestImageUpload = multer({
-  storage: contestImageStorage,
-  limits: {
-    files: 4,
-    fileSize: MAX_CONTEST_UPLOAD_SIZE,
-  },
+export const userFolder = (name: string): UploadFolder => (req) => `users/${req.user.id}/${name}`;
+
+// Update routes have the record id in the URL (e.g. /teams/:teamId). Create
+// routes have no record yet, so a new id is made here and kept on the request;
+// the service then creates the record with that id (file.recordId).
+export const recordFolder = (collection: string, param: string, name: string): UploadFolder => (req) => {
+  const id = req.params?.[param] || (req.newRecordId ??= new ObjectId().toHexString());
+  return `${collection}/${id}/${name}`;
+};
+
+// Photography (gallery, contest entries, trades) accepts the wide photo format
+// set; everything rendered straight into an <img> accepts web formats only.
+const photoUpload = (folder: UploadFolder, files: number, fileSize: number) => multer({
+  storage: new S3StreamStorage(folder),
+  limits: { files, fileSize },
   fileFilter: photoImageFileFilter,
 });
-const profilePhotoUpload = multer({
-  storage: contestImageStorage,
-  limits: {
-    files: 1,
-    fileSize: MAX_PHOTO_UPLOAD_SIZE,
-  },
-  fileFilter: photoImageFileFilter,
-});
-const tradePhotoUpload = multer({
-  storage: contestImageStorage,
-  limits: {
-    files: 1,
-    fileSize: MAX_CONTEST_UPLOAD_SIZE,
-  },
-  fileFilter: photoImageFileFilter,
-});
-// Banners and other product imagery are rendered straight into an <img>, so the
-// accepted set is the web-renderable one rather than the wider photography set.
-const contestBannerUpload = multer({
-  storage: contestImageStorage,
-  limits: {
-    files: 1,
-    fileSize: MAX_WEB_IMAGE_UPLOAD_SIZE,
-  },
+
+const webImageUpload = (folder: UploadFolder) => multer({
+  storage: new S3StreamStorage(folder),
+  limits: { files: 1, fileSize: MAX_WEB_IMAGE_UPLOAD_SIZE },
   fileFilter: webImageFileFilter,
-});
-
-// Avatars, covers, team badges, store artwork and editor images.
-const webImageUpload = multer({
-  storage: contestImageStorage,
-  limits: {
-    files: 1,
-    fileSize: MAX_WEB_IMAGE_UPLOAD_SIZE,
-  },
-  fileFilter: webImageFileFilter,
-});
-
-// Multi-file product/editor imagery.
-const webImageMultiUpload = multer({
-  storage: contestImageStorage,
-  limits: {
-    files: 15,
-    fileSize: MAX_WEB_IMAGE_UPLOAD_SIZE,
-  },
-  fileFilter: webImageFileFilter,
-});
-
-// Team match galleries hold submitted photography rather than product imagery.
-const matchPhotoUpload = multer({
-  storage: contestImageStorage,
-  limits: {
-    files: 4,
-    fileSize: MAX_CONTEST_UPLOAD_SIZE,
-  },
-  fileFilter: photoImageFileFilter,
 });
 
 const filesystemUpload = multer({ storage, fileFilter: webImageFileFilter, limits: { fileSize: MAX_WEB_IMAGE_UPLOAD_SIZE } });
@@ -321,8 +292,7 @@ const filesystemUpload = multer({ storage, fileFilter: webImageFileFilter, limit
 const cloudinaryStorage = new CloudinaryStorage({
   cloudinary,
   params: {
-
-    public_id: (req, file) => `${Date.now()}_${file.originalname}`,
+    public_id: () => uuidv4(),
   },
 });
 
@@ -332,52 +302,23 @@ const cloudinaryUpload = multer({
   limits: { fileSize: MAX_WEB_IMAGE_UPLOAD_SIZE },
 });
 
-// Upload single image
-const uploadSingle = webImageUpload.single("image");
-const uploadFile = webImageUpload.single("file");
-
-const uploadAvatar = webImageUpload.single("avatar")
-const uploadCover = webImageUpload.single("cover")
-const uploadBadge = webImageUpload.single("badge")
-const contestBanner = contestBannerUpload.single("banner");
-const userPhoto = contestImageUpload.single('photo')
+// ========== UPLOAD MIDDLEWARE ==========
+// The `filesystem*` names are kept because routes import them; like every
+// upload here they stream to object storage.
+const filesystemUploadAvatar = webImageUpload(userFolder("avatar")).single("avatar");
+const filesystemUploadCover = webImageUpload(userFolder("cover")).single("cover");
+const filesystemUploadUserPhoto = photoUpload(userFolder("photos"), 1, MAX_PHOTO_UPLOAD_SIZE).single("photo");
 // Contest entry supports up to four image parts. Mobile/web clients use several
 // legitimate multipart names (`photo`, `photos`, `photos[]`, indexed names), so
 // accept the field name here and enforce type/count through Multer and the
 // contest submission rule instead of failing early with "Unexpected field".
-const contestPhotos = contestImageUpload.any()
-const tradePhoto = tradePhotoUpload.single("file")
-
-// Upload multiple images
-const uploadMultipleImage = webImageMultiUpload.fields([{ name: "images", maxCount: 15 }]);
-
-// Upload team match photos (multiple files, limit validated in service)
-const uploadTeamMatchPhotos = matchPhotoUpload.array('files', 4);
-
-// ========== NAMED UPLOAD MIDDLEWARE ==========
-// The `filesystem*` names are kept because routes across the app import them,
-// but they no longer imply disk storage - like every other image upload they
-// stream to object storage and enforce an image filter and a size cap.
-const filesystemUploadBadge = webImageUpload.single("badge");
-const filesystemUploadContestBanner = contestBannerUpload.single("banner");
-const filesystemUploadUserPhoto = profilePhotoUpload.single('photo');
-const filesystemUploadTradePhoto = tradePhotoUpload.single("file");
-const filesystemUploadAvatar = webImageUpload.single("avatar");
-const filesystemUploadCover = webImageUpload.single("cover");
-const fileSystemUploaderProductImage = webImageUpload.single("image")
-// Store product artwork, referenced by name instead of being built inline in
-// the route so it cannot quietly go back to being unfiltered.
-const productImage = webImageUpload.single("image")
-
-const filesystemUploadMultipleImage = webImageMultiUpload.fields([{ name: "images", maxCount: 15 }]);
-
-const filesystemUploadTeamMatchPhotos = matchPhotoUpload.array('files', 4);
-
-// Upload profile and banner images
-const updateProfile = webImageMultiUpload.fields([
-  { name: "profile", maxCount: 1 },
-  { name: "banner", maxCount: 1 },
-]);
+const contestPhotos = photoUpload(userFolder("photos"), 4, MAX_CONTEST_UPLOAD_SIZE).any();
+const tradePhoto = photoUpload(userFolder("photos"), 1, MAX_CONTEST_UPLOAD_SIZE).single("file");
+const chatFile = webImageUpload(userFolder("chat")).single("file");
+const filesystemUploadBadge = webImageUpload(recordFolder("teams", "teamId", "badge")).single("badge");
+// Recurring contests use the same folder; the contests they create reuse the file.
+const contestBanner = webImageUpload(recordFolder("contests", "contestId", "banner")).single("banner");
+const productImage = webImageUpload(recordFolder("products", "productId", "image")).single("image");
 
 // ✅ Fixed Cloudinary Upload (Now supports buffer)
 const uploadToCloudinary = async (file: Express.Multer.File): Promise<{ Location: string; public_id: string }> => {
@@ -390,8 +331,7 @@ const uploadToCloudinary = async (file: Express.Multer.File): Promise<{ Location
       {
         folder: "uploads",
         resource_type: "auto", // Supports images, videos, etc.
-        use_filename: true,
-        unique_filename: false,
+        public_id: uuidv4(),
       },
       (error, result) => {
         if (error) {
@@ -416,8 +356,8 @@ const uploadToCloudinary = async (file: Express.Multer.File): Promise<{ Location
   });
 };
 
-// ✅ Unchanged: DigitalOcean Upload
-const uploadToDigitalOcean = async (file: Express.Multer.File) => {
+// DigitalOcean upload
+const uploadToDigitalOcean = async (file: Express.Multer.File, folder?: string) => {
 
   if (!file) {
     throw new Error("File is required for uploading.");
@@ -434,11 +374,17 @@ const uploadToDigitalOcean = async (file: Express.Multer.File) => {
     };
   }
 
+  // Non-streaming callers must name the owning resource explicitly. This
+  // prevents a generic, unstructured bucket prefix from returning later.
+  if (!folder) {
+    throw new Error("A structured storage folder is required for this upload");
+  }
+
   const s3Client = createS3Client();
 
   try {
 
-    const Key = `captureaward/${Date.now()}_${uuidv4()}_${file.originalname}`;
+    const Key = buildStorageKey(folder);
     const uploadParams = {
       Bucket: process.env.DO_SPACE_BUCKET || "",
       Key,
@@ -475,11 +421,11 @@ const MAX_DIRECT_UPLOAD_SIZE = 150 * 1024 * 1024;
 
 const createDirectUploadUrl = async (
   userId: string,
-  fileName: string,
+  _fileName: string,
   contentType: string,
   fileSize: number,
 ) => {
-  const normalizedType = contentType.toLowerCase();
+  const normalizedType = normalizeImageMimeType(contentType);
   if (!supportedContestImageMimeTypes.includes(normalizedType as typeof supportedContestImageMimeTypes[number])) {
     throw new ApiError(httpStatus.UNSUPPORTED_MEDIA_TYPE, "Unsupported contest image format");
   }
@@ -489,8 +435,7 @@ const createDirectUploadUrl = async (
   const bucket = process.env.DO_SPACE_BUCKET;
   if (!bucket) throw new Error("DO_SPACE_BUCKET is not configured");
 
-  const extension = path.extname(fileName).slice(0, 16);
-  const key = `captureaward/direct/${userId}/${uuidv4()}${extension}`;
+  const key = buildStorageKey(`users/${userId}/photos`);
   const client = createS3Client();
   try {
     const command = new PutObjectCommand({
@@ -543,8 +488,10 @@ const readStoredImageDimensions = async (key: string) => {
 };
 
 const confirmDirectUpload = async (userId: string, key: string) => {
-  const expectedPrefix = `captureaward/direct/${userId}/`;
-  if (!key.startsWith(expectedPrefix) || key.includes("..")) {
+  const expectedPrefix = `users/${userId}/photos/`;
+  const filename = key.slice(expectedPrefix.length);
+  const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  if (!key.startsWith(expectedPrefix) || !uuidPattern.test(filename)) {
     throw new ApiError(httpStatus.FORBIDDEN, "This upload does not belong to the current user");
   }
   const bucket = process.env.DO_SPACE_BUCKET;
@@ -553,7 +500,7 @@ const confirmDirectUpload = async (userId: string, key: string) => {
   const client = createS3Client();
   try {
     const object = await client.send(new HeadObjectCommand({ Bucket: bucket, Key: key }));
-    const contentType = object.ContentType?.toLowerCase() || "";
+    const contentType = normalizeImageMimeType(object.ContentType || "");
     const contentLength = object.ContentLength || 0;
     if (!supportedContestImageMimeTypes.includes(contentType as typeof supportedContestImageMimeTypes[number])) {
       throw new ApiError(httpStatus.UNSUPPORTED_MEDIA_TYPE, "Uploaded object is not a supported image");
@@ -585,6 +532,18 @@ const deleteFromDigitalOcean = async (key: string) => {
   } finally {
     client.destroy();
   }
+};
+
+// Deletes the file a record used before it got a new one. Only a file in the
+// record's own folder is deleted: a banner picked from a user's photo, a banner
+// shared by the contests of a recurring contest, default images and files
+// uploaded before structured keys all live elsewhere and are kept.
+const deleteReplacedFile = async (oldValue: string | null | undefined, folder: string) => {
+  const key = oldValue ? toFileKey(oldValue) : null;
+  if (!key?.startsWith(`${folder}/`)) return;
+  await deleteFromDigitalOcean(key).catch((error) => {
+    logger.error({ err: error, key }, "Failed to delete replaced file");
+  });
 };
 
 // ✅ Redirected to DigitalOcean Upload
@@ -638,32 +597,21 @@ export const fileUploader = {
   discardUploadedFile,
   discardUploadedFiles,
   upload,
-  uploadSingle,
-  uploadMultipleImage,
-  updateProfile,
-  uploadFile,
   cloudinaryUpload,
   uploadToDigitalOcean,
   createDirectUploadUrl,
   confirmDirectUpload,
   deleteFromDigitalOcean,
+  deleteReplacedFile,
   uploadToCloudinary,
   uploadToFilesystem,
   filesystemUpload,
-  uploadAvatar,
-  uploadBadge,
+  chatFile,
   filesystemUploadBadge,
   contestBanner,
-  filesystemUploadContestBanner,
-  uploadCover,
   filesystemUploadCover,
-  userPhoto,
   contestPhotos,
   filesystemUploadUserPhoto,
   tradePhoto,
-  filesystemUploadTradePhoto,
   filesystemUploadAvatar,
-  uploadTeamMatchPhotos,
-  filesystemUploadTeamMatchPhotos,
-  filesystemUploadMultipleImage
 };
