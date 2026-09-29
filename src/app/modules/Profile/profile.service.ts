@@ -20,7 +20,7 @@ const fetchUserUploads = async (targetUserId:string, pagination:{page?:number, l
 
     const uploads = await prisma.userPhoto.findMany({
         where:{userId:targetUserId},include:{
-            contestUpload:{select:{achievements:{orderBy:{createdAt:'desc'}, take:1,
+            contestUpload:{select:{achievements:{orderBy:{createdAt:'desc'},
             select:{category:true},},
             id:true}},_count:{select:{likes:true}}},
             take:limit,
@@ -37,6 +37,7 @@ const fetchUserUploads = async (targetUserId:string, pagination:{page?:number, l
         const totalVotes = contestUploadVotes.reduce((sum, votes) => sum + votes, 0)
         return { ...photo, totalVotes,likes:photo._count.likes,_count:undefined, isLiked:likedPhotoIds.has(photo.id)}
     }))
+
 
     return {data:newUploads, meta:paginationHelper.getPaginationMetaData(page, limit, totalUploads)}
 }
@@ -69,7 +70,7 @@ export const uploadUserPhoto = async (userId:string, file:Express.Multer.File)=>
         // Recorded now so a later contest submission that picks this photo out
         // of the gallery can still be checked against the contest's
         // SUBMISSION_FORMAT rule.
-        addedPhoto = await handleAddUpload(userId, uploadedFile.Location, describeUploadedImage(file))
+        addedPhoto = await handleAddUpload(userId, uploadedFile.Key, describeUploadedImage(file))
     }catch(error){
         await fileUploader.deleteFromDigitalOcean(uploadedFile.Key).catch(() => undefined)
         throw error
@@ -93,8 +94,9 @@ const createDirectUploadUrl = async (userId:string, fileName:string, contentType
 
 const confirmDirectUpload = async (userId:string, key:string) => {
     const uploaded = await fileUploader.confirmDirectUpload(userId, key)
-    const existing = await prisma.userPhoto.findFirst({where:{userId, url:uploaded.Location}})
-    const photo = existing ?? await handleAddUpload(userId, uploaded.Location, {
+    // Rows saved before keys were used hold the full URL.
+    const existing = await prisma.userPhoto.findFirst({where:{userId, url:{in:[uploaded.Key, uploaded.Location]}}})
+    const photo = existing ?? await handleAddUpload(userId, uploaded.Key, {
         mimeType:uploaded.ContentType || null,
         width:uploaded.Width ?? null,
         height:uploaded.Height ?? null,

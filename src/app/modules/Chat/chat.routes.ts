@@ -10,6 +10,6 @@ router.get("/:teamId/unread", auth(), chatController.getUnreadCount)
 router.patch("/:teamId/read", auth(), chatController.markTeamChatRead)
 router.get("/:teamId",auth(), chatController.getAllChats)
 
-router.post("/upload", auth(), fileUploader.filesystemUpload.single("file"), chatController.uploadChatFile)
+router.post("/upload", auth(), fileUploader.chatFile, chatController.uploadChatFile)
 
 export const charRoutes = router

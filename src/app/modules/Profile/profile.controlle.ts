@@ -15,7 +15,6 @@ export const getMyUploads = catchAsync(async (req: Request, res: Response) => {
 
     // viewerId = self, so isLiked works for own photos too
     const result = await handleGetUserUploads(userId, { page: pageNum, limit: limitNum }, userId)
-
     sendResponse(res, {
         statusCode: httpStatus.OK,
         success: true,

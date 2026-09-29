@@ -11,10 +11,11 @@ import logger from "../../../shared/logger";
 
 export class CloudUploader {
     private client:any;
-    private projectName?:string
+    private projectName:string
     private configuration:IProviderConfiguration
 
     constructor(projectName:string){
+        this.projectName = projectName
         this.configuration = this.getCloudConfiguration()
 
         try{
@@ -88,7 +89,7 @@ export class CloudUploader {
             }
             let id = this.getUUIDv4()
             
-            const Key = `${this.projectName}/${Date.now()}_${id}_${file.originalname}`;
+            const Key = `${this.projectName}/${id}`;
             const uploadParams = {
               Bucket: doConfig.bucket || "",
               Key,

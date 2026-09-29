@@ -7,6 +7,7 @@ import { chatService } from "../app/modules/Chat/chat.service";
 import {createAdapter} from '@socket.io/redis-adapter'
 import { redisClient, redisSubClient } from "../shared/redis";
 import logger from "../shared/logger";
+import { toFileKey } from "./fileUrl";
 
 
 interface AuthenticatedSocket extends Socket {
@@ -14,7 +15,7 @@ interface AuthenticatedSocket extends Socket {
   teamIds?: Set<string>;
 }
 
-const adapter = createAdapter(redisClient, redisSubClient);
+// const adapter = createAdapter(redisClient, redisSubClient);
 
 type Message = { event: string; token?: string; teamId?: string; message?: string };
 type Acknowledgement = (response: {
@@ -33,7 +34,7 @@ let ioInstance: SocketIOServer | null = null;
 
 export function setupWebSocket(server: HTTPServer) {
   const io = new SocketIOServer(server, {
-    adapter: adapter,
+    // adapter: adapter,
     cors: {
       origin: "*",
       methods: ["GET", "POST"],
@@ -210,7 +211,7 @@ export function setupWebSocket(server: HTTPServer) {
             senderId: socket.userId,
             teamId,
             messageType: messageType || "text",
-            fileUrl: fileUrl || null,
+            fileUrl: toFileKey(fileUrl || null),
           },
           include: {
             sender: {

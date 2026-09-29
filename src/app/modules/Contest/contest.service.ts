@@ -1,7 +1,8 @@
-import prisma from '../../../shared/prisma';
+import prisma, { PrismaTx } from '../../../shared/prisma';
 import ApiError from '../../../errors/ApiError';
 import httpstatus from 'http-status';
 import { fileUploader } from '../../../helpers/fileUploader';
+import { toFileKey } from '../../../helpers/fileUrl';
 import { AchievementKind, ContestOccurrenceStatus, ContestParticipant, ContestParticipantStatus, ContestPhoto, ContestStatus, PaymentStatus, PaymentType, Prisma, PrizeType, RecurringContest, RecurringContestStatus, RecurringType, TeamMemberStatus, YCLevel } from '../../../prismaClient';
 import { contestData, updateContestData } from './contest.type';
 import { contestRuleService } from './ContestRules/contestRules.service';
@@ -174,11 +175,11 @@ const resolveBannerFromUserPhoto = async (userPhotoId?:string) => {
     if(!userPhoto){
         throw new ApiError(httpstatus.NOT_FOUND, "Selected user photo not found")
     }
-    return {banner:userPhoto.url, bannerUploaderId:userPhoto.userId}
+    return {banner:toFileKey(userPhoto.url), bannerUploaderId:userPhoto.userId}
 }
 
 const chargeContestEntryFee = async (
-    tx:Prisma.TransactionClient,
+    tx:PrismaTx,
     contest:{id:string; entryFeeCoins:number},
     userId:string
 ) => {
@@ -350,8 +351,11 @@ const createContest = async (creatorId: string, body: contestData, banner:Expres
     }
 
     const bannerFromUserPhoto = await resolveBannerFromUserPhoto(body.bannerUserPhotoId)
+    if(bannerFromUserPhoto && banner){
+        await fileUploader.discardUploadedFile(banner)
+    }
     const bannerUrl = !bannerFromUserPhoto && banner
-        ? (await fileUploader.uploadToDigitalOcean(banner)).Location
+        ? (await fileUploader.uploadToDigitalOcean(banner)).Key
         : null
 
     const normalizedRules = contestRuleService.normalizeContestRules(body.rules, body.rules === undefined)
@@ -363,6 +367,8 @@ const createContest = async (creatorId: string, body: contestData, banner:Expres
     const levelAwards = body.levelAwards || []
 
     const contestData:any = {
+        // Same id as the banner folder (contests/<id>/banner) when a banner was uploaded.
+        id: banner?.recordId,
         creatorId,
         title: body.title,
         description: body.description,
@@ -505,7 +511,7 @@ const materializeRecurringOccurrence = async (rContest:RecurringContest, options
             const contest = await tx.contest.create({
                 data:{
                     title:rContest.title,
-                    banner:rContest.banner,
+                    banner:toFileKey(rContest.banner),
                     bannerUploaderId:rContest.bannerUploaderId,
                     isMoneyContest:rContest.isMoneyContest,
                     maxPrize:rContest.maxPrize,
@@ -643,6 +649,8 @@ const createRecurringContest  =  async (creatorId: string, body: contestData, ba
     )
     const levelAwards = body.levelAwards || []
     const contestData:any = {
+        // Same id as the banner folder (contests/<id>/banner) when a banner was uploaded.
+        id: banner?.recordId,
         creatorId,
         title: body.title,
         description: body.description,
@@ -660,11 +668,14 @@ const createRecurringContest  =  async (creatorId: string, body: contestData, ba
 
     contestData.rules = normalizedRules
     const bannerFromUserPhoto = await resolveBannerFromUserPhoto(body.bannerUserPhotoId)
+    if(bannerFromUserPhoto && banner){
+        await fileUploader.discardUploadedFile(banner)
+    }
     if(bannerFromUserPhoto){
         contestData.banner = bannerFromUserPhoto.banner
         contestData.bannerUploaderId = bannerFromUserPhoto.bannerUploaderId
     }else if(banner){
-        contestData.banner = (await fileUploader.uploadToDigitalOcean(banner)).Location
+        contestData.banner = (await fileUploader.uploadToDigitalOcean(banner)).Key
     }
 
     contestData.recurring ={set: {
@@ -755,9 +766,12 @@ const updateContest = async (contestId:string, contestData:updateContestData, ba
     const { prizeIds, prizes, levelAwards, rules, coinRequirement, bannerUserPhotoId, ...updatePayload } = contestData as any
 
     const bannerFromUserPhoto = await resolveBannerFromUserPhoto(bannerUserPhotoId)
+    if(bannerFromUserPhoto && banner){
+        await fileUploader.discardUploadedFile(banner)
+    }
     const bannerUrl = await (
         !bannerFromUserPhoto && banner
-            ? fileUploader.uploadToDigitalOcean(banner).then(upload => upload.Location)
+            ? fileUploader.uploadToDigitalOcean(banner).then(upload => upload.Key)
             : Promise.resolve(undefined)
     )
     if(bannerFromUserPhoto){
@@ -842,6 +856,9 @@ const updateContest = async (contestId:string, contestData:updateContestData, ba
         return {updatedContest, updatedRules, updatedAwards, updatedLevelAwards}
     })
     await contestCache.invalidateContest(contestId)
+    if(bannerFromUserPhoto || bannerUrl){
+        await fileUploader.deleteReplacedFile(contest.banner, `contests/${contestId}/banner`)
+    }
 
     return {
         ...updatedContest,
