@@ -120,7 +120,7 @@ export const contestRuleDefinitions: Record<ContestRuleKey, ContestRuleDefinitio
       mimeTypes: ["image/jpeg", "image/png"],
       minWidth: 700,
       minHeight: 700,
-      maxSizeMB: 150,
+      maxSizeMB: 25,
     },
     appliesTo: ["PHOTO_UPLOAD", "DISPLAY"],
     displayOnly: false,
