@@ -114,7 +114,7 @@ test("submission formats are restricted to formats the runtime supports", () => 
     const accepted = contestRuleInputArraySchema.safeParse([{
         key:"SUBMISSION_FORMAT",
         value:{
-            mimeTypes:["image/jpeg", "image/webp", "image/heic", "image/tiff"],
+            mimeTypes:["image/jpeg", "image/png", "image/webp", "image/heic", "image/tiff"],
             minWidth:700,
             minHeight:700,
             maxSizeMB:25,
