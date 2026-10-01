@@ -5,10 +5,12 @@ import prisma from "../../../shared/prisma";
 import logger from "../../../shared/logger";
 import httpStatus from 'http-status'
 import { contestCache } from "../Contest/contest.cache";
+import { getContestLevelAchievementId } from "./achievement.keys";
 import {
     ContestLevelBadgeValue,
     getContestLevelBadge,
     getContestLevelOrder,
+    getContestLevelPrizeTypesThrough,
     isContestLevelPrizeType,
     prizeTypes,
 } from "../Awards/award.definitions";
@@ -80,17 +82,12 @@ type AchievementMetadata = {
 type AchievementRecord = {
     category: PrizeType;
     kind?: AchievementKind | null;
-    levelOrder?: number | null;
     participantId?: string | null;
     contestId: string;
 }
 
-const getLevelOrderFromAchievement = (achievement: AchievementRecord) => {
-    return achievement.levelOrder || getContestLevelOrder(achievement.category) || 0
-}
-
-const collapseLevelAchievements = <T extends AchievementRecord>(achievements:T[]) => {
-    const levelByParticipantContest = new Map<string, T>()
+const deduplicateLevelAchievements = <T extends AchievementRecord>(achievements:T[]) => {
+    const seenLevelAchievements = new Set<string>()
     const results:T[] = []
 
     achievements.forEach(achievement => {
@@ -101,15 +98,17 @@ const collapseLevelAchievements = <T extends AchievementRecord>(achievements:T[]
             return
         }
 
-        const key = `${achievement.participantId || "NONE"}:${achievement.contestId}`
-        const saved = levelByParticipantContest.get(key)
-
-        if(!saved || getLevelOrderFromAchievement(achievement) > getLevelOrderFromAchievement(saved)){
-            levelByParticipantContest.set(key, achievement)
+        // A level may only count once per participant and contest. Different
+        // tiers from that same contest are intentionally retained because a
+        // higher tier cumulatively earns every tier below it.
+        const key = `${achievement.participantId || "NONE"}:${achievement.contestId}:${achievement.category}`
+        if(!seenLevelAchievements.has(key)){
+            seenLevelAchievements.add(key)
+            results.push(achievement)
         }
     })
 
-    return [...results, ...levelByParticipantContest.values()]
+    return results
 }
 
 const paginateAchievements = <T>(records:T[], page = 1, limit = 20) => {
@@ -173,10 +172,10 @@ const getProfileAchievements = async (userId:string) => {
     }
 
     const earnedAchievements = await findProfileAchievementRecords(userId)
-    const collapsedAchievements = collapseLevelAchievements(earnedAchievements)
-    const achievementsByCategory = new Map<PrizeType, typeof collapsedAchievements>()
+    const countedAchievements = deduplicateLevelAchievements(earnedAchievements)
+    const achievementsByCategory = new Map<PrizeType, typeof countedAchievements>()
 
-    collapsedAchievements.forEach(achievement => {
+    countedAchievements.forEach(achievement => {
         const list = achievementsByCategory.get(achievement.category) || []
         list.push(achievement)
         achievementsByCategory.set(achievement.category, list)
@@ -203,7 +202,7 @@ const getProfileAchievements = async (userId:string) => {
     }))
 
     return {
-        totalAchievements:collapsedAchievements.length,
+        totalAchievements:countedAchievements.length,
         groups,
     }
 }
@@ -266,8 +265,9 @@ const addContestAchievement = async (
 const upsertContestLevelAchievement = async (participantId:string, contestId:string, category:PrizeType) => {
     const levelBadge = getContestLevelBadge(category)
     const levelOrder = getContestLevelOrder(category)
+    const earnedCategories = getContestLevelPrizeTypesThrough(category)
 
-    if(!levelBadge || !levelOrder){
+    if(!levelBadge || !levelOrder || earnedCategories.length === 0){
         throw new ApiError(httpStatus.BAD_REQUEST, "Invalid contest level achievement")
     }
 
@@ -275,51 +275,41 @@ const upsertContestLevelAchievement = async (participantId:string, contestId:str
         where:{
             participantId,
             contestId,
-            OR:[
-                {kind:AchievementKind.CONTEST_LEVEL},
-                {category:{in:[prizeTypes.AMATEUR, prizeTypes.TALENTED, prizeTypes.SUPREME, prizeTypes.SUPERIOR, prizeTypes.TOP_NOTCH]}}
-            ]
+            category:{in:earnedCategories}
         }
     })
 
-    const highestExistingOrder = Math.max(
-        0,
-        ...existingLevelAchievements.map(achievement => achievement.levelOrder || getContestLevelOrder(achievement.category) || 0)
-    )
+    const existingCategories = new Set(existingLevelAchievements.map(achievement => achievement.category))
+    const missingCategories = earnedCategories.filter(earnedCategory => !existingCategories.has(earnedCategory))
 
-    if(highestExistingOrder >= levelOrder){
-        return existingLevelAchievements.find(achievement => {
-            const order = achievement.levelOrder || getContestLevelOrder(achievement.category)
-            return order === highestExistingOrder
+    if(missingCategories.length > 0){
+        await prisma.$transaction(async tx => {
+            for(const earnedCategory of missingCategories){
+                const achievementData = {
+                    kind:AchievementKind.CONTEST_LEVEL,
+                    levelBadge:getContestLevelBadge(earnedCategory),
+                    levelOrder:getContestLevelOrder(earnedCategory),
+                }
+                await tx.contestAchievement.upsert({
+                    where:{id:getContestLevelAchievementId(participantId, contestId, earnedCategory)},
+                    update:achievementData,
+                    create:{
+                        id:getContestLevelAchievementId(participantId, contestId, earnedCategory),
+                        participantId,
+                        contestId,
+                        category:earnedCategory,
+                        ...achievementData,
+                    }
+                })
+            }
         })
+        await contestCache.invalidateContest(contestId)
     }
 
-    const achievement = await prisma.$transaction(async tx => {
-        await tx.contestAchievement.deleteMany({
-            where:{
-                participantId,
-                contestId,
-                OR:[
-                    {kind:AchievementKind.CONTEST_LEVEL},
-                    {category:{in:[prizeTypes.AMATEUR, prizeTypes.TALENTED, prizeTypes.SUPREME, prizeTypes.SUPERIOR, prizeTypes.TOP_NOTCH]}}
-                ]
-            }
-        })
-
-        return tx.contestAchievement.create({
-            data:{
-                participantId,
-                contestId,
-                category,
-                kind:AchievementKind.CONTEST_LEVEL,
-                levelBadge,
-                levelOrder,
-            }
-        })
+    return prisma.contestAchievement.findFirst({
+        where:{participantId, contestId, category},
+        orderBy:{createdAt:"desc"}
     })
-    await contestCache.invalidateContest(contestId)
-
-    return achievement
 }
 
 //get the contest achievements for a specific user
@@ -334,7 +324,7 @@ const getContestAchievementsByUser = async (userId:string,type?:PrizeType, page 
         include:{contest:{select:{id:true, title:true, banner:true}}},
         orderBy:[{createdAt:"desc"}, {id:"desc"}]
     })
-    return paginateAchievements(collapseLevelAchievements(achievements), page, limit)
+    return paginateAchievements(deduplicateLevelAchievements(achievements), page, limit)
 }
 
 
@@ -346,14 +336,14 @@ const getPhotoAchievements = async (photoId:string)=>{
     }
     const achievements = await prisma.contestAchievement.findMany({where:{photoId}})
 
-    return collapseLevelAchievements(achievements)
+    return deduplicateLevelAchievements(achievements)
 }
 
 
 const getContestAchievements = async (contestId:string)=>{
     const achievememnts = await prisma.contestAchievement.findMany({where:{contestId}})
 
-    return collapseLevelAchievements(achievememnts)
+    return deduplicateLevelAchievements(achievememnts)
 }
 
 
@@ -364,18 +354,18 @@ const getAchievements = async (contestId:string, page = 1, limit = 20)=>{
         orderBy:[{createdAt:"desc"}, {id:"desc"}]
     })
 
-    return paginateAchievements(collapseLevelAchievements(achievements), page, limit)
+    return paginateAchievements(deduplicateLevelAchievements(achievements), page, limit)
 }
 
 const getAchievementCount = async (userId:string)=>{
 
     const achievements = await findProfileAchievementRecords(userId)
-    const collapsedAchievements = collapseLevelAchievements(achievements)
+    const countedAchievements = deduplicateLevelAchievements(achievements)
 
     return {
-        total:collapsedAchievements.length,
-        top_photo:collapsedAchievements.filter(achievement => achievement.category === PrizeType.TOP_PHOTO).length,
-        top_photographer:collapsedAchievements.filter(achievement => achievement.category === PrizeType.TOP_PHOTOGRAPHER).length,
+        total:countedAchievements.length,
+        top_photo:countedAchievements.filter(achievement => achievement.category === PrizeType.TOP_PHOTO).length,
+        top_photographer:countedAchievements.filter(achievement => achievement.category === PrizeType.TOP_PHOTOGRAPHER).length,
     }
 }
 
@@ -390,14 +380,14 @@ const getContestByAchievementsType = async (userId:string,type:PrizeType, page =
         orderBy:[{createdAt:"desc"}, {id:"desc"}]
     })
 
-    return paginateAchievements(collapseLevelAchievements(achievements), page, limit)
+    return paginateAchievements(deduplicateLevelAchievements(achievements), page, limit)
 }
 
 const getUserPhotoAchievements = async (userId:string, photoId:string) => {
 
     const achievements = await prisma.contestAchievement.findMany({where:{photo:{photoId}, participant:{userId}}})
 
-    return collapseLevelAchievements(achievements)
+    return deduplicateLevelAchievements(achievements)
 }
 
 const getAllPhotosAchievements = async (page = 1, limit = 20) => {
@@ -434,7 +424,7 @@ const getAllPhotosAchievements = async (page = 1, limit = 20) => {
         logger.warn({orphaned, missingUserIds:userIds.filter(id => !userById.has(id))}, "Skipped achievements whose participant user no longer exists")
     }
 
-    return paginateAchievements(collapseLevelAchievements(achievements), page, limit)
+    return paginateAchievements(deduplicateLevelAchievements(achievements), page, limit)
 }
 
 const getMyAchievementsByContest = async (userId:string, contestId:string) => {
@@ -444,7 +434,7 @@ const getMyAchievementsByContest = async (userId:string, contestId:string) => {
         orderBy:{createdAt:"desc"}
     })
 
-    return collapseLevelAchievements(achievements)
+    return deduplicateLevelAchievements(achievements)
 
 }
 

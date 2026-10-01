@@ -18,11 +18,14 @@ import {
   contestLevelBadges,
   ycLevels,
   getAwardSlotKey,
+  getContestLevelBadge,
   getContestLevelOrder,
+  getContestLevelPrizeTypesThrough,
   getRankBandLowerBound,
   normalizeAwardIdentity,
 } from "../../Awards/award.definitions";
 import { levelService } from "../../Level/level.service";
+import { getContestLevelAchievementId } from "../../Achievements/achievement.keys";
 import { ContestRanking, contestRankingService } from "../ContestRanking/contestRanking.service";
 import { notificationOrchestrator } from "../../Notification/notificationOrchestrator";
 import { contestCache } from "../contest.cache";
@@ -248,7 +251,9 @@ type LevelAwardConfig = {
 // Contest level rewards are optional - admins configure a payout for reaching Amateur/Talented/
 // Supreme/Superior/Top Notch, or configure nothing at all, in which case leveling up in a contest
 // remains a badge-only achievement (rewardByLevel lookup misses and every reward stays 0), exactly
-// matching the pre-existing behavior before this feature existed.
+// matching the pre-existing behavior before this feature existed. A higher result creates cumulative
+// badge achievements below, but this grant intentionally pays only the reward configured for the
+// participant's actual final level.
 const buildLevelGrants = (
   contestId: string,
   ranking: ContestRanking,
@@ -317,37 +322,73 @@ const processGrant = async (grantId: string) => {
       const grant = await tx.contestAwardGrant.findUniqueOrThrow({ where: { id: grantId } });
 
       if (grant.kind === AchievementKind.CONTEST_LEVEL) {
-        await tx.contestAchievement.deleteMany({
+        const earnedCategories = getContestLevelPrizeTypesThrough(grant.category);
+        const existingLevelAchievements = await tx.contestAchievement.findMany({
           where: {
             participantId: grant.participantId,
             contestId: grant.contestId,
-            OR: [
-              { kind: AchievementKind.CONTEST_LEVEL },
-              { category: { in: [prizeTypes.AMATEUR, prizeTypes.TALENTED, prizeTypes.SUPREME, prizeTypes.SUPERIOR, prizeTypes.TOP_NOTCH] } },
-            ],
+            category: { in: earnedCategories },
           },
         });
-      }
+        const achievementByCategory = new Map(
+          existingLevelAchievements.map(achievement => [achievement.category, achievement])
+        );
 
-      const existingAchievement = await tx.contestAchievement.findFirst({
-        where: { grantKey: grant.grantKey },
-      });
-      if (!existingAchievement) {
-        await tx.contestAchievement.create({
-          data: {
-            participantId: grant.participantId,
-            contestId: grant.contestId,
-            category: grant.category,
-            kind: grant.kind,
-            type: grant.type,
-            target: grant.target,
-            rankLimit: grant.rankLimit,
-            levelBadge: grant.levelBadge,
-            levelOrder: grant.levelOrder,
-            photoId: grant.photoId,
-            grantKey: grant.grantKey,
-          },
+        for (const earnedCategory of earnedCategories) {
+          const existingAchievement = achievementByCategory.get(earnedCategory);
+          const isAwardedLevel = earnedCategory === grant.category;
+          const achievementData = {
+            kind: AchievementKind.CONTEST_LEVEL,
+            levelBadge: getContestLevelBadge(earnedCategory),
+            levelOrder: getContestLevelOrder(earnedCategory),
+            ...(isAwardedLevel && { grantKey: grant.grantKey }),
+          };
+
+          if (existingAchievement) {
+            await tx.contestAchievement.update({
+              where: { id: existingAchievement.id },
+              data: achievementData,
+            });
+          } else {
+            const achievementId = getContestLevelAchievementId(
+              grant.participantId,
+              grant.contestId,
+              earnedCategory,
+            );
+            await tx.contestAchievement.upsert({
+              where: { id: achievementId },
+              update: achievementData,
+              create: {
+                id: achievementId,
+                participantId: grant.participantId,
+                contestId: grant.contestId,
+                category: earnedCategory,
+                ...achievementData,
+              },
+            });
+          }
+        }
+      } else {
+        const existingAchievement = await tx.contestAchievement.findFirst({
+          where: { grantKey: grant.grantKey },
         });
+        if (!existingAchievement) {
+          await tx.contestAchievement.create({
+            data: {
+              participantId: grant.participantId,
+              contestId: grant.contestId,
+              category: grant.category,
+              kind: grant.kind,
+              type: grant.type,
+              target: grant.target,
+              rankLimit: grant.rankLimit,
+              levelBadge: grant.levelBadge,
+              levelOrder: grant.levelOrder,
+              photoId: grant.photoId,
+              grantKey: grant.grantKey,
+            },
+          });
+        }
       }
 
       const hasReward = grant.keyReward > 0 || grant.boostReward > 0 || grant.swapReward > 0 || grant.coinReward > 0;

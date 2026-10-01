@@ -3,6 +3,10 @@ import ApiError from "../../../errors/ApiError";
 import httpStatus from "http-status";
 import { ReportReason, ReportStatus } from "../../../prismaClient";
 import { paginationHelper } from "../../../helpers/paginationHelper";
+import config from "../../../config";
+import { sendMail } from "../../../shared/mailSender";
+import { runInBackground } from "../../../shared/backgroundTasks";
+import { buildReportNotificationEmail } from "./report.notification";
 
 const reportUserSelect = { id: true, username: true, fullName: true, email: true, avatar: true } as const;
 
@@ -39,7 +43,7 @@ const createReport = async (
     throw new ApiError(httpStatus.NOT_FOUND, "Reported user not found");
   }
 
-  return prisma.report.create({
+  const report = await prisma.report.create({
     data: {
       reporterId,
       reportedUserId,
@@ -48,6 +52,19 @@ const createReport = async (
       details: data.details,
     },
   });
+
+  runInBackground(`report-notification:${report.id}`, async () => {
+    const [enrichedReport] = await enrichReports([report]);
+    const email = buildReportNotificationEmail(enrichedReport);
+
+    await sendMail({
+      to: config.reportNotificationEmail,
+      replyTo: enrichedReport.reporter?.email,
+      ...email,
+    });
+  });
+
+  return report;
 };
 
 const enrichReports = async <T extends { reporterId: string; reportedUserId: string; contestPhotoId: string | null }>(

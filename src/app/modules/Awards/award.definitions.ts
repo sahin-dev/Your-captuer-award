@@ -140,6 +140,22 @@ export const getContestLevelOrder = (category: PrizeType) => {
   return badge ? contestLevelBadgeOrder[badge] : null;
 };
 
+/**
+ * Returns every contest-level achievement earned by reaching `category`.
+ * Contest levels are cumulative: reaching Supreme also earns Amateur and
+ * Talented for that contest.
+ */
+export const getContestLevelPrizeTypesThrough = (category: PrizeType): PrizeType[] => {
+  const earnedOrder = getContestLevelOrder(category);
+  if (!earnedOrder) {
+    return [];
+  }
+
+  return contestLevelPrizeTypes
+    .filter((levelCategory) => (getContestLevelOrder(levelCategory) || 0) <= earnedOrder)
+    .sort((left, right) => (getContestLevelOrder(left) || 0) - (getContestLevelOrder(right) || 0));
+};
+
 const categoryFromAward = (type: AwardType, rankLimit: number | null, target: AwardTarget) => {
   if (type === awardTypes.TOP_RANK) {
     if (!rankLimit || !topRankCategoryByLimit[rankLimit]) {

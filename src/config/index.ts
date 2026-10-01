@@ -48,6 +48,7 @@ const config =  {
         pass: process.env.SMTP_PASS || process.env.APP_PASS,
         from: process.env.SMTP_FROM || "no-reply@yourcaptureawards.org",
     },
+    reportNotificationEmail: process.env.REPORT_NOTIFICATION_EMAIL || "info@yourcaptureawards.org",
     redis:{
         host: process.env.REDIS_HOST || "localhost",
         port: Number(process.env.REDIS_PORT || 6379)
