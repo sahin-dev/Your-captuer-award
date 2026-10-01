@@ -1,6 +1,7 @@
 model SitePolicy {
     id        String      @id @default(auto()) @map("_id") @db.ObjectId
     type      SitePolicyType
+    title     String?
     content   String
     
     createdAt DateTime    @default(now())
@@ -13,4 +14,5 @@ enum SitePolicyType {
   TERMS
   POLICY
   ABOUT
+  PHOTOGRAPHER_OF_THE_YEAR
 }

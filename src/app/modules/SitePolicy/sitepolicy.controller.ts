@@ -7,9 +7,9 @@ import { Request, Response } from "express";
 
 
 const addOrUpdateSitePolicy = catchAsync(async (req:any, res:Response) => {
-    const { content, type } = req.body;
+    const { content, type, title } = req.body;
 
-    let addedOrUpdatedData =  await SitePolicyService.addSitePolicy(content, type as SitePolicyType);
+    const addedOrUpdatedData = await SitePolicyService.addSitePolicy(content, type as SitePolicyType, title);
 
     sendResponse(res, {
         success: true,
