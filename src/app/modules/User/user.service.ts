@@ -7,7 +7,7 @@ import { fileUploader } from "../../../helpers/fileUploader"
 import { generateOtp } from "../../../helpers/generateOtp"
 import mailer from "../../../shared/mailSender"
 import { hashing } from "../../../helpers/hash"
-import { OtpStatus, UserRole } from "../../../prismaClient"
+import { OtpStatus, Prisma, UserRole } from "../../../prismaClient"
 import { userAdminUpdateData, userUpdateData } from "./user.types"
 import bcrypt from 'bcryptjs'
 import { userStoreService } from "./UserStore/userStore.service"
@@ -340,22 +340,21 @@ const attachStoreToUser = async (userId:string)=>{
 const searchUserByUserName = async (queryString:string, page:number = 1, limit:number = 10, currentUserId?:string) => {
     const { skip, limit:take, page:currentPage } = paginationHelper.calculatePagination({page, limit})
 
+    // This search supplies the team-invite picker. Only regular users who are
+    // not already attached to a team are eligible to receive an invitation.
+    const where: Prisma.UserWhereInput = {
+        AND:[
+            {OR:[{username:{contains:queryString, mode:'insensitive'}}, {fullName:{contains:queryString, mode:'insensitive'}}]},
+            currentUserId ? {id:{not:currentUserId}} : {},
+            {role:UserRole.USER},
+            {joinedTeam:{is:null}}
+        ]
+    }
+
     const [total, users] = await Promise.all([
-        prisma.user.count({
-            where:{
-                AND:[
-                    {OR:[{username:{contains:queryString, mode:'insensitive'}}, {fullName:{contains:queryString, mode:'insensitive'}}]},
-                    currentUserId ? {id:{not:currentUserId}} : {}
-                ]
-            }
-        }),
+        prisma.user.count({where}),
         prisma.user.findMany({
-            where:{
-                AND:[
-                    {OR:[{username:{contains:queryString, mode:'insensitive'}}, {fullName:{contains:queryString, mode:'insensitive'}}]},
-                    currentUserId ? {id:{not:currentUserId}} : {}
-                ]
-            },
+            where,
             select:{id:true, avatar:true, firstName:true, username:true, lastName:true, fullName:true},
             skip,
             take,

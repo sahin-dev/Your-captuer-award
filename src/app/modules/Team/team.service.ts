@@ -17,6 +17,7 @@ import {
   TeamMatchQueueStatus,
   TeamMemberStatus,
   TeamRewardPeriod,
+  UserRole,
 } from "../../../prismaClient";
 import { contestService } from "../Contest/contest.service";
 import { notificationService } from "../Notification/notification.service";
@@ -689,6 +690,20 @@ const inviteUser = async (
   const memberCount = await prisma.teamMember.count({ where: { teamId } });
   if (memberCount >= team.member_slots) {
     throw new ApiError(httpstatus.BAD_REQUEST, "No member slots available");
+  }
+
+  const receiver = await prisma.user.findUnique({
+    where: { id: receiverId },
+    select: { role: true },
+  });
+  if (!receiver) {
+    throw new ApiError(httpstatus.NOT_FOUND, "User not found");
+  }
+  if (receiver.role === UserRole.ADMIN) {
+    throw new ApiError(
+      httpstatus.BAD_REQUEST,
+      "Admin users cannot be invited to a team",
+    );
   }
 
   const receiverAlreadyJoined = await isAlreaderJoinedTeam(receiverId);
