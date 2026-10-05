@@ -50,7 +50,7 @@ const getVersion = async (
     versionKey(scope),
     options.versionTtlSeconds ?? DEFAULT_VERSION_TTL_SECONDS,
     async () => 1,
-    { label: options.label ?? scope },
+    { label: options.label ?? scope, scope, part: "version" },
   );
 };
 
@@ -68,7 +68,7 @@ const get = async <T>(
     key,
     options.ttlSeconds ?? DEFAULT_TTL_SECONDS,
     load,
-    { label: options.label ?? `${scope}:${part}` },
+    { label: options.label ?? `${scope}:${part}`, scope, part },
   );
 };
 
