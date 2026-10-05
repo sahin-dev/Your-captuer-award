@@ -1,5 +1,6 @@
 import config from "../../../config";
 import logger from "../../../shared/logger";
+import { cacheMetrics } from "../../../shared/cacheMetrics";
 import { redisClient } from "../../../shared/redis";
 
 type CacheOptions = {
@@ -14,7 +15,9 @@ const photoVersionKey = (photoId: string) => `profile:photo:${photoId}:ver`;
 
 const isoDatePattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?Z$/;
 const reviveDates = (_key: string, value: unknown) =>
-  typeof value === "string" && isoDatePattern.test(value) ? new Date(value) : value;
+  typeof value === "string" && isoDatePattern.test(value)
+    ? new Date(value)
+    : value;
 
 const canUseCache = () => config.cache.enabled && redisClient.isReady;
 
@@ -25,31 +28,43 @@ const stableStringify = (value: Record<string, unknown> = {}) =>
       .reduce<Record<string, unknown>>((acc, key) => {
         acc[key] = value[key];
         return acc;
-      }, {})
+      }, {}),
   );
 
 const getVersion = async (key: string) => (await redisClient.get(key)) ?? "0";
 
-const getOrSet = async <T>(key: string, load: () => Promise<T>, ttlSeconds: number, label: string) => {
+const getOrSet = async <T>(
+  key: string,
+  load: () => Promise<T>,
+  ttlSeconds: number,
+  label: string,
+  part: string,
+) => {
   if (!canUseCache()) {
+    cacheMetrics.recordLookup("bypass", { scope: "profile", part });
     return load();
   }
 
   try {
     const cached = await redisClient.get(key);
     if (cached) {
+      cacheMetrics.recordLookup("hit", { scope: "profile", part });
       return JSON.parse(cached, reviveDates) as T;
     }
+    cacheMetrics.recordLookup("miss", { scope: "profile", part });
   } catch (error) {
     logger.error({ err: error, key, label }, "Profile cache read failed");
+    cacheMetrics.recordLookup("error", { scope: "profile", part });
     return load();
   }
 
   const fresh = await load();
   try {
     await redisClient.setEx(key, ttlSeconds, JSON.stringify(fresh));
+    cacheMetrics.recordWrite("success", { scope: "profile", part });
   } catch (error) {
     logger.error({ err: error, key, label }, "Profile cache write failed");
+    cacheMetrics.recordWrite("error", { scope: "profile", part });
   }
   return fresh;
 };
@@ -59,9 +74,13 @@ const getUserData = async <T>(
   part: string,
   params: Record<string, unknown>,
   load: () => Promise<T>,
-  options: CacheOptions = {}
+  options: CacheOptions = {},
 ) => {
   if (!canUseCache()) {
+    cacheMetrics.recordLookup("bypass", {
+      scope: "profile",
+      part: `user-${part}`,
+    });
     return load();
   }
 
@@ -70,7 +89,8 @@ const getUserData = async <T>(
     `profile:user:${userId}:v${version}:${part}:${stableStringify(params)}`,
     load,
     options.ttlSeconds ?? DATA_TTL_SECONDS,
-    `profile-user-${part}`
+    `profile-user-${part}`,
+    `user-${part}`,
   );
 };
 
@@ -79,9 +99,13 @@ const getPhotoData = async <T>(
   part: string,
   params: Record<string, unknown>,
   load: () => Promise<T>,
-  options: CacheOptions = {}
+  options: CacheOptions = {},
 ) => {
   if (!canUseCache()) {
+    cacheMetrics.recordLookup("bypass", {
+      scope: "profile",
+      part: `photo-${part}`,
+    });
     return load();
   }
 
@@ -90,19 +114,32 @@ const getPhotoData = async <T>(
     `profile:photo:${photoId}:v${version}:${part}:${stableStringify(params)}`,
     load,
     options.ttlSeconds ?? DATA_TTL_SECONDS,
-    `profile-photo-${part}`
+    `profile-photo-${part}`,
+    `photo-${part}`,
   );
 };
 
 const bumpVersion = async (key: string, label: string) => {
   if (!canUseCache()) {
+    cacheMetrics.recordInvalidation("bypass", {
+      scope: "profile",
+      part: label,
+    });
     return;
   }
 
   try {
     await redisClient.multi().incr(key).expire(key, VERSION_TTL_SECONDS).exec();
+    cacheMetrics.recordInvalidation("success", {
+      scope: "profile",
+      part: label,
+    });
   } catch (error) {
-    logger.error({ err: error, key, label }, "Profile cache invalidation failed");
+    logger.error(
+      { err: error, key, label },
+      "Profile cache invalidation failed",
+    );
+    cacheMetrics.recordInvalidation("error", { scope: "profile", part: label });
   }
 };
 
@@ -111,7 +148,9 @@ const invalidateUser = async (userId: string) => {
 };
 
 const invalidateUsers = async (userIds: string[]) => {
-  await Promise.all(Array.from(new Set(userIds)).map((userId) => invalidateUser(userId)));
+  await Promise.all(
+    Array.from(new Set(userIds)).map((userId) => invalidateUser(userId)),
+  );
 };
 
 const invalidatePhoto = async (photoId: string) => {

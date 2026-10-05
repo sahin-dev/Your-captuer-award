@@ -63,13 +63,27 @@ It shows up in Prometheus as `yca_votes_cast_total`. Keep attribute values to a
 small fixed set — never user ids or contest ids, every distinct value is a new
 time series.
 
+## Cache metrics
+
+Cache metrics are emitted as:
+
+```promql
+yca_cache_lookup_total{scope="profile", part="user-photos", result="hit"}
+yca_cache_write_total{scope="store", part="product", result="success"}
+yca_cache_invalidation_total{scope="contest", part="contest", result="success"}
+```
+
+`scope` and `part` are endpoint/read-model groups, not object IDs. `result` is
+`hit`, `miss`, `bypass`, or `error` for lookups, and `success`, `bypass`, or
+`error` for writes and invalidations.
+
 ## Files
 
-| File | What |
-|---|---|
-| `src/instrumentation.ts` | SDK setup, loaded first by `server.ts` |
-| `otel-collector.yaml` | receives OTLP, sends metrics to Prometheus and traces to Tempo |
-| `prometheus.yml` | scrapes the collector |
-| `tempo.yaml` | trace storage |
-| `grafana/provisioning` | datasources and dashboard loader |
-| `grafana/dashboards/yca-api.json` | the API dashboard |
+| File                              | What                                                           |
+| --------------------------------- | -------------------------------------------------------------- |
+| `src/instrumentation.ts`          | SDK setup, loaded first by `server.ts`                         |
+| `otel-collector.yaml`             | receives OTLP, sends metrics to Prometheus and traces to Tempo |
+| `prometheus.yml`                  | scrapes the collector                                          |
+| `tempo.yaml`                      | trace storage                                                  |
+| `grafana/provisioning`            | datasources and dashboard loader                               |
+| `grafana/dashboards/yca-api.json` | the API dashboard                                              |

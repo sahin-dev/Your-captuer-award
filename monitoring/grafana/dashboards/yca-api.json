@@ -1,10 +1,7 @@
 {
   "uid": "yca-api",
   "title": "YCA API",
-  "tags": [
-    "yca",
-    "opentelemetry"
-  ],
+  "tags": ["yca", "opentelemetry"],
   "timezone": "browser",
   "schemaVersion": 39,
   "version": 3,
@@ -229,10 +226,7 @@
         "legend": {
           "displayMode": "table",
           "placement": "right",
-          "calcs": [
-            "mean",
-            "max"
-          ]
+          "calcs": ["mean", "max"]
         },
         "tooltip": {
           "mode": "multi"
@@ -274,10 +268,7 @@
         "legend": {
           "displayMode": "table",
           "placement": "right",
-          "calcs": [
-            "mean",
-            "max"
-          ]
+          "calcs": ["mean", "max"]
         },
         "tooltip": {
           "mode": "multi"
@@ -534,10 +525,7 @@
         "legend": {
           "displayMode": "table",
           "placement": "right",
-          "calcs": [
-            "mean",
-            "max"
-          ]
+          "calcs": ["mean", "max"]
         },
         "tooltip": {
           "mode": "multi"
@@ -590,10 +578,7 @@
         "legend": {
           "displayMode": "table",
           "placement": "right",
-          "calcs": [
-            "mean",
-            "max"
-          ]
+          "calcs": ["mean", "max"]
         },
         "tooltip": {
           "mode": "multi"
@@ -636,10 +621,7 @@
         "legend": {
           "displayMode": "table",
           "placement": "right",
-          "calcs": [
-            "mean",
-            "max"
-          ]
+          "calcs": ["mean", "max"]
         },
         "tooltip": {
           "mode": "multi"
@@ -701,10 +683,7 @@
         "legend": {
           "displayMode": "table",
           "placement": "right",
-          "calcs": [
-            "mean",
-            "max"
-          ]
+          "calcs": ["mean", "max"]
         },
         "tooltip": {
           "mode": "multi"
@@ -760,10 +739,7 @@
         "legend": {
           "displayMode": "table",
           "placement": "right",
-          "calcs": [
-            "mean",
-            "max"
-          ]
+          "calcs": ["mean", "max"]
         },
         "tooltip": {
           "mode": "multi"
@@ -875,10 +851,7 @@
         "legend": {
           "displayMode": "table",
           "placement": "right",
-          "calcs": [
-            "mean",
-            "max"
-          ]
+          "calcs": ["mean", "max"]
         },
         "tooltip": {
           "mode": "multi"
@@ -921,10 +894,7 @@
         "legend": {
           "displayMode": "table",
           "placement": "right",
-          "calcs": [
-            "mean",
-            "max"
-          ]
+          "calcs": ["mean", "max"]
         },
         "tooltip": {
           "mode": "multi"
@@ -966,10 +936,7 @@
         "legend": {
           "displayMode": "table",
           "placement": "right",
-          "calcs": [
-            "mean",
-            "max"
-          ]
+          "calcs": ["mean", "max"]
         },
         "tooltip": {
           "mode": "multi"
@@ -979,7 +946,7 @@
     {
       "id": 15,
       "type": "row",
-      "title": "Contest cache (Redis)",
+      "title": "Cache (Redis)",
       "collapsed": false,
       "gridPos": {
         "x": 0,
@@ -992,7 +959,7 @@
     {
       "id": 16,
       "type": "stat",
-      "title": "Hit ratio",
+      "title": "Cache hit ratio",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -1001,7 +968,7 @@
         "x": 0,
         "y": 53,
         "w": 6,
-        "h": 6
+        "h": 5
       },
       "targets": [
         {
@@ -1010,23 +977,40 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(rate(yca_contest_cache_lookups_total{job=\"yca-api\", result=\"hit\"}[15m])) / sum(rate(yca_contest_cache_lookups_total{job=\"yca-api\"}[15m]))",
+          "expr": "sum(rate(yca_cache_lookup_total{job=\"yca-api\", result=\"hit\"}[15m])) / sum(rate(yca_cache_lookup_total{job=\"yca-api\", result=~\"hit|miss\"}[15m]))",
           "legendFormat": ""
         }
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "percentunit"
+          "unit": "percentunit",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 0.5
+              },
+              {
+                "color": "green",
+                "value": 0.75
+              }
+            ]
+          }
         },
         "overrides": []
       },
       "options": {},
-      "description": "Share of contest lookups served from Redis. 'bypass' means Redis was unavailable."
+      "description": "Share of cacheable reads served from Redis. Bypass and error are excluded so Redis outages do not look like normal misses."
     },
     {
       "id": 17,
-      "type": "timeseries",
-      "title": "Lookups / s by part and result",
+      "type": "stat",
+      "title": "Cache bypass / s",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -1034,8 +1018,8 @@
       "gridPos": {
         "x": 6,
         "y": 53,
-        "w": 18,
-        "h": 6
+        "w": 6,
+        "h": 5
       },
       "targets": [
         {
@@ -1044,8 +1028,42 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (part, result) (rate(yca_contest_cache_lookups_total{job=\"yca-api\"}[5m]))",
-          "legendFormat": "{{part}} {{result}}"
+          "expr": "sum(rate(yca_cache_lookup_total{job=\"yca-api\", result=\"bypass\"}[5m]))",
+          "legendFormat": ""
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "options": {},
+      "description": "Bypass means cache is disabled, Redis is unavailable, or the cache layer intentionally skipped Redis."
+    },
+    {
+      "id": 18,
+      "type": "timeseries",
+      "title": "Lookups / s by scope and result",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 53,
+        "w": 12,
+        "h": 5
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (scope, result) (rate(yca_cache_lookup_total{job=\"yca-api\"}[5m]))",
+          "legendFormat": "{{scope}} {{result}}"
         }
       ],
       "fieldConfig": {
@@ -1058,15 +1076,200 @@
         "legend": {
           "displayMode": "table",
           "placement": "right",
-          "calcs": [
-            "mean",
-            "max"
-          ]
+          "calcs": ["mean", "max"]
         },
         "tooltip": {
           "mode": "multi"
         }
       }
+    },
+    {
+      "id": 19,
+      "type": "timeseries",
+      "title": "Hit/miss / s by endpoint group",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 58,
+        "w": 24,
+        "h": 7
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (scope, part, result) (rate(yca_cache_lookup_total{job=\"yca-api\", result=~\"hit|miss\"}[5m]))",
+          "legendFormat": "{{scope}} {{part}} {{result}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": ["mean", "max"]
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "description": "Endpoint groups are intentionally low-cardinality scopes and parts, not user IDs or object IDs."
+    },
+    {
+      "id": 20,
+      "type": "timeseries",
+      "title": "Cache writes / s",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 65,
+        "w": 8,
+        "h": 6
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (scope, result) (rate(yca_cache_write_total{job=\"yca-api\"}[5m]))",
+          "legendFormat": "{{scope}} {{result}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": ["mean", "max"]
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      }
+    },
+    {
+      "id": 21,
+      "type": "timeseries",
+      "title": "Cache invalidations / s",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 8,
+        "y": 65,
+        "w": 8,
+        "h": 6
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (scope, result) (rate(yca_cache_invalidation_total{job=\"yca-api\"}[5m]))",
+          "legendFormat": "{{scope}} {{result}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": ["mean", "max"]
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      }
+    },
+    {
+      "id": 22,
+      "type": "timeseries",
+      "title": "Cache errors / s",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 16,
+        "y": 65,
+        "w": 8,
+        "h": 6
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (scope, part) (rate(yca_cache_lookup_total{job=\"yca-api\", result=\"error\"}[5m]))",
+          "legendFormat": "lookup {{scope}} {{part}}"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (scope, part) (rate(yca_cache_write_total{job=\"yca-api\", result=\"error\"}[5m]))",
+          "legendFormat": "write {{scope}} {{part}}"
+        },
+        {
+          "refId": "C",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (scope, part) (rate(yca_cache_invalidation_total{job=\"yca-api\", result=\"error\"}[5m]))",
+          "legendFormat": "invalidate {{scope}} {{part}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": ["mean", "max"]
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "description": "Any sustained non-zero value means Redis/cache operations are failing and requests are falling back to database reads."
     }
   ],
   "templating": {

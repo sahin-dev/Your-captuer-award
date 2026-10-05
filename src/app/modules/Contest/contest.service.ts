@@ -2071,7 +2071,7 @@ const rollbackUploadedContestPhotos = async (
 // important: two requests may submit the same gallery photo at nearly the same
 // time, and a read-then-push alone could append the same category twice.
 const addContestCategoryToPhotos = async (
-    tx:Prisma.TransactionClient,
+    tx:PrismaTx,
     photoIds:string[],
     rawCategory:string | null
 ) => {

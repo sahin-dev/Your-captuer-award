@@ -1,11 +1,6 @@
 import { metrics } from "@opentelemetry/api";
 
-export type CacheMetricResult =
-  | "hit"
-  | "miss"
-  | "bypass"
-  | "success"
-  | "error";
+export type CacheMetricResult = "hit" | "miss" | "bypass" | "success" | "error";
 
 export type CacheMetricAttributes = {
   scope?: string;

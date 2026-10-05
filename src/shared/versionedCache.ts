@@ -1,6 +1,7 @@
 import { createHash } from "crypto";
 import config from "../config";
 import logger from "./logger";
+import { cacheMetrics } from "./cacheMetrics";
 import { redisClient } from "./redis";
 import { cache } from "./cache";
 
@@ -50,7 +51,7 @@ const getVersion = async (
     versionKey(scope),
     options.versionTtlSeconds ?? DEFAULT_VERSION_TTL_SECONDS,
     async () => 1,
-    { label: options.label ?? scope, scope, part: "version" },
+    { label: options.label ?? scope, scope, part: "version", metrics: false },
   );
 };
 
@@ -77,6 +78,7 @@ const invalidate = async (
   options: VersionedCacheOptions = {},
 ) => {
   if (!config.cache.enabled || !redisClient.isReady) {
+    cacheMetrics.recordInvalidation("bypass", { scope, part: "version" });
     return;
   }
 
@@ -88,11 +90,13 @@ const invalidate = async (
       key,
       options.versionTtlSeconds ?? DEFAULT_VERSION_TTL_SECONDS,
     );
+    cacheMetrics.recordInvalidation("success", { scope, part: "version" });
   } catch (error) {
     logger.error(
       { err: error, scope, label: options.label },
       "Versioned cache invalidation failed",
     );
+    cacheMetrics.recordInvalidation("error", { scope, part: "version" });
   }
 };
 

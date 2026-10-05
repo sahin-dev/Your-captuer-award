@@ -17,36 +17,36 @@ const fetchUserUploads = async (targetUserId:string, pagination:{page?:number, l
         limit:pagination.limit || 20
     })
 
-    // const {totalUploads, uploads} = await profileCache.getUserData(
-    //     targetUserId,
-    //     "uploads",
-    //     {page, limit},
-    //     async () => {
-    //         const [totalUploads, uploads] = await Promise.all([
-    //             prisma.userPhoto.count({where:{userId:targetUserId}}),
-    //             prisma.userPhoto.findMany({
-    //                 where:{userId:targetUserId},include:{
-    //                     contestUpload:{select:{achievements:{orderBy:{createdAt:'desc'}, take:1,
-    //                     select:{category:true},},
-    //                     id:true}},_count:{select:{likes:true}}},
-    //                     take:limit,
-    //                     skip,
-    //                     orderBy:[{createdAt:'desc'}, {id:'desc'}]
-    //             })
-    //         ])
-    //         return {totalUploads, uploads}
-    //     }
-    // )
+    const {totalUploads, uploads} = await profileCache.getUserData(
+        targetUserId,
+        "uploads",
+        {page, limit},
+        async () => {
+            const [totalUploads, uploads] = await Promise.all([
+                prisma.userPhoto.count({where:{userId:targetUserId}}),
+                prisma.userPhoto.findMany({
+                    where:{userId:targetUserId},include:{
+                        contestUpload:{select:{achievements:{orderBy:{createdAt:'desc'}, take:1,
+                        select:{category:true},},
+                        id:true}},_count:{select:{likes:true}}},
+                        take:limit,
+                        skip,
+                        orderBy:[{createdAt:'desc'}, {id:'desc'}]
+                })
+            ])
+            return {totalUploads, uploads}
+        }
+    )
 
-    const uploads = await prisma.userPhoto.findMany({
-        where:{userId:targetUserId},include:{
-            contestUpload:{select:{achievements:{orderBy:{createdAt:'desc'},
-            select:{category:true},},
-            id:true}},_count:{select:{likes:true}}},
-            take:limit,
-            skip,
-            orderBy:[{createdAt:'desc'}, {id:'desc'}]
-    })
+    // const uploads = await prisma.userPhoto.findMany({
+    //     where:{userId:targetUserId},include:{
+    //         contestUpload:{select:{achievements:{orderBy:{createdAt:'desc'},
+    //         select:{category:true},},
+    //         id:true}},_count:{select:{likes:true}}},
+    //         take:limit,
+    //         skip,
+    //         orderBy:[{createdAt:'desc'}, {id:'desc'}]
+    // })
 
     const likedPhotoIds = viewerId
         ? new Set((await prisma.like.findMany({where:{providerId:viewerId, photoId:{in:uploads.map(photo => photo.id)}}, select:{photoId:true}})).map(like => like.photoId))
