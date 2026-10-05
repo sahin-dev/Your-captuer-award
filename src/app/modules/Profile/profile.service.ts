@@ -17,25 +17,27 @@ const fetchUserUploads = async (targetUserId:string, pagination:{page?:number, l
         limit:pagination.limit || 20
     })
 
-    const {totalUploads, uploads} = await profileCache.getUserData(
+    const loadUploadsPage = async () => {
+        const [totalUploads, uploads] = await Promise.all([
+            prisma.userPhoto.count({where:{userId:targetUserId}}),
+            prisma.userPhoto.findMany({
+                where:{userId:targetUserId},include:{
+                    contestUpload:{select:{achievements:{orderBy:{createdAt:'desc'}, take:1,
+                    select:{category:true},},
+                    id:true}},_count:{select:{likes:true}}},
+                    take:limit,
+                    skip,
+                    orderBy:[{createdAt:'desc'}, {id:'desc'}]
+            })
+        ])
+        return {totalUploads, uploads}
+    }
+
+    const {totalUploads, uploads} = await profileCache.getUserData<Awaited<ReturnType<typeof loadUploadsPage>>>(
         targetUserId,
         "uploads",
         {page, limit},
-        async () => {
-            const [totalUploads, uploads] = await Promise.all([
-                prisma.userPhoto.count({where:{userId:targetUserId}}),
-                prisma.userPhoto.findMany({
-                    where:{userId:targetUserId},include:{
-                        contestUpload:{select:{achievements:{orderBy:{createdAt:'desc'}, take:1,
-                        select:{category:true},},
-                        id:true}},_count:{select:{likes:true}}},
-                        take:limit,
-                        skip,
-                        orderBy:[{createdAt:'desc'}, {id:'desc'}]
-                })
-            ])
-            return {totalUploads, uploads}
-        }
+        loadUploadsPage
     )
 
     // const uploads = await prisma.userPhoto.findMany({

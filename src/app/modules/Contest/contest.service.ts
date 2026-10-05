@@ -1,4 +1,4 @@
-import prisma, { PrismaTx } from '../../../shared/prisma';
+import prisma from '../../../shared/prisma';
 import ApiError from '../../../errors/ApiError';
 import httpstatus from 'http-status';
 import { fileUploader } from '../../../helpers/fileUploader';
@@ -59,6 +59,22 @@ const EXPOSURE_DECAY_AMOUNT = 1
 const activeTabStatuses:ContestStatus[] = [ContestStatus.NEW, ContestStatus.UPCOMING, ContestStatus.OPEN, ContestStatus.JOINED, ContestStatus.ACTIVE, ContestStatus.FINALIZING]
 const endedTabStatuses:ContestStatus[] = [ContestStatus.COMPLETED, ContestStatus.CLOSED, ContestStatus.FINALIZATION_FAILED]
 type ContestTab = "active" | "ended"
+type ContestPhotoCategoryTx = {
+    userPhoto:{
+        findMany: (args:any) => Promise<Array<{id:string; categories:string[]}>>
+        update: (args:any) => Promise<unknown>
+        updateMany: (args:any) => Promise<{count:number}>
+    }
+}
+type ContestEntryFeeTx = {
+    contestEntryFeeTransaction:{
+        findUnique: (args:any) => Promise<unknown>
+        create: (args:any) => Promise<unknown>
+    }
+    userStore:{
+        updateMany: (args:any) => Promise<{count:number}>
+    }
+}
 // Mongo docs created before `deletedAt` existed have the field missing entirely
 // (not null) - Prisma's {deletedAt: null} filter does not match "missing" on this
 // connector/version, so it must also accept isSet:false or every pre-existing
@@ -181,7 +197,7 @@ const resolveBannerFromUserPhoto = async (userPhotoId?:string) => {
 }
 
 const chargeContestEntryFee = async (
-    tx:PrismaTx,
+    tx:ContestEntryFeeTx,
     contest:{id:string; entryFeeCoins:number},
     userId:string
 ) => {
@@ -2088,7 +2104,7 @@ const rollbackUploadedContestPhotos = async (
 // important: two requests may submit the same gallery photo at nearly the same
 // time, and a read-then-push alone could append the same category twice.
 const addContestCategoryToPhotos = async (
-    tx:PrismaTx,
+    tx:ContestPhotoCategoryTx,
     photoIds:string[],
     rawCategory:string | null
 ) => {

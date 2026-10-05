@@ -10,14 +10,12 @@ export const provideVoteShcema = z.object({
   contestPhotoId: photoIdSchema.optional(),
   contestPhotoIds: z.array(photoIdSchema)
     .min(1, "At least one contest photo ID must be provided")
-    .max(20, "At most 20 votes can be submitted at once")
     .optional(),
   // Temporary aliases keep older clients working while the canonical request
   // fields are rolled out.
   photoId: photoIdSchema.optional(),
   photoIds: z.array(photoIdSchema)
     .min(1, "At least one contest photo ID must be provided")
-    .max(20, "At most 20 votes can be submitted at once")
     .optional(),
 }).superRefine((value, context) => {
   const providedFields = [
