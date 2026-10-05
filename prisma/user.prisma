@@ -77,7 +77,7 @@ model UserPhoto {
   states        PhotoStats?
   views         Int         @default(0)
   labels        String[]    @default([])  // tags the owner adds and edits
-  categories    String[]    @default([])  // categories of the contests the photo was entered in (read-only)
+  categories    String[]    @default([])  // contest categories, also editable by the photo owner
   title         String?
   description   String?
   adult         Boolean   @default(false)

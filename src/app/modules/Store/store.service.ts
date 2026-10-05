@@ -8,6 +8,8 @@ import { paymentService } from "../Payment/payment.service";
 import { fileUploader } from "../../../helpers/fileUploader";
 import config from "../../../config";
 import logger from "../../../shared/logger";
+import { userStoreCache } from "../User/UserStore/userStore.cache";
+import { storeCache } from "./store.cache";
 
 /**
  * Add a new product to the store
@@ -106,6 +108,7 @@ const addProduct = async (userId: string, productData: {
             status
         }
     });
+    await storeCache.invalidateCatalog();
 
     return product;
 };
@@ -119,37 +122,39 @@ const getAllProductByCategory = async (
     page: number = 1,
     limit: number = 10
 ) => {
-    const { skip, limit: paginationLimit } = paginationHelper.calculatePagination({
-        page,
-        limit
-    });
-
-    const products = await prisma.product.findMany({
-        where: {
-            category: category,
-        },
-        skip,
-        take: paginationLimit,
-        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }]
-    });
-
-    const total = await prisma.product.count({
-        where: {
-            category: category,
-        }
-    });
-
-    const totalPages = Math.ceil(total / paginationLimit);
-
-    return {
-        meta: {
+    return storeCache.getProductList("category", { category, page, limit }, async () => {
+        const { skip, limit: paginationLimit } = paginationHelper.calculatePagination({
             page,
-            limit: paginationLimit,
-            total,
-            totalPages
-        },
-        data: products
-    };
+            limit
+        });
+
+        const products = await prisma.product.findMany({
+            where: {
+                category: category,
+            },
+            skip,
+            take: paginationLimit,
+            orderBy: [{ createdAt: 'desc' }, { id: 'desc' }]
+        });
+
+        const total = await prisma.product.count({
+            where: {
+                category: category,
+            }
+        });
+
+        const totalPages = Math.ceil(total / paginationLimit);
+
+        return {
+            meta: {
+                page,
+                limit: paginationLimit,
+                total,
+                totalPages
+            },
+            data: products
+        };
+    });
 };
 
 /**
@@ -164,33 +169,35 @@ const getAllProducts = async (
         return getAllProductByCategory(category, page, limit);
     }
 
-    const { skip, limit: paginationLimit } = paginationHelper.calculatePagination({
-        page,
-        limit
-    });
-
-    const products = await prisma.product.findMany({
-        where: {status: ProductStatus.ACTIVE},
-        skip,
-        take: paginationLimit,
-        orderBy: { createdAt: 'desc' }
-    });
-
-    const total = await prisma.product.count({
-        where: {status: ProductStatus.ACTIVE}
-    });
-
-    const totalPages = Math.ceil(total / paginationLimit);
-
-    return {
-        meta: {
+    return storeCache.getProductList("all-active", { page, limit }, async () => {
+        const { skip, limit: paginationLimit } = paginationHelper.calculatePagination({
             page,
-            limit: paginationLimit,
-            total,
-            totalPages
-        },
-        data: products
-    };
+            limit
+        });
+
+        const products = await prisma.product.findMany({
+            where: {status: ProductStatus.ACTIVE},
+            skip,
+            take: paginationLimit,
+            orderBy: { createdAt: 'desc' }
+        });
+
+        const total = await prisma.product.count({
+            where: {status: ProductStatus.ACTIVE}
+        });
+
+        const totalPages = Math.ceil(total / paginationLimit);
+
+        return {
+            meta: {
+                page,
+                limit: paginationLimit,
+                total,
+                totalPages
+            },
+            data: products
+        };
+    });
 };
 
 const getAllActiveProducts = async (
@@ -282,9 +289,9 @@ const getProductDetails = async (productId: string) => {
         throw new ApiError(httpStatus.BAD_REQUEST, "Product ID is required");
     }
 
-    const product = await prisma.product.findUnique({
+    const product = await storeCache.getProduct(productId, () => prisma.product.findUnique({
         where: { id: productId }
-    });
+    }));
 
     if (!product) {
         throw new ApiError(httpStatus.NOT_FOUND, "Product not found");
@@ -401,6 +408,7 @@ const updateProduct = async (
         where: { id: productId },
         data: { ...normalizedData, ...(imageUrl ? { image: imageUrl } : {}) }
     });
+    await storeCache.invalidateProduct(productId);
 
     return updatedProduct;
 };
@@ -424,6 +432,7 @@ const deleteProduct = async (productId: string) => {
     const deletedProduct = await prisma.product.delete({
         where: { id: productId }
     });
+    await storeCache.invalidateProduct(productId);
 
     return deletedProduct;
 };
@@ -448,6 +457,7 @@ const restoreProduct = async (productId: string) => {
         where: { id: productId },
         data: { status: ProductStatus.ACTIVE }
     });
+    await storeCache.invalidateProduct(productId);
 
     return restoredProduct;
 };
@@ -489,6 +499,7 @@ const reduceProductQuantity = async (productId: string, quantity: number) => {
             }
         }
     });
+    await storeCache.invalidateProduct(productId);
 
     return updatedProduct;
 };
@@ -517,6 +528,7 @@ const increaseProductQuantity = async (productId: string, quantity: number) => {
             }
         }
     });
+    await storeCache.invalidateProduct(productId);
 
     return updatedProduct;
 };
@@ -530,45 +542,47 @@ const searchProducts = async (
     page: number = 1,
     limit: number = 10
 ) => {
-    const { skip, limit: paginationLimit } = paginationHelper.calculatePagination({
-        page,
-        limit
-    });
-
-    const whereClause: any = {
-        status: ProductStatus.ACTIVE
-    };
-
-    if (category) {
-        whereClause.category = category;
-    }
-
-    if (query) {
-        whereClause.OR = [
-            { title: { contains: query, mode: 'insensitive' } },
-            { description: { contains: query, mode: 'insensitive' } }
-        ];
-    }
-
-    const products = await prisma.product.findMany({
-        where: whereClause,
-        skip,
-        take: paginationLimit,
-        orderBy: { createdAt: 'desc' }
-    });
-
-    const total = await prisma.product.count({ where: whereClause });
-    const totalPages = Math.ceil(total / paginationLimit);
-
-    return {
-        meta: {
+    return storeCache.getProductList("search", { query, category, page, limit }, async () => {
+        const { skip, limit: paginationLimit } = paginationHelper.calculatePagination({
             page,
-            limit: paginationLimit,
-            total,
-            totalPages
-        },
-        data: products
-    };
+            limit
+        });
+
+        const whereClause: any = {
+            status: ProductStatus.ACTIVE
+        };
+
+        if (category) {
+            whereClause.category = category;
+        }
+
+        if (query) {
+            whereClause.OR = [
+                { title: { contains: query, mode: 'insensitive' } },
+                { description: { contains: query, mode: 'insensitive' } }
+            ];
+        }
+
+        const products = await prisma.product.findMany({
+            where: whereClause,
+            skip,
+            take: paginationLimit,
+            orderBy: { createdAt: 'desc' }
+        });
+
+        const total = await prisma.product.count({ where: whereClause });
+        const totalPages = Math.ceil(total / paginationLimit);
+
+        return {
+            meta: {
+                page,
+                limit: paginationLimit,
+                total,
+                totalPages
+            },
+            data: products
+        };
+    });
 };
 
 /**
@@ -579,10 +593,10 @@ const getProductPrices = async (productId: string) => {
         throw new ApiError(httpStatus.BAD_REQUEST, "Product ID is required");
     }
 
-    const prices = await prisma.price.findMany({
+    const prices = await storeCache.getProductPrices(productId, () => prisma.price.findMany({
         where: { product_id: productId },
         orderBy: { createdAt: 'desc' }
-    });
+    }));
 
     return prices;
 };
@@ -614,6 +628,7 @@ const addProductPrice = async (productId: string, priceData: {
             product_id: productId
         }
     });
+    await storeCache.invalidateProduct(productId);
 
     return price;
 };
@@ -637,6 +652,7 @@ const deleteProductPrice = async (priceId: string) => {
     const deletedPrice = await prisma.price.delete({
         where: { id: priceId }
     });
+    await storeCache.invalidateProduct(price.product_id);
 
     return deletedPrice;
 };
@@ -692,7 +708,7 @@ const purchaseProductUsingCoin = async (userId: string, productId: string) => {
     }
 
      await prisma.$transaction(async (tx) => {
-        await prisma.userStore.update({
+        await tx.userStore.update({
                 where: { userId },
                 data: {
                     coins: {
@@ -704,9 +720,15 @@ const purchaseProductUsingCoin = async (userId: string, productId: string) => {
         for (const item of productDetails.items) {
             const totalQuantity = item.quantity;
             const type = item.type.toLowerCase() as "key" | "boost" | "swap";
-            await userStoreService.addUserStoreBasedOnType(userId, type, totalQuantity);
+            await tx.userStore.update({
+                where: { userId },
+                data: {
+                    [type]: { increment: totalQuantity }
+                }
+            });
         }
      })
+     await userStoreCache.invalidateUserStoreReadModels(userId)
 
      return { message: "Product purchased successfully using coins" };
 

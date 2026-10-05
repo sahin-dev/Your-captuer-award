@@ -4,6 +4,10 @@ import prisma from "../../../shared/prisma"
 import { notificationService } from "../Notification/notification.service"
 import { voteService } from "../Vote/vote.service"
 import { contestService } from "../Contest/contest.service"
+import { userCache } from "../User/user.cache"
+import { authCache } from "../Auth/auth.cache"
+import { profileCache } from "../Profile/profile.cache"
+import { versionedCache } from "../../../shared/versionedCache"
 
 
 
@@ -383,6 +387,11 @@ const toggleBlockStatus = async (userId: string) => {
         data:{isBlocked:!user.isBlocked, isActive:user.isBlocked},
         select:{id:true, fullName:true, email:true, isActive:true, isBlocked:true, isDeleted:true}
     })
+    await Promise.all([
+        userCache.invalidateUser(userId),
+        authCache.invalidateAuthenticatedUser(userId),
+        profileCache.invalidateUser(userId)
+    ])
     
     return updatedUser
 }
@@ -412,11 +421,13 @@ const getStoreStats = async () => {
 }
 
 const getPlans = async (status?:SubscriptionPlanStatus) => {
-    const plans = await prisma.subscriptionPlan.findMany({
-        where:{status},
-        select:{id:true, planName:true, amount:true, currency:true, recurring:true,status:true}
-    })
-    return plans
+    return versionedCache.get("subscription-plan", "dashboard-list", {status}, () =>
+        prisma.subscriptionPlan.findMany({
+            where:{status},
+            select:{id:true, planName:true, amount:true, currency:true, recurring:true,status:true}
+        }),
+        {ttlSeconds: 30 * 60}
+    )
 }
 
 const getPlansStats = async () => {

@@ -13,6 +13,7 @@ import { assertValidTimeZone, calculateNextOccurance } from '../../../helpers/ne
 import { getAwardSlotKey } from '../Awards/award.definitions';
 import { getTeammateUserIds } from '../../../helpers/teammate.helper';
 import { userStoreService } from '../User/UserStore/userStore.service';
+import { userStoreCache } from '../User/UserStore/userStore.cache';
 import { voteService } from '../Vote/vote.service';
 import { getContestUploadFiles, parseContestPhotoIds } from './contestPhotoInput';
 import { achievementService } from '../Achievements/achievement.service';
@@ -36,7 +37,7 @@ import { reportService } from '../Report/report.service';
 import { activeContestWhere } from './contestLifecycle';
 import { contestCache } from './contest.cache';
 import logger from "../../../shared/logger";
-import { hasLabel } from "../../../shared/labels";
+import { dedupeLabels, hasLabel } from "../../../shared/labels";
 
 const completedContestStatuses:ContestStatus[] = [ContestStatus.COMPLETED, ContestStatus.CLOSED]
 const isCompletedContest = (status:ContestStatus) => completedContestStatuses.includes(status)
@@ -946,6 +947,7 @@ const joinContest = async (userId:string,contestId:string, acceptedRuleKeys?:unk
         })
     })
 
+    await userStoreCache.invalidateUserStoreReadModels(userId)
     await notifyTeamMatchQueueOfContestJoin(userId, contestId)
 
     return {contest_id:contestId, participant_id:participant.id}
@@ -1019,6 +1021,7 @@ const completePaidContestJoin = async (
     if(completion.participantCreated){
         await notifyTeamMatchQueueOfContestJoin(userId, contestId)
     }
+    await userStoreCache.invalidateUserStoreReadModels(userId)
 
     return {
         contest_id:contestId,
@@ -2047,6 +2050,67 @@ const rollbackUploadedContestPhotos = async (
     }))
 }
 
+// Adds a contest category to each submitted photo. The conditional update is
+// important: two requests may submit the same gallery photo at nearly the same
+// time, and a read-then-push alone could append the same category twice.
+const addContestCategoryToPhotos = async (
+    tx:Prisma.TransactionClient,
+    photoIds:string[],
+    rawCategory:string | null
+) => {
+    const category = rawCategory?.trim()
+    if(!category || photoIds.length === 0){
+        return
+    }
+
+    const photos = await tx.userPhoto.findMany({
+        where:{id:{in:photoIds}},
+        select:{id:true, categories:true}
+    })
+
+    await Promise.all(photos.map(async photo => {
+        const uniqueCategories = dedupeLabels(photo.categories)
+
+        // Clean up any legacy duplicates while preserving the first spelling,
+        // and include the new category in the same write when it is missing.
+        if(uniqueCategories.length !== photo.categories.length){
+            await tx.userPhoto.update({
+                where:{id:photo.id},
+                data:{categories:{
+                    set:hasLabel(uniqueCategories, category)
+                        ? uniqueCategories
+                        : [...uniqueCategories, category]
+                }}
+            })
+            return
+        }
+
+        if(hasLabel(uniqueCategories, category)){
+            return
+        }
+
+        // The exact `has` guard makes same-category concurrent additions atomic
+        // for current rows where the array field exists.
+        const added = await tx.userPhoto.updateMany({
+            where:{
+                id:photo.id,
+                NOT:{categories:{has:category}}
+            },
+            data:{categories:{push:category}}
+        })
+
+        // Mongo list filters do not match documents created before the field
+        // existed. Prisma reads those as [], so initialize that legacy row with
+        // a deduplicated list when the guarded push could not match it.
+        if(added.count === 0){
+            await tx.userPhoto.update({
+                where:{id:photo.id},
+                data:{categories:{set:[...uniqueCategories, category]}}
+            })
+        }
+    }))
+}
+
 const uploadPhotoToContest = async (contestId:string,userId:string, photoIds:unknown, files:Express.Multer.File[], acceptedRuleKeys?:unknown)=>{
 
     if(!contestId){
@@ -2133,6 +2197,7 @@ const uploadPhotoToContest = async (contestId:string,userId:string, photoIds:unk
 
     const submissionLimit = await contestRuleService.getEnabledRuleValue<number>(contestId, "SUBMISSION_LIMIT")
     const images = await runContestSubmission()
+    await userStoreCache.invalidateUserStoreReadModels(userId)
     contestRankingService.invalidateContestRanking(contestId)
 
     if(isJoiningThroughUpload){
@@ -2182,32 +2247,7 @@ const uploadPhotoToContest = async (contestId:string,userId:string, photoIds:unk
                     exposureBoostExpiresAt
                 }))
             })
-            // Record the contest category (e.g. "Nature", "Portrait") in the
-            // photo's categories so the contest context is visible on the photo
-            // itself, not just inside the contest. Categories are kept apart
-            // from labels, which are the owner's own tags. A photo that already
-            // has this category (e.g. it was entered in another contest of the
-            // same category) is skipped so it is never added twice.
-            // The check reads the categories first instead of filtering with
-            // NOT:{categories:{has}}: that filter never matches photos stored
-            // before the field existed, which would then never get a category.
-            // Prisma reads a missing field as [], and push creates it.
-            const category = activeContest.category
-            if(category){
-                const photosWithCategories = await tx.userPhoto.findMany({
-                    where:{id:{in:selectedPhotoIds}},
-                    select:{id:true, categories:true}
-                })
-                const photoIdsMissingCategory = photosWithCategories
-                    .filter(photo => !hasLabel(photo.categories, category))
-                    .map(photo => photo.id)
-                if(photoIdsMissingCategory.length > 0){
-                    await tx.userPhoto.updateMany({
-                        where:{id:{in:photoIdsMissingCategory}},
-                        data:{categories:{push:category}}
-                    })
-                }
-            }
+            await addContestCategoryToPhotos(tx, selectedPhotoIds, activeContest.category)
             return tx.contestPhoto.findMany({
                 where:{contestId, participantId:participant.id, photoId:{in:selectedPhotoIds}},
                 include:{photo:true}
@@ -2399,6 +2439,7 @@ const promoteContestPhoto = async (contestId:string, photoId:string, userId:stri
             data: { promoted: true, promotionExpiresAt }
         });
     });
+    await userStoreCache.invalidateUserStoreReadModels(userId)
 
 
     // Schedule a job to remove promotion once it expires
@@ -2573,6 +2614,8 @@ const tradePhoto = async (userId:string,contestId:string, contestPhotoId:string,
             })
         }
 
+        await addContestCategoryToPhotos(trx, [replacementPhotoId], contest.category)
+
         return trx.contestPhoto.update({
             where:{id:contestPhotoId},
             data:{
@@ -2591,6 +2634,7 @@ const tradePhoto = async (userId:string,contestId:string, contestPhotoId:string,
     })
 
     // The slot now holds a different image with a different vote history.
+    await userStoreCache.invalidateUserStoreReadModels(userId)
     contestRankingService.invalidateContestRanking(contestId)
 
     return replacedPhoto
@@ -2695,6 +2739,7 @@ const chargePhoto = async (userId:string, contestId:string) => {
             data:{exposure_bonus:EXPOSURE_MAX, exposureUpdatedAt:new Date()}
         })
     })
+    await userStoreCache.invalidateUserStoreReadModels(userId)
 
     return await prisma.contestParticipant.findUnique({where:{id:participant.id}})
 }

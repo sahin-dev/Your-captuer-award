@@ -144,6 +144,20 @@ const updatePhotoLabels = catchAsync(async (req: Request, res: Response) => {
     })
 })
 
+const updatePhotoCategories = catchAsync(async (req: Request, res: Response) => {
+    const { photoId } = req.params
+    const userId = req.user.id
+
+    const result = await profileService.updatePhotoCategories(userId, photoId, req.body.categories)
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: "photo categories updated successfully",
+        data: result
+    })
+})
+
 // GET /profile/users/:id/profile — public user profile with isFollowed
 const getUserPublicProfile = catchAsync(async (req: Request, res: Response) => {
     const targetUserId = req.params.id
@@ -182,6 +196,7 @@ export const profileController = {
     getUserPhotoDetails,
     deleteUserPhoto,
     updatePhotoLabels,
+    updatePhotoCategories,
     getUserPhotos,
     getUserPublicStates,
     getUserPublicProfile,

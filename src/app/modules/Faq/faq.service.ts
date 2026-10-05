@@ -2,6 +2,7 @@ import httpStatus from "http-status";
 import ApiError from "../../../errors/ApiError";
 import { paginationHelper } from "../../../helpers/paginationHelper";
 import prisma from "../../../shared/prisma";
+import { versionedCache } from "../../../shared/versionedCache";
 
 type FaqInput = {
   question: string;
@@ -25,51 +26,69 @@ const buildWhere = (filters: FaqFilters) => {
     ...(filters.category && { category: filters.category }),
     ...(filters.search && {
       OR: [
-        { question: { contains: filters.search, mode: "insensitive" as const } },
+        {
+          question: { contains: filters.search, mode: "insensitive" as const },
+        },
         { answer: { contains: filters.search, mode: "insensitive" as const } },
-        { category: { contains: filters.search, mode: "insensitive" as const } },
+        {
+          category: { contains: filters.search, mode: "insensitive" as const },
+        },
       ],
     }),
   };
 };
 
 const getPublicFaqs = async (filters: Omit<FaqFilters, "isActive">) => {
-  return prisma.faq.findMany({
-    where: buildWhere({ ...filters, isActive: true }),
-    orderBy: [{ order: "asc" }, { createdAt: "asc" }],
-  });
+  return versionedCache.get("faq", "public", filters, () =>
+    prisma.faq.findMany({
+      where: buildWhere({ ...filters, isActive: true }),
+      orderBy: [{ order: "asc" }, { createdAt: "asc" }],
+    }),
+  );
 };
 
 const getAllFaqs = async (filters: FaqFilters) => {
-  const { skip, limit } = paginationHelper.calculatePagination({
-    page: filters.page,
-    limit: filters.limit,
+  return versionedCache.get("faq", "all", filters, async () => {
+    const { skip, limit } = paginationHelper.calculatePagination({
+      page: filters.page,
+      limit: filters.limit,
+    });
+    const where = buildWhere(filters);
+
+    const [faqs, total] = await Promise.all([
+      prisma.faq.findMany({
+        skip,
+        take: limit,
+        where,
+        orderBy: [{ order: "asc" }, { createdAt: "asc" }],
+      }),
+      prisma.faq.count({ where }),
+    ]);
+
+    return {
+      data: faqs,
+      meta: paginationHelper.getPaginationMetaData(
+        filters.page ?? 1,
+        limit,
+        total,
+      ),
+    };
   });
-  const where = buildWhere(filters);
-
-  const [faqs, total] = await Promise.all([
-    prisma.faq.findMany({
-      skip,
-      take: limit,
-      where,
-      orderBy: [{ order: "asc" }, { createdAt: "asc" }],
-    }),
-    prisma.faq.count({ where }),
-  ]);
-
-  return {
-    data: faqs,
-    meta: paginationHelper.getPaginationMetaData(filters.page ?? 1, limit, total),
-  };
 };
 
 const getFaqById = async (id: string, activeOnly = false) => {
-  const faq = await prisma.faq.findFirst({
-    where: {
-      id,
-      ...(activeOnly && { isActive: true }),
-    },
-  });
+  const faq = await versionedCache.get(
+    "faq",
+    "detail",
+    { id, activeOnly },
+    () =>
+      prisma.faq.findFirst({
+        where: {
+          id,
+          ...(activeOnly && { isActive: true }),
+        },
+      }),
+  );
 
   if (!faq) {
     throw new ApiError(httpStatus.NOT_FOUND, "FAQ not found");
@@ -79,7 +98,7 @@ const getFaqById = async (id: string, activeOnly = false) => {
 };
 
 const createFaq = async (data: FaqInput) => {
-  return prisma.faq.create({
+  const faq = await prisma.faq.create({
     data: {
       question: data.question,
       answer: data.answer,
@@ -88,12 +107,14 @@ const createFaq = async (data: FaqInput) => {
       isActive: data.isActive ?? true,
     },
   });
+  await versionedCache.invalidate("faq");
+  return faq;
 };
 
 const updateFaq = async (id: string, data: Partial<FaqInput>) => {
   await getFaqById(id);
 
-  return prisma.faq.update({
+  const faq = await prisma.faq.update({
     where: { id },
     data: {
       ...(data.question !== undefined && { question: data.question }),
@@ -103,11 +124,14 @@ const updateFaq = async (id: string, data: Partial<FaqInput>) => {
       ...(data.isActive !== undefined && { isActive: data.isActive }),
     },
   });
+  await versionedCache.invalidate("faq");
+  return faq;
 };
 
 const deleteFaq = async (id: string) => {
   await getFaqById(id);
   await prisma.faq.delete({ where: { id } });
+  await versionedCache.invalidate("faq");
 
   return "FAQ deleted successfully";
 };

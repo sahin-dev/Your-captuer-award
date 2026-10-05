@@ -12,6 +12,8 @@ import { UserRegistrationData, UserSignInData } from "./auth.types"
 import { userService } from "../User/user.service"
 import { UserRole } from "../../../prismaClient"
 import { getCountryFromIp } from "../../../helpers/geoLocation"
+import { userCache } from "../User/user.cache"
+import { authCache } from "./auth.cache"
 
 
 
@@ -140,7 +142,7 @@ export const handleAdminSignIn = async(body:UserSignInData)=>{
     }
 }
 
-export const getAutheticatedUser = async (userId:string)=>{
+const loadAutheticatedUserFromDatabase = async (userId:string) => {
     const user = await prisma.user.findUnique({
         where:{id:userId},
         include:{joinedTeam:{include:{team:{select:{id:true, name:true, badge:true}}}}}
@@ -151,6 +153,13 @@ export const getAutheticatedUser = async (userId:string)=>{
     }
 
     return UserDto(user, user.joinedTeam ? {team:user.joinedTeam.team} : null)
+}
+
+
+export const getAutheticatedUser = async (userId:string)=>{
+    const userCachedData = await authCache.getAuthenticatedUserFromCache(userId, loadAutheticatedUserFromDatabase);
+
+    return userCachedData
 }
 
 export const handleSignout = async (userId:string)=>{

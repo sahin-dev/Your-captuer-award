@@ -5,6 +5,9 @@ import prisma from "../../shared/prisma";
 import globalEventHandler from "../event/eventEmitter";
 import Events from "../event/events.constant";
 import logger from "../../shared/logger";
+import { userCache } from "../modules/User/user.cache";
+import { authCache } from "../modules/Auth/auth.cache";
+import { profileCache } from "../modules/Profile/profile.cache";
 
 const googleConfig = {
     clientID:config.google.client_id as string, 
@@ -46,6 +49,11 @@ const googleCallback = async (accessToken:any, refreshToken:any, profile:Profile
             fullName: user.fullName || profile.displayName
           }
         });
+        await Promise.all([
+          userCache.invalidateUser(user.id),
+          authCache.invalidateAuthenticatedUser(user.id),
+          profileCache.invalidateUser(user.id)
+        ]);
       }
     } else {
       // User was found by social ID, check if they are blocked

@@ -8,6 +8,8 @@ import ApiError from "../errors/ApiError";
 import { NotificationType, PaymentStatus, PaymentType } from "../prismaClient";
 import prisma from "../shared/prisma";
 import logger from "../shared/logger";
+import { userCache } from "../app/modules/User/user.cache";
+import { userStoreCache } from "../app/modules/User/UserStore/userStore.cache";
 
 const stripe = new Stripe(config.stripe_key as string);
 
@@ -375,6 +377,7 @@ const handleCheckoutSuccess = async (session: Stripe.Checkout.Session) => {
       where: { id: payment.userId },
       data: { purchased_plan: payment.planName },
     });
+    await userCache.invalidateUser(payment.userId);
   }
 
   let coinQuantity: number | undefined;
@@ -385,6 +388,7 @@ const handleCheckoutSuccess = async (session: Stripe.Checkout.Session) => {
       create: { userId: payment.userId, coins: product.quantity },
       update: { coins: { increment: product.quantity } },
     });
+    await userStoreCache.invalidateUserStoreReadModels(payment.userId);
   }
 
   await notifyUserOfSuccess(payment, coinQuantity);

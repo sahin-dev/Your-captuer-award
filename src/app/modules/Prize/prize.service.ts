@@ -1,17 +1,32 @@
 import httpStatus from "http-status";
 import ApiError from "../../../errors/ApiError";
 import prisma from "../../../shared/prisma";
-import { AwardIdentity, awardTypes, contestLevelPrizeTypes, getAwardKey, getAwardSlotKey, normalizeAwardIdentity } from "../Awards/award.definitions";
+import {
+  AwardIdentity,
+  awardTypes,
+  contestLevelPrizeTypes,
+  getAwardKey,
+  getAwardSlotKey,
+  normalizeAwardIdentity,
+} from "../Awards/award.definitions";
 import { z } from "zod";
-import { contestAwardInputSchema, createPrizeSchema, updatePrizeSchema } from "./prize.validation";
+import {
+  contestAwardInputSchema,
+  createPrizeSchema,
+  updatePrizeSchema,
+} from "./prize.validation";
 import { contestAwardRewardFields } from "./prize.definitions";
 import { contestCache } from "../Contest/contest.cache";
+import { versionedCache } from "../../../shared/versionedCache";
 
 type PrizeCreateData = z.infer<typeof createPrizeSchema>;
 type PrizeUpdateData = z.infer<typeof updatePrizeSchema>;
 type ContestAwardConfigData = z.infer<typeof contestAwardInputSchema>;
 
-const ensurePrizeDefinitionAvailable = async (identity: AwardIdentity, ignoredPrizeId?: string) => {
+const ensurePrizeDefinitionAvailable = async (
+  identity: AwardIdentity,
+  ignoredPrizeId?: string,
+) => {
   const existingPrize = await prisma.prize.findFirst({
     where: {
       type: identity.type,
@@ -22,11 +37,17 @@ const ensurePrizeDefinitionAvailable = async (identity: AwardIdentity, ignoredPr
   });
 
   if (existingPrize) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "A prize definition already exists for this prize");
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      "A prize definition already exists for this prize",
+    );
   }
 };
 
-const clearDefaultAwardSlot = async (identity: AwardIdentity, ignoredPrizeId?: string) => {
+const clearDefaultAwardSlot = async (
+  identity: AwardIdentity,
+  ignoredPrizeId?: string,
+) => {
   await prisma.prize.updateMany({
     where: {
       type: identity.type,
@@ -49,7 +70,10 @@ const createPrize = async (data: PrizeCreateData) => {
   });
 
   if (existingPrize?.isActive) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "A prize definition already exists for this prize");
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      "A prize definition already exists for this prize",
+    );
   }
 
   if (data.isDefault) {
@@ -57,7 +81,7 @@ const createPrize = async (data: PrizeCreateData) => {
   }
 
   if (existingPrize) {
-    return prisma.prize.update({
+    const prize = await prisma.prize.update({
       where: { id: existingPrize.id },
       data: {
         ...data,
@@ -65,67 +89,84 @@ const createPrize = async (data: PrizeCreateData) => {
         isActive: true,
       },
     });
+    await versionedCache.invalidate("prize");
+    return prize;
   }
 
-  return prisma.prize.create({
+  const prize = await prisma.prize.create({
     data: {
       ...data,
       ...identity,
     },
   });
+  await versionedCache.invalidate("prize");
+  return prize;
 };
 
-const ensureUniqueAwardSlots = (prizes: Array<{category: any; type?: any; target?: any; rankLimit?: any}>) => {
+const ensureUniqueAwardSlots = (
+  prizes: Array<{ category: any; type?: any; target?: any; rankLimit?: any }>,
+) => {
   const slots = prizes.map((prize) => getAwardSlotKey(prize));
   if (new Set(slots).size !== slots.length) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "Only one prize threshold can be selected per prize type and target");
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      "Only one prize threshold can be selected per prize type and target",
+    );
   }
 };
 
 const getPrizes = async (includeInactive = false) => {
-  return prisma.prize.findMany({
-    where: {
-      category: { notIn: contestLevelPrizeTypes },
-      ...(includeInactive ? {} : { isActive: true }),
-    },
-    orderBy: [{ order: "asc" }, { createdAt: "asc" }],
-  });
+  return versionedCache.get("prize", "list", { includeInactive }, () =>
+    prisma.prize.findMany({
+      where: {
+        category: { notIn: contestLevelPrizeTypes },
+        ...(includeInactive ? {} : { isActive: true }),
+      },
+      orderBy: [{ order: "asc" }, { createdAt: "asc" }],
+    }),
+  );
 };
 
 const getContestPrizeDefinitions = async () => {
-  const prizes = await getPrizes();
+  return versionedCache.get("prize", "contest-definitions", {}, async () => {
+    const prizes = await getPrizes();
 
-  return prizes.flatMap((prize) => {
-    try {
-      const identity = normalizeAwardIdentity(prize);
-      const rewards = Object.fromEntries(
-        contestAwardRewardFields.map((field) => [field, prize[field]])
-      );
+    return prizes.flatMap((prize) => {
+      try {
+        const identity = normalizeAwardIdentity(prize);
+        const rewards = Object.fromEntries(
+          contestAwardRewardFields.map((field) => [field, prize[field]]),
+        );
 
-      return [{
-        prizeId: prize.id,
-        title: prize.title,
-        description: prize.description,
-        type: identity.type,
-        target: identity.target,
-        rankLimit: identity.rankLimit,
-        rewards,
-        isDefault: prize.isDefault,
-        payload: {
-          prizeId: prize.id,
-          ...rewards,
-        },
-      }];
-    } catch {
-      return [];
-    }
+        return [
+          {
+            prizeId: prize.id,
+            title: prize.title,
+            description: prize.description,
+            type: identity.type,
+            target: identity.target,
+            rankLimit: identity.rankLimit,
+            rewards,
+            isDefault: prize.isDefault,
+            payload: {
+              prizeId: prize.id,
+              ...rewards,
+            },
+          },
+        ];
+      } catch {
+        return [];
+      }
+    });
   });
 };
 
 const getContestAwardDefinitions = getContestPrizeDefinitions;
 
 const getPrizeById = async (prizeId: string) => {
-  const prize = await prisma.prize.findUnique({ where: { id: prizeId } });
+  const prize = await versionedCache.get("prize", "detail", { prizeId }, () =>
+    prisma.prize.findUnique({ where: { id: prizeId } }),
+  );
 
   if (!prize) {
     throw new ApiError(httpStatus.NOT_FOUND, "Prize not found");
@@ -139,7 +180,7 @@ const updatePrize = async (prizeId: string, data: PrizeUpdateData) => {
   if (prize.isDefault && data.isDefault === false) {
     throw new ApiError(
       httpStatus.BAD_REQUEST,
-      "Promote another prize definition to the default for this slot before removing this default"
+      "Promote another prize definition to the default for this slot before removing this default",
     );
   }
   const identity = normalizeAwardIdentity({
@@ -155,25 +196,32 @@ const updatePrize = async (prizeId: string, data: PrizeUpdateData) => {
     await clearDefaultAwardSlot(identity, prize.id);
   }
 
-  return prisma.prize.update({
+  const updatedPrize = await prisma.prize.update({
     where: { id: prizeId },
     data: {
       ...data,
       ...identity,
     },
   });
+  await versionedCache.invalidate("prize");
+  return updatedPrize;
 };
 
 const deletePrize = async (prizeId: string) => {
   const prize = await getPrizeById(prizeId);
   if (prize.isDefault) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "Default prize definitions cannot be deactivated");
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      "Default prize definitions cannot be deactivated",
+    );
   }
 
-  return prisma.prize.update({
+  const updatedPrize = await prisma.prize.update({
     where: { id: prizeId },
     data: { isActive: false },
   });
+  await versionedCache.invalidate("prize");
+  return updatedPrize;
 };
 
 const getActivePrizesByIds = async (prizeIds: string[]) => {
@@ -187,20 +235,30 @@ const getActivePrizesByIds = async (prizeIds: string[]) => {
   });
 
   if (prizes.length !== uniquePrizeIds.length) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "One or more selected prizes are invalid or inactive");
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      "One or more selected prizes are invalid or inactive",
+    );
   }
 
   const awardKeys = new Set(prizes.map((prize) => getAwardKey(prize)));
   if (awardKeys.size !== prizes.length) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "Only one prize per award can be selected");
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      "Only one prize per award can be selected",
+    );
   }
 
   return prizes;
 };
 
-const getActivePrizesByAwardIdentities = async (identities: AwardIdentity[]) => {
+const getActivePrizesByAwardIdentities = async (
+  identities: AwardIdentity[],
+) => {
   const uniqueIdentities = Array.from(
-    new Map(identities.map((identity) => [getAwardKey(identity), identity])).values()
+    new Map(
+      identities.map((identity) => [getAwardKey(identity), identity]),
+    ).values(),
   );
 
   if (!uniqueIdentities.length) {
@@ -211,118 +269,178 @@ const getActivePrizesByAwardIdentities = async (identities: AwardIdentity[]) => 
     where: {
       isActive: true,
       OR: uniqueIdentities.flatMap((identity) => {
-        const legacyIdentity = normalizeAwardIdentity({category:identity.category});
+        const legacyIdentity = normalizeAwardIdentity({
+          category: identity.category,
+        });
         const exactFilter = {
           type: identity.type,
           target: identity.target,
           rankLimit: identity.rankLimit,
         };
 
-        if (legacyIdentity.target !== identity.target || legacyIdentity.rankLimit !== identity.rankLimit) {
+        if (
+          legacyIdentity.target !== identity.target ||
+          legacyIdentity.rankLimit !== identity.rankLimit
+        ) {
           return [exactFilter];
         }
 
-        return [exactFilter, {category: identity.category, type: null}];
+        return [exactFilter, { category: identity.category, type: null }];
       }),
     },
   });
 
-  const prizeByAwardKey = new Map(prizes.map((prize) => [getAwardKey(prize), prize]));
-  const selectedPrizes = uniqueIdentities.map((identity) => prizeByAwardKey.get(getAwardKey(identity)));
+  const prizeByAwardKey = new Map(
+    prizes.map((prize) => [getAwardKey(prize), prize]),
+  );
+  const selectedPrizes = uniqueIdentities.map((identity) =>
+    prizeByAwardKey.get(getAwardKey(identity)),
+  );
 
-  if (selectedPrizes.some(prize => !prize)) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "One or more selected award types are invalid or inactive");
+  if (selectedPrizes.some((prize) => !prize)) {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      "One or more selected award types are invalid or inactive",
+    );
   }
 
-  return selectedPrizes.filter((prize): prize is NonNullable<typeof prize> => Boolean(prize));
+  return selectedPrizes.filter((prize): prize is NonNullable<typeof prize> =>
+    Boolean(prize),
+  );
 };
 
-const buildAwardRows = (prizes: Awaited<ReturnType<typeof getActivePrizesByIds>>, awards?: ContestAwardConfigData[]) => {
+const buildAwardRows = (
+  prizes: Awaited<ReturnType<typeof getActivePrizesByIds>>,
+  awards?: ContestAwardConfigData[],
+) => {
   const awardConfigByPrizeId = new Map(
     (awards || [])
-      .filter((award): award is Extract<ContestAwardConfigData, {prizeId:string}> => "prizeId" in award)
-      .map((award) => [award.prizeId, award])
+      .filter(
+        (
+          award,
+        ): award is Extract<ContestAwardConfigData, { prizeId: string }> =>
+          "prizeId" in award,
+      )
+      .map((award) => [award.prizeId, award]),
   );
   const awardConfigByKey = new Map(
     (awards || [])
-      .filter((award): award is Exclude<ContestAwardConfigData, {prizeId:string}> => !("prizeId" in award))
-      .map((award) => [getAwardKey(award), award])
+      .filter(
+        (
+          award,
+        ): award is Exclude<ContestAwardConfigData, { prizeId: string }> =>
+          !("prizeId" in award),
+      )
+      .map((award) => [getAwardKey(award), award]),
   );
 
-  return prizes.map((prize) => {
-    const identity = normalizeAwardIdentity(prize);
-    const awardConfig = awardConfigByPrizeId.get(prize.id) || awardConfigByKey.get(getAwardKey(identity));
-    // Top-rank tiers (Top 10-200) are badge-only: no currency reward is ever
-    // persisted for them, regardless of what the catalog prize or an admin
-    // override requests.
-    const isTopRank = identity.type === awardTypes.TOP_RANK;
+  return prizes
+    .map((prize) => {
+      const identity = normalizeAwardIdentity(prize);
+      const awardConfig =
+        awardConfigByPrizeId.get(prize.id) ||
+        awardConfigByKey.get(getAwardKey(identity));
+      // Top-rank tiers (Top 10-200) are badge-only: no currency reward is ever
+      // persisted for them, regardless of what the catalog prize or an admin
+      // override requests.
+      const isTopRank = identity.type === awardTypes.TOP_RANK;
 
-    return {
-      prizeId: prize.id,
-      category: identity.category,
-      type: identity.type,
-      target: identity.target,
-      rankLimit: identity.rankLimit,
-      slotKey: getAwardSlotKey(identity),
-      title: awardConfig?.title ?? prize.title,
-      description: awardConfig?.description ?? prize.description,
-      icon: awardConfig?.icon ?? prize.icon,
-      key: isTopRank ? 0 : awardConfig?.key ?? prize.key,
-      boost: isTopRank ? 0 : awardConfig?.boost ?? prize.boost,
-      swap: isTopRank ? 0 : awardConfig?.swap ?? prize.swap,
-      coin: isTopRank ? 0 : awardConfig?.coin ?? prize.coin,
-      enabled: awardConfig?.enabled ?? true,
-      order: awardConfig?.order ?? prize.order,
-    };
-  }).sort((a, b) => a.order - b.order);
+      return {
+        prizeId: prize.id,
+        category: identity.category,
+        type: identity.type,
+        target: identity.target,
+        rankLimit: identity.rankLimit,
+        slotKey: getAwardSlotKey(identity),
+        title: awardConfig?.title ?? prize.title,
+        description: awardConfig?.description ?? prize.description,
+        icon: awardConfig?.icon ?? prize.icon,
+        key: isTopRank ? 0 : (awardConfig?.key ?? prize.key),
+        boost: isTopRank ? 0 : (awardConfig?.boost ?? prize.boost),
+        swap: isTopRank ? 0 : (awardConfig?.swap ?? prize.swap),
+        coin: isTopRank ? 0 : (awardConfig?.coin ?? prize.coin),
+        enabled: awardConfig?.enabled ?? true,
+        order: awardConfig?.order ?? prize.order,
+      };
+    })
+    .sort((a, b) => a.order - b.order);
 };
 
 const resolveAwardRows = async (
   prizeIds: string[] = [],
   awards: ContestAwardConfigData[] = [],
-  useDefaults = true
+  useDefaults = true,
 ) => {
   const configuredPrizeIds = awards
-    .filter((award): award is Extract<ContestAwardConfigData, {prizeId:string}> => "prizeId" in award)
+    .filter(
+      (award): award is Extract<ContestAwardConfigData, { prizeId: string }> =>
+        "prizeId" in award,
+    )
     .map((award) => award.prizeId);
   const identities = awards
-    .filter((award): award is Exclude<ContestAwardConfigData, {prizeId:string}> => !("prizeId" in award))
+    .filter(
+      (award): award is Exclude<ContestAwardConfigData, { prizeId: string }> =>
+        !("prizeId" in award),
+    )
     .map((award) => normalizeAwardIdentity(award));
-  const [defaultPrizes, configuredPrizesById, configuredPrizesByIdentity] = await Promise.all([
-    prisma.prize.findMany({
-      where: { isActive: true, isDefault: true, category: { notIn: contestLevelPrizeTypes } },
-      orderBy: [{ order: "asc" }, { createdAt: "asc" }],
-    }),
-    configuredPrizeIds.length > 0 ? getActivePrizesByIds(configuredPrizeIds) : [],
-    identities.length > 0 ? getActivePrizesByAwardIdentities(identities) : [],
-  ]);
+  const [defaultPrizes, configuredPrizesById, configuredPrizesByIdentity] =
+    await Promise.all([
+      prisma.prize.findMany({
+        where: {
+          isActive: true,
+          isDefault: true,
+          category: { notIn: contestLevelPrizeTypes },
+        },
+        orderBy: [{ order: "asc" }, { createdAt: "asc" }],
+      }),
+      configuredPrizeIds.length > 0
+        ? getActivePrizesByIds(configuredPrizeIds)
+        : [],
+      identities.length > 0 ? getActivePrizesByAwardIdentities(identities) : [],
+    ]);
 
-  const explicitPrizes = prizeIds.length > 0 ? await getActivePrizesByIds(prizeIds) : [];
+  const explicitPrizes =
+    prizeIds.length > 0 ? await getActivePrizesByIds(prizeIds) : [];
   ensureUniqueAwardSlots(explicitPrizes);
-  ensureUniqueAwardSlots([...configuredPrizesById, ...configuredPrizesByIdentity]);
-  const selectedBySlot = new Map<string, typeof defaultPrizes[number]>();
-  const configuredPrizes = [...configuredPrizesById, ...configuredPrizesByIdentity];
-  const basePrizes = explicitPrizes.length > 0
-    ? explicitPrizes
-    : useDefaults
-      ? defaultPrizes
-      : configuredPrizes;
+  ensureUniqueAwardSlots([
+    ...configuredPrizesById,
+    ...configuredPrizesByIdentity,
+  ]);
+  const selectedBySlot = new Map<string, (typeof defaultPrizes)[number]>();
+  const configuredPrizes = [
+    ...configuredPrizesById,
+    ...configuredPrizesByIdentity,
+  ];
+  const basePrizes =
+    explicitPrizes.length > 0
+      ? explicitPrizes
+      : useDefaults
+        ? defaultPrizes
+        : configuredPrizes;
 
-  basePrizes.forEach((prize) => selectedBySlot.set(getAwardSlotKey(prize), prize));
+  basePrizes.forEach((prize) =>
+    selectedBySlot.set(getAwardSlotKey(prize), prize),
+  );
   configuredPrizes.forEach((prize) => {
     selectedBySlot.set(getAwardSlotKey(prize), prize);
   });
 
   const prizes = Array.from(selectedBySlot.values());
   if (prizes.length === 0) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "At least one active contest award must be selected");
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      "At least one active contest award must be selected",
+    );
   }
 
   ensureUniqueAwardSlots(prizes);
   return buildAwardRows(prizes, awards);
 };
 
-const createContestAwardsFromPrizeIds = async (contestId: string, prizeIds: string[]) => {
+const createContestAwardsFromPrizeIds = async (
+  contestId: string,
+  prizeIds: string[],
+) => {
   const rows = await resolveAwardRows(prizeIds);
 
   await prisma.contestAward.createMany({
@@ -350,7 +468,10 @@ const createContestAwardsFromPrizeIds = async (contestId: string, prizeIds: stri
   return getContestAwards(contestId);
 };
 
-const createContestAwardsFromConfigs = async (contestId: string, awards: ContestAwardConfigData[]) => {
+const createContestAwardsFromConfigs = async (
+  contestId: string,
+  awards: ContestAwardConfigData[],
+) => {
   const rows = await resolveAwardRows([], awards);
 
   await prisma.contestAward.createMany({
@@ -367,14 +488,14 @@ const createContestAwardsFromConfigs = async (contestId: string, awards: Contest
 const replaceContestAwards = async (
   contestId: string,
   prizeIds: string[] = [],
-  awards: ContestAwardConfigData[] = []
+  awards: ContestAwardConfigData[] = [],
 ) => {
   const rows = await resolveAwardRows(
     prizeIds,
     awards,
-    prizeIds.length === 0 && awards.length === 0
+    prizeIds.length === 0 && awards.length === 0,
   );
-  await prisma.$transaction(async tx => {
+  await prisma.$transaction(async (tx) => {
     await tx.contestAward.deleteMany({ where: { contestId } });
     if (rows.length > 0) {
       await tx.contestAward.createMany({
@@ -386,7 +507,10 @@ const replaceContestAwards = async (
   return getContestAwards(contestId);
 };
 
-const createRecurringContestAwardsFromPrizeIds = async (recurringContestId: string, prizeIds: string[]) => {
+const createRecurringContestAwardsFromPrizeIds = async (
+  recurringContestId: string,
+  prizeIds: string[],
+) => {
   const rows = await resolveAwardRows(prizeIds);
 
   await prisma.recurringContestAward.createMany({
@@ -415,7 +539,7 @@ const createRecurringContestAwardsFromPrizeIds = async (recurringContestId: stri
 
 const createRecurringContestAwardsFromConfigs = async (
   recurringContestId: string,
-  awards: ContestAwardConfigData[]
+  awards: ContestAwardConfigData[],
 ) => {
   const rows = await resolveAwardRows([], awards);
 
@@ -432,15 +556,17 @@ const createRecurringContestAwardsFromConfigs = async (
 const replaceRecurringContestAwards = async (
   recurringContestId: string,
   prizeIds: string[] = [],
-  awards: ContestAwardConfigData[] = []
+  awards: ContestAwardConfigData[] = [],
 ) => {
   const rows = await resolveAwardRows(
     prizeIds,
     awards,
-    prizeIds.length === 0 && awards.length === 0
+    prizeIds.length === 0 && awards.length === 0,
   );
-  await prisma.$transaction(async tx => {
-    await tx.recurringContestAward.deleteMany({ where: { recurringContestId } });
+  await prisma.$transaction(async (tx) => {
+    await tx.recurringContestAward.deleteMany({
+      where: { recurringContestId },
+    });
     if (rows.length > 0) {
       await tx.recurringContestAward.createMany({
         data: rows.map((row) => ({ recurringContestId, ...row })),
@@ -450,8 +576,13 @@ const replaceRecurringContestAwards = async (
   return getRecurringContestAwards(recurringContestId);
 };
 
-const copyRecurringAwardsToContest = async (recurringContestId: string, contestId: string) => {
-  const awards = await prisma.recurringContestAward.findMany({ where: { recurringContestId } });
+const copyRecurringAwardsToContest = async (
+  recurringContestId: string,
+  contestId: string,
+) => {
+  const awards = await prisma.recurringContestAward.findMany({
+    where: { recurringContestId },
+  });
 
   if (!awards.length) {
     return [];
@@ -515,4 +646,3 @@ export const prizeService = {
   getRecurringContestAwards,
   resolveAwardRows,
 };
-

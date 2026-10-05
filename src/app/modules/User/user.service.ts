@@ -14,6 +14,17 @@ import { userStoreService } from "./UserStore/userStore.service"
 import { levelService } from "../Level/level.service"
 import { paginationHelper } from "../../../helpers/paginationHelper"
 import logger from "../../../shared/logger"
+import { userCache } from "./user.cache"
+import { authCache } from "../Auth/auth.cache"
+import { profileCache } from "../Profile/profile.cache"
+
+const invalidateUserReadModels = async (userId:string) => {
+    await Promise.all([
+        userCache.invalidateUser(userId),
+        authCache.invalidateAuthenticatedUser(userId),
+        profileCache.invalidateUser(userId)
+    ])
+}
 
 
 
@@ -91,6 +102,7 @@ const updateProfilePhoto = async (userId:string, file: Express.Multer.File)=>{
     let url = await fileUploader.uploadToDigitalOcean(file)
 
     await prisma.user.update({where:{id:userId}, data:{avatar:url.Location}})
+    await invalidateUserReadModels(userId)
 
     return "Cover photo updated!"
 }
@@ -109,6 +121,7 @@ const updateCoverPhoto = async (userId:string, file: Express.Multer.File)=>{
     let url = await fileUploader.uploadToDigitalOcean(file)
 
     await prisma.user.update({where:{id:userId}, data:{cover:url.Location}})
+    await invalidateUserReadModels(userId)
 
     return "Cover photo updated!"
 }
@@ -136,6 +149,8 @@ const updateUser = async (adminId:string,userId:string,userData:userAdminUpdateD
         dateOfBirth:userData.dateOfBirth,
     }})
 
+    await invalidateUserReadModels(userId)
+
     return UserDto(updatedUser)
 }
 
@@ -158,17 +173,30 @@ const updateProfile = async (userId:string,userData:userUpdateData)=>{
         dateOfBirth:userData.dateOfBirth,
     }})
 
+    await invalidateUserReadModels(userId)
+
     return UserDto(updatedUser)
 }
 
-const getUserDetails = async (userId:string)=>{
-
-    const user = await prisma.user.findUnique({where:{id:userId},include:{store:{select:{key:true, boost:true, swap:true, coin:true}}}, omit:{password:true, createdAt:true, updatedAt:true,accessToken:true}})
-    if(!user){
-        throw new ApiError(httpstatus.NOT_FOUND, "User not found")
-    }
+const loadUserDetailsFromDatabase = async (userId:string) => {
+    const user = await prisma.user.findUnique({where:{id:userId},
+        include:{
+            store:{select:{key:true, boost:true, swap:true, coin:true}}}, 
+            omit:{password:true, createdAt:true, updatedAt:true,accessToken:true}
+        })
+        if(!user){
+            throw new ApiError(httpstatus.NOT_FOUND, "User not found")
+        }
 
     return user
+}
+
+
+const getUserDetails = async (userId:string)=>{
+
+    const userCachedData = await userCache.getUserFromCache(userId, loadUserDetailsFromDatabase);
+
+    return userCachedData
 }
 
 const changePassword = async (userId:string,oldPassword:string, newPassword:string)=>{
@@ -183,6 +211,7 @@ const changePassword = async (userId:string,oldPassword:string, newPassword:stri
 
     const hashedPassword = await hashing.hashPassowrd(newPassword)
     await prisma.user.update({where:{id:userId}, data:{password:hashedPassword}})
+    await authCache.invalidateAuthenticatedUser(userId)
 
     return "Password updated successfully";
 
@@ -209,6 +238,7 @@ const resetPassword = async (email:string,passwordData:IPasswordUpdate, token:st
 
     const updatedUser = await prisma.user.update({where:{id:user.id}, data:{password:hashedPassword}})
     await prisma.otp.delete({where:{id:otp.id}})
+    await authCache.invalidateAuthenticatedUser(user.id)
 
     return UserDto(updatedUser)
 }
@@ -222,6 +252,7 @@ const uploadAvatar = async (userId:string,file:Express.Multer.File)=>{
     const uploadedFile = await fileUploader.uploadToDigitalOcean(file)
 
     await prisma.user.update({where:{id:userId}, data:{avatar:uploadedFile.Location}})
+    await invalidateUserReadModels(userId)
 
     return "avatar updated successfully"
 
@@ -237,6 +268,7 @@ const uploadCover = async (userId:string,file:Express.Multer.File)=>{
     const uploadedFile = await fileUploader.uploadToDigitalOcean(file)
 
     await prisma.user.update({where:{id:userId}, data:{cover:uploadedFile.Location}})
+    await invalidateUserReadModels(userId)
 
     return "cover updated successfully"
 
@@ -383,17 +415,12 @@ const deleteAccount = async (userId:string, password:string) => {
     }
 
     await prisma.user.update({where:{id:userId}, data:{isDeleted:true, isActive:false}})
+    await invalidateUserReadModels(userId)
 
     return "Account deleted successfully"
 }
 
-const checkLevelRequirement = async ()=>{
 
-}
-
-const checkUserLevel = async (userId:string)=> {
-
-}
 
 const getPhototAchievements = async (photoId:string) => {
     const achievements = await prisma.contestAchievement.findMany({where:{photo:{photoId}}})

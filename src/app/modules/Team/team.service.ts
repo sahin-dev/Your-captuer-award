@@ -37,6 +37,9 @@ import { userService } from "../User/user.service";
 import { paginationHelper } from "../../../helpers/paginationHelper";
 import { userStoreService } from "../User/UserStore/userStore.service";
 import logger from "../../../shared/logger";
+import { authCache } from "../Auth/auth.cache";
+import { userStoreCache } from "../User/UserStore/userStore.cache";
+import { profileCache } from "../Profile/profile.cache";
 
 // The public slice of a user shown next to a team or a membership.
 const TEAM_USER_SELECT = {
@@ -67,6 +70,14 @@ const findTeamUsers = async (userIds: string[]) => {
   return new Map(
     users.filter((user) => !deletedUserIds.has(user.id)).map((user) => [user.id, user]),
   );
+};
+
+const invalidateTeamMembershipReadModels = async (userIds: string[]) => {
+  const uniqueUserIds = Array.from(new Set(userIds));
+  await Promise.all(uniqueUserIds.map((userId) => Promise.all([
+    authCache.invalidateAuthenticatedUser(userId),
+    profileCache.invalidateUser(userId),
+  ])));
 };
 
 // Loads memberships and attaches each one's user. The user is resolved in a
@@ -149,6 +160,10 @@ export const createTeam = async (
     });
     return { team, member };
   });
+  await Promise.all([
+    userStoreCache.invalidateUserStoreReadModels(creatorId),
+    invalidateTeamMembershipReadModels([creatorId]),
+  ]);
 
   return team;
 };
@@ -184,6 +199,11 @@ export const updateTeam = async (
       badge: badgeUrl,
     },
   });
+  const members = await prisma.teamMember.findMany({
+    where: { teamId },
+    select: { memberId: true },
+  });
+  await invalidateTeamMembershipReadModels(members.map((member) => member.memberId));
 
   return updatedTeam;
 };
@@ -423,7 +443,7 @@ export const deleteTeam = async (userId: string, teamId: string) => {
   }
 
   const [teamMembers, teamMatches] = await Promise.all([
-    prisma.teamMember.findMany({ where: { teamId }, select: { id: true } }),
+    prisma.teamMember.findMany({ where: { teamId }, select: { id: true, memberId: true } }),
     prisma.teamMatch.findMany({
       where: { OR: [{ team1Id: teamId }, { team2Id: teamId }] },
       select: { id: true },
@@ -488,6 +508,7 @@ export const deleteTeam = async (userId: string, teamId: string) => {
     await tx.teamMember.deleteMany({ where: { teamId } });
     await tx.team.delete({ where: { id: teamId } });
   });
+  await invalidateTeamMembershipReadModels(teamMembers.map((member) => member.memberId));
 
   return { message: "Team deleted successfully" };
 };
@@ -527,6 +548,7 @@ const joinATeam = async (userId: string, teamId: string) => {
 
     return member;
   });
+  await invalidateTeamMembershipReadModels([userId]);
 
   return newMemeber;
 };
@@ -872,6 +894,7 @@ const joinByInvitation = async (
       notificationId,
       "accepted",
     );
+    await invalidateTeamMembershipReadModels([userId]);
     await notificationService.postNotification(
       "Invitation Accepted",
       "Your invitation accepted",
@@ -946,6 +969,7 @@ const leaveATeam = async (userId: string, teamId: string) => {
       data: { member_count: { decrement: 1 } },
     });
   });
+  await invalidateTeamMembershipReadModels([userId]);
 };
 
 // Leaves the caller's current team and joins a different one atomically, so a user
@@ -986,6 +1010,7 @@ const switchTeam = async (userId: string, newTeamId: string) => {
 
     return member;
   });
+  await invalidateTeamMembershipReadModels([userId]);
 
   return newMember;
 };
@@ -1022,6 +1047,7 @@ const removeFromTeam = async (
 
     return removedMember;
   });
+  await invalidateTeamMembershipReadModels([removedMember.memberId]);
 
   return removedMember;
 };
@@ -1566,6 +1592,7 @@ const approveJoinRequest = async (joinRequestId: string, userId: string) => {
     request.requesterId,
     NotificationType.TEAM_JOIN_APPROVED,
   );
+  await invalidateTeamMembershipReadModels([request.requesterId]);
 
   return updatedRequest;
 };
@@ -1801,6 +1828,7 @@ const payoutPeriodRewards = async (period: TeamPeriod, now = new Date()) => {
         create: { userId: member.memberId, coins },
         update: { coins: { increment: coins } },
       });
+      await userStoreCache.invalidateUserStoreReadModels(member.memberId);
 
       await notificationOrchestrator.notifyTeamRewardGranted(member.memberId, team.id, team.name, period, entry.rank, coins);
     }

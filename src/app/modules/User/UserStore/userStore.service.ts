@@ -1,17 +1,26 @@
 
 import { UserStore } from "../../../../prismaClient/client";
 import prisma from "../../../../shared/prisma";
+import { userStoreCache } from "./userStore.cache";
+import { UserStoreType } from "./userStore.type";
 
 
 
-
-const getStoreData = async (userId: string) => {
-  
-    const storeData = await prisma.userStore.findUnique({
+const loadStoreDataFromDb = async (userId: string): Promise<UserStoreType | null> => {
+   const storeData = await prisma.userStore.findUnique({
       where: { userId },
       select:{id:true,key:true, boost:true, swap:true, coins:true}
     });
     return storeData;
+}
+
+
+const getStoreData = async (userId: string) => {
+
+    const cachedStoreData = userStoreCache.getStore(userId, loadStoreDataFromDb);
+    if (cachedStoreData) {
+      return cachedStoreData;
+    }
   
 }   
 
@@ -29,6 +38,7 @@ const addStoreData = async (userId: string, data: {key:number, boost:number, swa
         coins: 0
       }
     });
+    await userStoreCache.updateCachedStore(userId, newStore);
     return newStore;
 
  }
@@ -49,6 +59,7 @@ const updateStoreData = async (userId: string, data: Partial<UserStore>) => {
         coins: data.coins ? { increment: data.coins } : undefined
       }
     });
+    await userStoreCache.updateCachedStore(userId, updatedStore);
 
     return updatedStore;
 
@@ -67,6 +78,7 @@ const addUserStoreBasedOnType = async (userId: string, type: "key" | "boost" | "
             [type]: { increment: amount }
         }
     });
+    await userStoreCache.updateCachedStore(userId, updatedStore);
     return updatedStore;
 };
 
@@ -84,6 +96,7 @@ const deductCoinsFromStore = async (userId: string, amount: number) => {
             coins: { decrement: amount }
         }
     });
+    await userStoreCache.updateCachedStore(userId, updatedStore);
     return updatedStore;
 };
 

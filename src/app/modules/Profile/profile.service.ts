@@ -9,6 +9,7 @@ import { followService } from "../Follow/followe.service"
 import { paginationHelper } from "../../../helpers/paginationHelper"
 import { describeUploadedImage, UploadedImageMetadata } from "../../../helpers/imageMetadata"
 import { dedupeLabels } from "../../../shared/labels"
+import { profileCache } from "./profile.cache"
 
 const fetchUserUploads = async (targetUserId:string, pagination:{page?:number, limit?:number}, viewerId?:string)=>{
     const {page, limit, skip} = paginationHelper.calculatePagination({
@@ -16,19 +17,28 @@ const fetchUserUploads = async (targetUserId:string, pagination:{page?:number, l
         limit:pagination.limit || 20
     })
 
-    const totalUploads = await prisma.userPhoto.count({where:{userId:targetUserId}})
+    const {totalUploads, uploads} = await profileCache.getUserData(
+        targetUserId,
+        "uploads",
+        {page, limit},
+        async () => {
+            const [totalUploads, uploads] = await Promise.all([
+                prisma.userPhoto.count({where:{userId:targetUserId}}),
+                prisma.userPhoto.findMany({
+                    where:{userId:targetUserId},include:{
+                        contestUpload:{select:{achievements:{orderBy:{createdAt:'desc'}, take:1,
+                        select:{category:true},},
+                        id:true}},_count:{select:{likes:true}}},
+                        take:limit,
+                        skip,
+                        orderBy:[{createdAt:'desc'}, {id:'desc'}]
+                })
+            ])
+            return {totalUploads, uploads}
+        }
+    )
 
-    const uploads = await prisma.userPhoto.findMany({
-        where:{userId:targetUserId},include:{
-            contestUpload:{select:{achievements:{orderBy:{createdAt:'desc'}, take:1,
-            select:{category:true},},
-            id:true}},_count:{select:{likes:true}}},
-            take:limit,
-            skip,
-            orderBy:[{createdAt:'desc'}, {id:'desc'}]
-    })
-
-    const likedPhotoIds = viewerId
+    const likedPhotoIds = viewerId && uploads.length > 0
         ? new Set((await prisma.like.findMany({where:{providerId:viewerId, photoId:{in:uploads.map(photo => photo.id)}}, select:{photoId:true}})).map(like => like.photoId))
         : new Set<string>()
 
@@ -114,6 +124,8 @@ export const handleAddUpload = async (userId:string, photoUrl:string, metadata?:
         sizeBytes:metadata?.sizeBytes ?? null
     }})
 
+    await profileCache.invalidateUser(userId)
+
     return uploadedPhoto
 }
 
@@ -140,7 +152,12 @@ export const getParticipatedContest = async(userId:string)=> {
 
 export const getPhotos = async (userId:string, sortBy:string = 'votes')=>{
 
-    const photos = await prisma.userPhoto.findMany({where:{userId}, select:{url:true, id:true, views:true,_count:{select:{likes:true}} ,contestUpload:{select:{id:true}}}})
+    const photos = await profileCache.getUserData(
+        userId,
+        "photos",
+        {},
+        () => prisma.userPhoto.findMany({where:{userId}, select:{url:true, id:true, views:true,_count:{select:{likes:true}} ,contestUpload:{select:{id:true}}}})
+    )
     
     if(!photos || photos.length === 0){
         throw new ApiError(httpStatus.NOT_FOUND, "user does not have any photos")
@@ -253,13 +270,18 @@ const isFollowedByViewer = async (targetUserId:string, viewerId?:string)=>{
 }
 
 const getUserProfileDetails = async (userId:string, viewerId?:string)=>{
-    const user = await prisma.user.findUnique({
-        where:{id:userId},
-        select:{
-            id:true,avatar:true,username:true, location:true,fullName:true, cover:true,
-            joinedTeam:{select:{team:{select:{id:true, name:true, badge:true}}}}
+    const user = await profileCache.getUserData(
+        userId,
+        "profile",
+        {},
+        () => prisma.user.findUnique({
+            where:{id:userId},
+            select:{
+                id:true,avatar:true,username:true, location:true,fullName:true, cover:true,
+                joinedTeam:{select:{team:{select:{id:true, name:true, badge:true}}}}
+            }
         }
-    })
+    ))
     if(!user){
         throw new ApiError(httpStatus.NOT_FOUND, "User not found")
     }
@@ -272,7 +294,12 @@ const getUserProfileDetails = async (userId:string, viewerId?:string)=>{
 
 
 const getUserPhotoDetails = async (userId:string, photoId:string, viewerId?:string) => {
-    const photo = await prisma.userPhoto.findUnique({where:{id:photoId,userId}, include:{user:{select:{id:true, fullName:true, avatar:true, username:true}}}})
+    const photo = await profileCache.getPhotoData(
+        photoId,
+        "details",
+        {userId},
+        () => prisma.userPhoto.findUnique({where:{id:photoId,userId}, include:{user:{select:{id:true, fullName:true, avatar:true, username:true}}}})
+    )
     if(!photo){
         throw new ApiError(httpStatus.NOT_FOUND, "photo not found")
     }
@@ -290,7 +317,12 @@ const getUserPhotoDetails = async (userId:string, photoId:string, viewerId?:stri
 }
 
 const getPublicPhotoDetails = async (targetUserId:string, photoId:string, viewerId?:string) => {
-    const photo = await prisma.userPhoto.findUnique({where:{id:photoId, userId: targetUserId}, include:{user:{select:{id:true, fullName:true, avatar:true, username:true}}}})
+    const photo = await profileCache.getPhotoData(
+        photoId,
+        "public-details",
+        {targetUserId},
+        () => prisma.userPhoto.findUnique({where:{id:photoId, userId: targetUserId}, include:{user:{select:{id:true, fullName:true, avatar:true, username:true}}}})
+    )
     if(!photo){
         throw new ApiError(httpStatus.NOT_FOUND, "photo not found")
     }
@@ -309,7 +341,10 @@ const getPublicPhotoDetails = async (targetUserId:string, photoId:string, viewer
 }
 
 const deleteUserPhoto = async (userId:string, photoId:string)=> {
-    const photo = await prisma.userPhoto.findUnique({where:{id:photoId, userId}})
+    const [photo, likes] = await Promise.all([
+        prisma.userPhoto.findUnique({where:{id:photoId, userId}}),
+        prisma.like.findMany({where:{photoId}, select:{providerId:true}})
+    ])
 
     if(!photo){
         throw new ApiError(httpStatus.NOT_FOUND, "photo not found")
@@ -328,6 +363,11 @@ const deleteUserPhoto = async (userId:string, photoId:string)=> {
 
         return await tx.userPhoto.delete({where:{id:photo.id}})
     })
+    await Promise.all([
+        profileCache.invalidateUser(userId),
+        profileCache.invalidatePhoto(photoId),
+        profileCache.invalidateUsers(likes.flatMap((like) => like.providerId ? [like.providerId] : []))
+    ])
 
     return deletedPhoto
 }
@@ -341,11 +381,31 @@ const updatePhotoLabels = async (userId:string, photoId:string, labels:string[])
         throw new ApiError(httpStatus.NOT_FOUND, "photo not found")
     }
 
-    return prisma.userPhoto.update({
+    const updated = await prisma.userPhoto.update({
         where:{id:photo.id},
         data:{labels:dedupeLabels(labels)},
         select:{id:true, labels:true}
     })
+    await Promise.all([profileCache.invalidateUser(userId), profileCache.invalidatePhoto(photo.id)])
+    return updated
+}
+
+// Replaces a photo's category list. Ownership is enforced here as well as in
+// the authenticated route so another user's photo can never be changed.
+const updatePhotoCategories = async (userId:string, photoId:string, categories:string[])=> {
+    const photo = await prisma.userPhoto.findUnique({where:{id:photoId, userId}, select:{id:true}})
+
+    if(!photo){
+        throw new ApiError(httpStatus.NOT_FOUND, "photo not found")
+    }
+
+    const updated = await prisma.userPhoto.update({
+        where:{id:photo.id},
+        data:{categories:dedupeLabels(categories)},
+        select:{id:true, categories:true}
+    })
+    await Promise.all([profileCache.invalidateUser(userId), profileCache.invalidatePhoto(photo.id)])
+    return updated
 }
 
 export const profileService = {
@@ -361,6 +421,7 @@ export const profileService = {
     getUserPhotoDetails,
     getPublicPhotoDetails,
     deleteUserPhoto,
-    updatePhotoLabels
+    updatePhotoLabels,
+    updatePhotoCategories
 
 }

@@ -5,6 +5,9 @@ import prisma from "../../shared/prisma";
 import globalEventHandler from "../event/eventEmitter";
 import Events from "../event/events.constant";
 import logger from "../../shared/logger";
+import { userCache } from "../modules/User/user.cache";
+import { authCache } from "../modules/Auth/auth.cache";
+import { profileCache } from "../modules/Profile/profile.cache";
 
 const facebookConfig:StrategyOptions = {
     clientID:config.facebook.client_id as string, 
@@ -42,6 +45,11 @@ const facebookCallback = async (accessToken:any, refreshToken:any, profile:Profi
                             fullName: user.fullName || profile.displayName
                         }
                     });
+                    await Promise.all([
+                        userCache.invalidateUser(user.id),
+                        authCache.invalidateAuthenticatedUser(user.id),
+                        profileCache.invalidateUser(user.id)
+                    ]);
                 }
             }
         } else {

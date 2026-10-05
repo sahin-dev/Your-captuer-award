@@ -4,6 +4,7 @@ import httpstatus from 'http-status';
 import globalEventHandler from '../../event/eventEmitter';
 import Events from '../../event/events.constant';
 import { paginationHelper } from '../../../helpers/paginationHelper';
+import { profileCache } from '../Profile/profile.cache';
 
 
 export const handleFollowUnfollow = async (followerId:string, followingId:string) => {
@@ -25,6 +26,7 @@ export const handleFollowUser = async (followerId: string, followingId: string) 
     const follow = await prisma.follow.create({
         data: { followerId, followingId }
     });
+    await profileCache.invalidateUsers([followerId, followingId]);
 
     //Publish new follower event
     globalEventHandler.publish(Events.NEW_FOLLOWER,followingId)
@@ -35,19 +37,36 @@ export const handleFollowUser = async (followerId: string, followingId: string) 
 
 
 export const handleUnfollowUser = async (followId:string) => {
+    const follow = await prisma.follow.findUnique({
+        where:{id:followId},
+        select:{followerId:true, followingId:true}
+    });
     await prisma.follow.delete({ where: { id: followId } });
+    if(follow){
+        await profileCache.invalidateUsers([follow.followerId, follow.followingId]);
+    }
 };
 
 
 
 export const getFollowerCount = async (userId:string) => {
-    const count = await prisma.follow.count({where:{followingId:userId}})
+    const count = await profileCache.getUserData(
+        userId,
+        "follower-count",
+        {},
+        () => prisma.follow.count({where:{followingId:userId}})
+    )
 
     return count
 }
 
 export const getFollowingCount = async (userId:string)=>{
-    const count = await prisma.follow.count({where:{followerId:userId}})
+    const count = await profileCache.getUserData(
+        userId,
+        "following-count",
+        {},
+        () => prisma.follow.count({where:{followerId:userId}})
+    )
     return count
 }
 
@@ -55,13 +74,24 @@ export const getFollowingCount = async (userId:string)=>{
 export const handleGetMyFollowers = async (userId:string, page: number = 1, limit: number = 10)=>{
     const { skip, limit: paginationLimit } = paginationHelper.calculatePagination({ page, limit });
 
-    const followers = await prisma.follow.findMany({
-        where:{followingId:userId}, 
-        skip,
-        take: paginationLimit,
-        include:{follower:{select:{id:true, avatar:true, fullName:true, firstName:true, lastName:true}}},
-        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }]
-    })
+    const {followers, total} = await profileCache.getUserData(
+        userId,
+        "followers",
+        {page, limit:paginationLimit},
+        async () => {
+            const [followers, total] = await Promise.all([
+                prisma.follow.findMany({
+                    where:{followingId:userId}, 
+                    skip,
+                    take: paginationLimit,
+                    include:{follower:{select:{id:true, avatar:true, fullName:true, firstName:true, lastName:true}}},
+                    orderBy: [{ createdAt: 'desc' }, { id: 'desc' }]
+                }),
+                prisma.follow.count({where:{followingId:userId}})
+            ])
+            return {followers, total}
+        }
+    )
 
     const followerIds = followers.map(follow => follow.follower.id)
     const followedByMe = await prisma.follow.findMany({
@@ -74,7 +104,6 @@ export const handleGetMyFollowers = async (userId:string, page: number = 1, limi
         isFollowedByMe:followedByMeIds.has(follow.follower.id)
     }))
 
-    const total = await prisma.follow.count({where:{followingId:userId}});
     const meta = paginationHelper.getPaginationMetaData(page, paginationLimit, total);
 
     return { data, meta };
@@ -83,15 +112,25 @@ export const handleGetMyFollowers = async (userId:string, page: number = 1, limi
 export const handleGetMyFollowings = async (userId:string, page: number = 1, limit: number = 10) => {
     const { skip, limit: paginationLimit } = paginationHelper.calculatePagination({ page, limit });
 
-    const followings = await prisma.follow.findMany({
-        where:{followerId:userId}, 
-        skip,
-        take: paginationLimit,
-        include:{following:{select:{id:true, avatar:true, fullName:true, firstName:true, lastName:true}}},
-        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }]
-    })
+    const {followings, total} = await profileCache.getUserData(
+        userId,
+        "followings",
+        {page, limit:paginationLimit},
+        async () => {
+            const [followings, total] = await Promise.all([
+                prisma.follow.findMany({
+                    where:{followerId:userId}, 
+                    skip,
+                    take: paginationLimit,
+                    include:{following:{select:{id:true, avatar:true, fullName:true, firstName:true, lastName:true}}},
+                    orderBy: [{ createdAt: 'desc' }, { id: 'desc' }]
+                }),
+                prisma.follow.count({where:{followerId:userId}})
+            ])
+            return {followings, total}
+        }
+    )
 
-    const total = await prisma.follow.count({where:{followerId:userId}});
     const meta = paginationHelper.getPaginationMetaData(page, paginationLimit, total);
 
     return { data: followings, meta };
@@ -100,13 +139,24 @@ export const handleGetMyFollowings = async (userId:string, page: number = 1, lim
 export const handleGetOtherUserFollowers = async (myId: string, targetUserId: string, page: number = 1, limit: number = 10) => {
     const { skip, limit: paginationLimit } = paginationHelper.calculatePagination({ page, limit });
 
-    const followers = await prisma.follow.findMany({
-        where: { followingId: targetUserId },
-        skip,
-        take: paginationLimit,
-        include: { follower: { select: { id: true, avatar: true, fullName: true, firstName: true, lastName: true } } },
-        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }]
-    });
+    const {followers, total} = await profileCache.getUserData(
+        targetUserId,
+        "followers",
+        {page, limit:paginationLimit},
+        async () => {
+            const [followers, total] = await Promise.all([
+                prisma.follow.findMany({
+                    where: { followingId: targetUserId },
+                    skip,
+                    take: paginationLimit,
+                    include: { follower: { select: { id: true, avatar: true, fullName: true, firstName: true, lastName: true } } },
+                    orderBy: [{ createdAt: 'desc' }, { id: 'desc' }]
+                }),
+                prisma.follow.count({ where: { followingId: targetUserId } })
+            ])
+            return {followers, total}
+        }
+    );
 
     const followerIds = followers.map(f => f.follower.id);
     const myFollows = await prisma.follow.findMany({
@@ -124,7 +174,6 @@ export const handleGetOtherUserFollowers = async (myId: string, targetUserId: st
         isFollowedByMe: myFollowedSet.has(f.follower.id)
     }));
 
-    const total = await prisma.follow.count({ where: { followingId: targetUserId } });
     const meta = paginationHelper.getPaginationMetaData(page, paginationLimit, total);
 
     return { data, meta };
@@ -133,13 +182,24 @@ export const handleGetOtherUserFollowers = async (myId: string, targetUserId: st
 export const handleGetOtherUserFollowings = async (myId: string, targetUserId: string, page: number = 1, limit: number = 10) => {
     const { skip, limit: paginationLimit } = paginationHelper.calculatePagination({ page, limit });
 
-    const followings = await prisma.follow.findMany({
-        where: { followerId: targetUserId },
-        skip,
-        take: paginationLimit,
-        include: { following: { select: { id: true, avatar: true, fullName: true, firstName: true, lastName: true } } },
-        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }]
-    });
+    const {followings, total} = await profileCache.getUserData(
+        targetUserId,
+        "followings",
+        {page, limit:paginationLimit},
+        async () => {
+            const [followings, total] = await Promise.all([
+                prisma.follow.findMany({
+                    where: { followerId: targetUserId },
+                    skip,
+                    take: paginationLimit,
+                    include: { following: { select: { id: true, avatar: true, fullName: true, firstName: true, lastName: true } } },
+                    orderBy: [{ createdAt: 'desc' }, { id: 'desc' }]
+                }),
+                prisma.follow.count({ where: { followerId: targetUserId } })
+            ])
+            return {followings, total}
+        }
+    );
 
     const followingIds = followings.map(f => f.following.id);
     const myFollows = await prisma.follow.findMany({
@@ -157,7 +217,6 @@ export const handleGetOtherUserFollowings = async (myId: string, targetUserId: s
         isFollowedByMe: myFollowedSet.has(f.following.id)
     }));
 
-    const total = await prisma.follow.count({ where: { followerId: targetUserId } });
     const meta = paginationHelper.getPaginationMetaData(page, paginationLimit, total);
 
     return { data, meta };

@@ -2,6 +2,16 @@ import prisma from "../../../shared/prisma"
 import globalEventHandler from "../../event/eventEmitter";
 import Events from "../../event/events.constant";
 import { paginationHelper } from "../../../helpers/paginationHelper";
+import { profileCache } from "../Profile/profile.cache";
+
+const invalidateLikeReadModels = async (userId:string, photoId:string) => {
+    const photo = await prisma.userPhoto.findUnique({where:{id:photoId}, select:{userId:true}})
+    await Promise.all([
+        profileCache.invalidateUser(userId),
+        photo?.userId ? profileCache.invalidateUser(photo.userId) : Promise.resolve(),
+        profileCache.invalidatePhoto(photoId)
+    ])
+}
 
 
 //user can toggole like on a photo
@@ -35,6 +45,7 @@ export const provideLike = async (userId:string,photoId:string)=>{
             photoId
         }
     })
+    await invalidateLikeReadModels(userId, photoId)
 
     globalEventHandler.publish(Events.NEW_LIKE, photoId)
 
@@ -67,25 +78,32 @@ export const provideLike = async (userId:string,photoId:string)=>{
 //user can remove like on a photo
 
 export const removeLike = async (userId:string,photoId:string)=>{
-    return await prisma.like.deleteMany({
+    const deleted = await prisma.like.deleteMany({
         where:{
             providerId:userId,
             photoId
         }
     })
+    await invalidateLikeReadModels(userId, photoId)
+    return deleted
 }
 
 //user can get all likes on a photo
 
 export const getLikes = async (photoId:string)=>{
-    return await prisma.like.findMany({
-        where:{
-            photoId
-        },
-        include:{
-            provider:true
-        }
-    })
+    return profileCache.getPhotoData(
+        photoId,
+        "likes",
+        {},
+        () => prisma.like.findMany({
+            where:{
+                photoId
+            },
+            include:{
+                provider:true
+            }
+        })
+    )
 }
 
 //user can get all photos liked by a user
@@ -93,19 +111,28 @@ export const getLikes = async (photoId:string)=>{
 export const handleGetLikedPhotos = async (userId:string, page: number = 1, limit: number = 10)=>{
     const { skip, limit: paginationLimit } = paginationHelper.calculatePagination({ page, limit });
 
-    const likes = await prisma.like.findMany({
-        where:{
-            providerId:userId
-        },
-        skip,
-        take: paginationLimit,
-        include:{
-            photo:true
-        },
-        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }]
-    });
-
-    const total = await prisma.like.count({where:{providerId:userId}});
+    const {likes, total} = await profileCache.getUserData(
+        userId,
+        "liked-photos",
+        {page, limit:paginationLimit},
+        async () => {
+            const [likes, total] = await Promise.all([
+                prisma.like.findMany({
+                    where:{
+                        providerId:userId
+                    },
+                    skip,
+                    take: paginationLimit,
+                    include:{
+                        photo:true
+                    },
+                    orderBy: [{ createdAt: 'desc' }, { id: 'desc' }]
+                }),
+                prisma.like.count({where:{providerId:userId}})
+            ])
+            return {likes, total}
+        }
+    );
     const meta = paginationHelper.getPaginationMetaData(page, paginationLimit, total);
 
     return { data: likes, meta };

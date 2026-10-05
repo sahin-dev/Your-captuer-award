@@ -7,6 +7,7 @@ import { chatService } from "../app/modules/Chat/chat.service";
 import {createAdapter} from '@socket.io/redis-adapter'
 import { redisClient, redisSubClient } from "../shared/redis";
 import logger from "../shared/logger";
+import { userCache } from "../app/modules/User/user.cache";
 
 
 interface AuthenticatedSocket extends Socket {
@@ -14,7 +15,7 @@ interface AuthenticatedSocket extends Socket {
   teamIds?: Set<string>;
 }
 
-const adapter = createAdapter(redisClient, redisSubClient);
+// const adapter = createAdapter(redisClient, redisSubClient);
 
 type Message = { event: string; token?: string; teamId?: string; message?: string };
 type Acknowledgement = (response: {
@@ -33,7 +34,7 @@ let ioInstance: SocketIOServer | null = null;
 
 export function setupWebSocket(server: HTTPServer) {
   const io = new SocketIOServer(server, {
-    adapter: adapter,
+    // adapter: adapter,
     cors: {
       origin: "*",
       methods: ["GET", "POST"],
@@ -90,6 +91,7 @@ export function setupWebSocket(server: HTTPServer) {
         userSockets.set(id, socket);
 
         await prisma.user.update({ where: { id }, data: { isOnline: true } });
+        await userCache.invalidateUser(id);
         logger.debug({ userId: id }, "Socket authenticated");
 
         callback({ success: true, userId: id, message: "User authenticated" });
@@ -273,6 +275,7 @@ export function setupWebSocket(server: HTTPServer) {
             where: { id: socket.userId },
             data: { isOnline: false },
           });
+          await userCache.invalidateUser(socket.userId);
 
           io.emit("user_status", { userId: socket.userId, isOnline: false });
           logger.debug({ userId: socket.userId }, "Socket disconnected");

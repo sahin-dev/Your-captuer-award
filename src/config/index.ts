@@ -50,8 +50,12 @@ const config =  {
     },
     reportNotificationEmail: process.env.REPORT_NOTIFICATION_EMAIL || "info@yourcaptureawards.org",
     redis:{
+        url: process.env.REDIS_URL,
         host: process.env.REDIS_HOST || "localhost",
         port: Number(process.env.REDIS_PORT || 6379)
+    },
+    cache:{
+        enabled: process.env.CACHE_ENABLED !== "false"
     },
     vote:{
         // Levels and notifications after a vote run after the response is

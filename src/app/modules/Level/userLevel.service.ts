@@ -1,6 +1,7 @@
 import prisma from "../../../shared/prisma"
 import { Level, LevelRequirementTitle } from "../../../prismaClient"
 import { sumVoteWeight } from "../Vote/voteWeight.service"
+import { userCache } from "../User/user.cache"
 
 /**
  * Resolves the user's current value for a given requirement type.
@@ -91,6 +92,7 @@ const updateLevelsForContest = async (contestId: string): Promise<void> => {
 
         // Check and update their global level based on all requirements
         await checkAndUpdateUserLevel(updatedUser.id)
+        await userCache.invalidateUser(updatedUser.id)
     }
 }
 
@@ -135,6 +137,7 @@ const checkAndUpdateUserLevel = async (userId: string) => {
                 currentLevel: matchedLevel.level
             }
         })
+        await userCache.invalidateUser(userId)
     }
 }
 

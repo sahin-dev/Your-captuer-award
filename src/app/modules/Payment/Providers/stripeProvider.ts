@@ -4,6 +4,7 @@ import prisma from "../../../../shared/prisma";
 import { userService } from "../../User/user.service";
 import { PaymentMethod, PaymentProvider } from "../payment.interface";
 import { PaymentRegistry } from "../paymentRegistry";
+import { userCache } from "../../User/user.cache";
 
 const ZERO_DECIMAL_CURRENCIES = new Set([
   "BIF",
@@ -192,6 +193,7 @@ export class StripeProvider implements PaymentProvider {
       where: { id: userId },
       data: { customerId: customer.id },
     });
+    await userCache.invalidateUser(userId);
 
     return customer;
   }

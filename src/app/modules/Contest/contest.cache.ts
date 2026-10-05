@@ -1,6 +1,7 @@
 import { metrics } from "@opentelemetry/api";
 import { redisClient } from "../../../shared/redis";
 import logger from "../../../shared/logger";
+import config from "../../../config";
 
 // Redis cache for the slow-changing data hung off a contest (rules, prizes,
 // level awards, finalization, award selections, winners).
@@ -23,7 +24,9 @@ import logger from "../../../shared/logger";
 // database load and the request still succeeds.
 
 export type ContestCachePart = "detail" | "list" | "winners" | "completedCard";
+
 type CacheableContest = { id: string; status: string };
+
 type CacheOptions = {
     // Extra key segment for per-viewer entries, e.g. a user id.
     scope?: string;
@@ -63,7 +66,13 @@ const getMany = async <T>(
     if (contests.length === 0) {
         return new Map();
     }
+    if (!config.cache.enabled) {
+        logger.debug({ part }, "Contest cache bypassed because cache is disabled");
+        cacheLookups.add(contests.length, { part, result: "bypass" });
+        return load(contests);
+    }
     if (!redisClient.isReady) {
+        logger.debug({ part }, "Contest cache bypassed because Redis is not ready");
         cacheLookups.add(contests.length, { part, result: "bypass" });
         return load(contests);
     }
@@ -100,14 +109,22 @@ const getMany = async <T>(
     if (misses.length > 0) {
         const loaded = await load(misses);
         const write = redisClient.multi();
+        let shouldWrite = false;
         loaded.forEach((value, contestId) => {
             result.set(contestId, value);
             const key = missKeys.get(contestId);
             if (key) {
+                shouldWrite = true;
                 write.setEx(key, ttlSeconds, JSON.stringify(value));
             }
         });
-        write.exec().catch((error) => logger.error({ err: error, part }, "Contest cache write failed"));
+        if (shouldWrite) {
+            try {
+                await write.exec();
+            } catch (error) {
+                logger.error({ err: error, part }, "Contest cache write failed");
+            }
+        }
     }
 
     return result;
@@ -126,7 +143,7 @@ const getOne = async <T>(
 // Call after the database write has committed. Never throws: a failed
 // invalidation leaves entries to expire on their TTL.
 const invalidateContest = async (contestId: string) => {
-    if (!redisClient.isReady) {
+    if (!config.cache.enabled || !redisClient.isReady) {
         return;
     }
     try {

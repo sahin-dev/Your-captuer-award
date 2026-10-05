@@ -15,6 +15,7 @@ route.post("/photos/confirm-upload", auth(), profileController.confirmDirectUplo
 route.get("/photos/:photoId", auth(), profileController.getUserPhotoDetails);
 route.delete("/photos/:photoId", auth(), profileController.deleteUserPhoto);
 route.patch("/photos/:photoId/labels", auth(), validateRequest(profileSchema.updatePhotoLabelsSchema), profileController.updatePhotoLabels);
+route.patch("/photos/:photoId/categories", auth(), validateRequest(profileSchema.updatePhotoCategoriesSchema), profileController.updatePhotoCategories);
 route.get("/stats", auth(), profileController.getUserStates);
 
 // Public user profile routes
