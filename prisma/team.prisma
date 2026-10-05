@@ -106,6 +106,7 @@ model TeamMember {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@index([teamId])
   @@map("team_members")
 }
 

@@ -99,6 +99,7 @@ model UserPhoto {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
+  @@index([userId, createdAt])
   @@map("user_photos")
 }
 
@@ -113,6 +114,8 @@ model Like {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@index([photoId])
+  @@index([providerId])
   @@map("likes")
 }
 
@@ -148,6 +151,7 @@ model Comment {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@index([photoId, createdAt])
   @@map("comments")
 }
 
@@ -185,6 +189,8 @@ model Vote {
   @@unique([providerId, contestId, contestPhotoId])
   @@index([contestId, contestPhotoId])
   @@index([contestId, providerId])
+  @@index([contestId, id])
+  @@index([contestId, createdAt])
   @@index([contestPhotoId, photoRefId])
   @@map("votes")
 }

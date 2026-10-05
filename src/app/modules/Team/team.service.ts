@@ -311,22 +311,30 @@ export const getTeamDetails = async (teamId: string) => {
 };
 
 const getMyTeamDetails = async (userId: string) => {
-  const member = await prisma.teamMember.findFirst({
-    where: { memberId: userId },
-  });
-  if (!member) {
-    throw new ApiError(httpstatus.NOT_FOUND, "member does not found");
-  }
-  const team = await prisma.team.findUnique({ where: { id: member.teamId } });
+  return profileCache.getUserData(
+    userId,
+    "my-team",
+    {},
+    async () => {
+      const member = await prisma.teamMember.findFirst({
+        where: { memberId: userId },
+      });
+      if (!member) {
+        throw new ApiError(httpstatus.NOT_FOUND, "member does not found");
+      }
+      const team = await prisma.team.findUnique({ where: { id: member.teamId } });
 
-  if (!team) {
-    throw new ApiError(httpstatus.NOT_FOUND, "team not found");
-  }
+      if (!team) {
+        throw new ApiError(httpstatus.NOT_FOUND, "team not found");
+      }
 
-  const memberDetails = await getMembers(team.id);
-  const memberCount = memberDetails.length;
+      const memberDetails = await getMembers(team.id);
+      const memberCount = memberDetails.length;
 
-  return { team, members: memberDetails, memberCount };
+      return { team, members: memberDetails, memberCount };
+    },
+    {ttlSeconds:120}
+  );
 };
 
 //Suggest Team based on user language and country

@@ -13,6 +13,7 @@ import { activeContestWhere } from '../Contest/contestLifecycle'
 import logger from "../../../shared/logger"
 import config from "../../../config"
 import { runInBackground } from "../../../shared/backgroundTasks"
+import { profileCache } from "../Profile/profile.cache"
 
 type VoteContestPhoto = ContestPhoto & {
     participant: ContestParticipant
@@ -82,6 +83,11 @@ const handleVoteSideEffects = async (contestId:string, contestTitle:string, vote
     }
     // Drop the memoized ranking first so the side effects score this vote.
     contestRankingService.invalidateContestRanking(contestId)
+    const ownerUserIds = [...new Set(photos.map(photo => photo.participant.userId))]
+    await Promise.all([
+        profileCache.invalidateUsers(ownerUserIds),
+        ...photos.flatMap(photo => photo.photoId ? [profileCache.invalidatePhoto(photo.photoId)] : [])
+    ])
 
     if(config.vote.asyncSideEffects){
         runInBackground("vote-side-effects", () => runVoteSideEffects(contestId, contestTitle, voter, photos))
@@ -271,6 +277,41 @@ export const getVoteCount = async (contestPhotoId:string)=>{
     return count + (contestPhoto?.bankedVotes ?? 0)
 }
 
+const getVoteCountsForContestPhotos = async (contestPhotoIds:string[]) => {
+    const uniqueContestPhotoIds = [...new Set(contestPhotoIds)]
+    if(uniqueContestPhotoIds.length === 0){
+        return new Map<string, number>()
+    }
+
+    const contestPhotos = await prisma.contestPhoto.findMany({
+        where:{id:{in:uniqueContestPhotoIds}},
+        select:{id:true, photoId:true, bankedVotes:true, stintStartedAt:true, createdAt:true}
+    })
+    if(contestPhotos.length === 0){
+        return new Map<string, number>()
+    }
+
+    const countByContestPhotoId = new Map(contestPhotos.map(contestPhoto => [contestPhoto.id, contestPhoto.bankedVotes ?? 0]))
+    const voteFilters = contestPhotos.map(contestPhoto => ({
+        contestPhotoId:contestPhoto.id,
+        createdAt:{gte:contestPhoto.stintStartedAt ?? contestPhoto.createdAt ?? new Date(0)},
+        OR:[{photoRefId:contestPhoto.photoId ?? null}, {photoRefId:null}]
+    }))
+    const votes = await prisma.vote.findMany({
+        where:{OR:voteFilters},
+        select:{contestPhotoId:true, power:true}
+    })
+
+    votes.forEach(vote => {
+        countByContestPhotoId.set(
+            vote.contestPhotoId,
+            (countByContestPhotoId.get(vote.contestPhotoId) ?? 0) + (vote.power ?? 0)
+        )
+    })
+
+    return countByContestPhotoId
+}
+
 // Bulk variant of getVoteCount for the frontend's realtime polling - a client
 // watching a handful of contest photo slots (e.g. the "My Contests" list)
 // polls this instead of re-fetching the full joined-contest payload on an
@@ -394,6 +435,7 @@ export const voteService = {
     getTotalOrganicVotes,
     getTeamTotalVotes,
     getVoteCount,
+    getVoteCountsForContestPhotos,
     getVoteCountsByPhotoIds,
     getUserPhotoVoteCount,
     getUserTotalVotes,

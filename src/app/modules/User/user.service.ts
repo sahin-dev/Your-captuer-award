@@ -369,7 +369,13 @@ const  getUserBySocialId = async (socialProvider:string, providerId:string)=>{
 
 const getUserCurrentLevel = async (userId:string)=>{
 
-    return levelService.evaluateAndUpdateUserLevel(userId)
+    return profileCache.getUserData(
+        userId,
+        "progress",
+        {},
+        () => levelService.evaluateAndUpdateUserLevel(userId),
+        {ttlSeconds:30}
+    )
 
 }
 

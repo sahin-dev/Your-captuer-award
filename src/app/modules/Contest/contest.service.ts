@@ -39,6 +39,7 @@ import { activeContestWhere } from './contestLifecycle';
 import { contestCache } from './contest.cache';
 import logger from "../../../shared/logger";
 import { dedupeLabels, hasLabel } from "../../../shared/labels";
+import { profileCache } from '../Profile/profile.cache';
 
 const completedContestStatuses:ContestStatus[] = [ContestStatus.COMPLETED, ContestStatus.CLOSED]
 const isCompletedContest = (status:ContestStatus) => completedContestStatuses.includes(status)
@@ -964,7 +965,10 @@ const joinContest = async (userId:string,contestId:string, acceptedRuleKeys?:unk
         })
     })
 
-    await userStoreCache.invalidateUserStoreReadModels(userId)
+    await Promise.all([
+        userStoreCache.invalidateUserStoreReadModels(userId),
+        profileCache.invalidateUser(userId)
+    ])
     await notifyTeamMatchQueueOfContestJoin(userId, contestId)
 
     return {contest_id:contestId, participant_id:participant.id}
@@ -1038,7 +1042,10 @@ const completePaidContestJoin = async (
     if(completion.participantCreated){
         await notifyTeamMatchQueueOfContestJoin(userId, contestId)
     }
-    await userStoreCache.invalidateUserStoreReadModels(userId)
+    await Promise.all([
+        userStoreCache.invalidateUserStoreReadModels(userId),
+        profileCache.invalidateUser(userId)
+    ])
 
     return {
         contest_id:contestId,
@@ -1512,13 +1519,8 @@ const sortByVotesThenUploadSequence = <T extends {id:string; createdAt:Date; vot
 }
 
 const getContestUploadsByUserId = async (contestId:string, userId:string)=>{
-    const [userUploads, ranking] = await Promise.all([
-        prisma.contestPhoto.findMany({where:{contestId:contestId, photo:{userId}}, orderBy:[{createdAt:"asc"}, {id:"asc"}], include:{photo:{select:{id:true, url:true}}}}),
-        // One ranking read rather than two queries per uploaded photo, and the
-        // totals shown here are the same ones the leaderboard uses.
-        contestRankingService.buildContestRanking(contestId)
-    ])
-    const rankedPhotoById = new Map(ranking.photos.map(photo => [photo.photoId, photo] as const))
+    const userUploads = await prisma.contestPhoto.findMany({where:{contestId:contestId, photo:{userId}}, orderBy:[{createdAt:"asc"}, {id:"asc"}], include:{photo:{select:{id:true, url:true}}}})
+    const voteCountByContestPhotoId = await voteService.getVoteCountsForContestPhotos(userUploads.map(upload => upload.id))
 
     const mappedPhotos = userUploads.flatMap(upload => {
 
@@ -1531,7 +1533,7 @@ const getContestUploadsByUserId = async (contestId:string, userId:string)=>{
         // it shouldn't follow a later swapped-in photo (see originalPhotoId/photoRefId).
         const stillOriginalPhoto = !upload.originalPhotoId || upload.originalPhotoId === upload.photoId
         const initialVotes = stillOriginalPhoto ? (upload.initialVotes || 0) : 0
-        const totalVotes = rankedPhotoById.get(upload.id)?.score ?? 0
+        const totalVotes = voteCountByContestPhotoId.get(upload.id) ?? 0
         const voteCount = Math.max(totalVotes - initialVotes, 0)
         const traded = upload.updatedAt.getTime() > upload.createdAt.getTime() && !upload.promoted
 
@@ -1581,6 +1583,7 @@ const deleteContestUploadById = async (contestId:string, userId:string, photoId:
         })
     })
     contestRankingService.invalidateContestRanking(contestId)
+    await profileCache.invalidateUser(userId)
     return "Contest upload deleted successfully"
  }
 
@@ -1609,6 +1612,7 @@ const adminDeleteContestPhoto = async (photoId:string, adminId:string, reason?:s
         data:{photoId:null, promoted:false, promotionExpiresAt:null, exposureBoostExpiresAt:null}
     })
     contestRankingService.invalidateContestRanking(contestUpload.contestId)
+    await profileCache.invalidateUser(contestUpload.participant.userId)
 
     const owner = contestUpload.participant.user
     const contestTitle = contest?.title || "the contest"
@@ -1647,37 +1651,43 @@ const adminDeleteContestPhoto = async (photoId:string, adminId:string, reason?:s
 // This will be used to display all the contests in the contest page
 
 const getMyActiveContests = async (userId:string) => {
+    return profileCache.getUserData(
+        userId,
+        "active-contests",
+        {},
+        async () => {
+            // Order by when the user joined each contest (latest joined first) rather than
+            // any contest field - joining is tracked on ContestParticipant.createdAt.
+            const participants = await prisma.contestParticipant.findMany({
+                where:{userId, contest:{status:ContestStatus.ACTIVE}},
+                orderBy:{createdAt:"desc"},
+                select:{contestId:true}
+            })
+            const joinOrder = participants.map(participant => participant.contestId)
 
-    // Order by when the user joined each contest (latest joined first) rather than
-    // any contest field - joining is tracked on ContestParticipant.createdAt.
-    const participants = await prisma.contestParticipant.findMany({
-        where:{userId, contest:{status:ContestStatus.ACTIVE}},
-        orderBy:{createdAt:"desc"},
-        select:{contestId:true}
-    })
-    const joinOrder = participants.map(participant => participant.contestId)
+            const contests = joinOrder.length > 0 ? await prisma.contest.findMany({
+                where:{id:{in:joinOrder}, status:ContestStatus.ACTIVE},
+                include: { creator: {select:{id:true, avatar:true,fullName:true,cover:true, firstName:true, lastName:true}}, bannerUploader: contestBannerUploaderInclude}
+            }) : [];
 
-    const contests = await prisma.contest.findMany({
-        where:{status:ContestStatus.ACTIVE, participants:{some:{userId}}},
-        include: { creator: {select:{id:true, avatar:true,fullName:true,cover:true, firstName:true, lastName:true}}, bannerUploader: contestBannerUploaderInclude}
-    });
+            const contestById = new Map(contests.map(contest => [contest.id, contest]))
+            const orderedContests = joinOrder
+                .map(contestId => contestById.get(contestId))
+                .filter((contest): contest is typeof contests[number] => Boolean(contest))
 
-    const contestById = new Map(contests.map(contest => [contest.id, contest]))
-    const orderedContests = joinOrder
-        .map(contestId => contestById.get(contestId))
-        .filter((contest): contest is typeof contests[number] => Boolean(contest))
+            const enrichedContests = await enrichContestListDetails(orderedContests)
 
-    const enrichedContests = await enrichContestListDetails(orderedContests)
+            const contestDetails = enrichedContests.map (async (contest) => {
+                const levelData = await getParticipantLevelData(contest.id, userId)
+                const photos = await getContestUploadsByUserId(contest.id,userId)
 
-    const contestDetails = enrichedContests.map (async (contest) => {
-        const levelData = await getParticipantLevelData(contest.id, userId)
-        const photos = await getContestUploadsByUserId(contest.id,userId)
-        
-        
-        return {...contest, level_data:levelData, photos, uploadCount:photos.length}
-    })
+                return {...contest, level_data:levelData, photos, uploadCount:photos.length}
+            })
 
-    return await Promise.all(contestDetails);
+            return Promise.all(contestDetails);
+        },
+        {ttlSeconds:30}
+    )
 };
 
 const getUpcomingContest = async () => {
@@ -1835,8 +1845,18 @@ const getRemainingPhotos = async (userId:string, contestId:string)=>{
         throw new ApiError(httpstatus.NOT_FOUND, "conetest not found")
     }
     
-    const contestUploads = await prisma.contestPhoto.findMany({where:{contestId, participant:{userId}}})
-    const userPhotos = await prisma.userPhoto.findMany({where:{userId, contestUpload:{none:{contestId}}}, select:{id:true, url:true, labels:true, categories:true}})
+    const contestUploads = await prisma.contestPhoto.findMany({
+        where:{contestId, participant:{userId}, photoId:{not:null}},
+        select:{photoId:true}
+    })
+    const usedPhotoIds = contestUploads
+        .map(upload => upload.photoId)
+        .filter((photoId): photoId is string => Boolean(photoId))
+    const userPhotos = await prisma.userPhoto.findMany({
+        where:{userId, ...(usedPhotoIds.length > 0 && {id:{notIn:usedPhotoIds}})},
+        select:{id:true, url:true, labels:true, categories:true},
+        orderBy:[{createdAt:"desc"}, {id:"desc"}]
+    })
     
     return userPhotos
 }
@@ -1925,15 +1945,14 @@ const getContestUploadsToVote = async (userId:string, contestId:string, page?:nu
     ]
     const paginatedUploads = randomizedUploads.slice(skip, skip + paginationLimit)
 
-    const [pagePhotos, ranking] = await Promise.all([
+    const [pagePhotos, voteCountByContestPhotoId] = await Promise.all([
         prisma.contestPhoto.findMany({
             where:{id:{in:paginatedUploads.map(upload => upload.id)}},
             select:{id:true, photo:{select:{id:true, url:true}}}
         }),
-        contestRankingService.buildContestRanking(contestId)
+        voteService.getVoteCountsForContestPhotos(paginatedUploads.map(upload => upload.id))
     ])
     const photoByContestPhotoId = new Map(pagePhotos.map(upload => [upload.id, upload.photo] as const))
-    const scoreByContestPhotoId = new Map(ranking.photos.map(photo => [photo.photoId, photo.score] as const))
 
     const data = paginatedUploads.flatMap(upload => {
         const photo = photoByContestPhotoId.get(upload.id)
@@ -1946,7 +1965,7 @@ const getContestUploadsToVote = async (userId:string, contestId:string, page?:nu
             contestPhotoId:upload.id,
             photoId:photo.id,
             url:photo.url,
-            voteCount:scoreByContestPhotoId.get(upload.id) ?? 0
+            voteCount:voteCountByContestPhotoId.get(upload.id) ?? 0
         }]
     })
 
@@ -1977,18 +1996,19 @@ const getCompletedContestUploads = async (userId:string,contestId:string)=>{
 
     const contestUploads = await prisma.contestPhoto.findMany({where:{contestId, votes:{none:{providerId:participant.userId}}}, orderBy:[{createdAt:"asc"}, {id:"asc"}], include:{photo:{select:{id:true, url:true}}}})
 
-    const uploads = await Promise.all(contestUploads.flatMap(upload => {
+    const voteCountByContestPhotoId = await voteService.getVoteCountsForContestPhotos(contestUploads.map(upload => upload.id))
+    const uploads = contestUploads.flatMap(upload => {
         if(!upload.photo){
             return []
         }
 
-        return [async () => ({
+        return [{
             url:upload.photo!.url,
             id:upload.id,
             createdAt:upload.createdAt,
-            voteCount:await getContestPhotoVoteScore(upload)
-        })]
-    }).map(getUpload => getUpload()))
+            voteCount:voteCountByContestPhotoId.get(upload.id) ?? 0
+        }]
+    })
 
     return sortByVotesThenUploadSequence(uploads).map(upload => ({
         url:upload.url,
@@ -2012,24 +2032,21 @@ const getContestUploads = async (userId:string,contestId:string)=>{
 
 
     const contestUploads = await prisma.contestPhoto.findMany({where:{contestId, votes:{none:{providerId:participant.userId}}}, orderBy:[{createdAt:"asc"}, {id:"asc"}], include:{photo:{select:{id:true, url:true}}}})
-    const uploads =  await Promise.all(contestUploads.flatMap(upload => {
+    const voteCountByContestPhotoId = await voteService.getVoteCountsForContestPhotos(contestUploads.map(upload => upload.id))
+    const uploads = contestUploads.flatMap(upload => {
         if(!upload.photo){
             return []
         }
         const photo = upload.photo
-        return [async () => {
-        const voteCount = await getContestPhotoVoteScore(upload)
-
-        return {
+        return [{
             id:upload.id,
             contestPhotoId:upload.id,
             photoId:photo.id,
             url:photo.url,
-            voteCount,
+            voteCount:voteCountByContestPhotoId.get(upload.id) ?? 0,
             createdAt:upload.createdAt
-        }
         }]
-    }).map(getUpload => getUpload()))
+    })
 
     return sortByVotesThenUploadSequence(uploads).map(upload => ({
         id:upload.id,
@@ -2214,7 +2231,10 @@ const uploadPhotoToContest = async (contestId:string,userId:string, photoIds:unk
 
     const submissionLimit = await contestRuleService.getEnabledRuleValue<number>(contestId, "SUBMISSION_LIMIT")
     const images = await runContestSubmission()
-    await userStoreCache.invalidateUserStoreReadModels(userId)
+    await Promise.all([
+        userStoreCache.invalidateUserStoreReadModels(userId),
+        profileCache.invalidateUser(userId)
+    ])
     contestRankingService.invalidateContestRanking(contestId)
 
     if(isJoiningThroughUpload){
@@ -2456,7 +2476,10 @@ const promoteContestPhoto = async (contestId:string, photoId:string, userId:stri
             data: { promoted: true, promotionExpiresAt }
         });
     });
-    await userStoreCache.invalidateUserStoreReadModels(userId)
+    await Promise.all([
+        userStoreCache.invalidateUserStoreReadModels(userId),
+        profileCache.invalidateUser(userId)
+    ])
 
 
     // Schedule a job to remove promotion once it expires
@@ -2652,6 +2675,7 @@ const tradePhoto = async (userId:string,contestId:string, contestPhotoId:string,
 
     // The slot now holds a different image with a different vote history.
     await userStoreCache.invalidateUserStoreReadModels(userId)
+    await profileCache.invalidateUser(userId)
     contestRankingService.invalidateContestRanking(contestId)
 
     return replacedPhoto

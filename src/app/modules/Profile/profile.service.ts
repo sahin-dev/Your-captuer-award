@@ -52,11 +52,13 @@ const fetchUserUploads = async (targetUserId:string, pagination:{page?:number, l
         ? new Set((await prisma.like.findMany({where:{providerId:viewerId, photoId:{in:uploads.map(photo => photo.id)}}, select:{photoId:true}})).map(like => like.photoId))
         : new Set<string>()
 
-    const newUploads = await Promise.all(uploads.map( async photo => {
-        const contestUploadVotes = await Promise.all(photo.contestUpload.map(contestUpload => voteService.getVoteCount(contestUpload.id)))
+    const contestUploadIds = uploads.flatMap(photo => photo.contestUpload.map(contestUpload => contestUpload.id))
+    const voteCountByContestPhotoId = await voteService.getVoteCountsForContestPhotos(contestUploadIds)
+    const newUploads = uploads.map(photo => {
+        const contestUploadVotes = photo.contestUpload.map(contestUpload => voteCountByContestPhotoId.get(contestUpload.id) ?? 0)
         const totalVotes = contestUploadVotes.reduce((sum, votes) => sum + votes, 0)
         return { ...photo, totalVotes,likes:photo._count.likes,_count:undefined, isLiked:likedPhotoIds.has(photo.id)}
-    }))
+    })
 
 
     return {data:newUploads, meta:paginationHelper.getPaginationMetaData(page, limit, totalUploads)}
@@ -247,30 +249,38 @@ const sortPhotos = (photos: any[], sortBy: string) => {
 }
 
 const getStates = async (userId:string)=>{
+    return profileCache.getUserData(
+        userId,
+        "stats",
+        {},
+        async () => {
+            const user = await prisma.user.findUnique({where:{id:userId}})
 
-    const user = await prisma.user.findUnique({where:{id:userId}})
+            if(!user){
+                throw new ApiError(httpStatus.NOT_FOUND, "user not found")
+            }
 
-    if(!user){
-        throw new ApiError(httpStatus.NOT_FOUND, "user not found")
-    }
+            const [userPhotoCount, likesCount, achievementsCount, followerCount, followingCount, totalVotes] = await Promise.all([
+                prisma.userPhoto.count({ where: { userId } }),
+                prisma.like.count({ where: { providerId:userId } }),
+                achievementService.getAchievementCount(userId),
+                followService.getFollowerCount(userId),
+                followService.getFollowingCount(userId),
+                // Votes this user's photos received across every contest they took part in.
+                voteService.getUserTotalVotes(userId)
+            ])
 
-    const userPhotoCount = await prisma.userPhoto.count({ where: { userId } })
-
-    const likesCount = await prisma.like.count({ where: { providerId:userId } })
-    const achievementsCount = await achievementService.getAchievementCount(userId)
-    const followerCount = await followService.getFollowerCount(userId)
-    const followingCount = await followService.getFollowingCount(userId)
-    // Votes this user's photos received across every contest they took part in.
-    const totalVotes = await voteService.getUserTotalVotes(userId)
-
-    return {
-        likes: likesCount,
-        userPhotos: userPhotoCount,
-        follower: followerCount,
-        following: followingCount,
-        achievements: achievementsCount.total,
-        totalVotes,
-    }
+            return {
+                likes: likesCount,
+                userPhotos: userPhotoCount,
+                follower: followerCount,
+                following: followingCount,
+                achievements: achievementsCount.total,
+                totalVotes,
+            }
+        },
+        {ttlSeconds:60}
+    )
 }
 
 const isFollowedByViewer = async (targetUserId:string, viewerId?:string)=>{

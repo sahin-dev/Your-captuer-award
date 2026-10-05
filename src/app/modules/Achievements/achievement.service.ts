@@ -391,15 +391,22 @@ const getUserPhotoAchievements = async (userId:string, photoId:string) => {
 }
 
 const getAllPhotosAchievements = async (page = 1, limit = 20) => {
-    const records = await prisma.contestAchievement.findMany({
-        where:{photoId:{not:null}},
-        include:{
-            contest:{select:{id:true, title:true, banner:true}},
-            photo:{select:{id:true, photo:{select:{id:true, url:true, title:true}}}},
-            participant:{select:{userId:true}}
-        },
-        orderBy:{createdAt:"desc"}
-    })
+    const {page:safePage, limit:safeLimit, skip} = paginationHelper.calculatePagination({page, limit})
+    const where = {photoId:{not:null}}
+    const [records, total] = await Promise.all([
+        prisma.contestAchievement.findMany({
+            where,
+            include:{
+                contest:{select:{id:true, title:true, banner:true}},
+                photo:{select:{id:true, photo:{select:{id:true, url:true, title:true}}}},
+                participant:{select:{userId:true}}
+            },
+            orderBy:[{createdAt:"desc"}, {id:"desc"}],
+            skip,
+            take:safeLimit
+        }),
+        prisma.contestAchievement.count({where})
+    ])
 
     // Users are loaded separately rather than through participant.user: a
     // participant whose user document was removed from the database makes
@@ -424,7 +431,10 @@ const getAllPhotosAchievements = async (page = 1, limit = 20) => {
         logger.warn({orphaned, missingUserIds:userIds.filter(id => !userById.has(id))}, "Skipped achievements whose participant user no longer exists")
     }
 
-    return paginateAchievements(deduplicateLevelAchievements(achievements), page, limit)
+    return {
+        data:deduplicateLevelAchievements(achievements),
+        meta:paginationHelper.getPaginationMetaData(safePage, safeLimit, total)
+    }
 }
 
 const getMyAchievementsByContest = async (userId:string, contestId:string) => {
