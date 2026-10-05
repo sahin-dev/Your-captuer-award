@@ -1,7 +1,8 @@
-import prisma from "../../../shared/prisma";
+import prisma, { PrismaTx } from "../../../shared/prisma";
 import ApiError from "../../../errors/ApiError";
 import httpstatus from "http-status";
 import { fileUploader } from "../../../helpers/fileUploader";
+import { toFileKey } from "../../../helpers/fileUrl";
 import { ITeam } from "./team.interface";
 import {
   ContestStatus,
@@ -141,6 +142,8 @@ export const createTeam = async (
 
     const team = await tx.team.create({
       data: {
+        // Same id as the badge folder (teams/<id>/badge).
+        id: file.recordId,
         creatorId,
         name: body.name,
         level: body.level,
@@ -151,7 +154,7 @@ export const createTeam = async (
         min_requirement_str: level?.levelName ?? "None",
         accessibility: body.accessibility as TeamAccessibility,
         member_count: 1,
-        badge: badgeUrl.Location,
+        badge: badgeUrl.Key,
       },
     });
 
@@ -183,7 +186,7 @@ export const updateTeam = async (
 
   let badgeUrl = existingTeam.badge;
   if (file) {
-    badgeUrl = (await fileUploader.uploadToDigitalOcean(file)).Location;
+    badgeUrl = (await fileUploader.uploadToDigitalOcean(file)).Key;
   }
 
   const updatedTeam = await prisma.team.update({
@@ -196,7 +199,7 @@ export const updateTeam = async (
       description: body.description || existingTeam.description,
       accessibility: (body.accessibility ||
         existingTeam.accessibility) as TeamAccessibility,
-      badge: badgeUrl,
+      badge: toFileKey(badgeUrl),
     },
   });
   const members = await prisma.teamMember.findMany({
@@ -204,6 +207,9 @@ export const updateTeam = async (
     select: { memberId: true },
   });
   await invalidateTeamMembershipReadModels(members.map((member) => member.memberId));
+  if (file) {
+    await fileUploader.deleteReplacedFile(existingTeam.badge, `teams/${teamId}/badge`);
+  }
 
   return updatedTeam;
 };
@@ -1872,7 +1878,7 @@ const getTeamHistory = async (
 };
 
 const updateTeamStatsForMatch = async (
-  tx: Prisma.TransactionClient,
+  tx: PrismaTx,
   teamId: string,
   opponentTeamId: string,
   teamScore: number,

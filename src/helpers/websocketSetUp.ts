@@ -8,6 +8,7 @@ import {createAdapter} from '@socket.io/redis-adapter'
 import { redisClient, redisSubClient } from "../shared/redis";
 import logger from "../shared/logger";
 import { userCache } from "../app/modules/User/user.cache";
+import { toFileKey } from "./fileUrl";
 
 
 interface AuthenticatedSocket extends Socket {
@@ -212,7 +213,7 @@ export function setupWebSocket(server: HTTPServer) {
             senderId: socket.userId,
             teamId,
             messageType: messageType || "text",
-            fileUrl: fileUrl || null,
+            fileUrl: toFileKey(fileUrl || null),
           },
           include: {
             sender: {

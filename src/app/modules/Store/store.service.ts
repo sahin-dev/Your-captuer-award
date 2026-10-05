@@ -92,11 +92,13 @@ const addProduct = async (userId: string, productData: {
     let imageUrl: string | null = null;
     if (file) {
         const uploadedFile = await fileUploader.uploadToFilesystem(file);
-        imageUrl = uploadedFile.Location;
+        imageUrl = uploadedFile.filename;
     }
 
     const product = await prisma.product.create({
         data: {
+            // Same id as the image folder (products/<id>/image) when an image was uploaded.
+            id: file?.recordId,
             title: productData.title,
             category: productData.category,
             items: parsedItems,
@@ -401,7 +403,7 @@ const updateProduct = async (
     let imageUrl: string | null = null;
     if (file) {
         const uploadedFile = await fileUploader.uploadToFilesystem(file);
-        imageUrl = uploadedFile.Location;
+        imageUrl = uploadedFile.filename;
     }
 
     const updatedProduct = await prisma.product.update({
@@ -409,6 +411,9 @@ const updateProduct = async (
         data: { ...normalizedData, ...(imageUrl ? { image: imageUrl } : {}) }
     });
     await storeCache.invalidateProduct(productId);
+    if (imageUrl) {
+        await fileUploader.deleteReplacedFile(product.image, `products/${productId}/image`);
+    }
 
     return updatedProduct;
 };

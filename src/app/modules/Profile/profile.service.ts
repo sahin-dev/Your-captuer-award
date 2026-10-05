@@ -17,28 +17,38 @@ const fetchUserUploads = async (targetUserId:string, pagination:{page?:number, l
         limit:pagination.limit || 20
     })
 
-    const {totalUploads, uploads} = await profileCache.getUserData(
-        targetUserId,
-        "uploads",
-        {page, limit},
-        async () => {
-            const [totalUploads, uploads] = await Promise.all([
-                prisma.userPhoto.count({where:{userId:targetUserId}}),
-                prisma.userPhoto.findMany({
-                    where:{userId:targetUserId},include:{
-                        contestUpload:{select:{achievements:{orderBy:{createdAt:'desc'}, take:1,
-                        select:{category:true},},
-                        id:true}},_count:{select:{likes:true}}},
-                        take:limit,
-                        skip,
-                        orderBy:[{createdAt:'desc'}, {id:'desc'}]
-                })
-            ])
-            return {totalUploads, uploads}
-        }
-    )
+    // const {totalUploads, uploads} = await profileCache.getUserData(
+    //     targetUserId,
+    //     "uploads",
+    //     {page, limit},
+    //     async () => {
+    //         const [totalUploads, uploads] = await Promise.all([
+    //             prisma.userPhoto.count({where:{userId:targetUserId}}),
+    //             prisma.userPhoto.findMany({
+    //                 where:{userId:targetUserId},include:{
+    //                     contestUpload:{select:{achievements:{orderBy:{createdAt:'desc'}, take:1,
+    //                     select:{category:true},},
+    //                     id:true}},_count:{select:{likes:true}}},
+    //                     take:limit,
+    //                     skip,
+    //                     orderBy:[{createdAt:'desc'}, {id:'desc'}]
+    //             })
+    //         ])
+    //         return {totalUploads, uploads}
+    //     }
+    // )
 
-    const likedPhotoIds = viewerId && uploads.length > 0
+    const uploads = await prisma.userPhoto.findMany({
+        where:{userId:targetUserId},include:{
+            contestUpload:{select:{achievements:{orderBy:{createdAt:'desc'},
+            select:{category:true},},
+            id:true}},_count:{select:{likes:true}}},
+            take:limit,
+            skip,
+            orderBy:[{createdAt:'desc'}, {id:'desc'}]
+    })
+
+    const likedPhotoIds = viewerId
         ? new Set((await prisma.like.findMany({where:{providerId:viewerId, photoId:{in:uploads.map(photo => photo.id)}}, select:{photoId:true}})).map(like => like.photoId))
         : new Set<string>()
 
@@ -47,6 +57,7 @@ const fetchUserUploads = async (targetUserId:string, pagination:{page?:number, l
         const totalVotes = contestUploadVotes.reduce((sum, votes) => sum + votes, 0)
         return { ...photo, totalVotes,likes:photo._count.likes,_count:undefined, isLiked:likedPhotoIds.has(photo.id)}
     }))
+
 
     return {data:newUploads, meta:paginationHelper.getPaginationMetaData(page, limit, totalUploads)}
 }
@@ -79,7 +90,7 @@ export const uploadUserPhoto = async (userId:string, file:Express.Multer.File)=>
         // Recorded now so a later contest submission that picks this photo out
         // of the gallery can still be checked against the contest's
         // SUBMISSION_FORMAT rule.
-        addedPhoto = await handleAddUpload(userId, uploadedFile.Location, describeUploadedImage(file))
+        addedPhoto = await handleAddUpload(userId, uploadedFile.Key, describeUploadedImage(file))
     }catch(error){
         await fileUploader.deleteFromDigitalOcean(uploadedFile.Key).catch(() => undefined)
         throw error
@@ -103,8 +114,9 @@ const createDirectUploadUrl = async (userId:string, fileName:string, contentType
 
 const confirmDirectUpload = async (userId:string, key:string) => {
     const uploaded = await fileUploader.confirmDirectUpload(userId, key)
-    const existing = await prisma.userPhoto.findFirst({where:{userId, url:uploaded.Location}})
-    const photo = existing ?? await handleAddUpload(userId, uploaded.Location, {
+    // Rows saved before keys were used hold the full URL.
+    const existing = await prisma.userPhoto.findFirst({where:{userId, url:{in:[uploaded.Key, uploaded.Location]}}})
+    const photo = existing ?? await handleAddUpload(userId, uploaded.Key, {
         mimeType:uploaded.ContentType || null,
         width:uploaded.Width ?? null,
         height:uploaded.Height ?? null,
