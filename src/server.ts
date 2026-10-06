@@ -1,6 +1,7 @@
+import { shutdownTelemetry } from "./instrumentation";
 import dns from "node:dns";
 dns.setServers(["8.8.8.8", "8.8.4.4"]);
-import { shutdownTelemetry } from "./instrumentation";
+
 import { Server } from "http";
 import config from "./config";
 import app from "./app";
@@ -127,9 +128,9 @@ async function shutdown(exitCode = 0) {
     logger.error({ err: error }, "Failed to disconnect prisma");
   });
 
-  // await shutdownTelemetry().catch((error) => {
-  //   logger.error({ err: error }, "Failed to flush telemetry");
-  // });
+  await shutdownTelemetry().catch((error) => {
+    logger.error({ err: error }, "Failed to flush telemetry");
+  });
 
   process.exit(exitCode);
 }
