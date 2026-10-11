@@ -198,6 +198,18 @@ export class StripeProvider implements PaymentProvider {
     return customer;
   }
 
+  // Deleting a Stripe customer also cancels all of its subscriptions, so no
+  // renewal is charged and no subscription webhook arrives for a removed user.
+  async deleteCustomer(customerId: string): Promise<void> {
+    try {
+      await this.stripe.customers.del(customerId);
+    } catch (error) {
+      if (!this.isMissingStripeResource(error)) {
+        throw error;
+      }
+    }
+  }
+
   async addProduct(title: string): Promise<Stripe.Product> {
     return this.stripe.products.create({ name: title });
   }

@@ -86,6 +86,14 @@ export function setupWebSocket(server: HTTPServer) {
         }
 
         const { id } = user;
+
+        // A token outlives a deleted account, so check the account still exists.
+        const account = await prisma.user.findUnique({ where: { id }, select: { isDeleted: true } });
+        if (!account || account.isDeleted) {
+          callback({ success: false, message: "User not found" });
+          return;
+        }
+
         socket.userId = id;
         socket.join(id);
         onlineUsers.add(id);
@@ -272,7 +280,8 @@ export function setupWebSocket(server: HTTPServer) {
           onlineUsers.delete(socket.userId);
           userSockets.delete(socket.userId);
 
-          await prisma.user.update({
+          // updateMany: the account may have just been deleted.
+          await prisma.user.updateMany({
             where: { id: socket.userId },
             data: { isOnline: false },
           });

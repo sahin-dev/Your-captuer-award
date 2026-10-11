@@ -4,6 +4,7 @@ export interface PaymentProvider {
   initializePayment(amount: number, currency: string, method: PaymentMethod, paymentId:string): Promise<string>;
   capturePayment(paymentId: string): Promise<boolean>;
   refundPayment(paymentId: string, amount: number): Promise<boolean>;
+  deleteCustomer?(customerId: string): Promise<void>;
   addProduct?(name: string): Promise<Stripe.Product>;
   addPrice?(
     productId: string,

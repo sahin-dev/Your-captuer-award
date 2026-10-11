@@ -34,7 +34,8 @@
     "votes:backfill-power": "node dist/scripts/backfillVotePower.js",
     "photos:backfill-categories": "node dist/scripts/backfillPhotoCategories.js",
     "photos:dedupe-labels": "node dist/scripts/dedupePhotoLabels.js",
-    "files:migrate-to-keys": "node dist/scripts/migrateFileUrlsToKeys.js"
+    "files:migrate-to-keys": "node dist/scripts/migrateFileUrlsToKeys.js",
+    "users:purge-soft-deleted": "ts-node --transpile-only src/scripts/purgeSoftDeletedUsers.ts"
   },
   "repository": {
     "type": "git",

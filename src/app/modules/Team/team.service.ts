@@ -435,6 +435,75 @@ const isTeamExist = async (teamId: string) => {
   return team != null ? team : false;
 };
 
+// Removes a team and unlinks everything that pointed at it. Runs inside the
+// caller's transaction so account deletion can purge an emptied team atomically.
+export const purgeTeamRecords = async (tx: PrismaTx, teamId: string) => {
+  const [teamMembers, teamMatches] = await Promise.all([
+    tx.teamMember.findMany({ where: { teamId }, select: { id: true } }),
+    tx.teamMatch.findMany({
+      where: { OR: [{ team1Id: teamId }, { team2Id: teamId }] },
+      select: { id: true },
+    }),
+  ]);
+  const teamMemberIds = teamMembers.map((member) => member.id);
+  const teamMatchIds = teamMatches.map((match) => match.id);
+
+  if (teamMemberIds.length) {
+    await tx.contestParticipant.updateMany({
+      where: { memberId: { in: teamMemberIds } },
+      data: { memberId: null },
+    });
+  }
+
+  await tx.chat.updateMany({
+    where: { teamId },
+    data: { teamId: null },
+  });
+
+  await tx.teamParticipation.updateMany({
+    where: { teamId },
+    data: { teamId: null },
+  });
+
+  await tx.teamMatch.updateMany({
+    where: { team1Id: teamId },
+    data: { team1Id: null },
+  });
+
+  await tx.teamMatch.updateMany({
+    where: { team2Id: teamId },
+    data: { team2Id: null },
+  });
+
+  await tx.teamMatch.updateMany({
+    where: { winner_id: teamId },
+    data: { winner_id: null },
+  });
+
+  await tx.teamMatchHistory.updateMany({
+    where: { teamId },
+    data: { teamId: null },
+  });
+
+  await tx.teamMatchHistory.updateMany({
+    where: { opponent_team_id: teamId },
+    data: { opponent_team_id: null },
+  });
+
+  if (teamMatchIds.length) {
+    await tx.team.updateMany({
+      where: { active_match_id: { in: teamMatchIds } },
+      data: { active_match_id: null },
+    });
+  }
+
+  await tx.teamInvitation.deleteMany({ where: { teamId } });
+  await tx.teamJoinRequest.deleteMany({ where: { teamId } });
+  await tx.room.deleteMany({ where: { teamId } });
+  await tx.teamMember.deleteMany({ where: { teamId } });
+  await tx.team.delete({ where: { id: teamId } });
+};
+
 //Delete a team
 export const deleteTeam = async (userId: string, teamId: string) => {
   const existingTeam = await prisma.team.findUnique({ where: { id: teamId } });
@@ -456,72 +525,8 @@ export const deleteTeam = async (userId: string, teamId: string) => {
     );
   }
 
-  const [teamMembers, teamMatches] = await Promise.all([
-    prisma.teamMember.findMany({ where: { teamId }, select: { id: true, memberId: true } }),
-    prisma.teamMatch.findMany({
-      where: { OR: [{ team1Id: teamId }, { team2Id: teamId }] },
-      select: { id: true },
-    }),
-  ]);
-  const teamMemberIds = teamMembers.map((member) => member.id);
-  const teamMatchIds = teamMatches.map((match) => match.id);
-
-  await prisma.$transaction(async (tx) => {
-    if (teamMemberIds.length) {
-      await tx.contestParticipant.updateMany({
-        where: { memberId: { in: teamMemberIds } },
-        data: { memberId: null },
-      });
-    }
-
-    await tx.chat.updateMany({
-      where: { teamId },
-      data: { teamId: null },
-    });
-
-    await tx.teamParticipation.updateMany({
-      where: { teamId },
-      data: { teamId: null },
-    });
-
-    await tx.teamMatch.updateMany({
-      where: { team1Id: teamId },
-      data: { team1Id: null },
-    });
-
-    await tx.teamMatch.updateMany({
-      where: { team2Id: teamId },
-      data: { team2Id: null },
-    });
-
-    await tx.teamMatch.updateMany({
-      where: { winner_id: teamId },
-      data: { winner_id: null },
-    });
-
-    await tx.teamMatchHistory.updateMany({
-      where: { teamId },
-      data: { teamId: null },
-    });
-
-    await tx.teamMatchHistory.updateMany({
-      where: { opponent_team_id: teamId },
-      data: { opponent_team_id: null },
-    });
-
-    if (teamMatchIds.length) {
-      await tx.team.updateMany({
-        where: { active_match_id: { in: teamMatchIds } },
-        data: { active_match_id: null },
-      });
-    }
-
-    await tx.teamInvitation.deleteMany({ where: { teamId } });
-    await tx.teamJoinRequest.deleteMany({ where: { teamId } });
-    await tx.room.deleteMany({ where: { teamId } });
-    await tx.teamMember.deleteMany({ where: { teamId } });
-    await tx.team.delete({ where: { id: teamId } });
-  });
+  const teamMembers = await prisma.teamMember.findMany({ where: { teamId }, select: { memberId: true } });
+  await prisma.$transaction((tx) => purgeTeamRecords(tx, teamId));
   await invalidateTeamMembershipReadModels(teamMembers.map((member) => member.memberId));
 
   return { message: "Team deleted successfully" };
@@ -3161,6 +3166,8 @@ export const teamService = {
   getTeamDetails,
   updateTeam,
   deleteTeam,
+  purgeTeamRecords,
+  invalidateTeamMembershipReadModels,
   joinATeam,
   isTeamExist,
   isTeamMemberExist,

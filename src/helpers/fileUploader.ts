@@ -12,6 +12,9 @@ import {
   GetObjectCommand,
   HeadObjectCommand,
   DeleteObjectCommand,
+  DeleteObjectsCommand,
+  ListObjectsV2Command,
+  CopyObjectCommand,
   ObjectCannedACL,
 } from "@aws-sdk/client-s3";
 import { Upload } from "@aws-sdk/lib-storage";
@@ -534,6 +537,54 @@ const deleteFromDigitalOcean = async (key: string) => {
   }
 };
 
+// Deletes every object under a folder, e.g. "users/<userId>/". Spaces lists and
+// deletes at most 1000 keys per call, so this pages until the folder is empty.
+const deleteFolderFromDigitalOcean = async (folder: string) => {
+  const bucket = process.env.DO_SPACE_BUCKET;
+  const prefix = folder.endsWith("/") ? folder : `${folder}/`;
+  if (!bucket || prefix === "/") return 0;
+  const client = createS3Client();
+  let deleted = 0;
+  try {
+    let continuationToken: string | undefined;
+    do {
+      const page = await client.send(new ListObjectsV2Command({
+        Bucket: bucket,
+        Prefix: prefix,
+        ContinuationToken: continuationToken,
+      }));
+      const objects = (page.Contents ?? []).flatMap((object) => object.Key ? [{ Key: object.Key }] : []);
+      if (objects.length) {
+        await client.send(new DeleteObjectsCommand({ Bucket: bucket, Delete: { Objects: objects, Quiet: true } }));
+        deleted += objects.length;
+      }
+      continuationToken = page.IsTruncated ? page.NextContinuationToken : undefined;
+    } while (continuationToken);
+  } finally {
+    client.destroy();
+  }
+  return deleted;
+};
+
+// Copies a stored object into a new key under `folder` and returns that key.
+const copyInDigitalOcean = async (sourceKey: string, folder: string) => {
+  const bucket = process.env.DO_SPACE_BUCKET;
+  if (!bucket) throw new Error("DO_SPACE_BUCKET is not configured");
+  const key = buildStorageKey(folder);
+  const client = createS3Client();
+  try {
+    await client.send(new CopyObjectCommand({
+      Bucket: bucket,
+      Key: key,
+      CopySource: `${bucket}/${encodeURI(sourceKey)}`,
+      ACL: "public-read" as ObjectCannedACL,
+    }));
+  } finally {
+    client.destroy();
+  }
+  return key;
+};
+
 // Deletes the file a record used before it got a new one. Only a file in the
 // record's own folder is deleted: a banner picked from a user's photo, a banner
 // shared by the contests of a recurring contest, default images and files
@@ -602,6 +653,8 @@ export const fileUploader = {
   createDirectUploadUrl,
   confirmDirectUpload,
   deleteFromDigitalOcean,
+  deleteFolderFromDigitalOcean,
+  copyInDigitalOcean,
   deleteReplacedFile,
   uploadToCloudinary,
   uploadToFilesystem,

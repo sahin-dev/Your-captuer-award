@@ -1,6 +1,7 @@
 import catchAsync from "../../../shared/catchAsync";
 import { Request, Response } from 'express'
 import { userService } from "./user.service";
+import { accountDeletionService } from "./accountDeletion.service";
 import sendResponse from "../../../shared/ApiResponse";
 import httpstatus from 'http-status'
 import ApiError from "../../../errors/ApiError";
@@ -207,9 +208,9 @@ const getUserPhotoAchievements = catchAsync(async (req: Request, res: Response) 
 
 const deleteAccount = catchAsync(async (req: Request, res: Response) => {
     const userId = req.user.id
-    const { password } = req.body
+    const { password, confirm } = req.body
 
-    const result = await userService.deleteAccount(userId, password)
+    const result = await accountDeletionService.deleteAccount(userId, { password, confirm })
     sendResponse(res, {
         success: true,
         statusCode: httpstatus.OK,

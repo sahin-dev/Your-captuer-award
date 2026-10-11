@@ -419,25 +419,6 @@ const searchUserByUserName = async (queryString:string, page:number = 1, limit:n
     }
 }
 
-const deleteAccount = async (userId:string, password:string) => {
-    const user = await prisma.user.findUnique({where:{id:userId}})
-    if(!user){
-        throw new ApiError(httpstatus.NOT_FOUND, "User not found")
-    }
-
-    const passwordMatched = await bcrypt.compare(password, user.password as string)
-    if(!passwordMatched){
-        throw new ApiError(httpstatus.BAD_REQUEST, "Password is incorrect")
-    }
-
-    await prisma.user.update({where:{id:userId}, data:{isDeleted:true, isActive:false}})
-    await invalidateUserReadModels(userId)
-
-    return "Account deleted successfully"
-}
-
-
-
 const getPhototAchievements = async (photoId:string) => {
     const achievements = await prisma.contestAchievement.findMany({where:{photo:{photoId}}})
 
@@ -460,7 +441,6 @@ export const userService = {
     getUserCurrentLevel,
     attachStoreToUser,
     searchUserByUserName,
-    getPhototAchievements,
-    deleteAccount
+    getPhototAchievements
 
 }

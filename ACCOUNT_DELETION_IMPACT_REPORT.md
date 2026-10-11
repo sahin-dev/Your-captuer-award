@@ -3,6 +3,19 @@
 Date: 2026-10-03  
 Scope: API service, Prisma/MongoDB schema, object storage, Stripe-linked data, notifications, and WebSocket state.
 
+## Implementation status (2026-10-11)
+
+Hard delete is implemented in `src/app/modules/User/accountDeletion.service.ts` (`DELETE /users/delete-account`), following the "absolute purge" option below with these safeguards:
+
+- Teams with other members are transferred (existing leader, else moderator, else oldest member) and `member_count` is recounted; empty teams are purged.
+- Admin-owned contests/recurring contests move to another admin; deletion is refused if none exists.
+- Contest banners borrowed from the user's gallery are copied into the contest folder first.
+- Deletion is refused (409) while a related contest is `FINALIZING`.
+- Completed contests keep persisted ranks (gaps, no re-ranking); live contests re-rank on next read.
+- Reports reviewed by the user are kept with `reviewedById` cleared.
+- The Stripe customer is deleted (cancelling subscriptions) before the database purge; the purge is one transaction; notifications naming the user, sockets, caches and `users/<id>/` storage are cleaned afterwards.
+- Social-only accounts confirm with `{ "confirm": "DELETE" }` instead of a password.
+
 ## Executive conclusion
 
 Deleting a `User` and every related database record with one hard-delete/cascade operation is **not safe in the current application**. It can either fail on required relations or leave dangling raw IDs, incorrect team counters, altered contest rankings, broken completed-contest history, inconsistent reward/payment ledgers, orphaned uploaded files, and active socket sessions.

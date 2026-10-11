@@ -43,8 +43,11 @@ const verifyOtpSchema = z.object({
     code:z.string({required_error:"code is required"})
 })
 
+// Password accounts send their password; social-only accounts have none and
+// send confirm: "DELETE" instead. The service checks which one applies.
 const  deleteAccountSchema = z.object({
-    password: z.string({required_error:"Password is required"})
+    password: z.string().optional(),
+    confirm: z.string().optional()
 })
 
 export const userSchema = {

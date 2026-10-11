@@ -1414,6 +1414,8 @@ const loadContestListExtras = async (contests:{id:string; status:string}[]) => {
     }));
 }
 
+
+
 const enrichContestListDetails = async (contests:any[]) => {
     const contestIds = contests.map((contest) => contest.id);
 
@@ -1457,6 +1459,7 @@ const enrichContestListDetails = async (contests:any[]) => {
 
 //Search contest by contest status
 const getContestsByStatus = async (userId:string, status:ContestStatus, page:number = 1, limit:number = 20) => {
+
     if(status && !Object.values(ContestStatus).includes(status)){
         throw new ApiError(httpstatus.BAD_REQUEST, "Invalid contest status")
     }
