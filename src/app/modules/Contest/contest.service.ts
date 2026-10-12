@@ -41,6 +41,7 @@ import logger from "../../../shared/logger";
 import { dedupeLabels, hasLabel } from "../../../shared/labels";
 import { profileCache } from '../Profile/profile.cache';
 import { getStoredCategories, resolveCategoryInput } from './contestCategories';
+import { contestCategoryService } from './contestCategory.service';
 
 const completedContestStatuses:ContestStatus[] = [ContestStatus.COMPLETED, ContestStatus.CLOSED]
 const isCompletedContest = (status:ContestStatus) => completedContestStatuses.includes(status)
@@ -384,6 +385,7 @@ const createContest = async (creatorId: string, body: contestData, banner:Expres
         shouldUseDefaultAwards(body)
     )
     const levelAwards = body.levelAwards || []
+    const categoryData = await contestCategoryService.prepareCategoryUpdate(resolveCategoryInput(body))
 
     const contestData:any = {
         // Same id as the banner folder (contests/<id>/banner) when a banner was uploaded.
@@ -392,7 +394,7 @@ const createContest = async (creatorId: string, body: contestData, banner:Expres
         title: body.title,
         description: body.description,
         status: ContestStatus.UPCOMING,
-        ...resolveCategoryInput(body),
+        ...categoryData,
         isMoneyContest:body.isMoneyContest,
         currency:body.isMoneyContest ? body.currency : null,
         minPrize:body.isMoneyContest ? body.minPrize : 0,
@@ -669,6 +671,7 @@ const createRecurringContest  =  async (creatorId: string, body: contestData, ba
         shouldUseDefaultAwards(body)
     )
     const levelAwards = body.levelAwards || []
+    const categoryData = await contestCategoryService.prepareCategoryUpdate(resolveCategoryInput(body))
     const contestData:any = {
         // Same id as the banner folder (contests/<id>/banner) when a banner was uploaded.
         id: banner?.recordId,
@@ -677,7 +680,7 @@ const createRecurringContest  =  async (creatorId: string, body: contestData, ba
         description: body.description,
         startDate,
         endDate,
-        ...resolveCategoryInput(body),
+        ...categoryData,
         isMoneyContest:body.isMoneyContest,
         currency:body.isMoneyContest ? body.currency : null,
         minPrize:body.isMoneyContest ? body.minPrize : 0,
@@ -785,7 +788,7 @@ const updateContest = async (contestId:string, contestData:updateContestData, ba
     }
 
     const { prizeIds, prizes, levelAwards, rules, coinRequirement, bannerUserPhotoId, category, categories, ...updatePayload } = contestData as any
-    Object.assign(updatePayload, resolveCategoryInput({category, categories}))
+    Object.assign(updatePayload, await contestCategoryService.prepareCategoryUpdate(resolveCategoryInput({category, categories})))
 
     const bannerFromUserPhoto = await resolveBannerFromUserPhoto(bannerUserPhotoId)
     if(bannerFromUserPhoto && banner){

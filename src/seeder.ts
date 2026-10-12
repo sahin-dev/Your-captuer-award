@@ -20,6 +20,7 @@ import { contestRuleService } from "./app/modules/Contest/ContestRules/contestRu
 import { getContestLevelBadge, getContestLevelOrder, isContestLevelPrizeType, normalizeAwardIdentity } from "./app/modules/Awards/award.definitions"
 import { defaultPrizeDefinitions } from "./app/modules/Prize/prize.definitions"
 import { prizeService } from "./app/modules/Prize/prize.service"
+import { registerContestCategoryNames } from "./app/modules/Contest/contestCategory.service"
 
 type SeedUserDefinition = {
     email:string;
@@ -724,6 +725,25 @@ class DatabaseSeeder {
         console.log(`Seeded ${contestCategories.length} contest categories`)
     }
 
+    // Adds every category already used by a contest or recurring template to the
+    // admin's suggestion list (contest_categories). Safe to re-run: categories
+    // already in the list are matched ignoring case and left untouched.
+    async backfillContestCategorySuggestions(){
+        const [contests, templates] = await Promise.all([
+            this.db.contest.findMany({select:{category:true, categories:true}}),
+            this.db.recurringContest.findMany({select:{category:true, categories:true}})
+        ])
+        const used = [...contests, ...templates].flatMap(row => [
+            ...(row.categories ?? []),
+            ...(row.category ? [row.category] : [])
+        ])
+        const before = await this.db.contestCategory.count()
+        const registered = await registerContestCategoryNames(this.db, used)
+        const after = await this.db.contestCategory.count()
+
+        console.log(`Found ${registered.length} distinct categories in use; added ${after - before} to the suggestion list`)
+    }
+
     async seedPrizeDefinitions(){
         const prizes:Prize[] = []
 
@@ -1177,6 +1197,9 @@ async function SeederCLI (){
                 break
             case "seed:contest-categories":
                 await seeder.seedContestCategories()
+                break
+            case "backfill:contest-category-suggestions":
+                await seeder.backfillContestCategorySuggestions()
                 break
             case "seed:achievements-for-user": {
                 const userId = process.argv[3] || process.env.TARGET_USER_ID

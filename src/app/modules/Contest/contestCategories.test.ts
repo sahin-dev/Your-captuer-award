@@ -3,6 +3,7 @@ import test from "node:test";
 import { getStoredCategories, MAX_CONTEST_CATEGORIES, resolveCategoryInput } from "./contestCategories";
 import { createContestSchema, updateContestSchema } from "./contest.validation";
 import { updateRecurringContestSchema } from "../RecurringContest/recurringContest.validation";
+import { registerContestCategoryNames, slugifyCategory } from "./contestCategory.service";
 
 const futureDate = (hours:number) => new Date(Date.now() + hours * 60 * 60 * 1000).toISOString();
 
@@ -95,4 +96,39 @@ test("recurring template update still accepts the existing JSON body", () => {
 
 test("recurring template update rejects an invalid banner photo id", () => {
     assert.throws(() => updateRecurringContestSchema.parse({bannerUserPhotoId:"not-an-id"}));
+});
+
+const fakeCategoryDb = (initial:Array<{name:string; slug:string}>) => {
+    const rows = [...initial];
+    return {
+        rows,
+        contestCategory:{
+            findMany:async () => rows.map(row => ({...row})),
+            create:async ({data}:{data:{name:string; slug:string}}) => {
+                rows.push({name:data.name, slug:data.slug});
+                return data;
+            },
+        },
+    };
+};
+
+test("registerContestCategoryNames reuses the existing spelling ignoring case", async () => {
+    const db = fakeCategoryDb([{name:"Street photography", slug:"street-photography"}]);
+    const result = await registerContestCategoryNames(db, ["street PHOTOGRAPHY", "Street-Photography"]);
+    assert.deepEqual(result, ["Street photography"]);
+    assert.equal(db.rows.length, 1);
+});
+
+test("registerContestCategoryNames adds new categories to the suggestion list once", async () => {
+    const db = fakeCategoryDb([{name:"Portrait", slug:"portrait"}]);
+    const result = await registerContestCategoryNames(db, ["Night Sky", "night sky", "portrait"]);
+    assert.deepEqual(result, ["Night Sky", "Portrait"]);
+    assert.deepEqual(db.rows.map(row => row.slug), ["portrait", "night-sky"]);
+});
+
+test("slugifyCategory produces stable slugs, including for non-latin names", () => {
+    assert.equal(slugifyCategory("  Nature & Wildlife "), "nature-wildlife");
+    assert.equal(slugifyCategory("Café"), "cafe");
+    assert.match(slugifyCategory("風景"), /^category-[0-9a-f]+$/);
+    assert.equal(slugifyCategory("風景"), slugifyCategory(" 風景 "));
 });

@@ -9,6 +9,7 @@ import { ContestRuleConfigInput } from "../Contest/ContestRules/contestRules.typ
 import { contestRuleService } from "../Contest/ContestRules/contestRules.service";
 import { resolveBannerFromUserPhoto } from "../Contest/contest.service";
 import { resolveCategoryInput } from "../Contest/contestCategories";
+import { contestCategoryService } from "../Contest/contestCategory.service";
 import { contestCache } from "../Contest/contest.cache";
 import { fileUploader } from "../../../helpers/fileUploader";
 import logger from "../../../shared/logger";
@@ -136,7 +137,7 @@ const updateRecurringContest = async (
     : uploadedBanner
       ? { banner: uploadedBanner, bannerUploaderId: null }
       : {};
-  const categoryUpdate = resolveCategoryInput(data);
+  const categoryUpdate = await contestCategoryService.prepareCategoryUpdate(resolveCategoryInput(data));
 
   const recurring = startDateChanged || endDateChanged
     ? {

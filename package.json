@@ -20,6 +20,7 @@
     "seed": "ts-node-dev src/seeder.ts",
     "seed:prizes": "ts-node --transpile-only src/seeder.ts seed:prizes",
     "seed:contest-categories": "ts-node --transpile-only src/seeder.ts seed:contest-categories",
+    "backfill:contest-category-suggestions": "ts-node --transpile-only src/seeder.ts backfill:contest-category-suggestions",
     "seed:bots": "ts-node-dev src/seeder.ts seed:bots",
     "delete:bots": "ts-node-dev src/seeder.ts delete:bots",
     "seed:levels": "ts-node-dev src/seeder.ts seed:levels",
