@@ -5,6 +5,7 @@ import { contestRuleInputArraySchema } from "./ContestRules/contestRule.validati
 import { contestPrizeInputArraySchema } from "../Prize/prize.validation";
 import { contestLevelAwardArraySchema } from "./contestLevelAward.validation";
 import { getRichTextLength, sanitizeContestRichText } from "./contestContent";
+import { contestCategoriesField, contestCategoryField } from "./contestCategories";
 
 const parseJsonValue = (value: unknown) => {
     if (typeof value !== "string") {
@@ -101,7 +102,8 @@ const normalizeUpdateContestInput = (value: unknown) => {
 const createContestObjectSchema = z.object({
     title: z.string().trim().min(1, "Title must not be empty").max(160),
     description: richTextField("Description", 5000),
-    category: z.string().trim().min(1).max(100).optional(),
+    category: contestCategoryField,
+    categories: contestCategoriesField,
 
     recurring: z.preprocess(parseBooleanField, z.boolean()).optional().default(false),
     recurrence: z.preprocess(parseJsonValue, recurrenceSchema).optional(),
@@ -194,7 +196,8 @@ export const createContestSchema = z.preprocess(normalizeCreateContestInput, cre
 const updateContestObjectSchema = z.object({
     title: z.string().trim().min(1).max(160).optional(),
     description: richTextField("Description", 5000).optional(),
-    category: z.string().trim().min(1).max(100).optional(),
+    category: contestCategoryField,
+    categories: contestCategoriesField,
     startDate: optionalIsoDate,
     endDate: optionalIsoDate,
     bannerUserPhotoId: bannerUserPhotoIdField,

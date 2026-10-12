@@ -1,6 +1,7 @@
 import {PrismaClient} from "../prismaClient/client";
 import logger from "./logger";
 import { buildFileUrl } from "../helpers/fileUrl";
+import { getStoredCategories } from "../app/modules/Contest/contestCategories";
 
 // import { PrismaClient } from "@prisma/client";
 
@@ -26,11 +27,15 @@ const prisma = prismaClient.$extends({
     userPhoto: {
       url: { needs: { url: true }, compute: (photo) => buildFileUrl(photo.url) },
     },
+    // Documents written before multi-category support only have the legacy
+    // single `category`; expose it as a one-item `categories` list on read.
     contest: {
       banner: { needs: { banner: true }, compute: (contest) => buildFileUrl(contest.banner) },
+      categories: { needs: { categories: true, category: true }, compute: (contest) => getStoredCategories(contest) },
     },
     recurringContest: {
       banner: { needs: { banner: true }, compute: (contest) => buildFileUrl(contest.banner) },
+      categories: { needs: { categories: true, category: true }, compute: (contest) => getStoredCategories(contest) },
     },
     team: {
       badge: { needs: { badge: true }, compute: (team) => buildFileUrl(team.badge) },

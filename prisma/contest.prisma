@@ -26,7 +26,10 @@ model Contest {
   scoringVersion Int @default(1)
 
   creatorId String @db.ObjectId
+  // Legacy single category - kept in sync with categories[0] so older clients
+  // and documents written before multi-category support keep working.
   category String?
+  categories String[] @default([])
   // Set when the admin picks an existing user-submitted photo as the banner
   // (instead of uploading a fresh image) - lets the website credit that user.
   bannerUploaderId String? @db.ObjectId
@@ -76,7 +79,9 @@ model RecurringContest {
   endDate   DateTime
 
   creatorId String @db.ObjectId
+  // Legacy single category - kept in sync with categories[0] (see Contest).
   category String?
+  categories String[] @default([])
   status RecurringContestStatus @default(ACTIVE)
   recurring RecurringData
   lastGeneratedContestId String? @db.ObjectId

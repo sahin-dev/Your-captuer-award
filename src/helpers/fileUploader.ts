@@ -321,6 +321,9 @@ const chatFile = webImageUpload(userFolder("chat")).single("file");
 const filesystemUploadBadge = webImageUpload(recordFolder("teams", "teamId", "badge")).single("badge");
 // Recurring contests use the same folder; the contests they create reuse the file.
 const contestBanner = webImageUpload(recordFolder("contests", "contestId", "banner")).single("banner");
+// Editing a recurring template: the template was created with its id as the
+// banner folder (contests/<recurringContestId>/banner), so new banners land there too.
+const recurringContestBanner = webImageUpload(recordFolder("contests", "recurringContestId", "banner")).single("banner");
 const productImage = webImageUpload(recordFolder("products", "productId", "image")).single("image");
 
 // ✅ Fixed Cloudinary Upload (Now supports buffer)
@@ -662,6 +665,7 @@ export const fileUploader = {
   chatFile,
   filesystemUploadBadge,
   contestBanner,
+  recurringContestBanner,
   filesystemUploadCover,
   contestPhotos,
   filesystemUploadUserPhoto,

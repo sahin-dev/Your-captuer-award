@@ -3,6 +3,7 @@ import auth from "../../middlewares/auth.middleware";
 import validateRequest from "../../middlewares/validation.middleware";
 import { UserRole } from "../../../prismaClient";
 import { recurringContestController } from "./recurringContest.controller";
+import { fileUploader } from "../../../helpers/fileUploader";
 import {
   replaceRecurringAwardsSchema,
   replaceRecurringLevelAwardsSchema,
@@ -38,6 +39,8 @@ router
   .get(auth(UserRole.ADMIN), recurringContestController.getRecurringContestById)
   .patch(
     auth(UserRole.ADMIN),
+    // Optional: only parses multipart requests (new banner file); JSON passes through.
+    fileUploader.recurringContestBanner,
     validateRequest(updateRecurringContestSchema),
     recurringContestController.updateRecurringContest
   );

@@ -39,12 +39,14 @@ type PhotoChange = {
 
 // photo id -> categories of the contests it was entered in
 const loadEnteredCategories = async () => {
+  // `categories` falls back to the legacy single category on read (see shared/prisma).
   const contests = await prisma.contest.findMany({
-    where: { category: { not: null } },
-    select: { id: true, category: true },
+    select: { id: true, category: true, categories: true },
   });
-  const categoryByContest = new Map(
-    contests.filter((contest) => contest.category?.trim()).map((contest) => [contest.id, contest.category!.trim()])
+  const categoriesByContest = new Map(
+    contests
+      .map((contest) => [contest.id, contest.categories.map((category) => category.trim()).filter(Boolean)] as const)
+      .filter(([, categories]) => categories.length > 0)
   );
 
   const [slots, trades] = await Promise.all([
@@ -54,9 +56,9 @@ const loadEnteredCategories = async () => {
 
   const entered = new Map<string, string[]>();
   const add = (photoId: string | null | undefined, contestId: string) => {
-    const category = categoryByContest.get(contestId);
-    if (!photoId || !category) return;
-    entered.set(photoId, dedupeLabels([...(entered.get(photoId) ?? []), category]));
+    const categories = categoriesByContest.get(contestId);
+    if (!photoId || !categories) return;
+    entered.set(photoId, dedupeLabels([...(entered.get(photoId) ?? []), ...categories]));
   };
   slots.forEach((slot) => {
     add(slot.photoId, slot.contestId);

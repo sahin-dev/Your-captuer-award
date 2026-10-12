@@ -40,6 +40,7 @@ import { contestCache } from './contest.cache';
 import logger from "../../../shared/logger";
 import { dedupeLabels, hasLabel } from "../../../shared/labels";
 import { profileCache } from '../Profile/profile.cache';
+import { getStoredCategories, resolveCategoryInput } from './contestCategories';
 
 const completedContestStatuses:ContestStatus[] = [ContestStatus.COMPLETED, ContestStatus.CLOSED]
 const isCompletedContest = (status:ContestStatus) => completedContestStatuses.includes(status)
@@ -182,7 +183,7 @@ const getContestCardAttribution = (contest:any) => {
 // When the admin picks an existing user-submitted photo as the banner instead of
 // uploading a fresh image, resolve its URL and credit the uploading user so the
 // website can show attribution on the contest card.
-const resolveBannerFromUserPhoto = async (userPhotoId?:string) => {
+export const resolveBannerFromUserPhoto = async (userPhotoId?:string) => {
     if(!userPhotoId){
         return null
     }
@@ -391,7 +392,7 @@ const createContest = async (creatorId: string, body: contestData, banner:Expres
         title: body.title,
         description: body.description,
         status: ContestStatus.UPCOMING,
-        category:body.category,
+        ...resolveCategoryInput(body),
         isMoneyContest:body.isMoneyContest,
         currency:body.isMoneyContest ? body.currency : null,
         minPrize:body.isMoneyContest ? body.minPrize : 0,
@@ -537,7 +538,9 @@ const materializeRecurringOccurrence = async (rContest:RecurringContest, options
                     currency:rContest.currency,
                     entryFeeAmount:rContest.entryFeeAmount,
                     entryFeeCoins:rContest.entryFeeCoins,
-                    category:rContest.category,
+                    // Read from the template at generation time, so template edits
+                    // apply to every occurrence generated afterwards.
+                    ...resolveCategoryInput({categories:getStoredCategories(rContest)}),
                     description:rContest.description,
                     creatorId:rContest.creatorId,
                     recurringContestId:rContest.id,
@@ -674,7 +677,7 @@ const createRecurringContest  =  async (creatorId: string, body: contestData, ba
         description: body.description,
         startDate,
         endDate,
-        category:body.category,
+        ...resolveCategoryInput(body),
         isMoneyContest:body.isMoneyContest,
         currency:body.isMoneyContest ? body.currency : null,
         minPrize:body.isMoneyContest ? body.minPrize : 0,
@@ -781,7 +784,8 @@ const updateContest = async (contestId:string, contestData:updateContestData, ba
         throw new ApiError(httpstatus.BAD_REQUEST, "A positive entryFeeCoins value is required when coinRequirement is enabled")
     }
 
-    const { prizeIds, prizes, levelAwards, rules, coinRequirement, bannerUserPhotoId, ...updatePayload } = contestData as any
+    const { prizeIds, prizes, levelAwards, rules, coinRequirement, bannerUserPhotoId, category, categories, ...updatePayload } = contestData as any
+    Object.assign(updatePayload, resolveCategoryInput({category, categories}))
 
     const bannerFromUserPhoto = await resolveBannerFromUserPhoto(bannerUserPhotoId)
     if(bannerFromUserPhoto && banner){
@@ -2103,6 +2107,18 @@ const rollbackUploadedContestPhotos = async (
     }))
 }
 
+// Adds every category of the contest to each submitted photo.
+const addContestCategoriesToPhotos = async (
+    tx:ContestPhotoCategoryTx,
+    photoIds:string[],
+    contest:{category?:string | null; categories?:string[] | null}
+) => {
+    // Sequential on purpose: each call reads the current list before writing.
+    for(const category of getStoredCategories(contest)){
+        await addContestCategoryToPhotos(tx, photoIds, category)
+    }
+}
+
 // Adds a contest category to each submitted photo. The conditional update is
 // important: two requests may submit the same gallery photo at nearly the same
 // time, and a read-then-push alone could append the same category twice.
@@ -2303,7 +2319,7 @@ const uploadPhotoToContest = async (contestId:string,userId:string, photoIds:unk
                     exposureBoostExpiresAt
                 }))
             })
-            await addContestCategoryToPhotos(tx, selectedPhotoIds, activeContest.category)
+            await addContestCategoriesToPhotos(tx, selectedPhotoIds, activeContest)
             return tx.contestPhoto.findMany({
                 where:{contestId, participantId:participant.id, photoId:{in:selectedPhotoIds}},
                 include:{photo:true}
@@ -2673,7 +2689,7 @@ const tradePhoto = async (userId:string,contestId:string, contestPhotoId:string,
             })
         }
 
-        await addContestCategoryToPhotos(trx, [replacementPhotoId], contest.category)
+        await addContestCategoriesToPhotos(trx, [replacementPhotoId], contest)
 
         return trx.contestPhoto.update({
             where:{id:contestPhotoId},

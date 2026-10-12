@@ -31,7 +31,11 @@ const getRecurringContestById = catchAsync(async (req: Request, res: Response) =
 });
 
 const updateRecurringContest = catchAsync(async (req: Request, res: Response) => {
-  const result = await recurringContestService.updateRecurringContest(req.params.recurringContestId, req.body);
+  const result = await recurringContestService.updateRecurringContest(
+    req.params.recurringContestId,
+    req.body,
+    req.file
+  );
 
   sendResponse(res, {
     success: true,

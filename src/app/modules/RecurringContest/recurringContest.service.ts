@@ -1,17 +1,23 @@
 import httpStatus from "http-status";
 import ApiError from "../../../errors/ApiError";
-import { RecurringContestStatus, RecurringType } from "../../../prismaClient";
+import { ContestStatus, Prisma, RecurringContestStatus, RecurringType } from "../../../prismaClient";
 import { assertValidTimeZone, calculateNextOccurance } from "../../../helpers/nextOccurance";
 import prisma from "../../../shared/prisma";
 import { prizeService } from "../Prize/prize.service";
 import { contestLevelAwardService } from "../Contest/contestLevelAward.service";
 import { ContestRuleConfigInput } from "../Contest/ContestRules/contestRules.type";
 import { contestRuleService } from "../Contest/ContestRules/contestRules.service";
+import { resolveBannerFromUserPhoto } from "../Contest/contest.service";
+import { resolveCategoryInput } from "../Contest/contestCategories";
+import { contestCache } from "../Contest/contest.cache";
+import { fileUploader } from "../../../helpers/fileUploader";
+import logger from "../../../shared/logger";
 
 type RecurringUpdateData = {
   title?: string;
   description?: string;
   category?: string;
+  categories?: string[];
   startDate?: string;
   endDate?: string;
   isMoneyContest?: boolean;
@@ -21,6 +27,8 @@ type RecurringUpdateData = {
   entryFeeAmount?: number;
   entryFeeCoins?: number;
   rules?: ContestRuleConfigInput[];
+  bannerUserPhotoId?: string;
+  applyToUpcoming?: boolean;
 };
 
 const validateTimeZone = (timeZone?: string | null) => {
@@ -70,15 +78,37 @@ const getRecurringContestById = async (recurringContestId: string) => {
   return recurringContest;
 };
 
-const updateRecurringContest = async (recurringContestId: string, data: RecurringUpdateData) => {
-  const recurringContest = await getRecurringContestById(recurringContestId);
-  const startDate = data.startDate ? new Date(data.startDate) : recurringContest.startDate;
-  const endDate = data.endDate ? new Date(data.endDate) : recurringContest.endDate;
+// Generated occurrences that exist but have not started yet. The next occurrence
+// is materialized ahead of time (see materializeRecurringOccurrence), so without
+// this an edit would only show up one occurrence later than the admin expects.
+const upcomingInstanceWhere = (recurringContestId: string): Prisma.ContestWhereInput => ({
+  recurringContestId,
+  status: ContestStatus.UPCOMING,
+  startDate: { gt: new Date() },
+  OR: [{ deletedAt: null }, { deletedAt: { isSet: false } }],
+});
 
-  if (data.startDate && startDate <= new Date()) {
+const updateRecurringContest = async (
+  recurringContestId: string,
+  data: RecurringUpdateData,
+  banner?: Express.Multer.File
+) => {
+  const recurringContest = await getRecurringContestById(recurringContestId);
+  // Clients send the dates back unchanged when only other details are edited.
+  // Only a date that actually differs reschedules the template - otherwise
+  // editing e.g. the description of a running template would be rejected
+  // (its first start is in the past) and would reset the schedule.
+  const startDateChanged = Boolean(data.startDate)
+    && new Date(data.startDate!).getTime() !== recurringContest.startDate.getTime();
+  const endDateChanged = Boolean(data.endDate)
+    && new Date(data.endDate!).getTime() !== recurringContest.endDate.getTime();
+  const startDate = startDateChanged ? new Date(data.startDate!) : recurringContest.startDate;
+  const endDate = endDateChanged ? new Date(data.endDate!) : recurringContest.endDate;
+
+  if (startDateChanged && startDate <= new Date()) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Start date must be in the future");
   }
-  if (endDate <= startDate) {
+  if ((startDateChanged || endDateChanged) && endDate <= startDate) {
     throw new ApiError(httpStatus.BAD_REQUEST, "End date must be after start date");
   }
 
@@ -92,11 +122,27 @@ const updateRecurringContest = async (recurringContestId: string, data: Recurrin
   if(isMoneyContest && (!currency || minPrize > maxPrize)){
     throw new ApiError(httpStatus.BAD_REQUEST, "Money contests require valid currency and prize bounds");
   }
-  const recurring = data.startDate || data.endDate
+  const bannerFromUserPhoto = await resolveBannerFromUserPhoto(data.bannerUserPhotoId);
+  if (bannerFromUserPhoto && banner) {
+    await fileUploader.discardUploadedFile(banner);
+  }
+  const uploadedBanner = !bannerFromUserPhoto && banner
+    ? (await fileUploader.uploadToDigitalOcean(banner)).Key
+    : undefined;
+  // The previous banner file is intentionally kept: contests already generated
+  // from this template still reference it.
+  const bannerUpdate = bannerFromUserPhoto
+    ? { banner: bannerFromUserPhoto.banner, bannerUploaderId: bannerFromUserPhoto.bannerUploaderId }
+    : uploadedBanner
+      ? { banner: uploadedBanner, bannerUploaderId: null }
+      : {};
+  const categoryUpdate = resolveCategoryInput(data);
+
+  const recurring = startDateChanged || endDateChanged
     ? {
         set: {
           ...recurringContest.recurring,
-          ...(data.startDate && {
+          ...(startDateChanged && {
             previousOccurrence: null,
             nextOccurrence: startDate,
           }),
@@ -105,14 +151,15 @@ const updateRecurringContest = async (recurringContestId: string, data: Recurrin
       }
     : undefined;
 
-  return prisma.recurringContest.update({
+  const updated = await prisma.recurringContest.update({
     where: { id: recurringContestId },
     data: {
       title: data.title,
       description: data.description,
-      category: data.category,
-      startDate: data.startDate ? startDate : undefined,
-      endDate: data.endDate ? endDate : undefined,
+      ...categoryUpdate,
+      ...bannerUpdate,
+      startDate: startDateChanged ? startDate : undefined,
+      endDate: endDateChanged ? endDate : undefined,
       isMoneyContest,
       maxPrize: isMoneyContest ? maxPrize : 0,
       minPrize: isMoneyContest ? minPrize : 0,
@@ -123,6 +170,36 @@ const updateRecurringContest = async (recurringContestId: string, data: Recurrin
       recurring,
     },
   });
+
+  if (data.applyToUpcoming) {
+    const displayUpdate = {
+      ...(data.title !== undefined && { title: data.title }),
+      ...(data.description !== undefined && { description: data.description }),
+      ...categoryUpdate,
+      ...bannerUpdate,
+    };
+    if (Object.keys(displayUpdate).length > 0) {
+      const upcoming = await prisma.contest.findMany({
+        where: upcomingInstanceWhere(recurringContestId),
+        select: { id: true },
+      });
+      if (upcoming.length > 0) {
+        await prisma.contest.updateMany({
+          where: { id: { in: upcoming.map((contest) => contest.id) } },
+          data: displayUpdate,
+        });
+        await Promise.all(
+          upcoming.map((contest) =>
+            contestCache.invalidateContest(contest.id).catch((error) => {
+              logger.error({ err: error, contestId: contest.id }, "Failed to invalidate contest cache after template edit");
+            })
+          )
+        );
+      }
+    }
+  }
+
+  return updated;
 };
 
 const pauseRecurringContest = async (recurringContestId: string) => {

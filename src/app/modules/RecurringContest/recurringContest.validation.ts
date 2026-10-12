@@ -14,6 +14,8 @@ const entryFeeAmountSchema = z.number()
 import { contestAwardInputArraySchema } from "../Prize/prize.validation";
 import { contestLevelAwardArraySchema } from "../Contest/contestLevelAward.validation";
 import { getRichTextLength, sanitizeContestRichText } from "../Contest/contestContent";
+import { contestCategoriesField, contestCategoryField } from "../Contest/contestCategories";
+import { checkObjectId } from "../../../helpers/checkObjectId";
 
 const parseJsonArray = (value: unknown) => {
   if (typeof value === "string") {
@@ -22,8 +24,22 @@ const parseJsonArray = (value: unknown) => {
   return value;
 };
 
+// The template edit accepts JSON or multipart (when a new banner file is sent),
+// and multipart delivers every value as a string.
+const parseBooleanField = (value: unknown) => {
+  if (value === "true") return true;
+  if (value === "false") return false;
+  return value;
+};
+
+const parseOptionalNumber = (value: unknown) =>
+  value === undefined || value === null || value === "" ? undefined : Number(value);
+
+const parseNullableString = (value: unknown) =>
+  value === "" || value === "null" ? null : value;
+
 export const updateRecurringContestSchema = z.object({
-  title: z.string().optional(),
+  title: z.string().trim().min(1).max(160).optional(),
   description: z.string()
     .trim()
     .min(1)
@@ -32,16 +48,29 @@ export const updateRecurringContestSchema = z.object({
     })
     .transform(sanitizeContestRichText)
     .optional(),
-  category: z.string().trim().min(1).max(100).optional(),
+  category: contestCategoryField,
+  categories: contestCategoriesField,
   startDate: z.string().datetime().optional(),
   endDate: z.string().datetime().optional(),
-  isMoneyContest: z.boolean().optional(),
-  maxPrize: z.preprocess((value) => Number(value), z.number().int().min(0)).optional(),
-  minPrize: z.preprocess((value) => Number(value), z.number().int().min(0)).optional(),
-  currency: z.string().trim().toUpperCase().regex(/^[A-Z]{3}$/).nullable().optional(),
-  entryFeeAmount: z.preprocess((value) => Number(value), entryFeeAmountSchema).optional(),
-  entryFeeCoins: z.preprocess((value) => Number(value), z.number().int().min(0).max(100000000)).optional(),
+  isMoneyContest: z.preprocess(parseBooleanField, z.boolean()).optional(),
+  maxPrize: z.preprocess(parseOptionalNumber, z.number().int().min(0).optional()),
+  minPrize: z.preprocess(parseOptionalNumber, z.number().int().min(0).optional()),
+  currency: z.preprocess(
+    parseNullableString,
+    z.string().trim().toUpperCase().regex(/^[A-Z]{3}$/).nullable().optional()
+  ),
+  entryFeeAmount: z.preprocess(parseOptionalNumber, entryFeeAmountSchema.optional()),
+  entryFeeCoins: z.preprocess(parseOptionalNumber, z.number().int().min(0).max(100000000).optional()),
   rules: z.preprocess(parseJsonArray, contestRuleInputArraySchema).optional(),
+  // Banner sourced from an existing user-submitted photo instead of an uploaded
+  // file (mutually exclusive with the `banner` file, like contest create/edit).
+  bannerUserPhotoId: z.string().trim()
+    .refine(checkObjectId, { message: "Invalid user photo ID" })
+    .optional(),
+  // Also apply the display fields (title, description, banner, categories) to
+  // the already-generated occurrence that has not started yet. Dates, fees,
+  // rules and awards only ever apply to occurrences generated after the edit.
+  applyToUpcoming: z.preprocess(parseBooleanField, z.boolean()).optional(),
 });
 
 export const updateRecurringIntervalSchema = z.object({
