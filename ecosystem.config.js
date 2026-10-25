@@ -3,13 +3,12 @@ module.exports = {
     {
       name: "api",
       script: "./dist/server.js",
-      exec_mode: "cluster",
+      exec_mode: "fork",
        // Allocates 4GB heap size to the V8 engine
       node_args: "--max-old-space-size=4096",
       
       // Restarts the app gracefully at 4.2GB to prevent hard crashes
       max_memory_restart: "4200M",
-      instances: "max",
       autorestart: true,
       // Time between SIGINT and SIGKILL on reload/stop. The default 1.6s is too
       // short for server.ts to finish in-flight post-vote work and close cleanly.
