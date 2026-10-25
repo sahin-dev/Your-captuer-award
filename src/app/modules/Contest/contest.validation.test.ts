@@ -134,7 +134,7 @@ test("submission formats are restricted to formats the runtime supports", () => 
             minHeight:700,
         },
     }]);
-    assert.equal((defaultedSize[0].value as Record<string, unknown>).maxSizeMB, 150);
+    assert.equal((defaultedSize[0].value as Record<string, unknown>).maxSizeMB, 25);
 
     const rejected = contestRuleInputArraySchema.safeParse([{
         key:"SUBMISSION_FORMAT",
@@ -234,6 +234,38 @@ test("contest rule normalization still provides defaults when no rules are submi
 
     assert.ok(defaultRules.length >= contestRuleKeys.length);
     assert.ok(defaultRules.some((rule) => rule.key === "SUBMISSION_LIMIT"));
+});
+
+test("admin-submitted submission format above the size limit is still rejected", () => {
+    assert.throws(() => contestRuleService.normalizeContestRules([{
+        key: "SUBMISSION_FORMAT",
+        value: { mimeTypes: ["image/jpeg"], minWidth: 700, minHeight: 700, maxSizeMB: 150 },
+        enabled: true,
+        order: 40,
+    }], false));
+});
+
+test("stored rules saved under older, looser limits are fitted to the current ones", () => {
+    const rules = contestRuleService.normalizeStoredContestRules([{
+        key: "SUBMISSION_FORMAT",
+        value: { mimeTypes: ["image/jpg", "image/jpeg", "image/gif"], minWidth: 700, minHeight: 700, maxSizeMB: 150 },
+        enabled: true,
+        order: 40,
+    } as any]);
+
+    const format = rules.find((rule) => rule.key === "SUBMISSION_FORMAT")?.value as any;
+    assert.equal(format.maxSizeMB, 25);
+    assert.deepEqual(format.mimeTypes, ["image/jpeg"]);
+    assert.equal(format.minWidth, 700);
+});
+
+test("stored submission format with no supported mime types falls back to the defaults", () => {
+    const format = contestRuleService.fitSubmissionFormatToCurrentLimits({
+        mimeTypes: ["image/gif"], minWidth: 700, minHeight: 700, maxSizeMB: 10,
+    }) as any;
+
+    assert.deepEqual(format.mimeTypes, ["image/jpeg", "image/png"]);
+    assert.equal(format.maxSizeMB, 10);
 });
 
 test("legacy submission rule object payload is normalized to an array of strings", () => {

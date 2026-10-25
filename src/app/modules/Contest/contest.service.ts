@@ -519,7 +519,9 @@ const materializeRecurringOccurrence = async (rContest:RecurringContest, options
         const rawRules = typeof rContest.rules === "string"
             ? JSON.parse(rContest.rules) as ContestRuleConfigInput[]
             : rContest.rules as ContestRuleConfigInput[]
-        const rules = contestRuleService.normalizeContestRules(rawRules)
+        // The template was validated when it was created; limits tightened since
+        // then must not stop the series from generating.
+        const rules = contestRuleService.normalizeStoredContestRules(rawRules)
         const awards = await prisma.recurringContestAward.findMany({where:{recurringContestId:rContest.id}})
         const levelAwards = await prisma.recurringContestLevelAward.findMany({where:{recurringContestId:rContest.id}})
         const next = calculateNextOccurance(

@@ -1158,6 +1158,55 @@ class DatabaseSeeder {
         return {users:candidates.length}
     }
 
+    // One-time repair after the SUBMISSION_FORMAT limits were tightened (maxSizeMB
+    // 150 -> 25): rules stored before that still carry the old values, which made
+    // recurring contest generation fail validation. Brings stored values within
+    // the current limits; completed contests are left as a record of what applied.
+    async backfillSubmissionFormatLimits(apply = false){
+        const fit = contestRuleService.fitSubmissionFormatToCurrentLimits
+        const changed = (before:unknown, after:unknown) => JSON.stringify(before) !== JSON.stringify(after)
+
+        const recurringContests = await this.db.recurringContest.findMany({select:{id:true, title:true, rules:true}})
+        let recurringChanged = 0
+        for(const rContest of recurringContests){
+            const stored = typeof rContest.rules === "string" ? JSON.parse(rContest.rules) : rContest.rules
+            if(!Array.isArray(stored)){
+                continue
+            }
+            const fitted = stored.map((rule:any) => rule?.key === "SUBMISSION_FORMAT" ? {...rule, value:fit(rule.value)} : rule)
+            if(!changed(stored, fitted)){
+                continue
+            }
+
+            recurringChanged += 1
+            console.log(`${apply ? "" : "[DRY RUN] "}Recurring ${rContest.id} "${rContest.title}"`)
+            if(apply){
+                await this.db.recurringContest.update({where:{id:rContest.id}, data:{rules:fitted}})
+            }
+        }
+
+        const configs = await this.db.contestRuleConfig.findMany({
+            where:{key:"SUBMISSION_FORMAT", contest:{status:{not:ContestStatus.COMPLETED}}},
+            select:{id:true, contestId:true, value:true}
+        })
+        let configsChanged = 0
+        for(const config of configs){
+            const fitted = fit(config.value)
+            if(!changed(config.value, fitted)){
+                continue
+            }
+
+            configsChanged += 1
+            console.log(`${apply ? "" : "[DRY RUN] "}Contest ${config.contestId}`)
+            if(apply){
+                await this.db.contestRuleConfig.update({where:{id:config.id}, data:{value:fitted as any}})
+            }
+        }
+
+        console.log(`${apply ? "" : "[DRY RUN] "}Submission format limits: ${recurringChanged} of ${recurringContests.length} recurring contest(s) and ${configsChanged} of ${configs.length} contest rule config(s) ${apply ? "updated" : "would be updated"}`)
+        return {recurringContests:recurringChanged, contestRuleConfigs:configsChanged}
+    }
+
     async destroyClient(){
         await this.client?.$disconnect()
     }
@@ -1243,8 +1292,16 @@ async function SeederCLI (){
                 }
                 break
             }
+            case "backfill:submission-format-limits": {
+                const apply = process.argv[3] === "--apply"
+                await seeder.backfillSubmissionFormatLimits(apply)
+                if(!apply){
+                    console.log("Dry run only - re-run with --apply to write these changes")
+                }
+                break
+            }
             default:
-                console.log("Available commands: create:admin, seed:levels, seed:levels-demo, seed:contest-config, seed:prizes, seed:contest-categories, seed:achievements-for-user, backfill:contest-rules, backfill:contest-awards [--apply], backfill:zero-top-rank-rewards [--apply], backfill:vote-photo-ref [--apply], backfill:user-active-status [--apply], -reset")
+                console.log("Available commands: create:admin, seed:levels, seed:levels-demo, seed:contest-config, seed:prizes, seed:contest-categories, seed:achievements-for-user, backfill:contest-rules, backfill:contest-awards [--apply], backfill:zero-top-rank-rewards [--apply], backfill:vote-photo-ref [--apply], backfill:user-active-status [--apply], backfill:submission-format-limits [--apply], -reset")
         }
     }finally{
         await seeder.destroyClient()

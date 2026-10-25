@@ -9,8 +9,10 @@ import {
   getContestRuleDefinitionViews,
   isContestRuleKey,
   LevelRequirementValue,
+  supportedContestImageMimeTypes,
 } from "./contestRule.definitions";
-import { contestRuleConfigArraySchema } from "./contestRule.validation";
+import { contestRuleConfigArraySchema, MAX_SUBMISSION_SIZE_MB } from "./contestRule.validation";
+import { normalizeImageMimeType } from "../../../../shared/uploadFormats";
 import { ContestRuleConfigInput } from "./contestRules.type";
 import { contestCache } from "../contest.cache";
 
@@ -64,6 +66,50 @@ const normalizeContestRules = (
 
   return contestRuleConfigArraySchema.parse(normalized);
 };
+
+// Stored rules (recurring templates, saved contest configs) were validated
+// against the limits in force when they were written. When a limit is tightened
+// later, bring the stored value within it instead of failing - it was a valid
+// choice at the time. Admin input still goes through normalizeContestRules and
+// is rejected when out of bounds.
+const fitSubmissionFormatToCurrentLimits = (value: unknown): unknown => {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return value;
+  }
+
+  const format = { ...(value as Record<string, unknown>) };
+
+  const maxSizeMB = Number(format.maxSizeMB);
+  if (Number.isFinite(maxSizeMB) && maxSizeMB > MAX_SUBMISSION_SIZE_MB) {
+    format.maxSizeMB = MAX_SUBMISSION_SIZE_MB;
+  }
+
+  if (Array.isArray(format.mimeTypes)) {
+    const supported = new Set<string>(supportedContestImageMimeTypes);
+    const mimeTypes = [...new Set(
+      format.mimeTypes
+        .filter((mimeType): mimeType is string => typeof mimeType === "string")
+        .map(normalizeImageMimeType)
+        .filter((mimeType) => supported.has(mimeType))
+    )];
+    format.mimeTypes = mimeTypes.length > 0
+      ? mimeTypes
+      : clone((contestRuleDefinitions.SUBMISSION_FORMAT.defaultValue as { mimeTypes: string[] }).mimeTypes);
+  }
+
+  return format;
+};
+
+const fitStoredRulesToCurrentLimits = (rules: ContestRuleConfigInput[]): ContestRuleConfigInput[] =>
+  rules.map((rule) => rule?.key === "SUBMISSION_FORMAT"
+    ? { ...rule, value: fitSubmissionFormatToCurrentLimits(rule.value) } as ContestRuleConfigInput
+    : rule);
+
+const normalizeStoredContestRules = (
+  rules?: ContestRuleConfigInput[],
+  includeDefaults = true
+): ContestRuleConfigInput[] =>
+  normalizeContestRules(rules && fitStoredRulesToCurrentLimits(rules), includeDefaults);
 
 const getSubmissionLimitFromRules = (rules: ContestRuleConfigInput[]): number => {
   const rule = rules.find((r) => r.key === "SUBMISSION_LIMIT");
@@ -234,5 +280,7 @@ export const contestRuleService = {
   getEnabledRuleValue,
   getContestRuleDefinitions: getContestRuleDefinitionViews,
   normalizeContestRules,
+  normalizeStoredContestRules,
+  fitSubmissionFormatToCurrentLimits,
   getSubmissionLimitFromRules,
 };

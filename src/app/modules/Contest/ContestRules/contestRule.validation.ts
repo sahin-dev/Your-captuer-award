@@ -175,13 +175,15 @@ export const levelRequirementsRuleSchema = baseRuleSchema.extend({
     }),
 });
 
+export const MAX_SUBMISSION_SIZE_MB = 25;
+
 export const submissionFormatRuleSchema = baseRuleSchema.extend({
     key: z.literal("SUBMISSION_FORMAT"),
     value: z.object({
         mimeTypes: z.array(z.enum(supportedContestImageMimeTypes)).min(1),
         minWidth: z.coerce.number().int().min(1),
         minHeight: z.coerce.number().int().min(1),
-        maxSizeMB: z.coerce.number().positive().max(25).default(25),
+        maxSizeMB: z.coerce.number().positive().max(MAX_SUBMISSION_SIZE_MB).default(MAX_SUBMISSION_SIZE_MB),
     }),
 });
 
