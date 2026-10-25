@@ -4,14 +4,14 @@ import { contestController } from './contest.controller'
 import auth from '../../middlewares/auth.middleware'
 import { UserRole } from '../../../prismaClient'
 import validateRequest from '../../middlewares/validation.middleware'
-import { contestAwardSelectionSchema, createContestSchema, updateContestSchema } from './contest.validation'
+import { contestAwardSelectionSchema, createRegularContestSchema, updateContestSchema } from './contest.validation'
 import { contestRuleController } from './ContestRules/contestRules.controller'
 
 
 
 const router = Router()
 
-router.route("/").post(auth(UserRole.ADMIN), fileUploader.contestBanner, validateRequest(createContestSchema), contestController.createContest).get(auth(), contestController.getContestsByStatus)
+router.route("/").post(auth(UserRole.ADMIN), fileUploader.contestBanner, validateRequest(createRegularContestSchema), contestController.createContest).get(auth(), contestController.getContestsByStatus)
 router.get("/all", auth(UserRole.ADMIN), contestController.getAllContests)
 router.get("/create-options", auth(UserRole.ADMIN), contestController.getCreateOptions)
 router.get("/banner-candidates", auth(UserRole.ADMIN), contestController.getBannerCandidates)

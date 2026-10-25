@@ -192,6 +192,7 @@ model Vote {
   @@index([contestId, id])
   @@index([contestId, createdAt])
   @@index([contestPhotoId, photoRefId])
+  @@index([photoRefId, createdAt])
   @@map("votes")
 }
 

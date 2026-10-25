@@ -24,6 +24,7 @@ import { statsRoutes } from "../modules/Stats/stats.route";
 import { reportRoutes } from "../modules/Report/report.route";
 import { socialLinkRoutes } from "../modules/SocialLink/socialLink.route";
 import { faqRoutes } from "../modules/Faq/faq.route";
+import { photographyOfTheYearRoutes } from "../modules/PhotographyOfTheYear/photographyOfTheYear.route";
 
 
 
@@ -33,6 +34,7 @@ const moduleRoutes = [
     {path:"/users", route:userRoutes},
     {path:"/auth", route:authRoutes},
     {path:"/contests", route:contestRoutes},
+    {path:"/photographer-of-the-year", route:photographyOfTheYearRoutes},
     {path:"/likes", route:likeRoutes},
     {path:"/follows", route:followRoutes},
     {path:"/comments", route:commentRoutes},

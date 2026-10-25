@@ -106,6 +106,7 @@ const createContestObjectSchema = z.object({
     categories: contestCategoriesField,
 
     recurring: z.preprocess(parseBooleanField, z.boolean()).optional().default(false),
+    isPhotographyOfYear: z.preprocess(parseBooleanField, z.boolean()).optional().default(false),
     recurrence: z.preprocess(parseJsonValue, recurrenceSchema).optional(),
     // When set, the banner is sourced from this existing UserPhoto instead of the
     // uploaded file - the two are mutually exclusive at the service layer.
@@ -173,6 +174,16 @@ const createContestObjectSchema = z.object({
             });
         }
     }
+    if (contest.isPhotographyOfYear) {
+        if (contest.recurring) {
+            ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["recurring"], message: "Photographer of the Year contests use admin-set start and end dates and cannot recur" });
+        }
+        // POTY charges a USD entry fee that funds its prize pool; it has no fixed
+        // cash prizes and no coin fee.
+        if (contest.isMoneyContest || contest.entryFeeCoins || contest.coinRequirement) {
+            ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["isPhotographyOfYear"], message: "Photographer of the Year contests cannot use fixed cash prizes or coin entry fees" });
+        }
+    }
     if (contest.coinRequirement && !contest.entryFeeCoins) {
         ctx.addIssue({
             code: z.ZodIssueCode.custom,
@@ -192,6 +203,13 @@ const createContestObjectSchema = z.object({
 });
 
 export const createContestSchema = z.preprocess(normalizeCreateContestInput, createContestObjectSchema);
+export const createRegularContestSchema = createContestSchema.refine(
+    (contest) => !contest.isPhotographyOfYear,
+    {
+        path: ["isPhotographyOfYear"],
+        message: "Create Photographer of the Year contests through the dedicated endpoint",
+    }
+);
 
 const updateContestObjectSchema = z.object({
     title: z.string().trim().min(1).max(160).optional(),

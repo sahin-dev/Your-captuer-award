@@ -8,6 +8,7 @@ model Contest {
   banner         String?       @default("https://images.unsplash.com/photo-1689539137236-b68e436248de?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D")
   status         ContestStatus @default(UPCOMING)
   isMoneyContest Boolean       @default(false)
+  isPhotographyOfYear Boolean  @default(false)
   maxPrize       Int?          @default(0)
   minPrize       Int?          @default(0)
   currency       String?       @default("USD")
@@ -57,6 +58,7 @@ model Contest {
   @@index([status, endDate])
   @@index([recurringContestId, startDate])
   @@index([category, status, startDate])
+  @@index([isPhotographyOfYear, status, startDate])
   @@index([deletedAt])
   @@map("contests")
 

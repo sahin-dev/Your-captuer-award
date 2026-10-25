@@ -109,6 +109,9 @@ export const addOneVote = async (userId:string, contestId:string, contestPhotoId
     if (!contest){
         throw new  ApiError(httpstatus.NOT_FOUND, 'contest not found')
     }
+    if (contest.isPhotographyOfYear) {
+        throw new ApiError(httpstatus.BAD_REQUEST, "Photographer of the Year scores come from regular contest votes")
+    }
     if(!contestPhoto){
         throw new ApiError(httpstatus.NOT_FOUND, "contest photo not found")
     }
@@ -169,6 +172,9 @@ export const addVotes = async (userId:string, contestId:string, contestPhotoIds:
     }
     if (!contest){
         throw new  ApiError(httpstatus.NOT_FOUND, 'Contest is not available to vote')
+    }
+    if (contest.isPhotographyOfYear) {
+        throw new ApiError(httpstatus.BAD_REQUEST, "Photographer of the Year scores come from regular contest votes")
     }
     if(contestPhotos.some(photo => !photo)){
         throw new ApiError(httpstatus.NOT_FOUND, "One or more contest photos were not found")

@@ -492,6 +492,28 @@ const finalizeContest = async (contestId: string) => {
     if (frozen.count !== 1) {
       throw new Error("Contest could not be frozen for finalization");
     }
+
+    // Photographer of the Year has no votes, awards or level grants of its own -
+    // its ranking is derived live from regular-contest votes inside its date
+    // window - so finalizing it only closes the contest.
+    if (contest.isPhotographyOfYear) {
+      const completedAt = new Date();
+      await runWithWriteConflictRetry(
+        () => prisma.$transaction([
+          prisma.contest.update({
+            where: { id: contestId },
+            data: { status: ContestStatus.COMPLETED, finalizedAt: completedAt },
+          }),
+          prisma.contestFinalization.update({
+            where: { contestId },
+            data: { status: ContestFinalizationStatus.COMPLETED, completedAt, error: null },
+          }),
+        ]),
+        { label: `contest ${contestId} completion` }
+      );
+      return prisma.contestFinalization.findUnique({ where: { contestId } });
+    }
+
     const [ranking, awards, selections, levelAwards] = await Promise.all([
       // Final placement decides awards and payouts, so it is always scanned
       // fresh from the frozen contest - never served from the read cache.

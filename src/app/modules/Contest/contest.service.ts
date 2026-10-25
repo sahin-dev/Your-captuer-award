@@ -32,6 +32,8 @@ import {
 } from './ContestRules/contestRule.definitions';
 import { prizeTypes, ycLevels } from '../Awards/award.definitions';
 import { paginationHelper } from '../../../helpers/paginationHelper';
+import { photographyOfTheYearRankingService } from '../PhotographyOfTheYear/photographyOfTheYearRanking.service';
+import { withPotyPrizePools } from '../PhotographyOfTheYear/photographyOfTheYearPrizePool';
 import { sendMail } from '../../../shared/mailSender';
 import { notificationOrchestrator } from '../Notification/notificationOrchestrator';
 import { reportService } from '../Report/report.service';
@@ -379,12 +381,19 @@ const createContest = async (creatorId: string, body: contestData, banner:Expres
         : null
 
     const normalizedRules = contestRuleService.normalizeContestRules(body.rules, body.rules === undefined)
-    const awardRows = await prizeService.resolveAwardRows(
-        body.prizeIds || [],
-        body.prizes || [],
-        shouldUseDefaultAwards(body)
-    )
-    const levelAwards = body.levelAwards || []
+    const contestRules = body.isPhotographyOfYear
+        ? normalizedRules.map(rule => rule.key === "SUBMISSION_LIMIT"
+            ? { ...rule, value: 8, enabled: true }
+            : rule)
+        : normalizedRules
+    const awardRows = body.isPhotographyOfYear
+        ? []
+        : await prizeService.resolveAwardRows(
+            body.prizeIds || [],
+            body.prizes || [],
+            shouldUseDefaultAwards(body)
+        )
+    const levelAwards = body.isPhotographyOfYear ? [] : (body.levelAwards || [])
     const categoryData = await contestCategoryService.prepareCategoryUpdate(resolveCategoryInput(body))
 
     const contestData:any = {
@@ -394,6 +403,7 @@ const createContest = async (creatorId: string, body: contestData, banner:Expres
         title: body.title,
         description: body.description,
         status: ContestStatus.UPCOMING,
+        isPhotographyOfYear: body.isPhotographyOfYear,
         ...categoryData,
         isMoneyContest:body.isMoneyContest,
         currency:body.isMoneyContest ? body.currency : null,
@@ -401,7 +411,7 @@ const createContest = async (creatorId: string, body: contestData, banner:Expres
         maxPrize:body.isMoneyContest ? body.maxPrize : 0,
         entryFeeAmount:body.entryFeeAmount || 0,
         entryFeeCoins:body.coinRequirement === false ? 0 : (body.entryFeeCoins || 0),
-        maxUpload:contestRuleService.getSubmissionLimitFromRules(normalizedRules),
+        maxUpload:body.isPhotographyOfYear ? 8 : contestRuleService.getSubmissionLimitFromRules(contestRules),
         ...(bannerFromUserPhoto
             ? {banner:bannerFromUserPhoto.banner, bannerUploaderId:bannerFromUserPhoto.bannerUploaderId}
             : (bannerUrl && {banner:bannerUrl}))
@@ -414,19 +424,23 @@ const createContest = async (creatorId: string, body: contestData, banner:Expres
 
     return prisma.$transaction(async tx => {
         const contest = await tx.contest.create({data:contestData})
-        await tx.contestRuleConfig.createMany({
-            data:normalizedRules.map(rule => ({
-                contestId:contest.id,
-                key:rule.key,
-                value:rule.value,
-                enabled:rule.enabled ?? true,
-                order:rule.order ?? 0
-            }))
-        })
+        if(contestRules.length > 0){
+            await tx.contestRuleConfig.createMany({
+                data:contestRules.map(rule => ({
+                    contestId:contest.id,
+                    key:rule.key,
+                    value:rule.value,
+                    enabled:rule.enabled ?? true,
+                    order:rule.order ?? 0
+                }))
+            })
+        }
 
-        await tx.contestAward.createMany({
-            data:awardRows.map(award => ({contestId:contest.id, ...award}))
-        })
+        if(awardRows.length > 0){
+            await tx.contestAward.createMany({
+                data:awardRows.map(award => ({contestId:contest.id, ...award}))
+            })
+        }
 
         if(levelAwards.length > 0){
             await tx.contestLevelAward.createMany({
@@ -434,7 +448,7 @@ const createContest = async (creatorId: string, body: contestData, banner:Expres
             })
         }
 
-        return {...contest, rules:normalizedRules, prizes:awardRows.filter(prize => prize.enabled), levelAwards}
+        return {...contest, rules:contestRules, prizes:awardRows.filter(prize => prize.enabled), levelAwards}
     })
 };
 
@@ -742,13 +756,26 @@ const createRecurringContest  =  async (creatorId: string, body: contestData, ba
 }
 
 
-const updateContest = async (contestId:string, contestData:updateContestData, banner?:Express.Multer.File)=>{
+const updateContest = async (
+    contestId:string,
+    contestData:updateContestData,
+    banner?:Express.Multer.File,
+    allowPhotographyOfYear = false
+)=>{
     const contest = await prisma.contest.findUnique({where:{id:contestId}})
     if(!contest){
         throw new ApiError(httpstatus.NOT_FOUND, "contest not found")
     }
     if(contest.deletedAt){
         throw new ApiError(httpstatus.BAD_REQUEST, "Archived contests cannot be edited")
+    }
+    if(contest.isPhotographyOfYear !== allowPhotographyOfYear){
+        throw new ApiError(
+            httpstatus.BAD_REQUEST,
+            contest.isPhotographyOfYear
+                ? "Update Photographer of the Year contests through the dedicated endpoint"
+                : "This endpoint only accepts Photographer of the Year contests"
+        )
     }
 
     const lockedStatuses:ContestStatus[] = [
@@ -771,16 +798,16 @@ const updateContest = async (contestId:string, contestData:updateContestData, ba
         )
     }
 
-    const isMoneyContest = contestData.isMoneyContest ?? contest.isMoneyContest
-    const minPrize = contestData.minPrize ?? contest.minPrize ?? 0
-    const maxPrize = contestData.maxPrize ?? contest.maxPrize ?? 0
+    const isMoneyContest = contest.isPhotographyOfYear ? false : (contestData.isMoneyContest ?? contest.isMoneyContest)
+    const minPrize = contest.isPhotographyOfYear ? 0 : (contestData.minPrize ?? contest.minPrize ?? 0)
+    const maxPrize = contest.isPhotographyOfYear ? 0 : (contestData.maxPrize ?? contest.maxPrize ?? 0)
     const currency = contestData.currency === undefined ? contest.currency : contestData.currency
     const entryFeeAmount = contestData.entryFeeAmount ?? contest.entryFeeAmount ?? 0
     if(isMoneyContest && (!currency || minPrize > maxPrize)){
         throw new ApiError(httpstatus.BAD_REQUEST, "Money contests require valid currency and prize bounds")
     }
 
-    const entryFeeCoins = contestData.coinRequirement === false
+    const entryFeeCoins = contest.isPhotographyOfYear ? 0 : contestData.coinRequirement === false
         ? 0
         : (contestData.entryFeeCoins ?? contest.entryFeeCoins)
     if(contestData.coinRequirement && !entryFeeCoins){
@@ -807,10 +834,17 @@ const updateContest = async (contestId:string, contestData:updateContestData, ba
         updatePayload.bannerUploaderId = null
     }
 
-    const normalizedRules = rules !== undefined
+    const normalizedRulesInput = rules !== undefined
         ? contestRuleService.normalizeContestRules(rules, false)
         : undefined
-    const awardRows = (prizeIds !== undefined || prizes !== undefined)
+    const normalizedRules = contest.isPhotographyOfYear && normalizedRulesInput
+        ? normalizedRulesInput.map(rule => rule.key === "SUBMISSION_LIMIT"
+            ? { ...rule, value: 8, enabled: true }
+            : rule)
+        : normalizedRulesInput
+    const awardRows = contest.isPhotographyOfYear
+        ? []
+        : (prizeIds !== undefined || prizes !== undefined)
         ? await prizeService.resolveAwardRows(
             prizeIds || [],
             prizes || [],
@@ -831,7 +865,7 @@ const updateContest = async (contestId:string, contestData:updateContestData, ba
                 maxPrize:isMoneyContest ? maxPrize : 0,
                 entryFeeAmount,
                 entryFeeCoins,
-                ...(normalizedRules !== undefined && {maxUpload:contestRuleService.getSubmissionLimitFromRules(normalizedRules)}),
+                ...(normalizedRules !== undefined && {maxUpload:contest.isPhotographyOfYear ? 8 : contestRuleService.getSubmissionLimitFromRules(normalizedRules)}),
             }
         })
 
@@ -854,11 +888,11 @@ const updateContest = async (contestId:string, contestData:updateContestData, ba
         }
 
         let updatedAwards
-        if(awardRows !== undefined){
+        if(contest.isPhotographyOfYear || awardRows !== undefined){
             await tx.contestAward.deleteMany({where:{contestId}})
-            if(awardRows.length > 0){
+            if((awardRows?.length ?? 0) > 0){
                 await tx.contestAward.createMany({
-                    data:awardRows.map(row => ({contestId, ...row}))
+                    data:(awardRows ?? []).map(row => ({contestId, ...row}))
                 })
             }
             updatedAwards = await tx.contestAward.findMany({
@@ -868,11 +902,11 @@ const updateContest = async (contestId:string, contestData:updateContestData, ba
         }
 
         let updatedLevelAwards
-        if(levelAwards !== undefined){
+        if(contest.isPhotographyOfYear || levelAwards !== undefined){
             await tx.contestLevelAward.deleteMany({where:{contestId}})
-            if(levelAwards.length > 0){
+            if((levelAwards?.length ?? 0) > 0){
                 await tx.contestLevelAward.createMany({
-                    data:levelAwards.map((award:any) => ({contestId, ...award}))
+                    data:(levelAwards ?? []).map((award:any) => ({contestId, ...award}))
                 })
             }
             updatedLevelAwards = await tx.contestLevelAward.findMany({where:{contestId}})
@@ -947,11 +981,19 @@ const deleteContestByContestId =async (contestId:string)=>{
 
 // add a user to the contest participant list
 
-const joinContest = async (userId:string,contestId:string, acceptedRuleKeys?:unknown)=>{
+const joinContest = async (
+    userId:string,
+    contestId:string,
+    acceptedRuleKeys?:unknown,
+    allowPhotographyOfYear = false
+)=>{
     const contest = await prisma.contest.findFirst({where:{id:contestId, ...activeContestWhere()}})
 
     if (!contest){
         throw new ApiError(httpstatus.NOT_FOUND, "Contest is not available to participate")
+    }
+    if(contest.isPhotographyOfYear !== allowPhotographyOfYear){
+        throw new ApiError(httpstatus.BAD_REQUEST, "Use the matching contest participation endpoint")
     }
 
     const existingParticipant = await prisma.contestParticipant.findUnique({where:{contestId_userId:{contestId,userId}}})
@@ -1098,7 +1140,8 @@ const buildContestDetails = async <T extends {id:string; status:ContestStatus}>(
         contestCache.getOne("detail", contest, loadContestDetailExtras),
         voteService.getContestTotalVotes(contest.id)
     ])
-    const baseContestDetails = {...contest, cardAttribution:getContestCardAttribution(contest), ...extras, totalVotes}
+    const [contestWithPool] = await withPotyPrizePools([contest as T & {isPhotographyOfYear?:boolean}])
+    const baseContestDetails = {...contestWithPool, cardAttribution:getContestCardAttribution(contest), ...extras, totalVotes}
 
     return isCompletedContest(contest.status) ? {...baseContestDetails, winners} : baseContestDetails
 }
@@ -1433,7 +1476,7 @@ const enrichContestListDetails = async (contests:any[]) => {
     // The contest rows come from the caller's live query, so status, dates and
     // membership filters are always current; only the per-contest extras are
     // cached, and vote totals are always counted live.
-    const [extrasByContestId, voteGroups] = await Promise.all([
+    const [extrasByContestId, voteGroups, contestsWithPools] = await Promise.all([
         contestCache.getMany("list", contests, loadContestListExtras),
         // Votes counted with voting power, like every other vote total.
         prisma.vote.groupBy({
@@ -1441,10 +1484,11 @@ const enrichContestListDetails = async (contests:any[]) => {
             where:{contestId:{in:contestIds}},
             _sum:{power:true},
         }),
+        withPotyPrizePools(contests),
     ]);
     const voteCountByContestId = new Map(voteGroups.map(group => [group.contestId, group._sum.power ?? 0]));
 
-    return contests.map((contest) => {
+    return contestsWithPools.map((contest) => {
         const {winners, ...extras} = extrasByContestId.get(contest.id)!;
         const baseContestDetails = {
             ...contest,
@@ -1735,9 +1779,15 @@ const loadCompletedContestCard = async (contestId:string, userId:string) => {
         achievementService.getMyAchievementsByContest(userId, contestId),
         getParticipantLevelData(contestId, userId)
     ])
+    // POTY entries are scored by the votes their photos got in regular contests
+    // during the POTY dates, not by votes cast inside the POTY contest itself.
+    const potyVotes = details?.isPhotographyOfYear
+        ? new Map((await photographyOfTheYearRankingService.getMyPhotographyOfYearEntry(contestId, userId))
+            .photos.map(photo => [photo.contestPhotoId, photo.voteCount]))
+        : null
     const photos = await Promise.all(participantPhotos.map(async photo => ({
         ...photo,
-        voteCount:await voteService.getVoteCount(photo.id)
+        voteCount:potyVotes ? (potyVotes.get(photo.id) ?? 0) : await voteService.getVoteCount(photo.id)
     })))
     const totalVotes = photos.reduce((pre, photo) => photo.voteCount + pre, 0)
 
@@ -2057,7 +2107,11 @@ const getContestUploads = async (userId:string,contestId:string)=>{
     }
 
 
-    const contestUploads = await prisma.contestPhoto.findMany({where:{contestId, votes:{none:{providerId:participant.userId}}}, orderBy:[{createdAt:"asc"}, {id:"asc"}], include:{photo:{select:{id:true, url:true}}}})
+    const contestUploads = await prisma.contestPhoto.findMany({
+        where:{contestId, votes:{none:{providerId:participant.userId}}}, 
+        orderBy:[{createdAt:"asc"}, {id:"asc"}],
+        include:{photo:{select:{id:true, url:true}}}})
+        
     const voteCountByContestPhotoId = await voteService.getVoteCountsForContestPhotos(contestUploads.map(upload => upload.id))
     const uploads = contestUploads.flatMap(upload => {
         if(!upload.photo){
@@ -2183,7 +2237,14 @@ const addContestCategoryToPhotos = async (
     }))
 }
 
-const uploadPhotoToContest = async (contestId:string,userId:string, photoIds:unknown, files:Express.Multer.File[], acceptedRuleKeys?:unknown)=>{
+const uploadPhotoToContest = async (
+    contestId:string,
+    userId:string,
+    photoIds:unknown,
+    files:Express.Multer.File[],
+    acceptedRuleKeys?:unknown,
+    allowPhotographyOfYear = false
+)=>{
 
     if(!contestId){
         throw new ApiError(httpstatus.BAD_REQUEST, "contest id is required")
@@ -2192,6 +2253,9 @@ const uploadPhotoToContest = async (contestId:string,userId:string, photoIds:unk
 
     if(!contest){
         throw new ApiError(httpstatus.NOT_FOUND, "contest not found or contest closed")
+    }
+    if(contest.isPhotographyOfYear !== allowPhotographyOfYear){
+        throw new ApiError(httpstatus.BAD_REQUEST, "Use the matching contest participation endpoint")
     }
 
     let user = await prisma.user.findUnique({where:{id:userId}})
@@ -3157,9 +3221,6 @@ const getContestRanking = async (
 
     return {photos, photographers}
 }
-
-
-
 
 export const contestService = {
     getContestUploadFiles,
