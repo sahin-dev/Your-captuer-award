@@ -478,15 +478,21 @@ const getTransactions = async (query:{page:string, limit:string, search?:string}
         ]
     } : {}
 
-    const payments = await prisma.payment.findMany({
+    const paymentRows = await prisma.payment.findMany({
         where,
-        include:{user:{
-            select:{id:true,avatar:true, fullName:true, email:true}
-        }},
         orderBy:{createdAt:'desc'},
         skip:(paginationData.page - 1) * paginationData.limit,
         take:paginationData.limit
     })
+
+    // Users are loaded separately: a payment whose user was removed outside
+    // Prisma would make `include: { user }` throw and fail the whole page.
+    const users = await prisma.user.findMany({
+        where:{id:{in:[...new Set(paymentRows.map((payment) => payment.userId))]}},
+        select:{id:true,avatar:true, fullName:true, email:true}
+    })
+    const usersById = new Map(users.map((user) => [user.id, user]))
+    const payments = paymentRows.map((payment) => ({...payment, user:usersById.get(payment.userId) ?? null}))
 
     const total = await prisma.payment.count({where})
 
