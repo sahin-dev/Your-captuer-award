@@ -7,6 +7,14 @@ import httpStatus from "http-status";
 import ApiError from "../../errors/ApiError";
 import { verifyToken } from "../../helpers/jwt";
 import prisma from "../../shared/prisma";
+import { authCache } from "../modules/Auth/auth.cache";
+
+// Every authenticated request needs this, so it is cached and kept small.
+// Controllers only read req.user.id; load anything else they need separately.
+const loadRequestUser = (id: string) =>
+  authCache.getRequestUser(id, () =>
+    prisma.user.findUnique({ where: { id }, select: { id: true, role: true, isDeleted: true } })
+  );
 
 
 const auth = (...roles: string[]) => {
@@ -32,14 +40,10 @@ const auth = (...roles: string[]) => {
         config.jwt.jwt_secret as Secret
       );
    
-      const { id, role, iat } = verifiedUser;
+      const { id, role } = verifiedUser;
 
 
-      const user = await prisma.user.findUnique({
-        where: {
-          id: id,
-        },
-      });
+      const user = await loadRequestUser(id);
       
       if (!user || user.isDeleted) {
         throw new ApiError(httpStatus.NOT_FOUND, "User not found!");
@@ -92,11 +96,7 @@ export const optionalAuth = () => {
 
       const { id } = verifiedUser;
 
-      const user = await prisma.user.findUnique({
-        where: {
-          id: id,
-        },
-      });
+      const user = await loadRequestUser(id);
 
       if (!user || user.isDeleted) {
         return next();

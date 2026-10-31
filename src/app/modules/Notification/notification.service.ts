@@ -22,6 +22,13 @@ const postNotificationWithPayload = async (title:string, message:string, receive
     return notification
 }
 
+// One row per user in a single write.
+const postNotificationToUsers = async (title:string, message:string, receiverIds:string[], payload:Record<string, any>, type?:NotificationType) => {
+    await prisma.notification.createMany({
+        data:receiverIds.map(receiverId => ({title, message, receiverId, data:payload, ...(type && { type })}))
+    })
+}
+
 const getUserNotifications = async (receiverId:string, page: number = 1, limit: number = 10)=>{
     const { skip, limit: paginationLimit } = paginationHelper.calculatePagination({ page, limit });
     
@@ -131,6 +138,7 @@ export const notificationService = {
     getAdminNotification,
     markAllRead,
     markOneRead,
-    getTeamMembers
+    getTeamMembers,
+    postNotificationToUsers
     
 }

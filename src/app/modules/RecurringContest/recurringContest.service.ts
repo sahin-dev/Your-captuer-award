@@ -1,3 +1,4 @@
+import { notDeletedContest } from "../Contest/contestLifecycle";
 import httpStatus from "http-status";
 import ApiError from "../../../errors/ApiError";
 import { ContestStatus, Prisma, RecurringContestStatus, RecurringType } from "../../../prismaClient";
@@ -7,7 +8,7 @@ import { prizeService } from "../Prize/prize.service";
 import { contestLevelAwardService } from "../Contest/contestLevelAward.service";
 import { ContestRuleConfigInput } from "../Contest/ContestRules/contestRules.type";
 import { contestRuleService } from "../Contest/ContestRules/contestRules.service";
-import { resolveBannerFromUserPhoto } from "../Contest/contest.service";
+import { resolveBanner } from "../Contest/authoring/bannerResolver";
 import { resolveCategoryInput } from "../Contest/contestCategories";
 import { contestCategoryService } from "../Contest/contestCategory.service";
 import { contestCache } from "../Contest/contest.cache";
@@ -86,7 +87,7 @@ const upcomingInstanceWhere = (recurringContestId: string): Prisma.ContestWhereI
   recurringContestId,
   status: ContestStatus.UPCOMING,
   startDate: { gt: new Date() },
-  OR: [{ deletedAt: null }, { deletedAt: { isSet: false } }],
+  ...notDeletedContest,
 });
 
 const updateRecurringContest = async (
@@ -123,20 +124,9 @@ const updateRecurringContest = async (
   if(isMoneyContest && (!currency || minPrize > maxPrize)){
     throw new ApiError(httpStatus.BAD_REQUEST, "Money contests require valid currency and prize bounds");
   }
-  const bannerFromUserPhoto = await resolveBannerFromUserPhoto(data.bannerUserPhotoId);
-  if (bannerFromUserPhoto && banner) {
-    await fileUploader.discardUploadedFile(banner);
-  }
-  const uploadedBanner = !bannerFromUserPhoto && banner
-    ? (await fileUploader.uploadToDigitalOcean(banner)).Key
-    : undefined;
   // The previous banner file is intentionally kept: contests already generated
   // from this template still reference it.
-  const bannerUpdate = bannerFromUserPhoto
-    ? { banner: bannerFromUserPhoto.banner, bannerUploaderId: bannerFromUserPhoto.bannerUploaderId }
-    : uploadedBanner
-      ? { banner: uploadedBanner, bannerUploaderId: null }
-      : {};
+  const bannerUpdate = await resolveBanner(data.bannerUserPhotoId, banner);
   const categoryUpdate = await contestCategoryService.prepareCategoryUpdate(resolveCategoryInput(data));
 
   const recurring = startDateChanged || endDateChanged

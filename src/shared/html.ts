@@ -1,3 +1,11 @@
+// Use for any user-written text placed inside an email.
+export const escapeHtml = (value:string) => value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+
 export const generateOtpEmailHtml = (email:string, otp:string) => {
     return `
       <!DOCTYPE html>

@@ -128,9 +128,9 @@ async function shutdown(exitCode = 0) {
     logger.error({ err: error }, "Failed to disconnect prisma");
   });
 
-  await shutdownTelemetry().catch((error) => {
-    logger.error({ err: error }, "Failed to flush telemetry");
-  });
+  // await shutdownTelemetry().catch((error) => {
+  //   logger.error({ err: error }, "Failed to flush telemetry");
+  // });
 
   process.exit(exitCode);
 }

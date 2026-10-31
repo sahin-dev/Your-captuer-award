@@ -179,18 +179,18 @@ export const getPhotos = async (userId:string, sortBy:string = 'votes')=>{
         throw new ApiError(httpStatus.NOT_FOUND, "user does not have any photos")
     }
     // Map photos to include votes property without mutating the original type
-    const mappedPhotos = await Promise.all(photos.map(async (photo) => {
-        const contestUploadVotes = await Promise.all(photo.contestUpload.map(contestUpload => voteService.getVoteCount(contestUpload.id)))
-        const votes = contestUploadVotes.reduce((acc, voteCount) => acc + voteCount, 0);
-
+    const voteCountBySlotId = await voteService.getVoteCountsForContestPhotos(
+        photos.flatMap(photo => photo.contestUpload.map(contestUpload => contestUpload.id))
+    )
+    const mappedPhotos = photos.map(photo => {
         // Omit contestUpload property when returning the object
-        const { contestUpload,_count, ...rest } = photo;
+        const { contestUpload, _count, ...rest } = photo;
         return {
             ...rest,
-            votes,
+            votes: contestUpload.reduce((total, slot) => total + (voteCountBySlotId.get(slot.id) ?? 0), 0),
             likes: _count.likes
         };
-    }));
+    });
 
     sortPhotos(mappedPhotos, sortBy);
 

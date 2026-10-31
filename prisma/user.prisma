@@ -152,6 +152,7 @@ model Comment {
   updatedAt DateTime @updatedAt
 
   @@index([photoId, createdAt])
+  @@index([parentId])
   @@map("comments")
 }
 
@@ -166,6 +167,7 @@ model Follow {
   updatedAt DateTime @updatedAt
 
   @@unique([followerId, followingId])
+  @@index([followingId])
   @@map("follows")
 }
 

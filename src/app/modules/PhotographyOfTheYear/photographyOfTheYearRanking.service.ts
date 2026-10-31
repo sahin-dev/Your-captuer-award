@@ -1,9 +1,12 @@
-import { ContestStatus } from "../../../prismaClient";
+import { notDeletedContest } from "../Contest/contestLifecycle";
+import { ContestStatus, Prisma } from "../../../prismaClient";
 import prisma from "../../../shared/prisma";
 import ApiError from "../../../errors/ApiError";
 import httpStatus from "http-status";
 import { paginationHelper } from "../../../helpers/paginationHelper";
 import { withPotyPrizePools } from "./photographyOfTheYearPrizePool";
+import { notifyPotyTopTenRecipient } from "./photographyOfTheYear.notification";
+import logger from "../../../shared/logger";
 
 const paginate = <T>(items: T[], page?: number, limit?: number) => {
   const { skip, limit: pageLimit, page: currentPage } = paginationHelper.calculatePagination({ page, limit });
@@ -19,7 +22,7 @@ const paginate = <T>(items: T[], page?: number, limit?: number) => {
 // photo in any number of regular contests and every vote it gets counts here.
 const buildFullRanking = async (contestId: string) => {
   const contest = await prisma.contest.findFirst({
-    where: { id: contestId, isPhotographyOfYear: true, OR: [{ deletedAt: null }, { deletedAt: { isSet: false } }] },
+    where: { id: contestId, isPhotographyOfYear: true, ...notDeletedContest },
     select: { id: true, startDate: true, endDate: true },
   });
 
@@ -120,6 +123,85 @@ const buildFullRanking = async (contestId: string) => {
   };
 };
 
+const notifyTopTenForContest = async (contestId: string) => {
+  const contest = await prisma.contest.findFirst({
+    where: { id: contestId, isPhotographyOfYear: true, ...notDeletedContest },
+    select: { id: true, title: true },
+  });
+  if (!contest) return;
+
+  const ranking = await buildFullRanking(contestId);
+  const topTen = ranking.photos.slice(0, 10);
+  // Most runs change nothing, so skip the photos that were already announced.
+  const alreadyNotified = await prisma.photographyOfTheYearTopTenNotification.findMany({
+    where: { contestId, contestPhotoId: { in: topTen.map((photo) => photo.contestPhotoId) } },
+    select: { contestPhotoId: true },
+  });
+  const notifiedPhotoIds = new Set(alreadyNotified.map((item) => item.contestPhotoId));
+  const newPhotos = topTen.filter((photo) => !notifiedPhotoIds.has(photo.contestPhotoId));
+  if (newPhotos.length === 0) {
+    return;
+  }
+
+  const recipients = await prisma.user.findMany({
+    where: { id: { in: newPhotos.map((photo) => photo.photographer.id) } },
+    select: { id: true, email: true, fullName: true, username: true },
+  });
+  const recipientById = new Map(recipients.map((recipient) => [recipient.id, recipient]));
+
+  for (const photo of newPhotos) {
+    try {
+      await prisma.photographyOfTheYearTopTenNotification.create({
+        data: { contestId, contestPhotoId: photo.contestPhotoId },
+      });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+        continue;
+      }
+      logger.error({ err: error, contestId, contestPhotoId: photo.contestPhotoId }, "Could not claim POTY top-10 notification");
+      continue;
+    }
+
+    try {
+      const recipient = recipientById.get(photo.photographer.id);
+      if (!recipient) continue;
+      await notifyPotyTopTenRecipient(
+        {
+          id: recipient.id,
+          email: recipient.email,
+          fullName: recipient.fullName,
+          username: recipient.username,
+        },
+        {
+          contestId,
+          contestTitle: contest.title,
+          contestPhotoId: photo.contestPhotoId,
+          photoTitle: photo.title || `Entry #${photo.rank}`,
+          rank: photo.rank,
+          voteCount: photo.voteCount,
+        },
+      );
+    } catch (error) {
+      logger.error({ err: error, contestId, contestPhotoId: photo.contestPhotoId }, "POTY top-10 notification delivery failed");
+    }
+  }
+};
+
+const notifyTopTenForActiveContests = async () => {
+  const now = new Date();
+  const contests = await prisma.contest.findMany({
+    where: {
+      isPhotographyOfYear: true,
+      startDate: { lte: now },
+      endDate: { gt: now },
+      ...notDeletedContest,
+    },
+    select: { id: true },
+  });
+
+  await Promise.allSettled(contests.map((contest) => notifyTopTenForContest(contest.id)));
+};
+
 const buildPhotographyOfYearRanking = async (contestId: string, page?: number, limit?: number) => {
   const ranking = await buildFullRanking(contestId);
   return paginate(ranking.photos, page, limit);
@@ -152,18 +234,21 @@ const getMyPhotographyOfYearEntry = async (contestId: string, userId: string) =>
 
 const getPhotographyOfYearContests = async () => {
   const contests = await prisma.contest.findMany({
-    where: { isPhotographyOfYear: true, OR: [{ deletedAt: null }, { deletedAt: { isSet: false } }] },
+    where: { isPhotographyOfYear: true, ...notDeletedContest },
+    include: { potyResult: { select: { id: true } } },
     orderBy: [{ startDate: "desc" }, { createdAt: "desc" }],
   });
   const now = new Date();
 
-  return (await withPotyPrizePools(contests)).map((contest) => ({
+  return (await withPotyPrizePools(contests)).map(({ potyResult, ...contest }) => ({
     ...contest,
-    status: contest.endDate <= now
+    status: potyResult
       ? ContestStatus.COMPLETED
-      : contest.startDate > now
-        ? ContestStatus.UPCOMING
-        : ContestStatus.ACTIVE,
+      : contest.endDate <= now
+        ? ContestStatus.CLOSED
+        : contest.startDate > now
+          ? ContestStatus.UPCOMING
+          : ContestStatus.ACTIVE,
   }));
 };
 
@@ -172,4 +257,6 @@ export const photographyOfTheYearRankingService = {
   buildPhotographyOfYearPhotographerRanking,
   getMyPhotographyOfYearEntry,
   getPhotographyOfYearContests,
+  notifyTopTenForContest,
+  notifyTopTenForActiveContests,
 };

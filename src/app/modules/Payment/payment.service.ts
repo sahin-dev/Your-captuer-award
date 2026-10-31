@@ -268,6 +268,8 @@ const buildContestRedirectUrl = (
       throw new ApiError(httpStatus.NOT_FOUND, "Contest is not available to participate");
     }
 
+    const entryFeeAmount = contest.entryFeeAmount;
+
     const existingParticipant = await prisma.contestParticipant.findUnique({
       where: { contestId_userId: { contestId, userId } }
     });
@@ -279,7 +281,7 @@ const buildContestRedirectUrl = (
       };
     }
 
-    if (contest.entryFeeAmount <= 0) {
+    if (entryFeeAmount <= 0) {
       throw new ApiError(httpStatus.BAD_REQUEST, "This contest does not require Stripe entry payment");
     }
 
@@ -345,7 +347,7 @@ const buildContestRedirectUrl = (
         payment = await prisma.$transaction(async (tx) => {
           const createdPayment = await tx.payment.create({
             data: {
-              amount: contest.entryFeeAmount,
+              amount: entryFeeAmount,
               type: PaymentType.CONTEST,
               currency,
               contestId: contest.id,
@@ -380,7 +382,7 @@ const buildContestRedirectUrl = (
       payment = await prisma.$transaction(async (tx) => {
         const replacement = await tx.payment.create({
           data: {
-            amount: contest.entryFeeAmount,
+            amount: entryFeeAmount,
             type: PaymentType.CONTEST,
             currency,
             contestId: contest.id,
@@ -459,7 +461,7 @@ const buildContestRedirectUrl = (
           status: PaymentStatus.PENDING,
           stripe_session_id: null,
           stripe_payment_id: null,
-          amount: contest.entryFeeAmount,
+          amount: entryFeeAmount,
           currency,
         },
       });
@@ -471,7 +473,7 @@ const buildContestRedirectUrl = (
     try {
       const session = await provider.initializePaymentSession(
         userId,
-        contest.entryFeeAmount,
+        entryFeeAmount,
         currency,
         successUrl,
         cancelUrl,

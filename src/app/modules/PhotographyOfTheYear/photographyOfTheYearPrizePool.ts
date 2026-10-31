@@ -3,7 +3,6 @@ import prisma from "../../../shared/prisma";
 
 // Photographer of the Year is a paid contest: every entry fee goes into one pot
 // and this share of it is split between the 1st, 2nd and 3rd place winners.
-export const POTY_DEFAULT_ENTRY_FEE_USD = 4.99;
 export const POTY_PRIZE_POOL_SHARE_PERCENT = 60;
 
 export type PotyPrizePool = {

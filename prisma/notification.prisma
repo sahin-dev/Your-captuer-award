@@ -10,6 +10,8 @@ model Notification {
    createdAt       DateTime     @default(now())
    updatedAT       DateTime     @updatedAt
 
+   @@index([receiverId, createdAt(sort: Desc)])
+   @@index([receiverId, isRead])
    @@map("notifications")
 }
 

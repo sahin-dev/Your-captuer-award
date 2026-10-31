@@ -30,6 +30,8 @@ export enum NotificationEvent {
   CONTEST_PHOTO_REMOVED = "CONTEST_PHOTO_REMOVED",
   CONTEST_WINNER_ANNOUNCED = "CONTEST_WINNER_ANNOUNCED",
   CONTEST_ENDED = "CONTEST_ENDED",
+  POTY_TOP_TEN_QUALIFIED = "POTY_TOP_TEN_QUALIFIED",
+  POTY_RESULT_ANNOUNCED = "POTY_RESULT_ANNOUNCED",
 
   // Comment-related
   COMMENT_RECEIVED = "COMMENT_RECEIVED",
@@ -76,6 +78,34 @@ export async function sendNotification(payload: NotificationPayload) {
     logger.debug({ event: payload.event, userId: payload.userId }, "Notification sent");
   } catch (error) {
     logger.error({ err: error }, "Failed to send notification");
+  }
+}
+
+/**
+ * Send one notification to a whole team: one database write for all members and
+ * one push to the team room, which every connected member receives once.
+ */
+async function sendTeamNotification(
+  teamId: string,
+  payload: Omit<NotificationPayload, "userId" | "teamId">
+) {
+  try {
+    const members = await notificationService.getTeamMembers(teamId);
+    if (members.length === 0) {
+      return;
+    }
+
+    await notificationService.postNotificationToUsers(
+      payload.title,
+      payload.message,
+      members.map((member) => member.memberId),
+      { event: payload.event, ...payload.data },
+      payload.type
+    );
+
+    sendSocketNotification({ ...payload, userId: "", teamId });
+  } catch (error) {
+    logger.error({ err: error, teamId }, "Failed to send team notification");
   }
 }
 
@@ -181,27 +211,20 @@ export async function notifyTeamMatchStarted(
   rivalTeamId?: string,
   contestId?: string
 ) {
-  // Get all team members
-  const teamMembers = await notificationService.getTeamMembers(teamId);
-
-  for (const member of teamMembers) {
-    await sendNotification({
-      event: NotificationEvent.TEAM_MATCH_STARTED,
-      userId: member.memberId,
-      title: "Team Match Started! 🏆",
-      message: `Your team is now matched against ${rivalTeamName} in "${contestName}"!`,
-      type: NotificationType.DEFAULT,
+  await sendTeamNotification(teamId, {
+    event: NotificationEvent.TEAM_MATCH_STARTED,
+    title: "Team Match Started! 🏆",
+    message: `Your team is now matched against ${rivalTeamName} in "${contestName}"!`,
+    type: NotificationType.DEFAULT,
+    data: {
       teamId,
-      data: {
-        teamId,
-        matchId,
-        rivalTeamName,
-        rivalTeamId,
-        contestName,
-        contestId,
-      },
-    });
-  }
+      matchId,
+      rivalTeamName,
+      rivalTeamId,
+      contestName,
+      contestId,
+    },
+  });
 }
 
 /**
@@ -220,7 +243,6 @@ export async function notifyTeamMatchEnded(
   contestId?: string,
   contestName?: string
 ) {
-  const teamMembers = await notificationService.getTeamMembers(teamId);
   
   const resultMessage =
     result === "WIN"
@@ -229,28 +251,24 @@ export async function notifyTeamMatchEnded(
       ? `Team match ended. Final score: ${teamScore} vs ${rivalScore}`
       : `It's a draw! Both teams scored ${teamScore} votes`;
 
-  for (const member of teamMembers) {
-    await sendNotification({
-      event: NotificationEvent.TEAM_MATCH_ENDED,
-      userId: member.memberId,
-      title: `Team Match Ended - ${result}`,
-      message: resultMessage + (contestName ? ` in "${contestName}".` : ""),
-      type: NotificationType.VOTE,
+  await sendTeamNotification(teamId, {
+    event: NotificationEvent.TEAM_MATCH_ENDED,
+    title: `Team Match Ended - ${result}`,
+    message: resultMessage + (contestName ? ` in "${contestName}".` : ""),
+    type: NotificationType.VOTE,
+    data: {
       teamId,
-      data: {
-        teamId,
-        matchId,
-        result,
-        teamScore,
-        rivalScore,
-        prizes,
-        rivalTeamId,
-        rivalTeamName,
-        contestId,
-        contestName,
-      },
-    });
-  }
+      matchId,
+      result,
+      teamScore,
+      rivalScore,
+      prizes,
+      rivalTeamId,
+      rivalTeamName,
+      contestId,
+      contestName,
+    },
+  });
 }
 
 /**
@@ -262,23 +280,17 @@ export async function notifyTeamMatchSearchTimeout(
   contestName: string,
   contestId?: string
 ) {
-  const teamMembers = await notificationService.getTeamMembers(teamId);
-
-  for (const member of teamMembers) {
-    await sendNotification({
-      event: NotificationEvent.TEAM_MATCH_SEARCH_TIMEOUT,
-      userId: member.memberId,
-      title: "Match Search Ended",
-      message: `No opponent was found for "${contestName}" within the search window.`,
-      type: NotificationType.DEFAULT,
+  await sendTeamNotification(teamId, {
+    event: NotificationEvent.TEAM_MATCH_SEARCH_TIMEOUT,
+    title: "Match Search Ended",
+    message: `No opponent was found for "${contestName}" within the search window.`,
+    type: NotificationType.DEFAULT,
+    data: {
       teamId,
-      data: {
-        teamId,
-        contestName,
-        contestId,
-      },
-    });
-  }
+      contestName,
+      contestId,
+    },
+  });
 }
 
 /**
@@ -342,24 +354,18 @@ export async function notifyContestPhotoUploaded(
   contestName: string,
   photoCount: number
 ) {
-  const teamMembers = await notificationService.getTeamMembers(teamId);
-
-  for (const member of teamMembers) {
-    await sendNotification({
-      event: NotificationEvent.CONTEST_PHOTO_UPLOADED,
-      userId: member.memberId,
-      title: "Team Member Uploaded Photo",
-      message: `${uploaderName} uploaded ${photoCount} photo(s) to the "${contestName}" contest!`,
-      type: NotificationType.DEFAULT,
-      teamId,
-      data: {
-        uploaderName,
-        contestId,
-        contestName,
-        photoCount,
-      },
-    });
-  }
+  await sendTeamNotification(teamId, {
+    event: NotificationEvent.CONTEST_PHOTO_UPLOADED,
+    title: "Team Member Uploaded Photo",
+    message: `${uploaderName} uploaded ${photoCount} photo(s) to the "${contestName}" contest!`,
+    type: NotificationType.DEFAULT,
+    data: {
+      uploaderName,
+      contestId,
+      contestName,
+      photoCount,
+    },
+  });
 }
 
 /**
@@ -410,6 +416,65 @@ export async function notifyContestPhotoRemoved(
       contestId,
       contestName,
       reason,
+    },
+  });
+}
+
+/**
+ * Sent when a submitted photo enters the automatic Photographer of the Year
+ * top 10 based on weighted votes from regular contests.
+ */
+export async function notifyPhotographyOfTheYearTopTen(
+  userId: string,
+  contestId: string,
+  contestTitle: string,
+  contestPhotoId: string,
+  photoTitle: string,
+  rank: number,
+  voteCount: number,
+) {
+  await sendNotification({
+    event: NotificationEvent.POTY_TOP_TEN_QUALIFIED,
+    userId,
+    title: "Your photo reached the POTY top 10",
+    message: `Your photo "${photoTitle}" is currently ranked #${rank} in "${contestTitle}" and has secured a place in the top 10.`,
+    type: NotificationType.DEFAULT,
+    data: {
+      contestId,
+      contestTitle,
+      contestPhotoId,
+      photoTitle,
+      rank,
+      voteCount,
+    },
+  });
+}
+
+/**
+ * Sent when an admin publishes the final Photographer of the Year placements.
+ */
+export async function notifyPhotographyOfTheYearResult(
+  userId: string,
+  contestId: string,
+  contestTitle: string,
+  contestPhotoId: string,
+  photoTitle: string,
+  place: number,
+  voteCount: number,
+) {
+  await sendNotification({
+    event: NotificationEvent.POTY_RESULT_ANNOUNCED,
+    userId,
+    title: `Your photo placed #${place} in POTY`,
+    message: `Your photo "${photoTitle}" placed #${place} in "${contestTitle}". Congratulations!`,
+    type: NotificationType.DEFAULT,
+    data: {
+      contestId,
+      contestTitle,
+      contestPhotoId,
+      photoTitle,
+      place,
+      voteCount,
     },
   });
 }
@@ -513,6 +578,8 @@ export const notificationOrchestrator = {
   notifyContestPhotoUploaded,
   notifyContestEnded,
   notifyContestPhotoRemoved,
+  notifyPhotographyOfTheYearTopTen,
+  notifyPhotographyOfTheYearResult,
   notifyCommentReceived,
   notifyCommentReplyReceived,
   notifyTeamRewardGranted,

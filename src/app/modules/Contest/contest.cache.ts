@@ -193,6 +193,14 @@ const getOne = async <T>(
   return result.get(contest.id) as T;
 };
 
+// Wraps a load function with the cache, so the function itself stays free of
+// cache code and the caller just calls the wrapped version.
+const cachedLoader = <T>(
+  part: ContestCachePart,
+  load: (contest: CacheableContest) => Promise<T>,
+  options: CacheOptions = {},
+) => (contest: CacheableContest) => getOne(part, contest, load, options);
+
 // Call after the database write has committed. Never throws: a failed
 // invalidation leaves entries to expire on their TTL.
 const invalidateContest = async (contestId: string) => {
@@ -228,5 +236,6 @@ const invalidateContest = async (contestId: string) => {
 export const contestCache = {
   getMany,
   getOne,
+  cachedLoader,
   invalidateContest,
 };

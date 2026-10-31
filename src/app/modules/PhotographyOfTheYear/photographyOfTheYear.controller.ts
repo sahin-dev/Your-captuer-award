@@ -84,6 +84,30 @@ const getMyEntry = catchAsync(async (req: any, res: Response) => {
   });
 });
 
+const getJudgingResult = catchAsync(async (req: any, res: Response) => {
+  const result = await photographyOfTheYearService.getJudgingResult(req.params.contestId);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Photographer of the Year judging result fetched successfully",
+    data: result,
+  });
+});
+
+const submitJudgingResults = catchAsync(async (req: any, res: Response) => {
+  const result = await photographyOfTheYearService.submitJudgingResults(
+    req.params.contestId,
+    req.body,
+    req.user.id,
+  );
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Photographer of the Year results saved and participants notified",
+    data: result,
+  });
+});
+
 const join = catchAsync(async (req: any, res: Response) => {
   const result = await photographyOfTheYearService.join(
     req.user.id,
@@ -115,4 +139,4 @@ const upload = catchAsync(async (req: any, res: Response) => {
   });
 });
 
-export const photographyOfTheYearController = { create, update, getContests, getRanking, getPhotographerRanking, getMyEntry, join, upload };
+export const photographyOfTheYearController = { create, update, getContests, getRanking, getPhotographerRanking, getMyEntry, getJudgingResult, submitJudgingResults, join, upload };

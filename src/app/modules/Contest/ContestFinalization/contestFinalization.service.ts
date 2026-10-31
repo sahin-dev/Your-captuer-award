@@ -29,6 +29,8 @@ import { getContestLevelAchievementId } from "../../Achievements/achievement.key
 import { ContestRanking, contestRankingService } from "../ContestRanking/contestRanking.service";
 import { notificationOrchestrator } from "../../Notification/notificationOrchestrator";
 import { contestCache } from "../contest.cache";
+import { contestStatus } from "../contestLifecycle";
+import { policyFor } from "../contestTypePolicy";
 import logger from "../../../../shared/logger";
 
 type AwardConfig = {
@@ -71,6 +73,15 @@ type AwardSelection = {
 };
 
 const FINALIZATION_LEASE_MS = 15 * 60 * 1000;
+
+// Finalization starts this long after endDate, so vote transactions that passed
+// the "voting is open" check just before the deadline have finished. It must
+// stay longer than the vote transaction timeout (VOTE_TRANSACTION_TIMEOUT_MS).
+export const FINALIZATION_GRACE_MS = 20 * 1000;
+
+// The first moment this contest may be finalized.
+export const getFinalizationTime = (contest: { endDate: Date }) =>
+  new Date(contest.endDate.getTime() + FINALIZATION_GRACE_MS);
 
 const levelAchievementByYCLevel: Partial<Record<YCLevel, {category: PrizeType; badge: ContestLevelBadgeValue}>> = {
   [ycLevels.AMATEUR]: { category: prizeTypes.AMATEUR, badge: contestLevelBadges.AMATEUR },
@@ -452,6 +463,11 @@ const finalizeContest = async (contestId: string) => {
     throw new Error("Contest cannot be finalized before its end date");
   }
 
+  // Too early: leave it for the contest:watchEnded sweep.
+  if (getFinalizationTime(contest).getTime() > Date.now()) {
+    return prisma.contestFinalization.findUnique({ where: { contestId } });
+  }
+
   const claimedAt = await claimFinalization(contestId);
   if (!claimedAt) {
     return prisma.contestFinalization.findUnique({ where: { contestId } });
@@ -481,32 +497,31 @@ const finalizeContest = async (contestId: string) => {
     // frozen with nothing left to move it, and without this it could never be
     // picked up again. The finalization lease in claimFinalization - not the
     // contest status - is what keeps two finalizers apart.
-    const frozen = await prisma.contest.updateMany({
-      where: {
-        id: contestId,
-        status: { in: [ContestStatus.ACTIVE, ContestStatus.FINALIZATION_FAILED, ContestStatus.FINALIZING] },
-        endDate: { lte: new Date() },
-      },
-      data: { status: ContestStatus.FINALIZING, endedAt: contest.endedAt || new Date() },
-    });
-    if (frozen.count !== 1) {
+    const frozen = await contestStatus.change(
+      contestId,
+      ContestStatus.FINALIZING,
+      { endedAt: contest.endedAt || new Date() },
+      { endDate: { lte: new Date() } },
+    );
+    if (!frozen) {
       throw new Error("Contest could not be frozen for finalization");
     }
 
     // Photographer of the Year has no votes, awards or level grants of its own -
     // its ranking is derived live from regular-contest votes inside its date
-    // window - so finalizing it only closes the contest.
-    if (contest.isPhotographyOfYear) {
-      const completedAt = new Date();
+    // window. Once voting ends it waits in CLOSED until an admin publishes
+    // the human-selected top three.
+    if (policyFor(contest).closesForJudging) {
+      const endedAt = new Date();
       await runWithWriteConflictRetry(
         () => prisma.$transaction([
           prisma.contest.update({
             where: { id: contestId },
-            data: { status: ContestStatus.COMPLETED, finalizedAt: completedAt },
+            data: { status: ContestStatus.CLOSED, endedAt, finalizedAt: null },
           }),
           prisma.contestFinalization.update({
             where: { contestId },
-            data: { status: ContestFinalizationStatus.COMPLETED, completedAt, error: null },
+            data: { status: ContestFinalizationStatus.COMPLETED, completedAt: endedAt, error: null },
           }),
         ]),
         { label: `contest ${contestId} completion` }

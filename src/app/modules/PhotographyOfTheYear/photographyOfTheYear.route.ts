@@ -5,6 +5,7 @@ import auth from "../../middlewares/auth.middleware";
 import validateRequest from "../../middlewares/validation.middleware";
 import { createContestSchema, updateContestSchema } from "../Contest/contest.validation";
 import { photographyOfTheYearController } from "./photographyOfTheYear.controller";
+import { submitJudgingResultsSchema } from "./photographyOfTheYear.validation";
 
 const router = Router();
 
@@ -22,6 +23,17 @@ router.put(
   fileUploader.contestBanner,
   validateRequest(updateContestSchema),
   photographyOfTheYearController.update,
+);
+router.get(
+  "/:contestId/judging-result",
+  auth(UserRole.ADMIN),
+  photographyOfTheYearController.getJudgingResult,
+);
+router.put(
+  "/:contestId/judging-result",
+  auth(UserRole.ADMIN),
+  validateRequest(submitJudgingResultsSchema),
+  photographyOfTheYearController.submitJudgingResults,
 );
 router.post("/:contestId/join", auth(), photographyOfTheYearController.join);
 router.post(

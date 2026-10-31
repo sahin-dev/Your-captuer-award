@@ -1,9 +1,7 @@
-import { get } from "http"
-import { ContestStatus, PaymentStatus, PaymentType, SubscriptionPlanEnum, SubscriptionPlanStatus } from "../../../prismaClient"
+import { ContestStatus, PaymentStatus, PaymentType, Prisma, SubscriptionPlanEnum, SubscriptionPlanStatus } from "../../../prismaClient"
 import prisma from "../../../shared/prisma"
 import { notificationService } from "../Notification/notification.service"
-import { voteService } from "../Vote/vote.service"
-import { contestService } from "../Contest/contest.service"
+import { getVoteTotalsByUser } from "../Vote/voteWeight.service"
 import { userCache } from "../User/user.cache"
 import { authCache } from "../Auth/auth.cache"
 import { profileCache } from "../Profile/profile.cache"
@@ -50,97 +48,75 @@ const calcMemberRatio = async (year: string) => {
   return result
 }
 
-const calcIncomeDataByYear = async (year: string) => {
-    const allPayments = await prisma.payment.findMany({
-      where: {      
-        status: PaymentStatus.SUCCEEDED,
-        createdAt: {
-            gte: new Date(`${year}-01-01`),
-            lt: new Date(`${Number(year) + 1}-01-01`)
-          }
-      }
-    })
+type PaymentMonthTotal = {month:number; type:PaymentType; planName:SubscriptionPlanEnum | null; total:number}
 
-    const totalIncome = allPayments.reduce((acc, payment) => acc + payment.amount, 0);
-    const totalProIncome = allPayments
-        .filter(payment => payment.type === PaymentType.SUBSCRIPTION && payment.planName === SubscriptionPlanEnum.PRO)
-        .reduce((acc, payment) => acc + payment.amount, 0);
-    const totalPremiumIncome = allPayments
-        .filter(payment => payment.type === PaymentType.SUBSCRIPTION && payment.planName === SubscriptionPlanEnum.PREMIUM)
-        .reduce((acc, payment) => acc + payment.amount, 0);
-    let incomeByMonth: Record<string, number> = {};
-    allPayments.forEach(payment => {
-        const month = new Date(payment.createdAt).getMonth() + 1;
-        if (incomeByMonth[month]) {
-            incomeByMonth[month] += payment.amount;
-        }
-        else {
-            incomeByMonth[month] = payment.amount;
-        }   
-    });
-    return { totalIncome, totalProIncome, totalPremiumIncome, incomeByMonth }
+const yearRange = (year:string) => ({
+    gte:new Date(`${year}-01-01`),
+    lt:new Date(`${Number(year) + 1}-01-01`)
+})
+
+// Successful payments added up per month, type and plan by the database. Every
+// income figure on the dashboard comes from these totals, so the payments
+// themselves are never loaded into memory.
+const loadPaymentMonthTotals = async (range?:{gte:Date; lt:Date}):Promise<PaymentMonthTotal[]> => {
+    const rows = await prisma.payment.aggregateRaw({
+        pipeline:[
+            {$match:{
+                status:PaymentStatus.SUCCEEDED,
+                ...(range && {createdAt:{$gte:{$date:range.gte.toISOString()}, $lt:{$date:range.lt.toISOString()}}})
+            }},
+            {$group:{
+                _id:{month:{$month:"$createdAt"}, type:"$type", planName:"$planName"},
+                total:{$sum:"$amount"}
+            }}
+        ]
+    }) as unknown as {_id:{month:number; type:PaymentType; planName?:SubscriptionPlanEnum | null}; total:number}[]
+
+    return rows.map(row => ({
+        month:row._id.month,
+        type:row._id.type,
+        planName:row._id.planName ?? null,
+        total:row.total
+    }))
 }
 
+const sumTotals = (rows:PaymentMonthTotal[]) => rows.reduce((sum, row) => sum + row.total, 0)
+
+const totalsByMonth = (rows:PaymentMonthTotal[]) => {
+    const byMonth:Record<string, number> = {}
+    rows.forEach(row => {
+        byMonth[row.month] = (byMonth[row.month] ?? 0) + row.total
+    })
+    return byMonth
+}
+
+const subscriptionRows = (rows:PaymentMonthTotal[], plan:SubscriptionPlanEnum) =>
+    rows.filter(row => row.type === PaymentType.SUBSCRIPTION && row.planName === plan)
+
+const calcIncomeDataByYear = async (year: string) => {
+    const rows = await loadPaymentMonthTotals(yearRange(year))
+
+    return {
+        totalIncome:sumTotals(rows),
+        totalProIncome:sumTotals(subscriptionRows(rows, SubscriptionPlanEnum.PRO)),
+        totalPremiumIncome:sumTotals(subscriptionRows(rows, SubscriptionPlanEnum.PREMIUM)),
+        incomeByMonth:totalsByMonth(rows)
+    }
+}
 
 const getProPreminumIncomeByYear = async (year: string) => {
-    const allPayments = await prisma.payment.findMany({
-      where: {
-        status: PaymentStatus.SUCCEEDED,
-        type: PaymentType.SUBSCRIPTION,
-        createdAt: {
-            gte: new Date(`${year}-01-01`),
-            lt: new Date(`${Number(year) + 1}-01-01`)
-          }
-        }
-    })
+    const rows = await loadPaymentMonthTotals(yearRange(year))
 
-    let proIncomeByMonth: Record<string, number> = {};
-    let premiumIncomeByMonth: Record<string, number> = {};  
-    allPayments.forEach(payment => {
-        const month = new Date(payment.createdAt).getMonth() + 1;
-        if (payment.planName === SubscriptionPlanEnum.PRO) {
-            if (proIncomeByMonth[month]) {
-                proIncomeByMonth[month] += payment.amount;
-            } else {
-                proIncomeByMonth[month] = payment.amount;
-            }
-        } else if (payment.planName === SubscriptionPlanEnum.PREMIUM) {
-            if (premiumIncomeByMonth[month]) {
-                premiumIncomeByMonth[month] += payment.amount;
-            } else {
-                premiumIncomeByMonth[month] = payment.amount;
-            }
-        }
-    });
-
-    return { proIncomeByMonth, premiumIncomeByMonth }
+    return {
+        proIncomeByMonth:totalsByMonth(subscriptionRows(rows, SubscriptionPlanEnum.PRO)),
+        premiumIncomeByMonth:totalsByMonth(subscriptionRows(rows, SubscriptionPlanEnum.PREMIUM))
+    }
 }
 
+const calcIncomeData = async () => {
+    const rows = await loadPaymentMonthTotals()
 
-const calcIncomeData = async () =>{
-    const allPayments = await prisma.payment.findMany({where:{status:PaymentStatus.SUCCEEDED}})
-
-    const totalIncome = allPayments.reduce((acc, payment) => acc + payment.amount, 0);
-    const totalProIncome = allPayments
-        .filter(payment => payment.type === PaymentType.SUBSCRIPTION && payment.planName === SubscriptionPlanEnum.PRO)
-        .reduce((acc, payment) => acc + payment.amount, 0);
-
-    const totalPremiumIncome = allPayments
-        .filter(payment => payment.type === PaymentType.SUBSCRIPTION && payment.planName === SubscriptionPlanEnum.PREMIUM)
-        .reduce((acc, payment) => acc + payment.amount, 0);
-
-    let incomeByMonth: Record<string, number> = {};
-    allPayments.forEach(payment => {
-        const month = new Date(payment.createdAt).getMonth() + 1;
-        if (incomeByMonth[month]) {
-            incomeByMonth[month] += payment.amount;
-        } else {
-            incomeByMonth[month] = payment.amount;
-        }   
-    });
-
-    return {totalIncome, incomeByMonth}
-
+    return {totalIncome:sumTotals(rows), incomeByMonth:totalsByMonth(rows)}
 }
 
 const getAllPaymentsHistory = async (query:{page:string, limit:string}) => {
@@ -192,34 +168,20 @@ const getPremiumMemberCount = async () => {
 }
 
 const getRevenueByType = async (year: string) => {
-    const currentYear = new Date().getFullYear().toString()
-    const startDate = new Date(`${year}-01-01`)
-    const endDate = new Date(`${Number(year) + 1}-01-01`)
-    
     const revenueByMonth: Record<number, {store: number, contest: number, subscription: number, total: number}> = {}
-    
-    // Initialize all months
     for (let m = 1; m <= 12; m++) {
         revenueByMonth[m] = { store: 0, contest: 0, subscription: 0, total: 0 }
     }
-    
-    // Get all payments for the year
-    const payments = await prisma.payment.findMany({
-        where: {
-            status: PaymentStatus.SUCCEEDED,
-            createdAt: { gte: startDate, lt: endDate }
-        }
+
+    const rows = await loadPaymentMonthTotals(yearRange(year))
+    rows.forEach(row => {
+        const type = row.type === PaymentType.SUBSCRIPTION ? 'subscription' :
+                     row.type === PaymentType.STORE ? 'store' : 'contest'
+
+        revenueByMonth[row.month][type] += row.total
+        revenueByMonth[row.month].total += row.total
     })
-    
-    payments.forEach(payment => {
-        const month = new Date(payment.createdAt).getMonth() + 1
-        const type = payment.type === PaymentType.SUBSCRIPTION ? 'subscription' : 
-                     payment.type === PaymentType.STORE ? 'store' : 'contest'
-        
-        revenueByMonth[month][type] += payment.amount
-        revenueByMonth[month].total += payment.amount
-    })
-    
+
     return revenueByMonth
 }
 
@@ -236,19 +198,19 @@ const getRecentContests = async (limit: number = 5) => {
             _count: { select: { participants: true ,} }
         }
     })
-    
-    const mappedContests =  await Promise.all(contests.map(async contest => {
 
-         const totalPhotoEntries = await contestService.getContestPhotoCount(contest.id)
+    const photoCounts = await prisma.contestPhoto.groupBy({
+        by: ["contestId"],
+        where: { contestId: { in: contests.map(contest => contest.id) } },
+        _count: { _all: true }
+    })
+    const photoCountByContestId = new Map(photoCounts.map(group => [group.contestId, group._count._all]))
 
-        return {
+    return contests.map(contest => ({
         ...contest,
-        totalPhoto:totalPhotoEntries,
+        totalPhoto: photoCountByContestId.get(contest.id) ?? 0,
         participantCount: contest._count.participants
-    }
     }))
-
-    return mappedContests
 }
 
 const getUserGrowthByMonth = async (year: string) => {
@@ -295,40 +257,42 @@ const getContestStatsWithTotal = async () => {
     return { ...stats, total }
 }
 
-const getDashboardOverview = async () => {
-    const currentYear = new Date().getFullYear().toString()
-    
-    const totalUsers = await prisma.user.count()
-    const totalContests = await getContestStatsWithTotal()
-    const totalActiveContests = totalContests.running
-    
-    const totalPayments = await prisma.payment.count({where:{status:PaymentStatus.SUCCEEDED}})
-    const totalIncomeData = await calcIncomeData()
-    const active_user_count = await activeUsers()
-    const inactive_user_count = await inactiveUsers()
-    const paid_members_count = await getpaidMembers()
-    const pro_member_count = await getProMemberCount()
-    const premium_member_count = await getPremiumMemberCount()
-    
-    // Get member ratio with all 12 months
-    const member_ratio = await calcMemberRatio(currentYear)
-    
-    // Get revenue by type
-    const revenueByType = await getRevenueByType(currentYear)
-    
-    // Get recent contests
-    const recentContests = await getRecentContests(5)
-    
-    // Get user growth by month
-    const userGrowthByMonth = await getUserGrowthByMonth(currentYear)
-    
-    // Get total store sales revenue
-    const totalStoreSalesRevenue = await getTotalStoreSalesRevenue()
-    
-    // Calculate total revenue
-    const totalRevenue = totalIncomeData.totalIncome
+const OVERVIEW_TTL_SECONDS = 60
 
-   
+const loadDashboardOverview = async () => {
+    const currentYear = new Date().getFullYear().toString()
+
+    const [
+        totalUsers,
+        totalContests,
+        totalPayments,
+        totalIncomeData,
+        active_user_count,
+        inactive_user_count,
+        paid_members_count,
+        pro_member_count,
+        premium_member_count,
+        member_ratio,
+        revenueByType,
+        recentContests,
+        userGrowthByMonth,
+        totalStoreSalesRevenue
+    ] = await Promise.all([
+        prisma.user.count(),
+        getContestStatsWithTotal(),
+        prisma.payment.count({where:{status:PaymentStatus.SUCCEEDED}}),
+        calcIncomeData(),
+        activeUsers(),
+        inactiveUsers(),
+        getpaidMembers(),
+        getProMemberCount(),
+        getPremiumMemberCount(),
+        calcMemberRatio(currentYear),
+        getRevenueByType(currentYear),
+        getRecentContests(5),
+        getUserGrowthByMonth(currentYear),
+        getTotalStoreSalesRevenue()
+    ])
 
     return {
         totalUsers,
@@ -344,11 +308,14 @@ const getDashboardOverview = async () => {
         revenueByType,
         recentContests,
         userGrowthByMonth,
-        totalRevenue,
-        totalActiveContests,
+        totalRevenue:totalIncomeData.totalIncome,
+        totalActiveContests:totalContests.running,
         totalStoreSalesRevenue
     }
 }
+
+const getDashboardOverview = () =>
+    versionedCache.get("dashboard", "overview", {}, loadDashboardOverview, {ttlSeconds:OVERVIEW_TTL_SECONDS})
 
 
 const getAdminNotifications = async () => {
@@ -358,22 +325,26 @@ const getAdminNotifications = async () => {
 
 
 const getUserStats  = async () => {
-    const totalUsers = await prisma.user.count()
-    const active_user_count = await activeUsers()
-    const inactive_user_count = await inactiveUsers()
-    const blocked_user_count = await prisma.user.count({where:{isBlocked:true}})
-    const paid_members_count = await getpaidMembers()
+    const [totalUsers, active_user_count, inactive_user_count, blocked_user_count, paid_members_count] = await Promise.all([
+        prisma.user.count(),
+        activeUsers(),
+        inactiveUsers(),
+        prisma.user.count({where:{isBlocked:true}}),
+        getpaidMembers()
+    ])
     return {totalUsers, active_user_count, inactive_user_count, blocked_user_count, paid_members_count}
 }
 
 const getAllUsers = async (pagination:{page:string, limit:string}) => {
-    const users = await prisma.user.findMany({select:{id:true, firstName:true, lastName:true, fullName:true, email:true, username:true, avatar:true, role:true, isActive:true, createdAt:true}, skip:(parseInt(pagination.page) - 1) * 10, take:parseInt(pagination.limit)})
-    let mappedUsers = users.map(async user => {
-        
-        let votes = await voteService.getUserTotalVotes(user.id)
-        return {...user, votes}
-      })
-    return await Promise.all(mappedUsers)
+    const limit = parseInt(pagination.limit)
+    const users = await prisma.user.findMany({
+        select:{id:true, firstName:true, lastName:true, fullName:true, email:true, username:true, avatar:true, role:true, isActive:true, createdAt:true},
+        skip:(parseInt(pagination.page) - 1) * limit,
+        take:limit
+    })
+    const votesByUserId = await getVoteTotalsByUser(users.map(user => user.id))
+
+    return users.map(user => ({...user, votes:votesByUserId.get(user.id) ?? 0}))
 }
 
 const toggleBlockStatus = async (userId: string) => {
@@ -494,50 +465,46 @@ const getTransactions = async (query:{page:string, limit:string, search?:string}
 }
 
 const getTransactionStats = async () => {
-    const totalTransactions = await prisma.payment.count()
-    const successfulTransactions = await prisma.payment.count({where:{status:PaymentStatus.SUCCEEDED}})
-    const failedTransactions = await prisma.payment.count({where:{status:PaymentStatus.FAILED}})
-    const pendingTransactions = await prisma.payment.count({where:{status:PaymentStatus.PENDING}})
-    
-    const totalRevenue = await prisma.payment.aggregate({
-        where:{status:PaymentStatus.SUCCEEDED},
-        _sum:{amount:true}
-    })
+    const succeeded = {status:PaymentStatus.SUCCEEDED}
     const now = new Date()
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
     const nextMonthStart = new Date(now.getFullYear(), now.getMonth() + 1, 1)
-    const thisMonthRevenue = await prisma.payment.aggregate({
-        where:{
-            status:PaymentStatus.SUCCEEDED,
-            createdAt:{gte:monthStart, lt:nextMonthStart}
-        },
-        _sum:{amount:true}
-    })
-    const storeRevenue = await prisma.payment.aggregate({
-        where:{status:PaymentStatus.SUCCEEDED, type:PaymentType.STORE},
-        _sum:{amount:true}
-    })
-    const subscriptionRevenue = await prisma.payment.aggregate({
-        where:{status:PaymentStatus.SUCCEEDED, type:PaymentType.SUBSCRIPTION},
-        _sum:{amount:true}
-    })
-    
-    const allPayments = await prisma.payment.findMany({where:{status:PaymentStatus.SUCCEEDED}})
-    const averageTransactionValue = allPayments.length > 0 
-        ? allPayments.reduce((acc, p) => acc + p.amount, 0) / allPayments.length 
-        : 0
-    
+    const sumAmount = (where:Prisma.PaymentWhereInput) =>
+        prisma.payment.aggregate({where:{...succeeded, ...where}, _sum:{amount:true}}).then(result => result._sum.amount || 0)
+
+    const [
+        totalTransactions,
+        successfulTransactions,
+        failedTransactions,
+        pendingTransactions,
+        averages,
+        totalRevenue,
+        thisMonthTotalRevenue,
+        totalStoreRevenue,
+        totalSubscriptionRevenue
+    ] = await Promise.all([
+        prisma.payment.count(),
+        prisma.payment.count({where:succeeded}),
+        prisma.payment.count({where:{status:PaymentStatus.FAILED}}),
+        prisma.payment.count({where:{status:PaymentStatus.PENDING}}),
+        prisma.payment.aggregate({where:succeeded, _avg:{amount:true}}),
+        sumAmount({}),
+        sumAmount({createdAt:{gte:monthStart, lt:nextMonthStart}}),
+        sumAmount({type:PaymentType.STORE}),
+        sumAmount({type:PaymentType.SUBSCRIPTION})
+    ])
+
     return {
         totalTransactions,
         successfulTransactions,
         failedTransactions,
         pendingTransactions,
-        totalRevenue:totalRevenue._sum.amount || 0,
-        averageTransactionValue,
+        totalRevenue,
+        averageTransactionValue:averages._avg.amount ?? 0,
         totalSuccessfulPayments:successfulTransactions,
-        thisMonthTotalRevenue:thisMonthRevenue._sum.amount || 0,
-        totalStoreRevenue:storeRevenue._sum.amount || 0,
-        totalSubscriptionRevenue:subscriptionRevenue._sum.amount || 0
+        thisMonthTotalRevenue,
+        totalStoreRevenue,
+        totalSubscriptionRevenue
     }
 }
 
@@ -561,24 +528,14 @@ const getSubscriptionStats = async () => {
     
     // Monthly subscription revenue
     const monthlySubscriptionRevenue: Record<number, number> = {}
-    
-    // Initialize all months
     for (let m = 1; m <= 12; m++) {
         monthlySubscriptionRevenue[m] = 0
     }
-    
-    const subscriptionPayments = await prisma.payment.findMany({
-        where: {
-            type: PaymentType.SUBSCRIPTION,
-            status: PaymentStatus.SUCCEEDED
-        }
+    const rows = await loadPaymentMonthTotals()
+    rows.filter(row => row.type === PaymentType.SUBSCRIPTION).forEach(row => {
+        monthlySubscriptionRevenue[row.month] += row.total
     })
-    
-    subscriptionPayments.forEach(payment => {
-        const month = new Date(payment.createdAt).getMonth() + 1
-        monthlySubscriptionRevenue[month] += payment.amount
-    })
-    
+
     return {
         totalPlans,
         totalActiveSubscribers,

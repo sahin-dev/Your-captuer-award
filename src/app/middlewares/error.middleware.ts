@@ -91,6 +91,11 @@ const ErrorHandler = (
     } else if (err.code === "P2002") {
       statusCode = httpStatus.CONFLICT;
       message = "This record already exists";
+    } else if (err.code === "P2034") {
+      // MongoDB aborted the transaction because of a write conflict. Nothing
+      // was saved and the same request will normally work when sent again.
+      statusCode = httpStatus.SERVICE_UNAVAILABLE;
+      message = "The server is busy. Please try again";
     } else {
       statusCode = httpStatus.BAD_REQUEST;
       message = "The database could not complete this request";

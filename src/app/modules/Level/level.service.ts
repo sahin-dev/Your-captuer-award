@@ -3,7 +3,7 @@ import { LevelName, LevelRequirement, VoteType } from "../../../prismaClient";
 import prisma from "../../../shared/prisma";
 import httpStatus from "http-status";
 import { LEVEL_BADGE_TYPES, LEVEL_RULES, LevelRule } from "./level.config";
-import { getVoteWeightStats } from "../Vote/voteWeight.service";
+import { getReceivedVoteStats as getVoteStatsForUser } from "../Vote/voteWeight.service";
 import { notificationOrchestrator } from "../Notification/notificationOrchestrator";
 import { paginationHelper } from "../../../helpers/paginationHelper";
 import { userCache } from "../User/user.cache";
@@ -113,29 +113,34 @@ const getLevelRuleByOrder = (order: number) => {
 
 const getBadgeCounts = async (userId: string) => {
   const badgeCounts: Record<string, number> = {};
+  LEVEL_BADGE_TYPES.forEach((category) => {
+    badgeCounts[category] = 0;
+  });
 
-  await Promise.all(
-    LEVEL_BADGE_TYPES.map(async (category) => {
-      badgeCounts[category] = await prisma.contestAchievement.count({
-        where: {
-          category,
-          participant: { userId },
-        },
-      });
-    }),
-  );
+  const participants = await prisma.contestParticipant.findMany({
+    where: { userId },
+    select: { id: true },
+  });
+  const groups = await prisma.contestAchievement.groupBy({
+    by: ["category"],
+    where: {
+      participantId: { in: participants.map((participant) => participant.id) },
+      category: { in: LEVEL_BADGE_TYPES },
+    },
+    _count: { _all: true },
+  });
+  groups.forEach((group) => {
+    badgeCounts[group.category] = group._count._all;
+  });
 
   return badgeCounts;
 };
 
 const getReceivedVoteStats = async (userId: string) => {
-  const receivedVoteAggregate = await getVoteWeightStats({
-    photo: { participant: { userId } },
-  });
-  const promotedVoteAggregate = await getVoteWeightStats({
-    photo: { participant: { userId } },
-    type: VoteType.Promoted,
-  });
+  const [receivedVoteAggregate, promotedVoteAggregate] = await Promise.all([
+    getVoteStatsForUser(userId),
+    getVoteStatsForUser(userId, { type: VoteType.Promoted }),
+  ]);
 
   return {
     receivedVotes: receivedVoteAggregate.weight,
@@ -256,6 +261,17 @@ const persistUserLevel = async (
   const targetOrder = Math.max(previousOrder, eligibleOrder);
   const targetRule = getLevelRuleByOrder(targetOrder);
   const targetVotePower = targetRule?.votePower ?? user.voting_power ?? 1;
+  const unchanged = {
+    order: targetOrder,
+    name: targetRule?.levelName ?? "NEW",
+    votingPower: targetVotePower,
+    leveledUp: false,
+  };
+
+  // This runs after every batch of votes, and most votes change nothing.
+  if (targetOrder === previousOrder && targetVotePower === user.voting_power) {
+    return unchanged;
+  }
 
   await prisma.user.update({
     where: { id: userId },
@@ -282,12 +298,7 @@ const persistUserLevel = async (
     }
   }
 
-  return {
-    order: targetOrder,
-    name: targetRule?.levelName ?? "NEW",
-    votingPower: targetVotePower,
-    leveledUp: targetOrder > previousOrder,
-  };
+  return { ...unchanged, leveledUp: targetOrder > previousOrder };
 };
 
 const evaluateAndUpdateUserLevel = async (userId: string) => {

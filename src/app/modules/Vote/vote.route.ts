@@ -4,7 +4,7 @@ import { voteController } from "./vote.controller";
 import validateRequest from "../../middlewares/validation.middleware";
 import { provideVoteShcema, voteCountsRequestSchema } from "./validation/vote.validation";
 
-const router = Router()
+const router: Router = Router()
 
 // Lightweight polling target for realtime vote counts - kept ahead of the
 // "/:contestId" route below so "counts" is never swallowed as a contestId
@@ -14,4 +14,4 @@ router.post("/counts", auth(), validateRequest(voteCountsRequestSchema), voteCon
 router.post("/:contestId", auth(),validateRequest(provideVoteShcema), voteController.addContestVote)
 
 
-export const  voteRouter = router
+export const  voteRouter:Router = router

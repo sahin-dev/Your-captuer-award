@@ -133,9 +133,16 @@ const formatAchievementDate = (date:Date) => {
     return date.toLocaleDateString("en-US", {month:"short", year:"numeric"})
 }
 
+// Filtering achievements by {participant:{userId}} joins every achievement.
+// Looking up the user's participant ids first uses an index instead.
+const getUserParticipantIds = async (userId:string) => {
+    const participants = await prisma.contestParticipant.findMany({where:{userId}, select:{id:true}})
+    return participants.map(participant => participant.id)
+}
+
 const findProfileAchievementRecords = async (userId:string) => {
     return prisma.contestAchievement.findMany({
-        where:{participant:{userId}, category:{in:profileAchievementCategories}},
+        where:{participantId:{in:await getUserParticipantIds(userId)}, category:{in:profileAchievementCategories}},
         include:{
             contest:{select:{id:true, title:true, banner:true}},
             photo:{select:{id:true, photo:{select:{id:true, url:true, title:true}}}},
@@ -320,7 +327,7 @@ const getContestAchievementsByUser = async (userId:string,type?:PrizeType, page 
         throw new ApiError(httpStatus.NOT_FOUND, "participant not found")
     }
     const achievements = await prisma.contestAchievement.findMany({
-        where:{participant:{userId}, ...(type && {category:type})},
+        where:{participantId:{in:await getUserParticipantIds(userId)}, ...(type && {category:type})},
         include:{contest:{select:{id:true, title:true, banner:true}}},
         orderBy:[{createdAt:"desc"}, {id:"desc"}]
     })
@@ -375,7 +382,7 @@ const getContestByAchievementsType = async (userId:string,type:PrizeType, page =
         throw new ApiError(httpStatus.NOT_FOUND, "participant not found")
     }
     const achievements = await prisma.contestAchievement.findMany({
-        where:{participant:{userId}, category:type},
+        where:{participantId:{in:await getUserParticipantIds(userId)}, category:type},
         include:{contest:{select:{banner:true, title:true}}},
         orderBy:[{createdAt:"desc"}, {id:"desc"}]
     })

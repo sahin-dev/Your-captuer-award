@@ -6,10 +6,14 @@ import { UserRole } from '../../../prismaClient'
 import validateRequest from '../../middlewares/validation.middleware'
 import { contestAwardSelectionSchema, createRegularContestSchema, updateContestSchema } from './contest.validation'
 import { contestRuleController } from './ContestRules/contestRules.controller'
+import rateLimit from '../../middlewares/rateLimit.middleware'
 
 
 
 const router = Router()
+
+// These routes need no login and each can trigger a ranking build.
+const publicRankingLimit = rateLimit("contest-ranking", 120, 60)
 
 router.route("/").post(auth(UserRole.ADMIN), fileUploader.contestBanner, validateRequest(createRegularContestSchema), contestController.createContest).get(auth(), contestController.getContestsByStatus)
 router.get("/all", auth(UserRole.ADMIN), contestController.getAllContests)
@@ -45,9 +49,9 @@ router.put(
 )
 router.get("/:contestId/user-photos", auth(), contestController.getUserRemainingPhotos)
 router.get("/:contestId/tradeable-history", auth(), contestController.getTradeableHistory)
-router.get("/:contestId/rank-photos", contestController.getContestPhotosSortedByVote)
-router.get("/:contestId/rank-photographer", contestController.getContestPhotographers)
-router.get("/:contestId/ranking", contestController.getContestRanking)
+router.get("/:contestId/rank-photos", publicRankingLimit, contestController.getContestPhotosSortedByVote)
+router.get("/:contestId/rank-photographer", publicRankingLimit, contestController.getContestPhotographers)
+router.get("/:contestId/ranking", publicRankingLimit, contestController.getContestRanking)
 
 router.delete("/:contestId/photos/:photoId", auth(), contestController.deleteContestPhoto)
 router.delete("/photos/:photoId/admin", auth(UserRole.ADMIN), contestController.adminDeleteContestPhoto)

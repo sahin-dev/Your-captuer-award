@@ -1,94 +1,28 @@
-import { ContestStatus, Prisma, RecurringContestStatus } from '../../../prismaClient';
+import { ContestStatus, RecurringContestStatus } from '../../../prismaClient';
 import { Agenda, Job } from "agenda";
 import prisma from '../../../shared/prisma';
 import {contestService } from '../Contest/contest.service';
+import { contestStatus, notDeletedContest } from '../Contest/contestLifecycle';
+import { FINALIZATION_GRACE_MS, getFinalizationTime } from '../Contest/ContestFinalization/contestFinalization.service';
+import { photographyOfTheYearRankingService } from '../PhotographyOfTheYear/photographyOfTheYearRanking.service';
+import { drainPendingWork } from '../PendingWork/pendingWork.handlers';
 import { teamService } from '../Team/team.service';
 import logger from "../../../shared/logger";
 
-const notDeleted:Prisma.ContestWhereInput = {OR:[{deletedAt:null}, {deletedAt:{isSet:false}}]}
 
-
-
-//Check all upcoming contest
-// If found any upcoming contest which startdate has arrived or passed the scheduler start the contest and change the contest to OPEN
-//Also shcedule a job for every contest which will end the contest at the end time
 
 export const registerAgendaJobs = (agenda:Agenda) => {
-
-agenda.define('contest:checkUpcoming', async () => {
-
-    const contests = await prisma.contest.findMany({
-        where: { status:ContestStatus.UPCOMING, ...notDeleted },
-    });
-
-    if (contests.length <= 0){
-        logger.debug("No upcoming contest to activate")
-    }
-    for (const contest of contests) {
-        try {
-            const startDate = contest.startDate
-            const currentDate = new Date()
-
-            if (startDate <= currentDate){
-                const updatedContest = await prisma.contest.update({where:{id:contest.id}, data:{status:ContestStatus.ACTIVE, startedAt:new Date(Date.now())}})
-                logger.info({ contestId: contest.id }, "Contest started")
-                await agenda.schedule(contest.endDate, "contest:watcher",{contestId:updatedContest.id})
-            }
-        } catch (error) {
-            logger.error({ err: error, contestId: contest.id }, "Failed to activate upcoming contest")
-        }
-    }
-
-});
-
-// agenda.define("contest:recurring", async ()=> {
-//     const recurringContests = await prisma.recurringContest.findMany({
-//         where: {
-//             nextOccurrence: {
-//                 lte: new Date()
-//             }
-//         },
-// })
-
-
-
-//     for (const contest of recurringContests) {
-//         const newContest = await prisma.contest.create({
-//             data: {
-//                 title: contest.title,
-//                 description: contest.description,
-//                 creatorId: contest.creatorId,
-//                 startDate: contest.startDate,
-//                 endDate: contest.endDate,
-
-//                 recurring: true,
-//                 recurringType: contest.type,
-//                 nextOccurrence: new Date(new Date(contest.nextOccurrence).getTime() + 24 * 60 * 60 * 1000), // Increment by one day
-//                 status: ContestStatus.NEW,
-//                 type: ContestType.RECURRING,
-//             }
-//         });
-//         await prisma.recurringContest.update({
-//             where: { id: contest.id },
-//             data: { nextOccurrence: new Date(new Date(contest.nextOccurrence).getTime() + 24 * 60 * 60 * 1000) } // Increment next occurrence
-//         });
-//         await agenda.schedule(newContest.startDate, 'contest:checkUpcoming', newContest.id);
-//     }
-// });
 
 agenda.define("contest:active", async ()=>{
     const now = new Date()
     const upcomingContest = await prisma.contest.findMany({
-        where:{status:ContestStatus.UPCOMING, startDate:{lte:now}, ...notDeleted}
+        where:{status:ContestStatus.UPCOMING, startDate:{lte:now}, ...notDeletedContest}
     })
     logger.debug(`Found ${upcomingContest.length} upcoming contests`)
     for(const contest of upcomingContest){
-        const activated = await prisma.contest.updateMany({
-            where:{id:contest.id, status:ContestStatus.UPCOMING, ...notDeleted},
-            data:{status:ContestStatus.ACTIVE, startedAt:now}
-        })
-        if(activated.count === 1){
-            await agenda.schedule(contest.endDate,"contest:watcher", {contestId:contest.id})
+        const activated = await contestStatus.change(contest.id, ContestStatus.ACTIVE, {startedAt:now}, notDeletedContest)
+        if(activated){
+            await agenda.schedule(getFinalizationTime(contest),"contest:watcher", {contestId:contest.id})
         }
     }
 })
@@ -143,16 +77,17 @@ agenda.define("contest:watcher", async (job: Job) => {
 });
 
 agenda.define("contest:watchEnded", async () => {
+    const endedBefore = new Date(Date.now() - FINALIZATION_GRACE_MS)
     const contests = await prisma.contest.findMany({
         where:{
             OR:[
-                {status:ContestStatus.ACTIVE, endDate:{lte:new Date()}},
+                {status:ContestStatus.ACTIVE, endDate:{lte:endedBefore}},
                 {status:ContestStatus.FINALIZATION_FAILED},
                 // A contest whose finalizer died mid-run stays FINALIZING with
                 // nothing else scheduled to touch it. finalizeContest re-claims
                 // it only once its lease has gone stale, so a healthy run in
                 // progress is simply skipped here.
-                {status:ContestStatus.FINALIZING, endDate:{lte:new Date()}}
+                {status:ContestStatus.FINALIZING, endDate:{lte:endedBefore}}
             ]
         },
         select:{id:true}
@@ -220,6 +155,21 @@ agenda.define("promotion:remove", async (job: Job) => {
     if (updated.count > 0) {
         logger.info({ photoId }, "Photo promotion expired");
     }
+});
+
+// Level checks and other follow-up work queued by votes and joins. concurrency:1
+// stops a slow batch from overlapping the next one.
+agenda.define("work:drainPending", {concurrency:1}, async () => {
+    const completed = await drainPendingWork()
+    if(completed > 0){
+        logger.debug(`Completed ${completed} pending work item(s)`)
+    }
+});
+
+// A regular-contest vote can move a photo into the POTY top 10. Checking on a
+// schedule costs one ranking per minute instead of one per vote.
+agenda.define("poty:checkTopTen", {concurrency:1}, async () => {
+    await photographyOfTheYearRankingService.notifyTopTenForActiveContests()
 });
 
 // Recovery path for a missed/delayed one-off promotion job.

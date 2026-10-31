@@ -38,6 +38,8 @@ export const startAgenda = async () => {
         await scheduler.every("5 seconds", "contest:active");
         await scheduler.every("30 seconds", "contest:watchEnded");
         await scheduler.every("1 minute", "contest:decayExposure");
+        await scheduler.every("30 seconds", "work:drainPending");
+        await scheduler.every("1 minute", "poty:checkTopTen");
         await scheduler.every("1 minute", "promotion:sweep");
         await scheduler.every("1 minute", "teamMatch:watchStale");
         await scheduler.every("1 minute", "teamMatch:watchQueueTimeouts");

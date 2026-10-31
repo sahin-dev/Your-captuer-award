@@ -50,6 +50,8 @@ model Contest {
   teamMatch    TeamMatch[]
   teamMatchHistory TeamMatchHistory[]
   teamMatchQueue TeamMatchQueue[]
+  potyResult   PhotographyOfTheYearResult?
+  potyTopTenNotifications PhotographyOfTheYearTopTenNotification[]
   recurringContest RecurringContest? @relation(fields: [recurringContestId], references: [id])
   createdAt    DateTime             @default(now())
   updatedAt    DateTime             @updatedAt
@@ -239,6 +241,7 @@ model ContestPhoto {
   @@index([contestId, photoId])
   @@index([contestId, participantId])
   @@index([contestId, createdAt])
+  @@index([participantId])
   @@map("contest_photos")
 
 }
@@ -300,6 +303,7 @@ model ContestParticipant {
 
   @@map("contest_participants")
   @@unique([contestId, userId])
+  @@index([userId, status])
 }
 
 model ContestEntryFeeTransaction {
@@ -456,6 +460,7 @@ model ContestAchievement {
 
   @@index([contestId, kind])
   @@index([participantId, contestId])
+  @@index([participantId, category])
   @@map("contest_achievements")
 }
 
@@ -473,6 +478,61 @@ model ContestFinalization {
 
   @@index([status, updatedAt])
   @@map("contest_finalizations")
+}
+
+// The admin-selected final placements for a Photographer of the Year contest.
+// The photo IDs point to ContestPhoto entries in the same contest.
+model PhotographyOfTheYearResult {
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  contestId      String   @unique @db.ObjectId
+  // Ordered human-judged winners. The first item is first place, the second
+  // item is second place, and so on. The legacy placement columns remain for
+  // backwards compatibility with previously published results.
+  winnerPhotoIds String[] @default([]) @db.ObjectId
+  firstPhotoId   String?  @db.ObjectId
+  secondPhotoId  String?  @db.ObjectId
+  thirdPhotoId   String?  @db.ObjectId
+
+  contest        Contest  @relation(fields: [contestId], references: [id], onDelete: Cascade)
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@map("photography_of_the_year_results")
+}
+
+// Guarantees that a photo receives the automatic top-10 notification only
+// once per POTY contest, even when regular-contest votes are processed often.
+model PhotographyOfTheYearTopTenNotification {
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  contestId      String   @db.ObjectId
+  contestPhotoId String   @db.ObjectId
+
+  contest        Contest  @relation(fields: [contestId], references: [id], onDelete: Cascade)
+
+  createdAt      DateTime @default(now())
+
+  @@unique([contestId, contestPhotoId])
+  @@index([contestId, createdAt])
+  @@map("photography_of_the_year_top_ten_notifications")
+}
+
+// A small to-do list for work that should happen after an action but does not
+// need to happen inside the request (see PendingWork/pendingWork.queue.ts). The
+// unique key means many votes for the same user become one row, so the work
+// runs once per batch instead of once per vote. It is stored in MongoDB so it
+// survives a restart and still works when Redis is down.
+model PendingWork {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  key       String   @unique
+  type      String
+  targetId  String
+  contestId String?  @db.ObjectId
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([createdAt])
+  @@map("pending_work")
 }
 
 model ContestRankingResult {

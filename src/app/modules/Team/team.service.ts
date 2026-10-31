@@ -26,6 +26,7 @@ import { notificationOrchestrator } from "../Notification/notificationOrchestrat
 import { chatService } from "../Chat/chat.service";
 import { levelService } from "../Level/level.service";
 import { voteService } from "../Vote/vote.service";
+import { getVoteTotalsByUser } from "../Vote/voteWeight.service";
 import {
   PAYOUT_TIME_ZONE,
   TeamPeriod,
@@ -1091,28 +1092,15 @@ const getMyTeamMatches = async (userId: string) => {
 
 const getMembers = async (teamId: string, contestId?: string) => {
   const members = await findTeamMembersWithUser({ where: { teamId } });
-  let mappedMember;
-  if (!contestId) {
-    mappedMember = members.map(async (member) => {
-      const memberTotalVotes = await voteService.getUserTotalVotes(
-        member.memberId,
-      );
+  const totals = await getVoteTotalsByUser(
+    members.map((member) => member.memberId),
+    contestId,
+  );
 
-      return { ...member, totalVote: memberTotalVotes };
-    });
-
-    return await Promise.all(mappedMember);
-  } else {
-    mappedMember = members.map(async (member) => {
-      const memberTotalVotes = await voteService.getUserContestSpecificVote(
-        contestId,
-        member.memberId,
-      );
-      return { ...member, totalVote: memberTotalVotes };
-    });
-  }
-
-  return await Promise.all(mappedMember);
+  return members.map((member) => ({
+    ...member,
+    totalVote: totals.get(member.memberId) ?? 0,
+  }));
 };
 
 const normalizeIds = (ids?: string[]) => {

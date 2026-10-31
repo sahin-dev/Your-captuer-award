@@ -5,7 +5,8 @@ import { runWithWriteConflictRetry } from "../../../../shared/transactionRetry";
 import { ycLevels } from "../../Awards/award.definitions";
 import { contestRuleEngine } from "../ContestRules/contestRule.engine";
 import { LevelRequirementValue } from "../ContestRules/contestRule.definitions";
-import { getVoteWeight } from "../../Vote/voteWeight.service";
+import { cache } from "../../../../shared/cache";
+import { addVoteWeight, countsForCurrentStint, getSlotScore, VoteSlot } from "../scoring/voteTally";
 
 export const CONTEST_SCORING_VERSION = 2;
 const UPDATE_BATCH_SIZE = 25;
@@ -94,15 +95,15 @@ const scanContestVotes = async (
   contestId: string,
   onVote: (vote: { contestPhotoId: string; photoRefId: string | null; createdAt: Date; power: number }) => void
 ) => {
-  let cursor: string | undefined;
+  let lastVoteId: string | undefined;
 
   for (;;) {
+    // "id greater than the last one seen" uses the (contestId, id) index directly.
     const page = await prisma.vote.findMany({
-      where: { contestId },
+      where: { contestId, ...(lastVoteId ? { id: { gt: lastVoteId } } : {}) },
       select: { id: true, contestPhotoId: true, photoRefId: true, createdAt: true, power: true },
       orderBy: { id: "asc" },
       take: VOTE_SCAN_PAGE_SIZE,
-      ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
     });
 
     if (page.length === 0) {
@@ -112,12 +113,13 @@ const scanContestVotes = async (
     if (page.length < VOTE_SCAN_PAGE_SIZE) {
       return;
     }
-    cursor = page[page.length - 1].id;
+    lastVoteId = page[page.length - 1].id;
   }
 };
 
 const computeContestRanking = async (contestId: string): Promise<ContestRanking> => {
-  const [participants, levelRequirements] = await Promise.all([
+  const [contest, participants, levelRequirements] = await Promise.all([
+    prisma.contest.findUnique({ where: { id: contestId }, select: { endDate: true } }),
     prisma.contestParticipant.findMany({
       where: { contestId, status: ContestParticipantStatus.ACTIVE },
       select: {
@@ -143,55 +145,36 @@ const computeContestRanking = async (contestId: string): Promise<ContestRanking>
     contestRuleEngine.getLevelRequirements(contestId),
   ]);
 
-  // The image currently occupying each contest-photo slot, and when its current
-  // stint started - a vote only counts toward a photo's score if it was cast
-  // while that same image was live there AND on/after the stint start, so a
-  // trade always starts the new photo's live count at zero even if the exact
-  // same photo is later re-selected into this same slot. Any votes from an
-  // earlier stint are instead captured in bankedVotes (see
-  // ContestPhotoTradeRecord / contest.service.ts tradePhoto).
-  const currentPhotoIdBySlot = new Map<string, string | null>();
-  const stintStartedAtBySlot = new Map<string, Date>();
+  const slotById = new Map<string, VoteSlot>();
   participants.forEach((participant) => {
-    participant.photos.forEach((photo) => {
-      currentPhotoIdBySlot.set(photo.id, photo.photoId);
-      stintStartedAtBySlot.set(photo.id, photo.stintStartedAt ?? photo.createdAt);
-    });
+    participant.photos.forEach((photo) => slotById.set(photo.id, photo));
   });
 
+  // Voting closes at endDate. Votes are only accepted before it (see
+  // assertVotingOpen), so this cut-off keeps the final ranking stable.
+  const votingClosesAt = contest?.endDate ?? new Date();
   const voteCountByPhoto = new Map<string, number>();
   const voterCountByPhoto = new Map<string, number>();
   await scanContestVotes(contestId, (vote) => {
-    const liveImage = currentPhotoIdBySlot.get(vote.contestPhotoId);
-    // A null photoRefId is a legacy vote cast before swap-tracking existed -
-    // treat it as belonging to whichever photo is live now.
-    if (vote.photoRefId !== null && vote.photoRefId !== liveImage) {
+    const slot = slotById.get(vote.contestPhotoId);
+    if (!slot || vote.createdAt >= votingClosesAt || !countsForCurrentStint(slot, vote)) {
       return;
     }
-    const stintStartedAt = stintStartedAtBySlot.get(vote.contestPhotoId);
-    if (stintStartedAt && vote.createdAt < stintStartedAt) {
-      return;
-    }
-    // Each vote counts as the voter's voting power (see voteWeight.service).
-    voteCountByPhoto.set(vote.contestPhotoId, (voteCountByPhoto.get(vote.contestPhotoId) || 0) + getVoteWeight(vote));
+    voteCountByPhoto.set(vote.contestPhotoId, addVoteWeight(voteCountByPhoto.get(vote.contestPhotoId) || 0, vote));
     voterCountByPhoto.set(vote.contestPhotoId, (voterCountByPhoto.get(vote.contestPhotoId) || 0) + 1);
   });
 
   const photos = participants
     .flatMap((participant) => participant.photos.map((photo) => {
-      // initialVotes is a baseline for the photo this slot originally launched
-      // with - it shouldn't follow a later swapped-in photo.
-      const stillOriginalPhoto = !photo.originalPhotoId || photo.originalPhotoId === photo.photoId;
-      const initialVotes = stillOriginalPhoto ? (photo.initialVotes || 0) : 0;
-      const bankedVotes = photo.bankedVotes || 0;
+      const score = getSlotScore(photo, voteCountByPhoto.get(photo.id) || 0);
 
       return {
         photoId: photo.id,
         userPhotoId: photo.photoId,
         participantId: participant.id,
         userId: participant.userId,
-        score: (voteCountByPhoto.get(photo.id) || 0) + initialVotes + bankedVotes,
-        voteCount: (voteCountByPhoto.get(photo.id) || 0) + initialVotes + bankedVotes,
+        score,
+        voteCount: score,
         voterCount: voterCountByPhoto.get(photo.id) || 0,
         createdAt: photo.createdAt,
         tieBreakKey: photo.id,
@@ -251,15 +234,23 @@ const computeContestRanking = async (contestId: string): Promise<ContestRanking>
 // scoring, vote-count polling, the ranking screen) each used to trigger their
 // own build per row they were rendering. Collapsing identical concurrent and
 // closely-spaced builds turns those fan-outs back into one scan.
+//
+// There are two levels because production runs one process per CPU: a memory
+// copy per process, and a Redis copy shared by all of them so one build serves
+// every process. If Redis is down, each process simply builds its own.
 type RankingCacheEntry = { builtAt: number; ranking: ContestRanking };
 
-const RANKING_CACHE_TTL_MS = 3000;
+// Rankings on screen can be this far behind. Votes deliberately do not clear
+// the cache: under steady voting it would never be used.
+const RANKING_CACHE_TTL_MS = 10000;
 const RANKING_CACHE_MAX_ENTRIES = 200;
+const SHARED_RANKING_TTL_SECONDS = 15;
+const sharedRankingKey = (contestId: string) => `contest:${contestId}:ranking`;
 const rankingCache = new Map<string, RankingCacheEntry>();
 const rankingBuildsInFlight = new Map<string, Promise<ContestRanking>>();
 
-const rememberRanking = (contestId: string, ranking: ContestRanking) => {
-  rankingCache.set(contestId, { builtAt: Date.now(), ranking });
+const rememberRanking = (contestId: string, entry: RankingCacheEntry) => {
+  rankingCache.set(contestId, entry);
   while (rankingCache.size > RANKING_CACHE_MAX_ENTRIES) {
     const oldest = rankingCache.keys().next();
     if (oldest.done) break;
@@ -270,6 +261,21 @@ const rememberRanking = (contestId: string, ranking: ContestRanking) => {
 /** Drops any memoized ranking so the next read rebuilds from the database. */
 const invalidateContestRanking = (contestId: string) => {
   rankingCache.delete(contestId);
+  void cache.del(sharedRankingKey(contestId), { label: "contest-ranking" });
+};
+
+// Reuses another process's recent build when there is one, otherwise builds.
+const loadOrBuildRanking = async (contestId: string, maxAgeMs: number) => {
+  if (maxAgeMs > 0) {
+    const shared = await cache.getJson<RankingCacheEntry>(sharedRankingKey(contestId), { label: "contest-ranking" });
+    if (shared && Date.now() - shared.builtAt <= maxAgeMs) {
+      return shared;
+    }
+  }
+
+  const entry = { builtAt: Date.now(), ranking: await computeContestRanking(contestId) };
+  await cache.setJson(sharedRankingKey(contestId), entry, SHARED_RANKING_TTL_SECONDS, { label: "contest-ranking" });
+  return entry;
 };
 
 /**
@@ -296,10 +302,10 @@ const buildContestRanking = async (
     rankingCache.delete(contestId);
   }
 
-  const build = computeContestRanking(contestId)
-    .then((ranking) => {
-      rememberRanking(contestId, ranking);
-      return ranking;
+  const build = loadOrBuildRanking(contestId, maxAgeMs)
+    .then((entry) => {
+      rememberRanking(contestId, entry);
+      return entry.ranking;
     })
     .finally(() => {
       if (rankingBuildsInFlight.get(contestId) === build) {

@@ -2,15 +2,14 @@ import ApiError from "../../../../errors/ApiError";
 import prisma from "../../../../shared/prisma";
 import httpStatus from "http-status";
 import {
-  ContestRuleDefinition,
   ContestRuleKey,
   contestRuleDefinitions,
   getContestRuleDefinitions as getContestRuleDefinitionConfigs,
   getContestRuleDefinitionViews,
   isContestRuleKey,
-  LevelRequirementValue,
 } from "./contestRule.definitions";
 import { contestRuleConfigArraySchema } from "./contestRule.validation";
+import { summarizeRule } from "./handlers";
 import { ContestRuleConfigInput } from "./contestRules.type";
 import { contestCache } from "../contest.cache";
 
@@ -156,48 +155,28 @@ const getRuleValue = async <T>(contestId: string, key: ContestRuleKey): Promise<
   return rule.value as T;
 };
 
-const getEnabledRuleValue = async <T>(contestId: string, key: ContestRuleKey): Promise<T | null> => {
-  const rules = await getEffectiveContestRuleConfigs(contestId);
-  const rule = rules.find((config) => config.key === key);
+// A contest's rules, loaded once. Validation that checks several rules should
+// load this at the start, so one request does not query the rules many times.
+const loadRuleSet = async (contestId: string) => {
+  const configs = await getEffectiveContestRuleConfigs(contestId);
 
-  if (rule && !rule.enabled) {
-    return null;
-  }
-
-  return (rule?.value ?? clone(contestRuleDefinitions[key].defaultValue)) as T;
-};
-
-const formatRuleSummary = (definition: ContestRuleDefinition, value: any) => {
-  switch (definition.key) {
-    case "SUBMISSION_LIMIT":
-      return `${value} photo submits per participant`;
-    case "SUBMISSION_RULES": {
-      if (Array.isArray(value)) {
-        return value.map((item: string) => `- ${item}`).join("\n");
+  return {
+    // The rule's value, its default when it was never configured, or null when
+    // an admin turned it off.
+    value<T = any>(key: ContestRuleKey): T | null {
+      const rule = configs.find((config) => config.key === key);
+      if (rule && !rule.enabled) {
+        return null;
       }
-
-      const lines = [
-        value?.intro,
-        ...(value?.disallowed || []).map((item: string) => `- ${item}`),
-        value?.removalNotice,
-      ].filter(Boolean);
-      return lines.join("\n");
-    }
-    case "LEVEL_REQUIREMENTS":
-      return (value as LevelRequirementValue[])
-        .map((item) => `- ${item.level.replace("_", " ")} - ${item.votes} votes`)
-        .join("\n");
-    case "SUBMISSION_FORMAT": {
-      const mimeTypes = Array.isArray(value.mimeTypes) ? value.mimeTypes : [];
-      const formats = mimeTypes
-        .map((mimeType: string) => mimeType.replace("image/", "").toUpperCase())
-        .join(", ");
-      return `${formats}, minimum resolution of ${value.minWidth}px x ${value.minHeight}px, maximum size ${value.maxSizeMB}MB`;
-    }
-    default:
-      return value?.text || "";
-  }
+      return (rule?.value ?? clone(contestRuleDefinitions[key].defaultValue)) as T;
+    },
+  };
 };
+
+export type ContestRuleSet = Awaited<ReturnType<typeof loadRuleSet>>;
+
+const getEnabledRuleValue = async <T>(contestId: string, key: ContestRuleKey): Promise<T | null> =>
+  (await loadRuleSet(contestId)).value<T>(key);
 
 const getContestRules = async (contestId: string) => {
   const configs = await getEffectiveContestRuleConfigs(contestId);
@@ -218,7 +197,7 @@ const getContestRules = async (contestId: string) => {
         enabled: rule.enabled,
         order: rule.order,
         value: rule.value,
-        description: formatRuleSummary(definition, rule.value),
+        description: summarizeRule(definition.key, rule.value),
       };
     })
     .sort((a, b) => a.order - b.order);
@@ -232,6 +211,8 @@ export const contestRuleService = {
   getRuleConfigMap,
   getRuleValue,
   getEnabledRuleValue,
+  loadRuleSet,
+  formatRuleSummary: summarizeRule,
   getContestRuleDefinitions: getContestRuleDefinitionViews,
   normalizeContestRules,
   getSubmissionLimitFromRules,

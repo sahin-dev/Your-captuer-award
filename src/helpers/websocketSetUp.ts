@@ -16,7 +16,13 @@ interface AuthenticatedSocket extends Socket {
   teamIds?: Set<string>;
 }
 
-// const adapter = createAdapter(redisClient, redisSubClient);
+// PM2 runs one process per CPU and each has its own sockets. The Redis adapter
+// passes messages between them, so io.to(userId) reaches the user on any process.
+// Without Redis the app still works, but only within one process.
+const canShareBetweenProcesses = () => redisClient.isReady && redisSubClient.isReady;
+
+// PM2 numbers its processes from 0, and it is unset outside PM2.
+const isFirstProcess = () => (process.env.NODE_APP_INSTANCE ?? "0") === "0";
 
 type Message = { event: string; token?: string; teamId?: string; message?: string };
 type Acknowledgement = (response: {
@@ -35,7 +41,7 @@ let ioInstance: SocketIOServer | null = null;
 
 export function setupWebSocket(server: HTTPServer) {
   const io = new SocketIOServer(server, {
-    // adapter: adapter,
+    ...(canShareBetweenProcesses() && { adapter: createAdapter(redisClient, redisSubClient) }),
     cors: {
       origin: "*",
       methods: ["GET", "POST"],
@@ -55,16 +61,20 @@ export function setupWebSocket(server: HTTPServer) {
   // pingInterval/pingTimeout), so a periodic ping sweep here would just
   // duplicate that; the actual gap is this one-time reconciliation on boot,
   // since a fresh process has zero real connections by definition.
-  prisma.user
-    .updateMany({ where: { isOnline: true }, data: { isOnline: false } })
-    .then((result) => {
-      if (result.count > 0) {
-        logger.info(`Reset stale isOnline flag for ${result.count} user(s) after restart`);
-      }
-    })
-    .catch((error) => {
-      logger.error({ err: error }, "Failed to reset stale online status on startup");
-    });
+  // Only the first process does this: otherwise a single worker restarting
+  // would mark users connected to the other workers as offline.
+  if (isFirstProcess()) {
+    prisma.user
+      .updateMany({ where: { isOnline: true }, data: { isOnline: false } })
+      .then((result) => {
+        if (result.count > 0) {
+          logger.info(`Reset stale isOnline flag for ${result.count} user(s) after restart`);
+        }
+      })
+      .catch((error) => {
+        logger.error({ err: error }, "Failed to reset stale online status on startup");
+      });
+  }
 
   io.on("connection", (socket: AuthenticatedSocket) => {
     logger.debug({ socketId: socket.id }, "Socket connected");
@@ -311,8 +321,18 @@ export function getIO(): SocketIOServer | null {
  * Number of visitors currently browsing the site (open socket connections,
  * authenticated or anonymous).
  */
-export function getOnlineCount(): number {
-  return connectedSocketIds.size;
+// Connections across all processes. Falls back to this process alone if another
+// process does not answer. It asks every process, so callers should cache it.
+export async function getOnlineCount(): Promise<number> {
+  if (!ioInstance) {
+    return connectedSocketIds.size;
+  }
+  try {
+    return (await ioInstance.fetchSockets()).length;
+  } catch (error) {
+    logger.warn({ err: error }, "Could not count sockets across processes");
+    return connectedSocketIds.size;
+  }
 }
 
 // Export io for direct import in other modules
