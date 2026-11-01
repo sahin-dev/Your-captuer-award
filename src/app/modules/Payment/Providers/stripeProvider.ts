@@ -83,6 +83,7 @@ export class StripeProvider implements PaymentProvider {
     const customer = await this.createCustomer(userId);
 
     const paymentId = typeof data?.payment_id === "string" ? data.payment_id : undefined;
+    const unitAmount = this.toMinorUnits(amount, currency);
     return this.stripe.checkout.sessions.create({
       customer: customer.id,
       managed_payments: {
@@ -95,7 +96,7 @@ export class StripeProvider implements PaymentProvider {
           price_data: {
             currency: this.normalizeCurrency(currency),
             product_data: { name: title || "Coin Product" },
-            unit_amount: this.toMinorUnits(amount, currency),
+            unit_amount: unitAmount,
           },
           quantity: 1,
         },
@@ -104,7 +105,9 @@ export class StripeProvider implements PaymentProvider {
       payment_intent_data: data ? { metadata: data } : undefined,
       success_url: successUrl,
       cancel_url: cancelUrl,
-    }, paymentId ? { idempotencyKey: `checkout-${paymentId}` } : undefined);
+      // Stripe refuses a key reused with different values, so the amount is part
+      // of it. Otherwise a retry after a price change would keep failing.
+    }, paymentId ? { idempotencyKey: `checkout-${paymentId}-${unitAmount}` } : undefined);
   }
 
   async retrieveCheckoutSession(sessionId: string): Promise<Stripe.Checkout.Session> {

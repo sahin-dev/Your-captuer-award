@@ -155,6 +155,7 @@ const computeContestRanking = async (contestId: string): Promise<ContestRanking>
   const votingClosesAt = contest?.endDate ?? new Date();
   const voteCountByPhoto = new Map<string, number>();
   const voterCountByPhoto = new Map<string, number>();
+  
   await scanContestVotes(contestId, (vote) => {
     const slot = slotById.get(vote.contestPhotoId);
     if (!slot || vote.createdAt >= votingClosesAt || !countsForCurrentStint(slot, vote)) {

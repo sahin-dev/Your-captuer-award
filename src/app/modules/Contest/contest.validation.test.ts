@@ -78,11 +78,11 @@ test("USD entry fees are either free or Stripe-compatible amounts", () => {
     }).success, true);
     assert.equal(createContestSchema.safeParse({
         ...baseContest(),
-        entryFeeAmount:0.49,
+        entryFeeAmount:0.59,
     }).success, false);
     assert.equal(createContestSchema.safeParse({
         ...baseContest(),
-        entryFeeAmount:"0.50",
+        entryFeeAmount:"0.60",
     }).success, true);
     assert.equal(updateContestSchema.safeParse({entryFeeAmount:1.001}).success, false);
 });

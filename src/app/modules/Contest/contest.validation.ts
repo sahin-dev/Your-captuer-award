@@ -50,11 +50,15 @@ const richTextField = (label: string, maxLength: number) =>
 
 const optionalIsoDate = z.string().datetime({ offset: true }).optional();
 
+// Fees are charged in USD, but the Stripe account settles in EUR and Stripe
+// requires at least 0.50 EUR. This keeps a margin for exchange rate changes.
+export const MIN_ENTRY_FEE_USD = 0.6;
+
 const entryFeeAmountSchema = z.number()
     .nonnegative()
     .max(100000000)
-    .refine((value) => value === 0 || value >= 0.5, {
-        message: "USD entry fee must be 0 (free) or at least 0.50",
+    .refine((value) => value === 0 || value >= MIN_ENTRY_FEE_USD, {
+        message: `USD entry fee must be 0 (free) or at least ${MIN_ENTRY_FEE_USD.toFixed(2)}`,
     })
     .refine((value) => Math.abs(value * 100 - Math.round(value * 100)) < 1e-8, {
         message: "USD entry fee can have at most 2 decimal places",

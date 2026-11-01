@@ -1,12 +1,13 @@
 import { z } from "zod";
 import { RecurringType } from "../../../prismaClient";
 import { contestRuleInputArraySchema } from "../Contest/ContestRules/contestRule.validation";
+import { MIN_ENTRY_FEE_USD } from "../Contest/contest.validation";
 
 const entryFeeAmountSchema = z.number()
   .min(0)
   .max(100000000)
-  .refine((value) => value === 0 || value >= 0.5, {
-    message: "USD entry fee must be 0 (free) or at least 0.50",
+  .refine((value) => value === 0 || value >= MIN_ENTRY_FEE_USD, {
+    message: `USD entry fee must be 0 (free) or at least ${MIN_ENTRY_FEE_USD.toFixed(2)}`,
   })
   .refine((value) => Math.abs(value * 100 - Math.round(value * 100)) < 1e-8, {
     message: "USD entry fee can have at most 2 decimal places",

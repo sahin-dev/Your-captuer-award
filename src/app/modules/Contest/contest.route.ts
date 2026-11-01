@@ -10,7 +10,7 @@ import rateLimit from '../../middlewares/rateLimit.middleware'
 
 
 
-const router = Router()
+const router:Router = Router()
 
 // These routes need no login and each can trigger a ranking build.
 const publicRankingLimit = rateLimit("contest-ranking", 120, 60)
@@ -64,4 +64,4 @@ router.route("/:contestId")
     .delete(auth(UserRole.ADMIN), contestController.deleteContest)
 router.route("/:contestId/join").post(auth(),contestController.joinContest)
 
-export const contestRoutes = router
+export const contestRoutes:Router = router

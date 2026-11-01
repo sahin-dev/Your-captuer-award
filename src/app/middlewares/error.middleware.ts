@@ -3,6 +3,7 @@ import { NextFunction, Request, Response } from "express";
 import httpStatus from "http-status";
 import { ZodError } from "zod";
 import handleZodError from "../../errors/handleZodError";
+import handleStripeError from "../../errors/handleStripeError";
 import parsePrismaValidationError from "../../errors/parsePrismaValidationError";
 import ApiError from "../../errors/ApiError";
 import multer from "multer";
@@ -47,6 +48,7 @@ const ErrorHandler = (
   let message = err.message || "Something went wrong!";
   let errorSources:any = [];
   let errorDetails = err || null;
+  const stripeError = handleStripeError(err);
 
   // Handle Zod Validation Errors
   if (err instanceof ZodError) {
@@ -54,6 +56,11 @@ const ErrorHandler = (
     statusCode = simplifiedError?.statusCode;
     message = simplifiedError?.message;
     errorSources = simplifiedError?.errorSources;
+  }
+  else if (stripeError) {
+    statusCode = stripeError.statusCode;
+    message = stripeError.message;
+    errorSources = stripeError.errorSources;
   }
   // Handle Custom ApiError
   else if (err instanceof ApiError) {
@@ -152,7 +159,7 @@ const ErrorHandler = (
   // errors, since a normal 4xx (bad input, not found) has nothing to debug.
   const isDatabaseError =
     err instanceof Prisma.PrismaClientKnownRequestError || err instanceof Prisma.PrismaClientValidationError;
-  if (statusCode >= 500 || isDatabaseError) {
+  if (statusCode >= 500 || isDatabaseError || stripeError) {
     res.err = err;
   }
 
@@ -160,7 +167,9 @@ const ErrorHandler = (
     success: false,
     message,
     errorSources,
-    err,
+    // The raw error can hold internal details such as account ids and request
+    // logs, so it goes to the server log above and only reaches clients locally.
+    ...(config.NODE_ENV === "development" && { err }),
     stack: config.NODE_ENV === "development" ? err?.stack : null,
   });
 };
