@@ -37,11 +37,14 @@ export type ContestTypePolicy = {
 
 const POTY_SUBMISSION_LIMIT = 8;
 
+// A contest with a fee is paid through Stripe. A fee of 0 means anyone can join free.
+const hasEntryFee = (contest: { entryFeeAmount: number }) => contest.entryFeeAmount > 0;
+
 const regularPolicy: ContestTypePolicy = {
   type: "REGULAR",
   acceptsDirectVotes: true,
   closesForJudging: false,
-  requiresStripeEntry: (contest) => contest.entryFeeAmount > 0,
+  requiresStripeEntry: hasEntryFee,
   applyRuleOverrides: (rules) => rules,
   getSubmissionLimit: (rules) => contestRuleService.getSubmissionLimitFromRules(rules),
   resolveAwards: ({ prizeIds, prizes, useDefaults }) => prizeService.resolveAwardRows(prizeIds, prizes, useDefaults),
@@ -54,7 +57,7 @@ const potyPolicy: ContestTypePolicy = {
   // POTY scores come from votes in regular contests.
   acceptsDirectVotes: false,
   closesForJudging: true,
-  requiresStripeEntry: () => true,
+  requiresStripeEntry: hasEntryFee,
   applyRuleOverrides: (rules) =>
     rules.map((rule) => rule.key === "SUBMISSION_LIMIT"
       ? { ...rule, value: POTY_SUBMISSION_LIMIT, enabled: true }

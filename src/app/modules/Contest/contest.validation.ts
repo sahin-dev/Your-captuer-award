@@ -182,8 +182,8 @@ const createContestObjectSchema = z.object({
         if (contest.recurring) {
             ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["recurring"], message: "Photographer of the Year contests use admin-set start and end dates and cannot recur" });
         }
-        // POTY charges a USD entry fee that funds its prize pool; it has no fixed
-        // cash prizes and no coin fee.
+        // POTY is free or charges a USD entry fee that funds its prize pool. It
+        // has no fixed cash prizes and no coin fee.
         if (contest.isMoneyContest || contest.entryFeeCoins || contest.coinRequirement) {
             ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["isPhotographyOfYear"], message: "Photographer of the Year contests cannot use fixed cash prizes or coin entry fees" });
         }

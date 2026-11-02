@@ -7,7 +7,7 @@ import { createContestSchema, updateContestSchema } from "../Contest/contest.val
 import { photographyOfTheYearController } from "./photographyOfTheYear.controller";
 import { submitJudgingResultsSchema } from "./photographyOfTheYear.validation";
 
-const router = Router();
+const router: Router = Router();
 
 router.get("/", photographyOfTheYearController.getContests);
 router.post(
@@ -46,4 +46,4 @@ router.get("/:contestId/ranking", photographyOfTheYearController.getRanking);
 router.get("/:contestId/me", auth(), photographyOfTheYearController.getMyEntry);
 router.get("/:contestId/ranking/photographers", photographyOfTheYearController.getPhotographerRanking);
 
-export const photographyOfTheYearRoutes = router;
+export const photographyOfTheYearRoutes:Router = router;
