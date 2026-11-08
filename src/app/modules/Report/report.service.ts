@@ -7,6 +7,7 @@ import config from "../../../config";
 import { sendMail } from "../../../shared/mailSender";
 import { runInBackground } from "../../../shared/backgroundTasks";
 import { buildReportNotificationEmail } from "./report.notification";
+import { photoTakedownService } from "../Contest/moderation/photoTakedown.service";
 
 const reportUserSelect = { id: true, username: true, fullName: true, email: true, avatar: true } as const;
 
@@ -15,6 +16,7 @@ const createReport = async (
   data: { reportedUserId?: string; contestPhotoId?: string; reason: ReportReason; details?: string }
 ) => {
   let reportedUserId = data.reportedUserId;
+  let userPhotoId: string | null = null;
 
   if (data.contestPhotoId) {
     const contestPhoto = await prisma.contestPhoto.findUnique({
@@ -28,6 +30,8 @@ const createReport = async (
     // resolve who's being reported from the photo itself rather than trusting a
     // client-supplied reportedUserId for this path.
     reportedUserId = contestPhoto.participant.userId;
+    // Remember the exact image on screen; the slot may be traded to another later.
+    userPhotoId = contestPhoto.photoId;
   }
 
   if (!reportedUserId) {
@@ -48,6 +52,7 @@ const createReport = async (
       reporterId,
       reportedUserId,
       contestPhotoId: data.contestPhotoId,
+      userPhotoId,
       reason: data.reason,
       details: data.details,
     },
@@ -67,7 +72,9 @@ const createReport = async (
   return report;
 };
 
-const enrichReports = async <T extends { reporterId: string; reportedUserId: string; contestPhotoId: string | null }>(
+const enrichReports = async <
+  T extends { reporterId: string; reportedUserId: string; contestPhotoId: string | null; userPhotoId?: string | null }
+>(
   reports: T[]
 ) => {
   const reporterIds = [...new Set(reports.map((r) => r.reporterId))];
@@ -101,12 +108,33 @@ const enrichReports = async <T extends { reporterId: string; reportedUserId: str
     contestPhotos.map((p) => [p.id, { ...p, contest: contestById.get(p.contestId) || null }])
   );
 
-  return reports.map((report) => ({
-    ...report,
-    reporter: reporterById.get(report.reporterId) || null,
-    reportedUser: reportedUserById.get(report.reportedUserId) || null,
-    contestPhoto: report.contestPhotoId ? contestPhotoById.get(report.contestPhotoId) || null : null,
-  }));
+  // The image that was actually reported. Reports filed before userPhotoId was
+  // recorded fall back to whatever the slot shows now. Null once the photo has
+  // been removed from the platform.
+  const reportedPhotoIdOf = (report: T) =>
+    report.userPhotoId ?? (report.contestPhotoId ? contestPhotoById.get(report.contestPhotoId)?.photoId ?? null : null);
+  const reportedPhotoIds = [...new Set(reports.flatMap((r) => {
+    const id = reportedPhotoIdOf(r);
+    return id ? [id] : [];
+  }))];
+  const reportedPhotos = reportedPhotoIds.length
+    ? await prisma.userPhoto.findMany({
+        where: { id: { in: reportedPhotoIds } },
+        select: { id: true, url: true, title: true, userId: true },
+      })
+    : [];
+  const reportedPhotoById = new Map(reportedPhotos.map((p) => [p.id, p]));
+
+  return reports.map((report) => {
+    const reportedPhotoId = reportedPhotoIdOf(report);
+    return {
+      ...report,
+      reporter: reporterById.get(report.reporterId) || null,
+      reportedUser: reportedUserById.get(report.reportedUserId) || null,
+      contestPhoto: report.contestPhotoId ? contestPhotoById.get(report.contestPhotoId) || null : null,
+      reportedPhoto: reportedPhotoId ? reportedPhotoById.get(reportedPhotoId) || null : null,
+    };
+  });
 };
 
 const getReports = async (page = 1, limit = 20, status?: ReportStatus) => {
@@ -168,10 +196,65 @@ const markActionTaken = async (reportId: string, adminId: string, resolutionNote
   });
 };
 
+// Admin takedown from the report queue: deletes the reported image from the
+// whole platform (gallery, every contest entry, stored file) and resolves this
+// report plus every other open report about the same image.
+const removeReportedPhotoFromPlatform = async (reportId: string, adminId: string, reason?: string) => {
+  const report = await prisma.report.findUnique({ where: { id: reportId } });
+  if (!report) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Report not found");
+  }
+  if (!report.contestPhotoId && !report.userPhotoId) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "This report is not about a photo");
+  }
+
+  let userPhotoId = report.userPhotoId;
+  if (!userPhotoId && report.contestPhotoId) {
+    const slot = await prisma.contestPhoto.findUnique({
+      where: { id: report.contestPhotoId },
+      select: { photoId: true },
+    });
+    userPhotoId = slot?.photoId ?? null;
+  }
+  if (!userPhotoId) {
+    throw new ApiError(httpStatus.NOT_FOUND, "The reported photo has already been removed");
+  }
+
+  const resolutionNote = reason?.trim() || "Photo removed from the platform";
+  const result = await photoTakedownService.takeDownUserPhoto(userPhotoId, reason?.trim() || undefined);
+
+  const resolution = { status: ReportStatus.ACTION_TAKEN, resolutionNote, reviewedById: adminId, reviewedAt: new Date() };
+  await prisma.report.update({ where: { id: reportId }, data: resolution });
+  const othersResolved = await prisma.report.updateMany({
+    where: {
+      id: { not: reportId },
+      status: ReportStatus.PENDING,
+      OR: [
+        { userPhotoId },
+        // Older reports only know the slot (the field is missing on them), so
+        // match the slots that were showing this photo.
+        ...(result.affectedContestPhotoIds.length
+          ? [{
+              contestPhotoId: { in: result.affectedContestPhotoIds },
+              OR: [{ userPhotoId: { isSet: false } }, { userPhotoId: null }],
+            }]
+          : []),
+      ],
+    },
+    data: resolution,
+  });
+
+  return {
+    ...result,
+    resolvedReportCount: othersResolved.count + 1,
+  };
+};
+
 export const reportService = {
   createReport,
   getReports,
   getReportById,
   reviewReport,
   markActionTaken,
+  removeReportedPhotoFromPlatform,
 };

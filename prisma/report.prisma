@@ -3,6 +3,10 @@ model Report {
   reporterId     String       @db.ObjectId
   reportedUserId String       @db.ObjectId
   contestPhotoId String?      @db.ObjectId // optional context: which submission prompted the report
+  // The gallery photo (UserPhoto) the slot showed when the report was filed. A
+  // slot can be traded to another photo later, so this pins down which image a
+  // platform-wide takedown has to remove. Null on reports filed before this field.
+  userPhotoId    String?      @db.ObjectId
   reason         ReportReason
   details        String?
   status         ReportStatus @default(PENDING)

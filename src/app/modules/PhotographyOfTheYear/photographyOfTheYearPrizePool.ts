@@ -1,15 +1,19 @@
 import { PaymentStatus, PaymentType } from "../../../prismaClient";
 import prisma from "../../../shared/prisma";
 
-// Entry fees for Photographer of the Year go into one pot, and this share of it
-// is split between the 1st, 2nd and 3rd place winners. A free contest has an
-// empty pot.
-export const POTY_PRIZE_POOL_SHARE_PERCENT = 60;
+// Entry fees for Photographer of the Year go into one pot. 40% of it is the
+// prize pool divided among the winning participants; the other 60% is kept by
+// the platform. A free contest has an empty pot. The split is not shown as text
+// on the website, only the resulting prize pool amount.
+export const POTY_PRIZE_POOL_SHARE_PERCENT = 40;
+export const POTY_PLATFORM_SHARE_PERCENT = 100 - POTY_PRIZE_POOL_SHARE_PERCENT;
 
 export type PotyPrizePool = {
   collectedFees: number;
   prizePool: number;
   sharePercent: number;
+  platformShare: number;
+  platformSharePercent: number;
   currency: "USD";
 };
 
@@ -35,10 +39,14 @@ export const getPotyPrizePools = async (contestIds: string[]) => {
 
   contestIds.forEach((contestId) => {
     const collectedFees = roundMoney((collectedByContestId.get(contestId) ?? 0) + testCollectedFees());
+    const prizePool = roundMoney((collectedFees * POTY_PRIZE_POOL_SHARE_PERCENT) / 100);
     pools.set(contestId, {
       collectedFees,
-      prizePool: roundMoney((collectedFees * POTY_PRIZE_POOL_SHARE_PERCENT) / 100),
+      prizePool,
       sharePercent: POTY_PRIZE_POOL_SHARE_PERCENT,
+      // Derived from the rounded pool so the two parts always add up to the fees.
+      platformShare: roundMoney(collectedFees - prizePool),
+      platformSharePercent: POTY_PLATFORM_SHARE_PERCENT,
       currency: "USD",
     });
   });

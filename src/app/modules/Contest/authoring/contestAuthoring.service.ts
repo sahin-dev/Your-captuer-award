@@ -3,13 +3,16 @@ import ApiError from "../../../../errors/ApiError";
 import { fileUploader } from "../../../../helpers/fileUploader";
 import { paginationHelper } from "../../../../helpers/paginationHelper";
 import { validateContestDate } from "../../../../helpers/validateDate";
-import { Contest, Prisma } from "../../../../prismaClient";
+import { Contest, ContestStatus, PaymentStatus, PaymentType, Prisma } from "../../../../prismaClient";
 import prisma from "../../../../shared/prisma";
+import logger from "../../../../shared/logger";
+import agenda from "../../Agenda";
 import { prizeService } from "../../Prize/prize.service";
 import { contestCache } from "../contest.cache";
 import { contestData, updateContestData } from "../contest.type";
 import { resolveCategoryInput } from "../contestCategories";
 import { contestCategoryService } from "../contestCategory.service";
+import { getFinalizationTime } from "../ContestFinalization/contestFinalization.service";
 import { contestStatus, notDeletedContest } from "../contestLifecycle";
 import { policyFor } from "../contestTypePolicy";
 import { getContestRuleDefinitionViews, supportedContestImageMimeTypes } from "../ContestRules/contestRule.definitions";
@@ -137,6 +140,16 @@ const createContest = async (creatorId: string, body: contestData, banner:Expres
     })
 }
 
+// A contest type that stays manageable after it starts (Photographer of the
+// Year) can still be edited or archived while it is ACTIVE and has not ended.
+const isRunningButManageable = (contest:Contest) =>
+    policyFor(contest).editableWhileRunning
+    && contest.status === ContestStatus.ACTIVE
+    && contest.endDate > new Date()
+
+const isManageable = (contest:Contest) =>
+    contestStatus.isEditable(contest.status) || isRunningButManageable(contest)
+
 function assertContestCanBeEdited(contest:Contest | null, allowPhotographyOfYear:boolean):asserts contest is Contest {
     if(!contest){
         throw new ApiError(httpstatus.NOT_FOUND, "contest not found")
@@ -152,16 +165,39 @@ function assertContestCanBeEdited(contest:Contest | null, allowPhotographyOfYear
                 : "This endpoint only accepts Photographer of the Year contests"
         )
     }
-    if(!contestStatus.isEditable(contest.status)){
+    if(!isManageable(contest)){
         throw new ApiError(httpstatus.BAD_REQUEST, "Editing contest not allowed")
     }
 }
 
+// Datetime inputs drop seconds, so an unchanged start date can come back a
+// little off. Anything within a minute counts as "not changed".
+const DATE_TOLERANCE_MS = 60 * 1000
+
+// Dates for a contest that has already started: the start date and the entry
+// fee are fixed, only the end date may move (and it must stay in the future).
+const getRunningContestDates = (contest:Contest, update:updateContestData) => {
+    if(update.startDate && Math.abs(new Date(update.startDate).getTime() - contest.startDate.getTime()) > DATE_TOLERANCE_MS){
+        throw new ApiError(httpstatus.BAD_REQUEST, "The start date cannot change after the contest has started")
+    }
+    if(update.entryFeeAmount !== undefined && Number(update.entryFeeAmount) !== Number(contest.entryFeeAmount ?? 0)){
+        throw new ApiError(httpstatus.BAD_REQUEST, "The entry fee cannot change after the contest has started")
+    }
+    const endDate = update.endDate ? new Date(update.endDate) : contest.endDate
+    if(Number.isNaN(endDate.getTime()) || endDate <= new Date() || endDate <= contest.startDate){
+        throw new ApiError(httpstatus.BAD_REQUEST, "The end date must be in the future")
+    }
+    return {startDate:contest.startDate, endDate}
+}
+
 // The money and date fields after applying the update on top of the saved contest.
 const getUpdatedContestSettings = (contest:Contest, update:updateContestData) => {
-    const startDate = update.startDate ? new Date(update.startDate) : contest.startDate
-    const endDate = update.endDate ? new Date(update.endDate) : contest.endDate
-    if(!validateContestDate(startDate.toISOString(), endDate.toISOString())){
+    const running = isRunningButManageable(contest)
+    let startDate = update.startDate ? new Date(update.startDate) : contest.startDate
+    let endDate = update.endDate ? new Date(update.endDate) : contest.endDate
+    if(running){
+        ({startDate, endDate} = getRunningContestDates(contest, update))
+    }else if(!validateContestDate(startDate.toISOString(), endDate.toISOString())){
         throw new ApiError(httpstatus.BAD_REQUEST, INVALID_DATES_MESSAGE)
     }
 
@@ -189,7 +225,7 @@ const getUpdatedContestSettings = (contest:Contest, update:updateContestData) =>
         currency:money.isMoneyContest ? currency : null,
         minPrize:money.isMoneyContest ? minPrize : 0,
         maxPrize:money.isMoneyContest ? maxPrize : 0,
-        entryFeeAmount:update.entryFeeAmount ?? contest.entryFeeAmount ?? 0,
+        entryFeeAmount:running ? (contest.entryFeeAmount ?? 0) : (update.entryFeeAmount ?? contest.entryFeeAmount ?? 0),
         entryFeeCoins:money.entryFeeCoins,
     }
 }
@@ -206,6 +242,10 @@ const updateContest = async (
     const policy = policyFor(contest)
     const settings = getUpdatedContestSettings(contest, contestUpdate)
     const {prizeIds, prizes, levelAwards, rules, coinRequirement, bannerUserPhotoId, category, categories, ...otherFields} = contestUpdate as any
+    const running = isRunningButManageable(contest)
+    if(running && rules !== undefined){
+        throw new ApiError(httpstatus.BAD_REQUEST, "Contest rules cannot change after the contest has started")
+    }
     const categoryData = await contestCategoryService.prepareCategoryUpdate(resolveCategoryInput({category, categories}))
     const bannerData = await resolveBanner(bannerUserPhotoId, banner)
 
@@ -257,6 +297,13 @@ const updateContest = async (
     })
 
     await contestCache.invalidateContest(contestId)
+    // The finalization watcher was scheduled for the old end date when the
+    // contest started. Schedule one for the new date; the old one skips itself
+    // if it fires before the contest has really ended (see Agenda/jobs.ts).
+    if(running && saved.updatedContest.endDate.getTime() !== contest.endDate.getTime()){
+        await agenda.schedule(getFinalizationTime(saved.updatedContest), "contest:watcher", {contestId})
+            .catch((error) => logger.error({ err: error, contestId }, "Failed to reschedule contest finalization"))
+    }
     if(bannerData.banner){
         await fileUploader.deleteReplacedFile(contest.banner, `contests/${contestId}/banner`)
     }
@@ -269,6 +316,39 @@ const updateContest = async (
     }
 }
 
+// Photographer of the Year can be archived before it ends, even with entries,
+// as long as nobody has paid an entry fee that would still need refunding.
+// Archiving a running contest also closes it so no scheduled job finalizes it.
+const archiveManageableContest = async (contest:Contest) => {
+    if(!isManageable(contest)){
+        throw new ApiError(httpstatus.BAD_REQUEST, "A contest cannot be deleted after it has ended")
+    }
+
+    const paidEntries = await prisma.payment.count({
+        where:{contestId:contest.id, type:PaymentType.CONTEST, status:PaymentStatus.SUCCEEDED}
+    })
+    if(paidEntries > 0){
+        const one = paidEntries === 1
+        throw new ApiError(
+            httpstatus.BAD_REQUEST,
+            `${paidEntries} paid ${one ? "entry has" : "entries have"} not been refunded. Refund ${one ? "it" : "them"} from the Wallet page before deleting this contest.`
+        )
+    }
+
+    const now = new Date()
+    const archived = contest.status === ContestStatus.ACTIVE
+        ? await contestStatus.change(contest.id, ContestStatus.CLOSED, {deletedAt:now, endedAt:now}, notDeletedContest)
+        : (await prisma.contest.updateMany({
+            where:{id:contest.id, status:contest.status, ...notDeletedContest},
+            data:{deletedAt:now}
+        })).count === 1
+    if(!archived){
+        throw new ApiError(httpstatus.BAD_REQUEST, "Contest can no longer be deleted")
+    }
+    await contestCache.invalidateContest(contest.id)
+    return "contest deleted!"
+}
+
 //soft-delete a contest by the contest id, keeping it for historical/admin records
 const deleteContestByContestId = async (contestId:string)=>{
     const contest = await prisma.contest.findUnique({where:{id:contestId}})
@@ -277,6 +357,9 @@ const deleteContestByContestId = async (contestId:string)=>{
     }
     if(contest.deletedAt){
         throw new ApiError(httpstatus.BAD_REQUEST, "contest already deleted!")
+    }
+    if(policyFor(contest).editableWhileRunning){
+        return archiveManageableContest(contest)
     }
     if(!contestStatus.isEditable(contest.status)){
         throw new ApiError(httpstatus.BAD_REQUEST, "Only upcoming contests can be deleted")

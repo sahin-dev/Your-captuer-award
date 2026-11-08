@@ -27,6 +27,10 @@ export type ContestTypePolicy = {
   // True when the contest ends without automatic awards, and an admin publishes
   // the results later.
   closesForJudging: boolean;
+  // True when an admin may still edit (title, description, banner, categories,
+  // end date) and archive the contest after it has started. Start date, entry
+  // fee and rules stay locked once anyone could have joined under them.
+  editableWhileRunning: boolean;
   requiresStripeEntry(contest: { entryFeeAmount: number }): boolean;
   applyRuleOverrides(rules: ContestRuleConfigInput[]): ContestRuleConfigInput[];
   getSubmissionLimit(rules: ContestRuleConfigInput[]): number;
@@ -44,6 +48,7 @@ const regularPolicy: ContestTypePolicy = {
   type: "REGULAR",
   acceptsDirectVotes: true,
   closesForJudging: false,
+  editableWhileRunning: false,
   requiresStripeEntry: hasEntryFee,
   applyRuleOverrides: (rules) => rules,
   getSubmissionLimit: (rules) => contestRuleService.getSubmissionLimitFromRules(rules),
@@ -57,6 +62,8 @@ const potyPolicy: ContestTypePolicy = {
   // POTY scores come from votes in regular contests.
   acceptsDirectVotes: false,
   closesForJudging: true,
+  // POTY runs for a whole year, so it has to stay manageable while active.
+  editableWhileRunning: true,
   requiresStripeEntry: hasEntryFee,
   applyRuleOverrides: (rules) =>
     rules.map((rule) => rule.key === "SUBMISSION_LIMIT"

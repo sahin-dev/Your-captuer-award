@@ -17,3 +17,8 @@ test("regular contests follow the same fee rule", () => {
   assert.equal(policy.requiresStripeEntry({ entryFeeAmount: 5 }), true);
   assert.equal(policy.requiresStripeEntry({ entryFeeAmount: 0 }), false);
 });
+
+test("only Photographer of the Year stays editable after it starts", () => {
+  assert.equal(policyFor({ isPhotographyOfYear: true }).editableWhileRunning, true);
+  assert.equal(policyFor({ isPhotographyOfYear: false }).editableWhileRunning, false);
+});

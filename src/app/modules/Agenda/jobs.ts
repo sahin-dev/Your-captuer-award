@@ -70,6 +70,13 @@ agenda.define("contest:watcher", async (job: Job) => {
         logger.info({ contestId }, "Contest is archived, skipping finalization")
         return
     }
+    // An admin moved the end date of a running Photographer of the Year contest
+    // later. A new watcher was scheduled for the new date, so this early one
+    // has nothing to do (finalizing now would fail on the end-date check).
+    if(getFinalizationTime(contest).getTime() > Date.now()){
+        logger.info({ contestId }, "Contest end date was moved later, skipping early finalization run")
+        return
+    }
 
     await contestService.identifyWinner(contestId)
     await teamService.closeActiveMatchesForContest(contestId)

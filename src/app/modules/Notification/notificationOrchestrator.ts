@@ -28,6 +28,7 @@ export enum NotificationEvent {
   // Contest-related
   CONTEST_PHOTO_UPLOADED = "CONTEST_PHOTO_UPLOADED",
   CONTEST_PHOTO_REMOVED = "CONTEST_PHOTO_REMOVED",
+  PHOTO_REMOVED_FROM_PLATFORM = "PHOTO_REMOVED_FROM_PLATFORM",
   CONTEST_WINNER_ANNOUNCED = "CONTEST_WINNER_ANNOUNCED",
   CONTEST_ENDED = "CONTEST_ENDED",
   POTY_TOP_TEN_QUALIFIED = "POTY_TOP_TEN_QUALIFIED",
@@ -421,6 +422,33 @@ export async function notifyContestPhotoRemoved(
 }
 
 /**
+ * Sent when an admin removes a photo from the whole platform (gallery and every
+ * contest it was entered in), e.g. after a confirmed copyright report.
+ */
+export async function notifyPhotoRemovedFromPlatform(
+  userId: string,
+  photoId: string,
+  photoTitle: string | null,
+  reason?: string
+) {
+  const subject = photoTitle ? `Your photo "${photoTitle}"` : "One of your photos";
+  await sendNotification({
+    event: NotificationEvent.PHOTO_REMOVED_FROM_PLATFORM,
+    userId,
+    title: "Your photo was removed from the platform",
+    message: reason
+      ? `${subject} was removed from the platform by an admin. Reason: ${reason}`
+      : `${subject} was removed from the platform by an admin.`,
+    type: NotificationType.DEFAULT,
+    data: {
+      photoId,
+      photoTitle,
+      reason,
+    },
+  });
+}
+
+/**
  * Sent when a submitted photo enters the automatic Photographer of the Year
  * top 10 based on weighted votes from regular contests.
  */
@@ -578,6 +606,7 @@ export const notificationOrchestrator = {
   notifyContestPhotoUploaded,
   notifyContestEnded,
   notifyContestPhotoRemoved,
+  notifyPhotoRemovedFromPlatform,
   notifyPhotographyOfTheYearTopTen,
   notifyPhotographyOfTheYearResult,
   notifyCommentReceived,

@@ -19,7 +19,12 @@ const reviewReportSchema = z.object({
   resolutionNote: z.string().optional(),
 });
 
+const removePhotoFromPlatformSchema = z.object({
+  reason: z.string().trim().max(1000).optional(),
+});
+
 export const reportValidation = {
   createReportSchema,
   reviewReportSchema,
+  removePhotoFromPlatformSchema,
 };

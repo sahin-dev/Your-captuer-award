@@ -56,9 +56,22 @@ const reviewReport = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const removeReportedPhotoFromPlatform = catchAsync(async (req: any, res: Response) => {
+  const { id } = req.params;
+  const result = await reportService.removeReportedPhotoFromPlatform(id, req.user.id, req.body?.reason);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "Photo removed from the platform and report resolved",
+    data: result,
+  });
+});
+
 export const reportController = {
   createReport,
   getReports,
   getReportById,
   reviewReport,
+  removeReportedPhotoFromPlatform,
 };

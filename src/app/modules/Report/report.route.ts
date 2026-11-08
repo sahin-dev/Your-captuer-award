@@ -19,5 +19,13 @@ router.patch(
   validateRequest(reportValidation.reviewReportSchema),
   reportController.reviewReport
 );
+// Copyright takedown: deletes the reported photo from the whole platform
+// (gallery, every contest entry, stored file) and resolves the report.
+router.post(
+  "/:id/remove-photo",
+  auth(UserRole.ADMIN),
+  validateRequest(reportValidation.removePhotoFromPlatformSchema),
+  reportController.removeReportedPhotoFromPlatform
+);
 
 export const reportRoutes = router;
