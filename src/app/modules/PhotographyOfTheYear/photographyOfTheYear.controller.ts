@@ -4,6 +4,7 @@ import sendResponse from "../../../shared/ApiResponse";
 import catchAsync from "../../../shared/catchAsync";
 import { contestData } from "../Contest/contest.type";
 import { photographyOfTheYearService } from "./photographyOfTheYear.service";
+import { photographyOfTheYearAdminService } from "./photographyOfTheYearAdmin.service";
 
 const create = catchAsync(async (req: any, res: Response) => {
   const contest = await photographyOfTheYearService.createPhotographyOfTheYear(
@@ -139,4 +140,14 @@ const upload = catchAsync(async (req: any, res: Response) => {
   });
 });
 
-export const photographyOfTheYearController = { create, update, getContests, getRanking, getPhotographerRanking, getMyEntry, getJudgingResult, submitJudgingResults, join, upload };
+const getAdminOverview = catchAsync(async (_req: Request, res: Response) => {
+  const overview = await photographyOfTheYearAdminService.getAdminOverview();
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Photographer of the Year overview fetched successfully",
+    data: overview,
+  });
+});
+
+export const photographyOfTheYearController = { getAdminOverview, create, update, getContests, getRanking, getPhotographerRanking, getMyEntry, getJudgingResult, submitJudgingResults, join, upload };

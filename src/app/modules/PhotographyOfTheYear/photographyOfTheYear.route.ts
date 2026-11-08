@@ -10,6 +10,8 @@ import { submitJudgingResultsSchema } from "./photographyOfTheYear.validation";
 const router: Router = Router();
 
 router.get("/", photographyOfTheYearController.getContests);
+// Admin hub: every POTY contest with its stage, counts and what can be done next.
+router.get("/admin/overview", auth(UserRole.ADMIN), photographyOfTheYearController.getAdminOverview);
 router.post(
   "/",
   auth(UserRole.ADMIN),
