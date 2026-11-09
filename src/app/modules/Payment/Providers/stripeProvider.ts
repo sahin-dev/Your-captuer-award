@@ -89,7 +89,7 @@ export class StripeProvider implements PaymentProvider {
       managed_payments: {
         enabled: false,
       },
-      payment_method_types: ["card"],
+      // payment_method_types: ["card"],
       mode: "payment",
       line_items: [
         {
