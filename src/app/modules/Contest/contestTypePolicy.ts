@@ -31,6 +31,10 @@ export type ContestTypePolicy = {
   // end date) and archive the contest after it has started. Start date, entry
   // fee and rules stay locked once anyone could have joined under them.
   editableWhileRunning: boolean;
+  // True when deleting the contest removes it and every related record for
+  // good, at any stage. False keeps the soft delete limited to contests that
+  // nobody has joined yet.
+  purgeOnDelete: boolean;
   requiresStripeEntry(contest: { entryFeeAmount: number }): boolean;
   applyRuleOverrides(rules: ContestRuleConfigInput[]): ContestRuleConfigInput[];
   getSubmissionLimit(rules: ContestRuleConfigInput[]): number;
@@ -49,6 +53,7 @@ const regularPolicy: ContestTypePolicy = {
   acceptsDirectVotes: true,
   closesForJudging: false,
   editableWhileRunning: false,
+  purgeOnDelete: false,
   requiresStripeEntry: hasEntryFee,
   applyRuleOverrides: (rules) => rules,
   getSubmissionLimit: (rules) => contestRuleService.getSubmissionLimitFromRules(rules),
@@ -64,6 +69,8 @@ const potyPolicy: ContestTypePolicy = {
   closesForJudging: true,
   // POTY runs for a whole year, so it has to stay manageable while active.
   editableWhileRunning: true,
+  // An admin can remove a POTY contest at any time, including after results.
+  purgeOnDelete: true,
   requiresStripeEntry: hasEntryFee,
   applyRuleOverrides: (rules) =>
     rules.map((rule) => rule.key === "SUBMISSION_LIMIT"

@@ -11,13 +11,10 @@ import prisma, { PrismaTx } from "../../../shared/prisma";
 //                   FINALIZATION_FAILED
 //
 // NEW, OPEN and JOINED are legacy values and are not part of this flow.
-// ACTIVE -> CLOSED is only used when an admin archives a running Photographer of
-// the Year contest (authoring/contestAuthoring.service.ts), together with
-// deletedAt, so nothing keeps treating it as a live contest.
 
 const allowedTransitions: Partial<Record<ContestStatus, ContestStatus[]>> = {
   [ContestStatus.UPCOMING]: [ContestStatus.ACTIVE],
-  [ContestStatus.ACTIVE]: [ContestStatus.FINALIZING, ContestStatus.CLOSED],
+  [ContestStatus.ACTIVE]: [ContestStatus.FINALIZING],
   // FINALIZING -> FINALIZING lets a finalizer that crashed be picked up again.
   [ContestStatus.FINALIZING]: [
     ContestStatus.FINALIZING,

@@ -74,13 +74,8 @@ const getAdminOverview = async () => {
           : "RUNNING";
 
     const paidEntryCount = paidCount.get(contest.id) ?? 0;
-    // Mirrors the backend rules in Contest/authoring/contestAuthoring.service.ts.
+    // Mirrors the edit rules in Contest/authoring/contestAuthoring.service.ts.
     const manageable = MANAGEABLE_STATUSES.includes(contest.status) && contest.endDate > now;
-    const deleteBlockedReason = !manageable
-      ? "A contest cannot be deleted after it has ended."
-      : paidEntryCount > 0
-        ? `${paidEntryCount} paid ${paidEntryCount === 1 ? "entry" : "entries"} must be refunded from the Wallet page first.`
-        : null;
 
     return {
       ...contest,
@@ -94,8 +89,9 @@ const getAdminOverview = async () => {
       canEdit: manageable,
       // Start date, entry fee and rules are locked once the contest is running.
       editLocksStartedFields: manageable && contest.startDate <= now,
-      canDelete: deleteBlockedReason === null,
-      deleteBlockedReason,
+      // POTY can be deleted at any stage; deleting purges every related record.
+      canDelete: true,
+      deleteBlockedReason: null as string | null,
     };
   });
 

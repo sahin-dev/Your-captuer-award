@@ -3,7 +3,7 @@ import ApiError from "../../../../errors/ApiError";
 import { fileUploader } from "../../../../helpers/fileUploader";
 import { paginationHelper } from "../../../../helpers/paginationHelper";
 import { validateContestDate } from "../../../../helpers/validateDate";
-import { Contest, ContestStatus, PaymentStatus, PaymentType, Prisma } from "../../../../prismaClient";
+import { Contest, ContestStatus, Prisma } from "../../../../prismaClient";
 import prisma from "../../../../shared/prisma";
 import logger from "../../../../shared/logger";
 import agenda from "../../Agenda";
@@ -19,6 +19,7 @@ import { getContestRuleDefinitionViews, supportedContestImageMimeTypes } from ".
 import { contestRuleService } from "../ContestRules/contestRules.service";
 import { createRecurringContest } from "../recurring/recurringMaterializer";
 import { resolveBanner } from "./bannerResolver";
+import { contestPurgeService } from "./contestPurge.service";
 import {
     AwardRow,
     blueprintFromRequest,
@@ -316,50 +317,20 @@ const updateContest = async (
     }
 }
 
-// Photographer of the Year can be archived before it ends, even with entries,
-// as long as nobody has paid an entry fee that would still need refunding.
-// Archiving a running contest also closes it so no scheduled job finalizes it.
-const archiveManageableContest = async (contest:Contest) => {
-    if(!isManageable(contest)){
-        throw new ApiError(httpstatus.BAD_REQUEST, "A contest cannot be deleted after it has ended")
-    }
-
-    const paidEntries = await prisma.payment.count({
-        where:{contestId:contest.id, type:PaymentType.CONTEST, status:PaymentStatus.SUCCEEDED}
-    })
-    if(paidEntries > 0){
-        const one = paidEntries === 1
-        throw new ApiError(
-            httpstatus.BAD_REQUEST,
-            `${paidEntries} paid ${one ? "entry has" : "entries have"} not been refunded. Refund ${one ? "it" : "them"} from the Wallet page before deleting this contest.`
-        )
-    }
-
-    const now = new Date()
-    const archived = contest.status === ContestStatus.ACTIVE
-        ? await contestStatus.change(contest.id, ContestStatus.CLOSED, {deletedAt:now, endedAt:now}, notDeletedContest)
-        : (await prisma.contest.updateMany({
-            where:{id:contest.id, status:contest.status, ...notDeletedContest},
-            data:{deletedAt:now}
-        })).count === 1
-    if(!archived){
-        throw new ApiError(httpstatus.BAD_REQUEST, "Contest can no longer be deleted")
-    }
-    await contestCache.invalidateContest(contest.id)
-    return "contest deleted!"
-}
-
-//soft-delete a contest by the contest id, keeping it for historical/admin records
+// Regular contests are soft-deleted, and only before anyone takes part.
+// Photographer of the Year is permanently deleted with all its records at any
+// stage (see contestTypePolicy.purgeOnDelete and authoring/contestPurge.service.ts).
 const deleteContestByContestId = async (contestId:string)=>{
     const contest = await prisma.contest.findUnique({where:{id:contestId}})
     if(!contest){
         throw new ApiError(httpstatus.NOT_FOUND, "contest not found!")
     }
+    if(policyFor(contest).purgeOnDelete){
+        await contestPurgeService.purgeContest(contestId)
+        return "contest deleted!"
+    }
     if(contest.deletedAt){
         throw new ApiError(httpstatus.BAD_REQUEST, "contest already deleted!")
-    }
-    if(policyFor(contest).editableWhileRunning){
-        return archiveManageableContest(contest)
     }
     if(!contestStatus.isEditable(contest.status)){
         throw new ApiError(httpstatus.BAD_REQUEST, "Only upcoming contests can be deleted")

@@ -22,3 +22,8 @@ test("only Photographer of the Year stays editable after it starts", () => {
   assert.equal(policyFor({ isPhotographyOfYear: true }).editableWhileRunning, true);
   assert.equal(policyFor({ isPhotographyOfYear: false }).editableWhileRunning, false);
 });
+
+test("deleting Photographer of the Year purges it; regular contests are soft-deleted", () => {
+  assert.equal(policyFor({ isPhotographyOfYear: true }).purgeOnDelete, true);
+  assert.equal(policyFor({ isPhotographyOfYear: false }).purgeOnDelete, false);
+});
