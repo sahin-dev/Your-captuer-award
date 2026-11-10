@@ -90,6 +90,9 @@ export class StripeProvider implements PaymentProvider {
         enabled: false,
       },
       // payment_method_types: ["card"],
+      adaptive_pricing: {
+        enabled: true,
+      },
       mode: "payment",
       line_items: [
         {
