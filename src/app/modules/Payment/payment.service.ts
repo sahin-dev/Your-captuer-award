@@ -10,7 +10,7 @@ import { PaymentFactory } from "./paymentFactory";
 import { PaymentRegistry } from "./paymentRegistry";
 import { loadProviders } from "./providerLoader";
 import httpStatus from 'http-status';
-import { activeContestWhere } from "../Contest/contestLifecycle";
+import { acceptingEntriesWhere } from "../Contest/contestLifecycle";
 
 const isUniqueConstraintError = (error: unknown) =>
   typeof error === "object" && error !== null && "code" in error && error.code === "P2002";
@@ -263,7 +263,8 @@ const buildContestRedirectUrl = (
       throw new ApiError(httpStatus.NOT_FOUND, "User not found");
     }
 
-    const contest = await prisma.contest.findFirst({ where: { id: contestId, ...activeContestWhere() } });
+    // Includes a scheduled Photographer of the Year contest (early registration).
+    const contest = await prisma.contest.findFirst({ where: { id: contestId, ...acceptingEntriesWhere() } });
     if (!contest) {
       throw new ApiError(httpStatus.NOT_FOUND, "Contest is not available to participate");
     }

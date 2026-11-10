@@ -89,6 +89,13 @@ const getAdminOverview = async () => {
       canEdit: manageable,
       // Start date, entry fee and rules are locked once the contest is running.
       editLocksStartedFields: manageable && contest.startDate <= now,
+      // Mirrors getContestEditLocks in Contest/authoring: the entry fee and
+      // rules also lock as soon as anyone registers (registration opens while
+      // the contest is still scheduled).
+      editLocks: {
+        startDate: manageable && contest.startDate <= now,
+        feeAndRules: manageable && (contest.startDate <= now || (participantCount.get(contest.id) ?? 0) > 0),
+      },
       // POTY can be deleted at any stage; deleting purges every related record.
       canDelete: true,
       deleteBlockedReason: null as string | null,

@@ -215,11 +215,20 @@ const buildPhotographyOfYearPhotographerRanking = async (contestId: string, page
 
 // The signed-in user's own standing, for their joined POTY card.
 const getMyPhotographyOfYearEntry = async (contestId: string, userId: string) => {
-  const ranking = await buildFullRanking(contestId);
+  const [ranking, contest] = await Promise.all([
+    buildFullRanking(contestId),
+    prisma.contest.findUnique({ where: { id: contestId }, select: { startDate: true } }),
+  ]);
   const photographer = ranking.photographers.find((item) => item.user.id === userId);
+  // Entries can be submitted before the start date, but nothing is scored
+  // until then: every entry has 0 votes and the order would only reflect who
+  // entered first, so no rank is given yet.
+  const votingOpen = !contest || contest.startDate <= new Date();
   return {
     joined: Boolean(photographer),
-    rank: photographer?.rank ?? null,
+    votingOpen,
+    votingStartsAt: contest?.startDate ?? null,
+    rank: votingOpen ? photographer?.rank ?? null : null,
     totalPhotographers: ranking.photographers.length,
     totalVotes: photographer?.totalVotes ?? 0,
     photos: (photographer?.photos ?? []).map((photo) => ({
@@ -227,7 +236,7 @@ const getMyPhotographyOfYearEntry = async (contestId: string, userId: string) =>
       userPhotoId: photo.userPhotoId,
       voteCount: photo.voteCount,
       voterCount: photo.voterCount,
-      rank: photo.rank,
+      rank: votingOpen ? photo.rank : null,
     })),
   };
 };

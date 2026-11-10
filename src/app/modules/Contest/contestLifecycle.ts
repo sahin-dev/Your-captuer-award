@@ -94,6 +94,46 @@ export const activeContestWhere = (now = new Date()): Prisma.ContestWhereInput =
   endDate: { gt: now },
 });
 
+// Registrations and submissions (join, submit, withdraw an entry). Every contest
+// accepts them while active; Photographer of the Year also accepts them while
+// scheduled (contestTypePolicy.opensEntriesBeforeStart). Voting does NOT use
+// this: it stays on activeContestWhere, so nothing is scored before the start.
+export const acceptingEntriesWhere = (now = new Date()): Prisma.ContestWhereInput => ({
+  OR: [
+    activeContestWhere(now),
+    {
+      AND: [
+        {
+          isPhotographyOfYear: true,
+          status: { in: [ContestStatus.UPCOMING, ContestStatus.ACTIVE] },
+          endDate: { gt: now },
+        },
+        notDeletedContest,
+      ],
+    },
+  ],
+});
+
+// The same rule for a contest already loaded in memory. Must agree with
+// acceptingEntriesWhere (see contestLifecycle.test.ts).
+export const acceptsEntries = (
+  contest: { status: ContestStatus; startDate: Date; endDate: Date; isPhotographyOfYear?: boolean | null; deletedAt?: Date | null },
+  now = new Date(),
+) => {
+  if (contest.deletedAt || contest.endDate <= now) return false;
+  if (contest.status === ContestStatus.ACTIVE && contest.startDate <= now) return true;
+  return Boolean(contest.isPhotographyOfYear) && contest.status === ContestStatus.UPCOMING;
+};
+
+// Like lockActiveContest, for registrations and submissions.
+export const lockContestForEntries = async (tx: PrismaTx, contestId: string) => {
+  const locked = await tx.contest.updateMany({
+    where: { id: contestId, ...acceptingEntriesWhere() },
+    data: { updatedAt: new Date() },
+  });
+  return locked.count === 1;
+};
+
 // Claims the contest inside a transaction: it fails if the contest is no longer
 // active, and any status change running at the same time conflicts with it.
 // Use this for occasional actions (upload, trade, promote, delete). Do not use

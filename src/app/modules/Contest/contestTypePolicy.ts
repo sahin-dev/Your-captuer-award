@@ -35,6 +35,11 @@ export type ContestTypePolicy = {
   // good, at any stage. False keeps the soft delete limited to contests that
   // nobody has joined yet.
   purgeOnDelete: boolean;
+  // True when people may register and submit entries while the contest is
+  // still scheduled. Voting and scoring still only count from the start date.
+  // contestLifecycle.acceptingEntriesWhere mirrors this flag in the database
+  // filter; keep the two in sync.
+  opensEntriesBeforeStart: boolean;
   requiresStripeEntry(contest: { entryFeeAmount: number }): boolean;
   applyRuleOverrides(rules: ContestRuleConfigInput[]): ContestRuleConfigInput[];
   getSubmissionLimit(rules: ContestRuleConfigInput[]): number;
@@ -54,6 +59,7 @@ const regularPolicy: ContestTypePolicy = {
   closesForJudging: false,
   editableWhileRunning: false,
   purgeOnDelete: false,
+  opensEntriesBeforeStart: false,
   requiresStripeEntry: hasEntryFee,
   applyRuleOverrides: (rules) => rules,
   getSubmissionLimit: (rules) => contestRuleService.getSubmissionLimitFromRules(rules),
@@ -71,6 +77,9 @@ const potyPolicy: ContestTypePolicy = {
   editableWhileRunning: true,
   // An admin can remove a POTY contest at any time, including after results.
   purgeOnDelete: true,
+  // Registration opens as soon as the contest is scheduled. POTY scores only
+  // count regular-contest votes cast between its start and end dates.
+  opensEntriesBeforeStart: true,
   requiresStripeEntry: hasEntryFee,
   applyRuleOverrides: (rules) =>
     rules.map((rule) => rule.key === "SUBMISSION_LIMIT"

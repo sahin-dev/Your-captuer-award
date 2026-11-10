@@ -6,9 +6,9 @@ import prisma, { PrismaTx } from "../../../../shared/prisma";
 import { pendingWorkQueue } from "../../PendingWork/pendingWork.queue";
 import { profileService } from "../../Profile/profile.service";
 import { consumeStoreItem } from "../actions/consumeStoreItem";
-import { withActiveContest } from "../actions/withActiveContest";
+import { withContestAcceptingEntries } from "../actions/withActiveContest";
 import { parseContestPhotoIds } from "../contestPhotoInput";
-import { activeContestWhere } from "../contestLifecycle";
+import { acceptingEntriesWhere } from "../contestLifecycle";
 import { ContestType, policyFor } from "../contestTypePolicy";
 import { contestRuleEngine } from "../ContestRules/contestRule.engine";
 import { EXPOSURE_BOOST_DURATION_MS } from "../exposure/exposure.service";
@@ -63,7 +63,7 @@ const joinContest = async (
     acceptedRuleKeys?:unknown,
     contestType:ContestType = "REGULAR"
 )=>{
-    const contest = await prisma.contest.findFirst({where:{id:contestId, ...activeContestWhere()}})
+    const contest = await prisma.contest.findFirst({where:{id:contestId, ...acceptingEntriesWhere()}})
     if(!contest){
         throw new ApiError(httpstatus.NOT_FOUND, "Contest is not available to participate")
     }
@@ -89,7 +89,7 @@ const joinContest = async (
         }
 
         const activeContest = await tx.contest.findFirst({
-            where:{id:contestId, ...activeContestWhere()},
+            where:{id:contestId, ...acceptingEntriesWhere()},
             select:{id:true, entryFeeCoins:true}
         })
         if(!activeContest){
@@ -138,7 +138,13 @@ const completePaidContestJoin = async (
             where:{id:contestId},
             select:{id:true, status:true, entryFeeAmount:true, currency:true, entryFeeCoins:true, isPhotographyOfYear:true}
         })
-        if(!contest || contest.status !== "ACTIVE"){
+        // A scheduled Photographer of the Year contest takes paid registrations
+        // too. Otherwise the webhook would refund an early registration.
+        const acceptsPaidEntry = contest && (
+            contest.status === "ACTIVE" ||
+            (policyFor(contest).opensEntriesBeforeStart && contest.status === "UPCOMING")
+        )
+        if(!contest || !acceptsPaidEntry){
             throw new ApiError(httpstatus.BAD_REQUEST, "Contest is no longer accepting participants")
         }
         if(contest.entryFeeAmount <= 0){
@@ -236,7 +242,7 @@ const saveSubmission = (
     userId:string,
     selectedPhotoIds:string[],
     submissionLimit:number | null
-) => withActiveContest(contestId, "Contest is no longer accepting submissions", async tx => {
+) => withContestAcceptingEntries(contestId, "Contest is no longer accepting submissions", async tx => {
     const activeContest = await tx.contest.findUniqueOrThrow({where:{id:contestId}})
 
     let participant = await tx.contestParticipant.findUnique({
@@ -290,7 +296,7 @@ const uploadPhotoToContest = async (
     if(!contestId){
         throw new ApiError(httpstatus.BAD_REQUEST, "contest id is required")
     }
-    const contest = await prisma.contest.findFirst({where:{id:contestId, ...activeContestWhere()}})
+    const contest = await prisma.contest.findFirst({where:{id:contestId, ...acceptingEntriesWhere()}})
     if(!contest){
         throw new ApiError(httpstatus.NOT_FOUND, "contest not found or contest closed")
     }
@@ -340,7 +346,7 @@ const uploadPhotoToContest = async (
 }
 
 const deleteContestUploadById = async (contestId:string, userId:string, photoId:string)=>{
-    const contest = await prisma.contest.findFirst({where:{id:contestId, ...activeContestWhere()}})
+    const contest = await prisma.contest.findFirst({where:{id:contestId, ...acceptingEntriesWhere()}})
     if(!contest){
         throw new ApiError(httpstatus.CONFLICT, "Contest submissions can no longer be changed")
     }
@@ -352,7 +358,7 @@ const deleteContestUploadById = async (contestId:string, userId:string, photoId:
         throw new ApiError(httpstatus.FORBIDDEN, "You are not allowed to delete this contest upload")
     }
 
-    await withActiveContest(contestId, "Contest submissions can no longer be changed", async tx => {
+    await withContestAcceptingEntries(contestId, "Contest submissions can no longer be changed", async tx => {
         // Keep the slot as a tombstone so existing votes, comments and audit
         // records remain valid. Rankings already ignore slots without a photo.
         await tx.contestPhoto.update({

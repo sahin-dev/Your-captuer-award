@@ -10,6 +10,7 @@ import prisma from "../shared/prisma";
 import logger from "../shared/logger";
 import { userCache } from "../app/modules/User/user.cache";
 import { userStoreCache } from "../app/modules/User/UserStore/userStore.cache";
+import { isCheckoutSessionPaid } from "./stripeCheckoutStatus";
 
 const stripe = new Stripe(config.stripe_key as string);
 
@@ -316,6 +317,14 @@ const handleCheckoutSuccess = async (session: Stripe.Checkout.Session) => {
   }
 
   if (payment.status === PaymentStatus.SUCCEEDED) {
+    return;
+  }
+
+  // Store purchases and subscriptions are only fulfilled once the money is
+  // in. A delayed method completes checkout as "unpaid"; coins or a plan are
+  // granted when checkout.session.async_payment_succeeded arrives instead.
+  if (!isCheckoutSessionPaid(session)) {
+    logger.info({ sessionId: session.id, paymentId: payment.id }, "Checkout completed but not paid yet; waiting for the async payment result");
     return;
   }
 

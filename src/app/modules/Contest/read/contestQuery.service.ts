@@ -12,6 +12,7 @@ import { voteService } from "../../Vote/vote.service";
 import { contestCache } from "../contest.cache";
 import { contestFinalizationService } from "../ContestFinalization/contestFinalization.service";
 import { contestStatus, notDeletedContest } from "../contestLifecycle";
+import { policyFor } from "../contestTypePolicy";
 import { ContestRuleKey, contestRuleDefinitions, isContestRuleKey } from "../ContestRules/contestRule.definitions";
 import { contestRuleService } from "../ContestRules/contestRules.service";
 import { contestPhotoPresenter } from "../presenters/contestPhoto.presenter";
@@ -108,7 +109,11 @@ const getContestByUserId = async ( userId:string, contestId: string) => {
         return contestDetails;
     }
 
-    if( (await isContestParticipantExist(userId, contestId)) && (contest.status === ContestStatus.ACTIVE)){
+    // Entries are shown while the contest takes them: when active, and for
+    // Photographer of the Year already while it is scheduled.
+    const entriesOpen = contest.status === ContestStatus.ACTIVE
+        || (policyFor(contest).opensEntriesBeforeStart && contest.status === ContestStatus.UPCOMING)
+    if( entriesOpen && (await isContestParticipantExist(userId, contestId))){
         const contestPhotoCount =  await prisma.contestPhoto.count({where:{contestId, photo:{userId}}})
 
         return {...contestDetails, joined:true, uploadCount:contestPhotoCount}
@@ -477,6 +482,13 @@ const getContestUploadsByUserId = async (contestId:string, userId:string)=>{
     return sortByVotesThenUploadSequence(mappedPhotos)
 }
 
+// "My contests": active ones, plus scheduled Photographer of the Year contests
+// the user already registered for.
+const joinedContestStatusFilter: Prisma.ContestWhereInput[] = [
+    {status:ContestStatus.ACTIVE},
+    {isPhotographyOfYear:true, status:ContestStatus.UPCOMING},
+]
+
 const getMyActiveContests = async (userId:string) => {
     return profileCache.getUserData(
         userId,
@@ -486,14 +498,14 @@ const getMyActiveContests = async (userId:string) => {
             // Order by when the user joined each contest (latest joined first) rather than
             // any contest field - joining is tracked on ContestParticipant.createdAt.
             const participants = await prisma.contestParticipant.findMany({
-                where:{userId, contest:{status:ContestStatus.ACTIVE}},
+                where:{userId, contest:{OR:joinedContestStatusFilter}},
                 orderBy:{createdAt:"desc"},
                 select:{contestId:true}
             })
             const joinOrder = participants.map(participant => participant.contestId)
 
             const contests = joinOrder.length > 0 ? await prisma.contest.findMany({
-                where:{id:{in:joinOrder}, status:ContestStatus.ACTIVE},
+                where:{id:{in:joinOrder}, OR:joinedContestStatusFilter},
                 include: { creator: {select:{id:true, avatar:true,fullName:true,cover:true, firstName:true, lastName:true}}, bannerUploader: contestBannerUploaderInclude}
             }) : [];
 

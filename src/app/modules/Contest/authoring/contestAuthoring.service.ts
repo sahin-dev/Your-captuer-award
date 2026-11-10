@@ -175,15 +175,39 @@ function assertContestCanBeEdited(contest:Contest | null, allowPhotographyOfYear
 // little off. Anything within a minute counts as "not changed".
 const DATE_TOLERANCE_MS = 60 * 1000
 
+// What an admin may no longer change.
+//   startDate:   locked once the contest is running.
+//   feeAndRules: locked once it is running, and for a contest that takes
+//                registrations before it starts (Photographer of the Year) as
+//                soon as anyone has registered: they joined, and maybe paid,
+//                under that fee and those rules.
+export type ContestEditLocks = { startDate:boolean; feeAndRules:boolean }
+
+export const getContestEditLocks = async (contest:Contest):Promise<ContestEditLocks> => {
+    const running = isRunningButManageable(contest)
+    if(running) return {startDate:true, feeAndRules:true}
+    if(!policyFor(contest).opensEntriesBeforeStart) return {startDate:false, feeAndRules:false}
+    const registrations = await prisma.contestParticipant.count({where:{contestId:contest.id}})
+    return {startDate:false, feeAndRules:registrations > 0}
+}
+
+const feeLockedMessage = (locks:ContestEditLocks) => locks.startDate
+    ? "The entry fee cannot change after the contest has started"
+    : "The entry fee cannot change once people have registered"
+
+const assertEntryFeeUnchanged = (contest:Contest, update:updateContestData, locks:ContestEditLocks) => {
+    if(update.entryFeeAmount !== undefined && Number(update.entryFeeAmount) !== Number(contest.entryFeeAmount ?? 0)){
+        throw new ApiError(httpstatus.BAD_REQUEST, feeLockedMessage(locks))
+    }
+}
+
 // Dates for a contest that has already started: the start date and the entry
 // fee are fixed, only the end date may move (and it must stay in the future).
-const getRunningContestDates = (contest:Contest, update:updateContestData) => {
+const getRunningContestDates = (contest:Contest, update:updateContestData, locks:ContestEditLocks) => {
     if(update.startDate && Math.abs(new Date(update.startDate).getTime() - contest.startDate.getTime()) > DATE_TOLERANCE_MS){
         throw new ApiError(httpstatus.BAD_REQUEST, "The start date cannot change after the contest has started")
     }
-    if(update.entryFeeAmount !== undefined && Number(update.entryFeeAmount) !== Number(contest.entryFeeAmount ?? 0)){
-        throw new ApiError(httpstatus.BAD_REQUEST, "The entry fee cannot change after the contest has started")
-    }
+    assertEntryFeeUnchanged(contest, update, locks)
     const endDate = update.endDate ? new Date(update.endDate) : contest.endDate
     if(Number.isNaN(endDate.getTime()) || endDate <= new Date() || endDate <= contest.startDate){
         throw new ApiError(httpstatus.BAD_REQUEST, "The end date must be in the future")
@@ -192,14 +216,20 @@ const getRunningContestDates = (contest:Contest, update:updateContestData) => {
 }
 
 // The money and date fields after applying the update on top of the saved contest.
-const getUpdatedContestSettings = (contest:Contest, update:updateContestData) => {
-    const running = isRunningButManageable(contest)
+const getUpdatedContestSettings = (contest:Contest, update:updateContestData, locks:ContestEditLocks) => {
     let startDate = update.startDate ? new Date(update.startDate) : contest.startDate
     let endDate = update.endDate ? new Date(update.endDate) : contest.endDate
-    if(running){
-        ({startDate, endDate} = getRunningContestDates(contest, update))
-    }else if(!validateContestDate(startDate.toISOString(), endDate.toISOString())){
-        throw new ApiError(httpstatus.BAD_REQUEST, INVALID_DATES_MESSAGE)
+    if(locks.startDate){
+        ({startDate, endDate} = getRunningContestDates(contest, update, locks))
+    }else{
+        // Not started yet: the start date may still move (also after people
+        // registered), but it must stay in the future and before the end.
+        if(!validateContestDate(startDate.toISOString(), endDate.toISOString())){
+            throw new ApiError(httpstatus.BAD_REQUEST, INVALID_DATES_MESSAGE)
+        }
+        if(locks.feeAndRules){
+            assertEntryFeeUnchanged(contest, update, locks)
+        }
     }
 
     const money = policyFor(contest).applyMoneyRules({
@@ -226,7 +256,7 @@ const getUpdatedContestSettings = (contest:Contest, update:updateContestData) =>
         currency:money.isMoneyContest ? currency : null,
         minPrize:money.isMoneyContest ? minPrize : 0,
         maxPrize:money.isMoneyContest ? maxPrize : 0,
-        entryFeeAmount:running ? (contest.entryFeeAmount ?? 0) : (update.entryFeeAmount ?? contest.entryFeeAmount ?? 0),
+        entryFeeAmount:locks.feeAndRules ? (contest.entryFeeAmount ?? 0) : (update.entryFeeAmount ?? contest.entryFeeAmount ?? 0),
         entryFeeCoins:money.entryFeeCoins,
     }
 }
@@ -241,11 +271,17 @@ const updateContest = async (
     assertContestCanBeEdited(contest, allowPhotographyOfYear)
 
     const policy = policyFor(contest)
-    const settings = getUpdatedContestSettings(contest, contestUpdate)
+    const locks = await getContestEditLocks(contest)
+    const running = locks.startDate
+    const settings = getUpdatedContestSettings(contest, contestUpdate, locks)
     const {prizeIds, prizes, levelAwards, rules, coinRequirement, bannerUserPhotoId, category, categories, ...otherFields} = contestUpdate as any
-    const running = isRunningButManageable(contest)
-    if(running && rules !== undefined){
-        throw new ApiError(httpstatus.BAD_REQUEST, "Contest rules cannot change after the contest has started")
+    if(locks.feeAndRules && rules !== undefined){
+        throw new ApiError(
+            httpstatus.BAD_REQUEST,
+            running
+                ? "Contest rules cannot change after the contest has started"
+                : "Contest rules cannot change once people have registered"
+        )
     }
     const categoryData = await contestCategoryService.prepareCategoryUpdate(resolveCategoryInput({category, categories}))
     const bannerData = await resolveBanner(bannerUserPhotoId, banner)

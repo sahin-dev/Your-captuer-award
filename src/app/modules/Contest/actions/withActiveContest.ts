@@ -2,7 +2,7 @@ import httpStatus from "http-status";
 import ApiError from "../../../../errors/ApiError";
 import prisma, { PrismaTx } from "../../../../shared/prisma";
 import { runWithWriteConflictRetry } from "../../../../shared/transactionRetry";
-import { lockActiveContest } from "../contestLifecycle";
+import { lockActiveContest, lockContestForEntries } from "../contestLifecycle";
 
 type TransactionOptions = { maxWait?: number; timeout?: number };
 
@@ -19,6 +19,25 @@ export const withActiveContest = <T>(
   runWithWriteConflictRetry(
     () => prisma.$transaction(async (tx) => {
       if (!(await lockActiveContest(tx, contestId))) {
+        throw new ApiError(httpStatus.CONFLICT, closedMessage);
+      }
+      return work(tx);
+    }, options),
+    { label: `contest ${contestId}` },
+  );
+
+// Same as withActiveContest, but for registrations and submissions, which a
+// scheduled Photographer of the Year contest also accepts (see
+// contestLifecycle.acceptingEntriesWhere).
+export const withContestAcceptingEntries = <T>(
+  contestId: string,
+  closedMessage: string,
+  work: (tx: PrismaTx) => Promise<T>,
+  options?: TransactionOptions,
+) =>
+  runWithWriteConflictRetry(
+    () => prisma.$transaction(async (tx) => {
+      if (!(await lockContestForEntries(tx, contestId))) {
         throw new ApiError(httpStatus.CONFLICT, closedMessage);
       }
       return work(tx);
