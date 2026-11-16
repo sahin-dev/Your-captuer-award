@@ -86,13 +86,13 @@ export class StripeProvider implements PaymentProvider {
     const unitAmount = this.toMinorUnits(amount, currency);
     return this.stripe.checkout.sessions.create({
       customer: customer.id,
-      managed_payments: {
-        enabled: false,
-      },
+      // managed_payments: {
+      //   enabled: false,
+      // },
       // payment_method_types: ["card"],
-      adaptive_pricing: {
-        enabled: true,
-      },
+      // adaptive_pricing: {
+      //   enabled: true,
+      // },
       mode: "payment",
       line_items: [
         {
