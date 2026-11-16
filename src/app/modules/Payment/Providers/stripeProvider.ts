@@ -86,10 +86,13 @@ export class StripeProvider implements PaymentProvider {
     const unitAmount = this.toMinorUnits(amount, currency);
     return this.stripe.checkout.sessions.create({
       customer: customer.id,
-      // managed_payments: {
-      //   enabled: false,
-      // },
-      // payment_method_types: ["card"],
+      // Managed Payments (Stripe as merchant of record) is on by default for
+      // this account and rejects products without a tax_code. It is not what
+      // localises currency or payment methods - adaptive_pricing and omitting
+      // payment_method_types do that - so keep it off explicitly.
+      managed_payments: {
+        enabled: false,
+      },
       adaptive_pricing: {
         enabled: true,
       },
@@ -158,6 +161,9 @@ export class StripeProvider implements PaymentProvider {
     const paymentId = typeof data?.payment_id === "string" ? data.payment_id : undefined;
     return this.stripe.checkout.sessions.create({
       customer: customer.id,
+      managed_payments: {
+        enabled: false,
+      },
       mode,
       success_url: successUrl,
       cancel_url: cancelUrl,
