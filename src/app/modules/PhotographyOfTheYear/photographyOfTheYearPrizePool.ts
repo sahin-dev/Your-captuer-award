@@ -1,5 +1,6 @@
 import { PaymentStatus, PaymentType } from "../../../prismaClient";
 import prisma from "../../../shared/prisma";
+import { resolveChargeCurrency, SupportedCurrency } from "../Payment/paymentCurrency";
 
 // Entry fees for Photographer of the Year go into one pot. 40% of it is the
 // prize pool divided among the winning participants; the other 60% is kept by
@@ -14,7 +15,7 @@ export type PotyPrizePool = {
   sharePercent: number;
   platformShare: number;
   platformSharePercent: number;
-  currency: "USD";
+  currency: SupportedCurrency;
 };
 
 const roundMoney = (value: number) => Math.round(value * 100) / 100;
@@ -29,13 +30,26 @@ export const getPotyPrizePools = async (contestIds: string[]) => {
     return pools;
   }
 
-  // Refunded entries leave SUCCEEDED, so they drop out of the pot automatically.
-  const groups = await prisma.payment.groupBy({
-    by: ["contestId"],
-    where: { contestId: { in: contestIds }, type: PaymentType.CONTEST, status: PaymentStatus.SUCCEEDED },
-    _sum: { amount: true },
+  // The pot is in the contest's currency. Its entry fee and currency lock once
+  // anyone registers, so every paid entry is in that currency; a payment in
+  // another currency (an old checkout) cannot be added to it.
+  const [contests, groups] = await Promise.all([
+    prisma.contest.findMany({ where: { id: { in: contestIds } }, select: { id: true, currency: true } }),
+    // Refunded entries leave SUCCEEDED, so they drop out of the pot automatically.
+    prisma.payment.groupBy({
+      by: ["contestId", "currency"],
+      where: { contestId: { in: contestIds }, type: PaymentType.CONTEST, status: PaymentStatus.SUCCEEDED },
+      _sum: { amount: true },
+    }),
+  ]);
+  const currencyByContestId = new Map(contests.map((contest) => [contest.id, resolveChargeCurrency(contest.currency)]));
+  const collectedByContestId = new Map<string, number>();
+  groups.forEach((group) => {
+    if (!group.contestId) return;
+    const currency = currencyByContestId.get(group.contestId) ?? resolveChargeCurrency(null);
+    if (resolveChargeCurrency(group.currency) !== currency) return;
+    collectedByContestId.set(group.contestId, (collectedByContestId.get(group.contestId) ?? 0) + (group._sum.amount ?? 0));
   });
-  const collectedByContestId = new Map(groups.map((group) => [group.contestId, group._sum.amount ?? 0]));
 
   contestIds.forEach((contestId) => {
     const collectedFees = roundMoney((collectedByContestId.get(contestId) ?? 0) + testCollectedFees());
@@ -47,7 +61,7 @@ export const getPotyPrizePools = async (contestIds: string[]) => {
       // Derived from the rounded pool so the two parts always add up to the fees.
       platformShare: roundMoney(collectedFees - prizePool),
       platformSharePercent: POTY_PLATFORM_SHARE_PERCENT,
-      currency: "USD",
+      currency: currencyByContestId.get(contestId) ?? resolveChargeCurrency(null),
     });
   });
 

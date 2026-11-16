@@ -1,16 +1,15 @@
 import { z } from "zod";
 import { RecurringType } from "../../../prismaClient";
 import { contestRuleInputArraySchema } from "../Contest/ContestRules/contestRule.validation";
-import { MIN_ENTRY_FEE_USD } from "../Contest/contest.validation";
+import { contestCurrencyField } from "../Contest/contest.validation";
+import { hasAtMostTwoDecimals } from "../Payment/paymentCurrency";
 
+// The minimum depends on the template's currency, so the service checks it.
 const entryFeeAmountSchema = z.number()
   .min(0)
   .max(100000000)
-  .refine((value) => value === 0 || value >= MIN_ENTRY_FEE_USD, {
-    message: `USD entry fee must be 0 (free) or at least ${MIN_ENTRY_FEE_USD.toFixed(2)}`,
-  })
-  .refine((value) => Math.abs(value * 100 - Math.round(value * 100)) < 1e-8, {
-    message: "USD entry fee can have at most 2 decimal places",
+  .refine(hasAtMostTwoDecimals, {
+    message: "Entry fee can have at most 2 decimal places",
   });
 import { contestAwardInputArraySchema } from "../Prize/prize.validation";
 import { contestLevelAwardArraySchema } from "../Contest/contestLevelAward.validation";
@@ -36,9 +35,6 @@ const parseBooleanField = (value: unknown) => {
 const parseOptionalNumber = (value: unknown) =>
   value === undefined || value === null || value === "" ? undefined : Number(value);
 
-const parseNullableString = (value: unknown) =>
-  value === "" || value === "null" ? null : value;
-
 export const updateRecurringContestSchema = z.object({
   title: z.string().trim().min(1).max(160).optional(),
   description: z.string()
@@ -56,10 +52,7 @@ export const updateRecurringContestSchema = z.object({
   isMoneyContest: z.preprocess(parseBooleanField, z.boolean()).optional(),
   maxPrize: z.preprocess(parseOptionalNumber, z.number().int().min(0).optional()),
   minPrize: z.preprocess(parseOptionalNumber, z.number().int().min(0).optional()),
-  currency: z.preprocess(
-    parseNullableString,
-    z.string().trim().toUpperCase().regex(/^[A-Z]{3}$/).nullable().optional()
-  ),
+  currency: contestCurrencyField,
   entryFeeAmount: z.preprocess(parseOptionalNumber, entryFeeAmountSchema.optional()),
   entryFeeCoins: z.preprocess(parseOptionalNumber, z.number().int().min(0).max(100000000).optional()),
   rules: z.preprocess(parseJsonArray, contestRuleInputArraySchema).optional(),

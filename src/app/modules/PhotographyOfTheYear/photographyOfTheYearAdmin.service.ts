@@ -2,6 +2,7 @@ import { notDeletedContest } from "../Contest/contestLifecycle";
 import { ContestStatus, PaymentStatus, PaymentType } from "../../../prismaClient";
 import prisma from "../../../shared/prisma";
 import { getPotyPrizePools } from "./photographyOfTheYearPrizePool";
+import { DEFAULT_CURRENCY, resolveChargeCurrency, SupportedCurrency } from "../Payment/paymentCurrency";
 
 // Where a Photographer of the Year contest is in its life, from the admin's
 // point of view. Derived from the dates and the published result rather than
@@ -105,6 +106,20 @@ const getAdminOverview = async () => {
   const sum = (pick: (item: typeof items[number]) => number) =>
     Math.round(items.reduce((total, item) => total + pick(item), 0) * 100) / 100;
 
+  // Fees in different currencies cannot be added up, so money totals are per
+  // currency. The flat collectedFees/prizePool/currency fields are kept for
+  // older dashboards and are only filled when every contest uses one currency.
+  const moneyByCurrency = new Map<SupportedCurrency, { currency: SupportedCurrency; collectedFees: number; prizePool: number }>();
+  items.forEach((item) => {
+    const currency = item.potyPrizePool?.currency ?? resolveChargeCurrency(item.currency);
+    const current = moneyByCurrency.get(currency) ?? { currency, collectedFees: 0, prizePool: 0 };
+    current.collectedFees = Math.round((current.collectedFees + (item.potyPrizePool?.collectedFees ?? 0)) * 100) / 100;
+    current.prizePool = Math.round((current.prizePool + (item.potyPrizePool?.prizePool ?? 0)) * 100) / 100;
+    moneyByCurrency.set(currency, current);
+  });
+  const byCurrency = [...moneyByCurrency.values()];
+  const single = byCurrency.length <= 1 ? (byCurrency[0] ?? { currency: DEFAULT_CURRENCY, collectedFees: 0, prizePool: 0 }) : null;
+
   return {
     contests: items,
     totals: {
@@ -114,9 +129,10 @@ const getAdminOverview = async () => {
       awaitingJudging: items.filter((item) => item.stage === "JUDGING").length,
       published: items.filter((item) => item.stage === "PUBLISHED").length,
       entries: sum((item) => item.entryCount),
-      collectedFees: sum((item) => item.potyPrizePool?.collectedFees ?? 0),
-      prizePool: sum((item) => item.potyPrizePool?.prizePool ?? 0),
-      currency: "USD" as const,
+      collectedFees: single ? single.collectedFees : null,
+      prizePool: single ? single.prizePool : null,
+      currency: single ? single.currency : null,
+      byCurrency,
     },
   };
 };

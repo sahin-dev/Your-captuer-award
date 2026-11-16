@@ -70,7 +70,8 @@ test("recurring template update accepts multipart string values", () => {
     });
     assert.deepEqual(parsed.categories, ["Street", "Night"]);
     assert.equal(parsed.isMoneyContest, false);
-    assert.equal(parsed.currency, null);
+    // An empty currency means "not sent": the template keeps its currency.
+    assert.equal(parsed.currency, undefined);
     assert.equal(parsed.minPrize, 0);
     assert.equal(parsed.maxPrize, undefined);
     assert.equal(parsed.entryFeeCoins, 5);

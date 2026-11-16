@@ -13,6 +13,7 @@ import { resolveCategoryInput } from "../Contest/contestCategories";
 import { contestCategoryService } from "../Contest/contestCategory.service";
 import { contestCache } from "../Contest/contest.cache";
 import { fileUploader } from "../../../helpers/fileUploader";
+import { DEFAULT_CURRENCY, getPaidAmountError, resolveChargeCurrency, SupportedCurrency } from "../Payment/paymentCurrency";
 import logger from "../../../shared/logger";
 
 type RecurringUpdateData = {
@@ -25,7 +26,7 @@ type RecurringUpdateData = {
   isMoneyContest?: boolean;
   maxPrize?: number;
   minPrize?: number;
-  currency?: string | null;
+  currency?: SupportedCurrency;
   entryFeeAmount?: number;
   entryFeeCoins?: number;
   rules?: ContestRuleConfigInput[];
@@ -119,10 +120,15 @@ const updateRecurringContest = async (
   const isMoneyContest = data.isMoneyContest ?? recurringContest.isMoneyContest;
   const minPrize = data.minPrize ?? recurringContest.minPrize ?? 0;
   const maxPrize = data.maxPrize ?? recurringContest.maxPrize ?? 0;
-  const currency = data.currency === undefined ? recurringContest.currency : data.currency;
+  // Generated contests charge their entry fee in this currency.
+  const currency = data.currency ?? recurringContest.currency ?? DEFAULT_CURRENCY;
   const entryFeeAmount = data.entryFeeAmount ?? recurringContest.entryFeeAmount ?? 0;
-  if(isMoneyContest && (!currency || minPrize > maxPrize)){
-    throw new ApiError(httpStatus.BAD_REQUEST, "Money contests require valid currency and prize bounds");
+  if(isMoneyContest && minPrize > maxPrize){
+    throw new ApiError(httpStatus.BAD_REQUEST, "Money contests require valid prize bounds");
+  }
+  const feeError = getPaidAmountError(entryFeeAmount, resolveChargeCurrency(currency));
+  if(feeError){
+    throw new ApiError(httpStatus.BAD_REQUEST, feeError);
   }
   // The previous banner file is intentionally kept: contests already generated
   // from this template still reference it.
@@ -154,7 +160,7 @@ const updateRecurringContest = async (
       isMoneyContest,
       maxPrize: isMoneyContest ? maxPrize : 0,
       minPrize: isMoneyContest ? minPrize : 0,
-      currency: isMoneyContest ? currency : null,
+      currency,
       entryFeeAmount,
       entryFeeCoins: data.entryFeeCoins,
       rules,
