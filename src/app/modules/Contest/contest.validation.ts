@@ -6,6 +6,14 @@ import { contestPrizeInputArraySchema } from "../Prize/prize.validation";
 import { contestLevelAwardArraySchema } from "./contestLevelAward.validation";
 import { getRichTextLength, sanitizeContestRichText } from "./contestContent";
 import { contestCategoriesField, contestCategoryField } from "./contestCategories";
+import {
+    getPaidAmountError,
+    hasAtMostTwoDecimals,
+    isSupportedCurrency,
+    resolveChargeCurrency,
+    SUPPORTED_CURRENCIES,
+    SupportedCurrency,
+} from "../Payment/paymentCurrency";
 
 const parseJsonValue = (value: unknown) => {
     if (typeof value !== "string") {
@@ -50,19 +58,24 @@ const richTextField = (label: string, maxLength: number) =>
 
 const optionalIsoDate = z.string().datetime({ offset: true }).optional();
 
-// Fees are charged in USD, but the Stripe account settles in EUR and Stripe
-// requires at least 0.50 EUR. This keeps a margin for exchange rate changes.
-export const MIN_ENTRY_FEE_USD = 0.6;
-
+// The entry fee's minimum depends on the contest currency, so it is checked
+// where both are known (superRefine below, and the update service).
 const entryFeeAmountSchema = z.number()
     .nonnegative()
     .max(100000000)
-    .refine((value) => value === 0 || value >= MIN_ENTRY_FEE_USD, {
-        message: `USD entry fee must be 0 (free) or at least ${MIN_ENTRY_FEE_USD.toFixed(2)}`,
-    })
-    .refine((value) => Math.abs(value * 100 - Math.round(value * 100)) < 1e-8, {
-        message: "USD entry fee can have at most 2 decimal places",
+    .refine(hasAtMostTwoDecimals, {
+        message: "Entry fee can have at most 2 decimal places",
     });
+
+// One currency per contest: the entry fee is charged in it and cash prizes are
+// shown in it. Empty or null means "not sent" (the saved/default value is kept).
+export const contestCurrencyField = z.preprocess(
+    (value) => value === "" || value === null || value === "null" ? undefined : value,
+    z.string().trim().toUpperCase()
+        .refine(isSupportedCurrency, { message: `Currency must be one of ${SUPPORTED_CURRENCIES.join(", ")}` })
+        .transform((value) => value as SupportedCurrency)
+        .optional()
+);
 
 const bannerUserPhotoIdField = z.string().trim()
     .refine(checkObjectId, { message: "Invalid user photo ID" })
@@ -131,9 +144,7 @@ const createContestObjectSchema = z.object({
     }),
 
     isMoneyContest: z.preprocess(parseBooleanField, z.boolean()).optional().default(false),
-    currency: z.string().trim().toUpperCase()
-        .regex(/^[A-Z]{3}$/, "Currency must be a 3-letter ISO code")
-        .optional(),
+    currency: contestCurrencyField,
     maxPrize: z.preprocess(parseOptionalNumberField, z.number().int().nonnegative().optional()),
     minPrize: z.preprocess(parseOptionalNumberField, z.number().int().nonnegative().optional()),
     entryFeeAmount: z.preprocess(
@@ -163,12 +174,16 @@ const createContestObjectSchema = z.object({
             message: "End date must be after start date",
         });
     }
+    const feeError = getPaidAmountError(contest.entryFeeAmount ?? 0, resolveChargeCurrency(contest.currency));
+    if (feeError) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["entryFeeAmount"], message: feeError });
+    }
     if (contest.isMoneyContest) {
-        if (contest.minPrize === undefined || contest.maxPrize === undefined || !contest.currency) {
+        if (contest.minPrize === undefined || contest.maxPrize === undefined) {
             ctx.addIssue({
                 code: z.ZodIssueCode.custom,
                 path: ["isMoneyContest"],
-                message: "Money contests require currency, minPrize, and maxPrize",
+                message: "Money contests require minPrize and maxPrize",
             });
         } else if (contest.minPrize > contest.maxPrize) {
             ctx.addIssue({
@@ -182,7 +197,7 @@ const createContestObjectSchema = z.object({
         if (contest.recurring) {
             ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["recurring"], message: "Photographer of the Year contests use admin-set start and end dates and cannot recur" });
         }
-        // POTY is free or charges a USD entry fee that funds its prize pool. It
+        // POTY is free or charges an entry fee (USD or EUR) that funds its prize pool. It
         // has no fixed cash prizes and no coin fee.
         if (contest.isMoneyContest || contest.entryFeeCoins || contest.coinRequirement) {
             ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["isPhotographyOfYear"], message: "Photographer of the Year contests cannot use fixed cash prizes or coin entry fees" });
@@ -224,10 +239,7 @@ const updateContestObjectSchema = z.object({
     endDate: optionalIsoDate,
     bannerUserPhotoId: bannerUserPhotoIdField,
     isMoneyContest: z.preprocess(parseBooleanField, z.boolean()).optional(),
-    currency: z.union([
-        z.string().trim().toUpperCase().regex(/^[A-Z]{3}$/, "Currency must be a 3-letter ISO code"),
-        z.null(),
-    ]).optional(),
+    currency: contestCurrencyField,
     maxPrize: z.preprocess(parseOptionalNumberField, z.number().int().nonnegative().optional()),
     minPrize: z.preprocess(parseOptionalNumberField, z.number().int().nonnegative().optional()),
     entryFeeAmount: z.preprocess(

@@ -13,6 +13,7 @@ import { ContestType, policyFor } from "../contestTypePolicy";
 import { contestRuleEngine } from "../ContestRules/contestRule.engine";
 import { EXPOSURE_BOOST_DURATION_MS } from "../exposure/exposure.service";
 import { addContestCategoriesToPhotos, CreatedPhoto, rollbackUploadedContestPhotos } from "./submittedPhotos";
+import { resolveChargeCurrency } from "../../Payment/paymentCurrency";
 
 const NOT_ENOUGH_COINS = {status:httpstatus.PAYMENT_REQUIRED, message:"Insufficient coins to enter this contest"}
 const STRIPE_REQUIRED_MESSAGE = "Stripe payment is required to enter this contest"
@@ -150,7 +151,7 @@ const completePaidContestJoin = async (
         if(contest.entryFeeAmount <= 0){
             throw new ApiError(httpstatus.BAD_REQUEST, "This contest does not require Stripe entry payment")
         }
-        if(payment.amount !== contest.entryFeeAmount){
+        if(payment.amount !== contest.entryFeeAmount || resolveChargeCurrency(payment.currency) !== resolveChargeCurrency(contest.currency)){
             throw new ApiError(httpstatus.BAD_REQUEST, "Payment amount does not match the contest entry fee")
         }
 

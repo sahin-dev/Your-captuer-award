@@ -19,6 +19,7 @@ import { getContestRuleDefinitionViews, supportedContestImageMimeTypes } from ".
 import { contestRuleService } from "../ContestRules/contestRules.service";
 import { createRecurringContest } from "../recurring/recurringMaterializer";
 import { resolveBanner } from "./bannerResolver";
+import { DEFAULT_CURRENCY, getPaidAmountError, resolveChargeCurrency } from "../../Payment/paymentCurrency";
 import { contestPurgeService } from "./contestPurge.service";
 import {
     AwardRow,
@@ -195,9 +196,13 @@ const feeLockedMessage = (locks:ContestEditLocks) => locks.startDate
     ? "The entry fee cannot change after the contest has started"
     : "The entry fee cannot change once people have registered"
 
+// The currency is part of the fee: people paid in it.
 const assertEntryFeeUnchanged = (contest:Contest, update:updateContestData, locks:ContestEditLocks) => {
     if(update.entryFeeAmount !== undefined && Number(update.entryFeeAmount) !== Number(contest.entryFeeAmount ?? 0)){
         throw new ApiError(httpstatus.BAD_REQUEST, feeLockedMessage(locks))
+    }
+    if(update.currency !== undefined && update.currency !== resolveChargeCurrency(contest.currency)){
+        throw new ApiError(httpstatus.BAD_REQUEST, feeLockedMessage(locks).replace("entry fee", "entry fee currency"))
     }
 }
 
@@ -238,9 +243,17 @@ const getUpdatedContestSettings = (contest:Contest, update:updateContestData, lo
         maxPrize:update.maxPrize ?? contest.maxPrize ?? 0,
         entryFeeCoins:update.coinRequirement === false ? 0 : (update.entryFeeCoins ?? contest.entryFeeCoins),
     })
-    const currency = update.currency === undefined ? contest.currency : update.currency
+    const currency = locks.feeAndRules
+        ? (contest.currency ?? DEFAULT_CURRENCY)
+        : (update.currency ?? contest.currency ?? DEFAULT_CURRENCY)
+    const entryFeeAmount = locks.feeAndRules ? (contest.entryFeeAmount ?? 0) : (update.entryFeeAmount ?? contest.entryFeeAmount ?? 0)
     const minPrize = money.minPrize ?? 0
     const maxPrize = money.maxPrize ?? 0
+
+    const feeError = locks.feeAndRules ? null : getPaidAmountError(entryFeeAmount, resolveChargeCurrency(currency))
+    if(feeError){
+        throw new ApiError(httpstatus.BAD_REQUEST, feeError)
+    }
 
     if(money.isMoneyContest && (!currency || minPrize > maxPrize)){
         throw new ApiError(httpstatus.BAD_REQUEST, "Money contests require valid currency and prize bounds")
@@ -253,10 +266,11 @@ const getUpdatedContestSettings = (contest:Contest, update:updateContestData, lo
         startDate,
         endDate,
         isMoneyContest:money.isMoneyContest,
-        currency:money.isMoneyContest ? currency : null,
+        // Kept for free contests too: it is the currency the entry fee is charged in.
+        currency,
         minPrize:money.isMoneyContest ? minPrize : 0,
         maxPrize:money.isMoneyContest ? maxPrize : 0,
-        entryFeeAmount:locks.feeAndRules ? (contest.entryFeeAmount ?? 0) : (update.entryFeeAmount ?? contest.entryFeeAmount ?? 0),
+        entryFeeAmount,
         entryFeeCoins:money.entryFeeCoins,
     }
 }

@@ -11,6 +11,7 @@ import { PaymentRegistry } from "./paymentRegistry";
 import { loadProviders } from "./providerLoader";
 import httpStatus from 'http-status';
 import { acceptingEntriesWhere } from "../Contest/contestLifecycle";
+import { resolveChargeCurrency } from "./paymentCurrency";
 
 const isUniqueConstraintError = (error: unknown) =>
   typeof error === "object" && error !== null && "code" in error && error.code === "P2002";
@@ -214,7 +215,7 @@ const buildContestRedirectUrl = (
       data: {
         amount: product.amount,
         type: PaymentType.STORE,
-        currency: product.currency || "USD",
+        currency: resolveChargeCurrency(product.currency),
         productId: product.id,
         method: "stripe",
         userId,
@@ -228,7 +229,7 @@ const buildContestRedirectUrl = (
     const session = await provider.initializePaymentSession(
       userId,
       product.amount,
-      product.currency || "USD",
+      resolveChargeCurrency(product.currency),
       success_url,
       cancel_url,
       {
@@ -298,9 +299,9 @@ const buildContestRedirectUrl = (
       }
     }
 
-    // Contest entry fees are configured and displayed as USD. Prize currency is
-    // a separate concern and must not silently change the Stripe charge currency.
-    const currency = "USD";
+    // The admin picks the contest currency (USD or EUR); the entry fee is
+    // charged in it. Older contests without one were always charged in USD.
+    const currency = resolveChargeCurrency(contest.currency);
     const configuredFrontendUrl =
       config.forontend_url || config.web_redirect_success || "http://localhost:3000";
     let frontendUrl = "http://localhost:3000";

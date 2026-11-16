@@ -43,14 +43,24 @@ test("create contest accepts multipart-style values and sanitizes rich text", ()
     assert.doesNotMatch(parsed.description, /script|onclick/);
 });
 
-test("money contests require bounded values and currency", () => {
+test("money contests take bounded values in USD or EUR", () => {
+    // No currency means the default (USD), applied when the contest is saved.
     const missingCurrency = createContestSchema.safeParse({
         ...baseContest(),
         isMoneyContest:true,
         minPrize:100,
         maxPrize:500,
     });
-    assert.equal(missingCurrency.success, false);
+    assert.equal(missingCurrency.success, true);
+
+    const unsupported = createContestSchema.safeParse({
+        ...baseContest(),
+        isMoneyContest:true,
+        currency:"GBP",
+        minPrize:100,
+        maxPrize:500,
+    });
+    assert.equal(unsupported.success, false);
 
     const valid = createContestSchema.parse({
         ...baseContest(),
@@ -85,6 +95,28 @@ test("USD entry fees are either free or Stripe-compatible amounts", () => {
         entryFeeAmount:"0.60",
     }).success, true);
     assert.equal(updateContestSchema.safeParse({entryFeeAmount:1.001}).success, false);
+});
+
+test("EUR entry fees use the EUR minimum", () => {
+    const eur = createContestSchema.parse({
+        ...baseContest(),
+        currency:"eur",
+        entryFeeAmount:"0.50",
+    });
+    assert.equal(eur.currency, "EUR");
+    assert.equal(createContestSchema.safeParse({
+        ...baseContest(),
+        currency:"EUR",
+        entryFeeAmount:0.49,
+    }).success, false);
+    // 0.50 is below the USD minimum.
+    assert.equal(createContestSchema.safeParse({
+        ...baseContest(),
+        currency:"USD",
+        entryFeeAmount:0.5,
+    }).success, false);
+    assert.equal(updateContestSchema.safeParse({currency:"JPY"}).success, false);
+    assert.equal(updateContestSchema.parse({currency:""}).currency, undefined);
 });
 
 test("recurrence accepts timezone and termination settings", () => {

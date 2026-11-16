@@ -10,6 +10,14 @@ import config from "../../../config";
 import logger from "../../../shared/logger";
 import { userStoreCache } from "../User/UserStore/userStore.cache";
 import { storeCache } from "./store.cache";
+import { isSupportedCurrency, SUPPORTED_CURRENCIES, SupportedCurrency } from "../Payment/paymentCurrency";
+
+const parseStripeProductCurrency = (currency: unknown): SupportedCurrency => {
+    if (!isSupportedCurrency(currency)) {
+        throw new ApiError(httpStatus.BAD_REQUEST, `Currency must be one of ${SUPPORTED_CURRENCIES.join(", ")}`);
+    }
+    return currency.trim().toUpperCase() as SupportedCurrency;
+};
 
 /**
  * Add a new product to the store
@@ -84,6 +92,8 @@ const addProduct = async (userId: string, productData: {
             throw new ApiError(httpStatus.BAD_REQUEST, "Quantity must be a positive integer for COINS category");
         }
         productData.quantity = parsedQuantity;
+        // Coin packs are bought through Stripe in the currency picked here.
+        productData.currency = parseStripeProductCurrency(productData.currency);
     }
 
 
@@ -316,6 +326,7 @@ const updateProduct = async (
         image?: string;
         icon?: string;
         status?: ProductStatus;
+        currency?: string;
     }>,
     file?: Express.Multer.File
 ) => {
@@ -388,6 +399,11 @@ const updateProduct = async (
 
     if (data.icon !== undefined) {
         normalizedData.icon = data.icon;
+    }
+
+    // Bundles are paid in coins and always keep the COINS currency.
+    if (data.currency !== undefined && data.currency !== "" && product.category === Category.COINS) {
+        normalizedData.currency = parseStripeProductCurrency(data.currency);
     }
 
     if (data.status !== undefined) {

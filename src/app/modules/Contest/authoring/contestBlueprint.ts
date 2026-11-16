@@ -10,6 +10,7 @@ import { ContestRuleConfigInput } from "../ContestRules/contestRules.type";
 import { contestData } from "../contest.type";
 import { policyFor } from "../contestTypePolicy";
 import { resolveBanner } from "./bannerResolver";
+import { DEFAULT_CURRENCY, resolveChargeCurrency } from "../../Payment/paymentCurrency";
 
 // A blueprint is everything needed to create one contest. There are two ways to
 // make one (from an admin request, or from a recurring template) and one way to
@@ -28,7 +29,8 @@ export type ContestBlueprint = {
 // Settings shared by regular contests and recurring templates.
 export const getMoneySettings = (body: contestData) => ({
   isMoneyContest: body.isMoneyContest,
-  currency: body.isMoneyContest ? body.currency : null,
+  // Always set: the entry fee is charged in it even when there is no cash prize.
+  currency: resolveChargeCurrency(body.currency),
   minPrize: body.isMoneyContest ? body.minPrize : 0,
   maxPrize: body.isMoneyContest ? body.maxPrize : 0,
   entryFeeAmount: body.entryFeeAmount || 0,
@@ -104,7 +106,7 @@ export const blueprintFromTemplate = async (
       isMoneyContest: template.isMoneyContest,
       maxPrize: template.maxPrize,
       minPrize: template.minPrize,
-      currency: template.currency,
+      currency: template.currency ?? DEFAULT_CURRENCY,
       entryFeeAmount: template.entryFeeAmount,
       entryFeeCoins: template.entryFeeCoins,
       ...resolveCategoryInput({ categories: getStoredCategories(template) }),
